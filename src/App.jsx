@@ -64,7 +64,7 @@ function LoginScreen({ onLogin }) {
       <div style={{ background: "rgba(255,255,255,0.05)", backdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 24, padding: "48px 40px", width: 360, boxShadow: "0 25px 50px rgba(0,0,0,0.5)" }}>
         <div style={{ textAlign: "center", marginBottom: 36 }}>
           <div style={{ fontSize: 40, marginBottom: 8 }}>🇹🇳</div>
-          <h1 style={{ color: "#e8d5b7", fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: 1 }}>Darija Trainer</h1>
+          <h1 style={{ color: "#e8d5b7", fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: 1 }}>Tunsi Trainer</h1>
           <p style={{ color: "rgba(232,213,183,0.5)", fontSize: 13, margin: "6px 0 0" }}>Tunesisches Arabisch lernen</p>
         </div>
         <div style={{ marginBottom: 16 }}>
