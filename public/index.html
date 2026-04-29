@@ -231,6 +231,22 @@ function normalize(s){
   return s;
 }
 
+
+// Debug Panel
+const IS_DEBUG = window.location.search.includes('debug');
+function dbg(msg, cls){
+  if(!IS_DEBUG) return;
+  const panel = document.getElementById('debug-panel');
+  const log = document.getElementById('debug-log');
+  if(!panel || !log) return;
+  panel.style.display = 'block';
+  const d = document.createElement('div');
+  d.style.color = cls==='err' ? '#c94c4c' : cls==='ok' ? '#4cac6e' : '#f0e8d8';
+  d.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+  log.appendChild(d);
+  log.scrollTop = log.scrollHeight;
+}
+
 // ══ SRS — Spaced Repetition (Tage-basiert, Supabase) ════════════════════════
 const SRS_DAYS = [1, 3, 7, 14, 30, 90]; // Tage pro Level 0-5
 let srsProgress = {}; // {darija_tr: {id, level, next_review, vocabulary_id}}
@@ -258,22 +274,24 @@ async function srsLoadFromSupabase(){
         next_review: p.next_review ? new Date(p.next_review) : new Date(0),
       };
     });
-    console.log('SRS geladen:', Object.keys(srsProgress).length, 'progress-Einträge');
-    console.log('vocabIdMap size:', Object.keys(vocabIdMap).length);
-    if(Object.keys(vocabIdMap).length > 0){
-      const firstKey = Object.keys(vocabIdMap)[0];
-      console.log('Beispiel vocabIdMap:', firstKey, '→', vocabIdMap[firstKey]);
+    const vmSize = Object.keys(vocabIdMap).length;
+    const spSize = Object.keys(srsProgress).length;
+    dbg('vocabIdMap: ' + vmSize + ' Einträge', vmSize > 0 ? 'ok' : 'err');
+    dbg('progress: ' + spSize + ' Einträge', 'ok');
+    if(vmSize > 0){
+      const k = Object.keys(vocabIdMap)[0];
+      dbg('Beispiel: "' + k + '" → id ' + vocabIdMap[k], 'ok');
     }
   } catch(e){
-    console.warn('SRS load failed:', e.message);
+    dbg('FEHLER load: ' + e.message, 'err');
   }
 }
 
 async function srsAnswer(vocab, correct){
   if(!currentUser){ console.warn('SRS: kein User'); return; }
   const vocabId = vocabIdMap[vocab.tr];
-  console.log('SRS answer:', vocab.tr, '→ vocabId:', vocabId, '| vocabIdMap size:', Object.keys(vocabIdMap).length);
-  if(!vocabId){ console.warn('Keine vocab_id für:', vocab.tr); return; }
+  dbg('Antwort: "' + vocab.tr + '" id=' + vocabId + (correct?' ✓':' ✗'), vocabId ? (correct?'ok':'err') : 'err');
+  if(!vocabId){ dbg('FEHLER: keine id für ' + vocab.tr, 'err'); return; }
 
   const existing = srsProgress[vocabId];
   let level = existing ? existing.level : 0;
@@ -300,6 +318,7 @@ async function srsAnswer(vocab, correct){
 
   try{
     if(existing && existing.id){
+      dbg('PATCH progress id='+existing.id, 'ok');
       await sbApi('progress?id=eq.'+existing.id, 'PATCH', {
         correct_count: data.correct_count,
         next_review: data.next_review,
@@ -307,6 +326,7 @@ async function srsAnswer(vocab, correct){
       srsProgress[vocabId].level = level;
       srsProgress[vocabId].next_review = nextReview;
     } else {
+      dbg('POST progress vocab='+vocabId, 'ok');
       const res = await sbApi('progress', 'POST', data);
       if(res && res[0]){
         srsProgress[vocabId] = {
@@ -318,7 +338,7 @@ async function srsAnswer(vocab, correct){
       }
     }
   } catch(e){
-    console.warn('SRS save failed:', e.message);
+    dbg('FEHLER save: ' + e.message, 'err');
   }
 }
 
@@ -1223,5 +1243,14 @@ function restartExercise(){document.getElementById('result-screen').classList.re
 function closeResult(){document.getElementById('result-screen').classList.remove('show');}
 
 </script>
+
+<div id="debug-panel" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a1612;border-top:2px solid #c9a84c;padding:.5rem;font-size:.6rem;font-family:monospace;color:#f0e8d8;max-height:40vh;overflow-y:auto;z-index:200;">
+  <div style="display:flex;justify-content:space-between;margin-bottom:.3rem;">
+    <span style="color:#c9a84c;font-weight:700;">DEBUG</span>
+    <button onclick="document.getElementById('debug-panel').style.display='none'" style="background:none;border:none;color:#c94c4c;cursor:pointer;font-size:.8rem;">✕</button>
+  </div>
+  <div id="debug-log"></div>
+</div>
+
 </body>
 </html>
