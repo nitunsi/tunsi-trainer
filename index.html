@@ -1085,7 +1085,14 @@ function aMC(btn,ok,ca,con){
   if(!ok){con.querySelectorAll('.choice-btn').forEach(b=>{if(b.textContent.includes(ca.split(' (')[0].trim()))b.classList.add('correct');});}
   ok?(score.c++,score.st++,score.t++):(score.w++,score.st=0,score.t++);
   // SRS update
-  if(exList[cIdx]&&exList[cIdx].v) srsAnswer(exList[cIdx].v,ok);
+  dbg('aMC: cIdx='+cIdx+' exList.length='+exList.length, 'ok');
+  if(exList[cIdx] && exList[cIdx].v){
+    dbg('Vokabel: '+exList[cIdx].v.tr, 'ok');
+    srsAnswer(exList[cIdx].v, ok);
+  } else {
+    dbg('FEHLER: exList['+cIdx+'] hat kein .v', 'err');
+    if(exList[cIdx]) dbg('Keys: '+Object.keys(exList[cIdx]).join(','), 'err');
+  }
   updScore();showFb(ok,ok?'':ca);showNext();
 }
 function rMatch(ex,el){
