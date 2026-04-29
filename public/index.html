@@ -258,15 +258,21 @@ async function srsLoadFromSupabase(){
         next_review: p.next_review ? new Date(p.next_review) : new Date(0),
       };
     });
-    console.log('SRS geladen:', Object.keys(srsProgress).length, 'Einträge');
+    console.log('SRS geladen:', Object.keys(srsProgress).length, 'progress-Einträge');
+    console.log('vocabIdMap size:', Object.keys(vocabIdMap).length);
+    if(Object.keys(vocabIdMap).length > 0){
+      const firstKey = Object.keys(vocabIdMap)[0];
+      console.log('Beispiel vocabIdMap:', firstKey, '→', vocabIdMap[firstKey]);
+    }
   } catch(e){
     console.warn('SRS load failed:', e.message);
   }
 }
 
 async function srsAnswer(vocab, correct){
-  if(!currentUser) return;
+  if(!currentUser){ console.warn('SRS: kein User'); return; }
   const vocabId = vocabIdMap[vocab.tr];
+  console.log('SRS answer:', vocab.tr, '→ vocabId:', vocabId, '| vocabIdMap size:', Object.keys(vocabIdMap).length);
   if(!vocabId){ console.warn('Keine vocab_id für:', vocab.tr); return; }
 
   const existing = srsProgress[vocabId];
