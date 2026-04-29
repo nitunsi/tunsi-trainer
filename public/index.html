@@ -243,7 +243,7 @@ function toggleDebug(){
     panel.style.display = 'block';
     if(btn) btn.style.background = 'rgba(201,168,76,.3)';
     dbg('=== DEBUG AN ===', 'ok');
-    dbg('vocabIdMap: ' + Object.keys(vocabIdMap).length + ' Einträge', Object.keys(vocabIdMap).length > 0 ? 'ok' : 'err');
+    dbg('vocabIdMap: ' + Object.keys(vocabIdMap).length + ' Einträge (soll 244)', Object.keys(vocabIdMap).length >= 244 ? 'ok' : 'err');
     dbg('srsProgress: ' + Object.keys(srsProgress).length + ' Einträge', 'ok');
     dbg('User: ' + (currentUser ? currentUser.username : 'nicht eingeloggt'), currentUser ? 'ok' : 'err');
   } else {
@@ -275,7 +275,7 @@ async function srsLoadFromSupabase(){
   if(!currentUser) return;
   try{
     // Lade vocabulary IDs
-    const vocab = await sbApi('vocabulary?select=id,darija');
+    const vocab = await sbApi('vocabulary?select=id,darija&limit=1000&order=id.asc');
     vocab.forEach(v => { vocabIdMap[v.darija] = v.id; });
 
     // Lade progress des Nutzers
@@ -440,7 +440,18 @@ const SB_URL='https://lzecflvfalxkodytnwzf.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6ZWNmbHZmYWx4a29keXRud3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczOTkyNjAsImV4cCI6MjA5Mjk3NTI2MH0.GdZ1KgiA8DxHan5neKnDNasO96dQxGg_PqbMIsHxOtk';
 
 async function sbApi(path,method='GET',body=null){
-  const r=await fetch(SB_URL+'/rest/v1/'+path,{method,headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':method==='POST'?'return=representation':''},body:body?JSON.stringify(body):null});
+  const r=await fetch(SB_URL+'/rest/v1/'+path,{
+    method,
+    headers:{
+      'Content-Type':'application/json',
+      'apikey':SB_KEY,
+      'Authorization':'Bearer '+SB_KEY,
+      'Prefer':method==='POST'?'return=representation':'',
+      'Range-Unit':'items',
+      'Range':'0-999'
+    },
+    body:body?JSON.stringify(body):null
+  });
   const t=await r.text();if(!r.ok)throw new Error(t);return t?JSON.parse(t):null;
 }
 async function sha256(str){
