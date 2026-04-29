@@ -316,9 +316,10 @@ async function srsLoadFromSupabase(){
 }
 
 async function srsAnswer(vocab, correct){
+  dbg('srsAnswer START user='+(currentUser?'ok':'null')+' vocab='+vocab.tr, 'ok');
   if(!currentUser){ dbg('FEHLER: kein User', 'err'); return; }
   const vocabId = vocabIdMap[vocab.tr];
-  dbg('Antwort: "' + vocab.tr + '" → id=' + vocabId + (correct?' ✓':' ✗'), vocabId ? (correct?'ok':'err') : 'err');
+  dbg('vocabId=' + vocabId + (correct?' ✓':' ✗'), vocabId ? (correct?'ok':'err') : 'err');
   if(!vocabId){
     // Zeige erste 3 Keys aus vocabIdMap zum Vergleich
     const keys = Object.keys(vocabIdMap).slice(0,3);
@@ -1087,11 +1088,16 @@ function aMC(btn,ok,ca,con){
   // SRS update
   dbg('aMC: cIdx='+cIdx+' exList.length='+exList.length, 'ok');
   if(exList[cIdx] && exList[cIdx].v){
-    dbg('Vokabel: '+exList[cIdx].v.tr, 'ok');
-    srsAnswer(exList[cIdx].v, ok);
+    const _v = exList[cIdx].v;
+    dbg('Vokabel: '+_v.tr+' | User: '+(currentUser?currentUser.username:'null'), 'ok');
+    dbg('vocabId lookup: '+vocabIdMap[_v.tr], vocabIdMap[_v.tr]?'ok':'err');
+    try {
+      srsAnswer(_v, ok).catch(e => dbg('srsAnswer catch: '+e.message, 'err'));
+    } catch(e) {
+      dbg('srsAnswer throw: '+e.message, 'err');
+    }
   } else {
     dbg('FEHLER: exList['+cIdx+'] hat kein .v', 'err');
-    if(exList[cIdx]) dbg('Keys: '+Object.keys(exList[cIdx]).join(','), 'err');
   }
   updScore();showFb(ok,ok?'':ca);showNext();
 }
