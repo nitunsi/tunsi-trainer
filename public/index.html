@@ -153,7 +153,7 @@ main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem;}
 </div>
 <div id="app-screen">
 <header>
-  <div class="logo">Tounsi <em>Trainer</em><small id="header-user">v7</small></div>
+  <div class="logo" id="logo-tap" onclick="debugTap()">Tounsi <em>Trainer</em><small id="header-user">v7</small></div>
   <div class="score-display">
     <div class="score-item"><span class="score-num" id="sc-correct" style="color:var(--green)">0</span><span>Richtig</span></div>
     <div class="score-item"><span class="score-num" id="sc-wrong" style="color:var(--red)">0</span><span>Falsch</span></div>
@@ -233,7 +233,21 @@ function normalize(s){
 
 
 // Debug Panel
-const IS_DEBUG = window.location.search.includes('debug');
+let IS_DEBUG = window.location.search.includes('debug');
+let _tapCount = 0, _tapTimer = null;
+function debugTap(){
+  _tapCount++;
+  clearTimeout(_tapTimer);
+  _tapTimer = setTimeout(()=>{ _tapCount=0; }, 1500);
+  if(_tapCount >= 5){
+    IS_DEBUG = true;
+    _tapCount = 0;
+    dbg('Debug aktiviert ✓', 'ok');
+    dbg('vocabIdMap: ' + Object.keys(vocabIdMap).length + ' Einträge', Object.keys(vocabIdMap).length > 0 ? 'ok' : 'err');
+    dbg('srsProgress: ' + Object.keys(srsProgress).length + ' Einträge', 'ok');
+    dbg('currentUser: ' + (currentUser ? currentUser.username : 'null'), currentUser ? 'ok' : 'err');
+  }
+}
 function dbg(msg, cls){
   if(!IS_DEBUG) return;
   const panel = document.getElementById('debug-panel');
