@@ -275,8 +275,19 @@ async function srsLoadFromSupabase(){
   if(!currentUser) return;
   try{
     // Lade vocabulary IDs
-    const vocab = await sbApi('vocabulary?select=id,darija&limit=1000&order=id.asc');
-    vocab.forEach(v => { vocabIdMap[v.darija] = v.id; });
+    // Vokabeln in Batches laden (Supabase row limit umgehen)
+    let allVocab = [];
+    let offset = 0;
+    const batchSize = 100;
+    while(true){
+      const batch = await sbApi('vocabulary?select=id,darija&order=id.asc&limit='+batchSize+'&offset='+offset);
+      if(!batch || batch.length === 0) break;
+      allVocab = allVocab.concat(batch);
+      if(batch.length < batchSize) break;
+      offset += batchSize;
+    }
+    allVocab.forEach(v => { vocabIdMap[v.darija] = v.id; });
+    dbg('Geladen: ' + allVocab.length + ' Vokabeln', 'ok');
 
     // Lade progress des Nutzers
     const progress = await sbApi(
@@ -447,8 +458,6 @@ async function sbApi(path,method='GET',body=null){
       'apikey':SB_KEY,
       'Authorization':'Bearer '+SB_KEY,
       'Prefer':method==='POST'?'return=representation':'',
-      'Range-Unit':'items',
-      'Range':'0-999'
     },
     body:body?JSON.stringify(body):null
   });
