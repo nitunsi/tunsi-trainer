@@ -1196,7 +1196,7 @@ function spAns(ok){
   ok?(sRight++,score.c++,score.st++):(sWrong++,score.w++,score.st=0);
   // SRS update im Speed-Modus
   const cv=window._sv[sIdx%window._sv.length];
-  if(cv) srsAnswer(cv, ok); // async, fire-and-forget
+  if(cv) srsAnswer(cv, ok).then(()=>updateLessonChips()); // async
   score.t++;sIdx++;updScore();if(sTime>0)renderSpeed();
 }
 function endSpeed(){
