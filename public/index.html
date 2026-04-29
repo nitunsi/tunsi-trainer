@@ -153,12 +153,13 @@ main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem;}
 </div>
 <div id="app-screen">
 <header>
-  <div class="logo" id="logo-tap" onclick="debugTap()">Tounsi <em>Trainer</em><small id="header-user">v7</small></div>
+  <div class="logo">Tounsi <em>Trainer</em><small id="header-user">v7</small></div>
   <div class="score-display">
     <div class="score-item"><span class="score-num" id="sc-correct" style="color:var(--green)">0</span><span>Richtig</span></div>
     <div class="score-item"><span class="score-num" id="sc-wrong" style="color:var(--red)">0</span><span>Falsch</span></div>
     <div class="score-item"><span class="score-num" id="sc-streak" style="color:var(--gold)">0</span><span>Streak</span></div>
     <button class="logout-btn" onclick="doLogout()">Abmelden</button>
+    <button class="logout-btn" id="dbg-btn" onclick="toggleDebug()" style="color:var(--gold);border-color:var(--gold)">🔍</button>
   </div>
 </header>
 <div class="update-notice">v7 &mdash; L4 komplett &middot; L5&ndash;L9 vollst&auml;ndig</div>
@@ -233,19 +234,21 @@ function normalize(s){
 
 
 // Debug Panel
-let IS_DEBUG = window.location.search.includes('debug');
-let _tapCount = 0, _tapTimer = null;
-function debugTap(){
-  _tapCount++;
-  clearTimeout(_tapTimer);
-  _tapTimer = setTimeout(()=>{ _tapCount=0; }, 1500);
-  if(_tapCount >= 5){
-    IS_DEBUG = true;
-    _tapCount = 0;
-    dbg('Debug aktiviert ✓', 'ok');
+let IS_DEBUG = false;
+function toggleDebug(){
+  IS_DEBUG = !IS_DEBUG;
+  const panel = document.getElementById('debug-panel');
+  const btn = document.getElementById('dbg-btn');
+  if(IS_DEBUG){
+    panel.style.display = 'block';
+    if(btn) btn.style.background = 'rgba(201,168,76,.3)';
+    dbg('=== DEBUG AN ===', 'ok');
     dbg('vocabIdMap: ' + Object.keys(vocabIdMap).length + ' Einträge', Object.keys(vocabIdMap).length > 0 ? 'ok' : 'err');
     dbg('srsProgress: ' + Object.keys(srsProgress).length + ' Einträge', 'ok');
-    dbg('currentUser: ' + (currentUser ? currentUser.username : 'null'), currentUser ? 'ok' : 'err');
+    dbg('User: ' + (currentUser ? currentUser.username : 'nicht eingeloggt'), currentUser ? 'ok' : 'err');
+  } else {
+    panel.style.display = 'none';
+    if(btn) btn.style.background = '';
   }
 }
 function dbg(msg, cls){
