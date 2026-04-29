@@ -159,10 +159,10 @@ main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem;}
     <div class="score-item"><span class="score-num" id="sc-wrong" style="color:var(--red)">0</span><span>Falsch</span></div>
     <div class="score-item"><span class="score-num" id="sc-streak" style="color:var(--gold)">0</span><span>Streak</span></div>
     <button class="logout-btn" onclick="doLogout()">Abmelden</button>
-    <button class="logout-btn" id="dbg-btn" onclick="toggleDebug()" style="color:var(--gold);border-color:var(--gold)">🔍</button>
+    <button class="logout-btn" id="dbg-btn" onclick="toggleDebug()" style="color:var(--gold);border-color:var(--gold);font-size:.7rem;padding:.4rem .6rem;">DBG</button>
   </div>
 </header>
-<div class="update-notice">v7 &mdash; L4 komplett &middot; L5&ndash;L9 vollst&auml;ndig</div>
+<div class="update-notice">v8 &mdash; SRS aktiv &middot; L1&ndash;L9 vollst&auml;ndig</div>
 <div class="lesson-bar">
   <span class="lesson-bar-label">Lektion:</span>
   <button class="lesson-chip active" onclick="filterLesson('all',this)">Alle</button>
@@ -480,7 +480,7 @@ async function doLogin(){
     }
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app-screen').style.display='block';
-    document.getElementById('header-user').textContent='v7 \u00b7 '+currentUser.username;
+    document.getElementById('header-user').textContent='v8 \u00b7 '+currentUser.username;
     srsLoadFromSupabase().then(()=>{ go(); updateLessonChips(); });
   }catch(e){showLoginError('Verbindungsfehler: '+e.message);btn.textContent=isRegMode?'Registrieren':'Anmelden';btn.disabled=false;}
 }
