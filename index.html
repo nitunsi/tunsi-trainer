@@ -1058,12 +1058,13 @@ function go(){
   else if(cMode==='mix')exList=sh([...bMC(v).slice(0,4),...bMatch(v).slice(0,1),...bFill().slice(0,2),...bOrder().slice(0,1)]);
   cIdx=0;render();
 }
-function nxt(){cIdx++;if(cIdx>=exList.length){if(cMode==='speed')return;showRes();}else{render();const main=document.querySelector('main');if(main)main.scrollTop=0;}}
+function nxt(){cIdx++;if(cIdx>=exList.length){if(cMode==='speed')return;showRes();}else{render();window.scrollTo({top:0,behavior:'instant'});}}
 function render(){
   const ex=exList[cIdx];answered=false;
   hideStickyNext();
   hideStickyCheck();
   updateNavContext();
+  try{window.scrollTo({top:0,behavior:'instant'});}catch(e){window.scrollTo(0,0);}
   const pct=exList.length>1?Math.round(cIdx/exList.length*100):0;
   document.getElementById('progress-fill').style.width=pct+'%';
   document.getElementById('ex-progress').textContent=(cIdx+1)+' / '+exList.length;
