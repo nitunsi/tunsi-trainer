@@ -39,7 +39,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:1re
 .mode-btn{padding:.65rem 1.1rem;border:none;background:transparent;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:1px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;}
 .mode-btn:hover{color:var(--text);}
 .mode-btn.active{color:var(--gold);border-bottom-color:var(--gold);}
-main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem 5rem;}
+main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem 5rem;overflow-anchor:none;}
 .exercise-header{display:none;}
 .ex-type{font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);opacity:.85;}
 .ex-progress{font-size:.6rem;color:var(--muted);}
@@ -74,11 +74,11 @@ main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem 5rem;}
 .match-item.matched{border-color:var(--green);background:rgba(76,172,110,.1);color:var(--green);cursor:default;opacity:.7;}
 .match-item.wrong-flash{border-color:var(--red);background:rgba(201,76,76,.1);}
 .word-bank{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.8rem;min-height:40px;}
-.word-chip{padding:.35rem .7rem;background:var(--surface2);border:1px solid var(--border);font-size:.78rem;cursor:pointer;transition:all .15s;user-select:none;}
+.word-chip{padding:.5rem 1rem;background:var(--surface2);border:1px solid var(--border);font-size:1.4rem;font-family:'Playfair Display',serif;direction:rtl;color:var(--gold2);cursor:pointer;transition:all .15s;user-select:none;}
 .word-chip:hover{border-color:var(--gold);}
 .word-chip.used{opacity:.2;cursor:default;pointer-events:none;}
-.answer-slots{display:flex;flex-wrap:wrap;gap:.35rem;min-height:40px;padding:.4rem;border:1px dashed var(--border);background:var(--surface2);margin-bottom:.8rem;cursor:pointer;}
-.answer-slot{padding:.35rem .7rem;background:var(--surface);border:1px solid var(--gold);font-size:.78rem;color:var(--gold2);}
+.answer-slots{display:flex;flex-wrap:wrap;gap:.5rem;min-height:56px;padding:.6rem;border:1px dashed var(--border);background:var(--surface2);margin-bottom:.8rem;cursor:pointer;}
+.answer-slot{padding:.5rem 1rem;background:var(--surface);border:1px solid var(--gold);font-size:1.4rem;font-family:'Playfair Display',serif;direction:rtl;color:var(--gold2);}
 .feedback{padding:.7rem .9rem;margin-top:.7rem;font-size:.78rem;line-height:1.6;display:none;}
 .feedback.show{display:block;}
 .feedback.correct{background:rgba(76,172,110,.1);border-left:3px solid var(--green);color:var(--green);}
@@ -159,6 +159,11 @@ main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem 5rem;}
 .nav-chips{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:1rem;}
 .nav-footer{display:flex;align-items:center;justify-content:space-between;padding-top:.5rem;border-top:1px solid var(--border);}
 .nav-user{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.sticky-check{position:fixed;bottom:0;left:0;right:0;padding:.75rem 1rem;background:var(--surface);border-top:1px solid var(--border);z-index:80;}
+.sticky-check-inner{max-width:700px;margin:0 auto;display:flex;gap:.6rem;}
+.sticky-check-btn{flex:1;padding:.85rem;border:none;background:var(--gold);color:var(--bg);font-family:'IBM Plex Mono',monospace;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;}
+.sticky-check-btn:hover{background:var(--gold2);}
+.sticky-check-ghost{flex:0 0 auto;padding:.85rem 1.2rem;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.78rem;text-transform:uppercase;letter-spacing:1px;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -242,6 +247,9 @@ main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem 5rem;}
   </div>
 </main>
 
+<div class="sticky-check" id="sticky-check" style="display:none;">
+  <div class="sticky-check-inner" id="sticky-check-inner"></div>
+</div>
 <div class="sticky-next" id="sticky-next">
   <div class="sticky-next-inner">
     <button class="sticky-next-btn" id="sticky-next-btn" onclick="stickyNext()">Weiter →</button>
@@ -1050,10 +1058,11 @@ function go(){
   else if(cMode==='mix')exList=sh([...bMC(v).slice(0,4),...bMatch(v).slice(0,1),...bFill().slice(0,2),...bOrder().slice(0,1)]);
   cIdx=0;render();
 }
-function nxt(){cIdx++;if(cIdx>=exList.length){if(cMode==='speed')return;showRes();}else render();}
+function nxt(){cIdx++;if(cIdx>=exList.length){if(cMode==='speed')return;showRes();}else{render();const main=document.querySelector('main');if(main)main.scrollTop=0;}}
 function render(){
   const ex=exList[cIdx];answered=false;
   hideStickyNext();
+  hideStickyCheck();
   updateNavContext();
   const pct=exList.length>1?Math.round(cIdx/exList.length*100):0;
   document.getElementById('progress-fill').style.width=pct+'%';
@@ -1166,18 +1175,17 @@ function rFill(ex,el){
   <div class="q-card"><div class="q-label">Fülle die Lücke — <span style="color:var(--muted)">${d.h}</span></div>
   <div style="font-size:1.05rem;direction:rtl;font-family:'Playfair Display',serif;line-height:2">${disp}</div>
   <div class="q-sub" style="margin-top:.5rem">${d.t}</div></div>
-  <div class="btn-row" id="btn-row">
-    <button class="btn primary" onclick="chkFill()">Prüfen</button>
-    <button class="btn ghost" onclick="document.getElementById('fh').classList.toggle('visible')">Hinweis</button>
-  </div>
+  <div id="btn-row" style="display:none;"></div>
   <div class="q-hint" id="fh">Antwort: ${d.a} (${d.at})</div>
   <div class="feedback" id="feedback"></div>`;
   window._fa=d.a;window._fat=d.at;
   const inp=document.getElementById('fill-input');
   if(inp){inp.addEventListener('keydown',e=>{if(e.key==='Enter')chkFill();});inp.focus();}
+  showStickyCheck('Prüfen', chkFill, 'Hinweis', ()=>document.getElementById('fh').classList.toggle('visible'));
 }
 function chkFill(){
   if(answered)return;answered=true;
+  hideStickyCheck();
   const inp=document.getElementById('fill-input'),val=inp.value.trim();
   const ok=normalize(val)===normalize(window._fa)||normalize(val)===normalize(window._fat);
   inp.classList.add(ok?'correct':'wrong');inp.disabled=true;
@@ -1193,13 +1201,12 @@ function rConj(ex,el){
   <div class="q-card"><div class="q-label">Konjugiere das Verb</div><div class="q-text" style="font-size:1rem">${d.v}</div></div>
   <table class="conj-table"><thead><tr><th>Pronomen</th><th>Tounsi-Form</th><th>Transliteration</th></tr></thead>
   <tbody>${d.rows.map((r,i)=>`<tr><td>${r.p}</td><td><input class="conj-input" id="ci-${i}" data-a="${r.a}" data-t="${r.t}" placeholder="..." /></td><td style="color:var(--muted);font-size:.72rem">${r.t}</td></tr>`).join('')}</tbody></table>
-  <div class="btn-row" id="btn-row">
-    <button class="btn primary" onclick="chkConj()">Alle prüfen</button>
-    <button class="btn ghost" onclick="showCA()">Antworten zeigen</button>
-  </div><div class="feedback" id="feedback"></div>`;
+  <div id="btn-row" style="display:none;"></div><div class="feedback" id="feedback"></div>`;
+  showStickyCheck('Alle prüfen', chkConj, 'Antworten zeigen', showCA);
 }
 function chkConj(){
   if(answered)return;answered=true;
+  hideStickyCheck();
   let c=0,t=0;
   document.querySelectorAll('.conj-input').forEach(inp=>{t++;const ok=normalize(inp.value)===normalize(inp.dataset.a)||normalize(inp.value)===normalize(inp.dataset.t);inp.classList.add(ok?'correct':'wrong');inp.disabled=true;if(ok)c++;});
   score.c+=c;score.w+=(t-c);score.t+=t;if(c<t)score.st=0;else score.st++;updScore();
@@ -1207,6 +1214,7 @@ function chkConj(){
   fb.textContent=c+'/'+t+' richtig'+(c<t?' — rote Felder kontrollieren!':'');showNext();
 }
 function showCA(){
+  hideStickyCheck();
   document.querySelectorAll('.conj-input').forEach(inp=>{inp.value=inp.dataset.a;inp.classList.add('correct');inp.disabled=true;});
   const fb=document.getElementById('feedback');fb.className='feedback wrong show';fb.textContent='👁 Antworten angezeigt';showNext();
 }
@@ -1218,10 +1226,9 @@ function rOrder(ex,el){
   <div class="q-card"><div class="q-label">Richtige Reihenfolge</div><div class="q-sub">${d.e}</div></div>
   <div class="answer-slots" id="ord-slots" onclick="rmLast()"><span style="font-size:.65rem;color:var(--muted)">← Klick zum Entfernen</span></div>
   <div class="word-bank" id="ord-bank">${sw.map((w,i)=>`<span class="word-chip" id="ow-${i}" onclick="addW(${i},'${eq(w)}')">${w}</span>`).join('')}</div>
-  <div class="btn-row" id="btn-row">
-    <button class="btn primary" onclick="chkOrder('${eq(d.c)}')">Prüfen</button>
-    <button class="btn ghost" onclick="clrOrder()">Reset</button>
-  </div><div class="feedback" id="feedback"></div>`;
+  <div id="btn-row" style="display:none;"></div><div class="feedback" id="feedback"></div>`;
+  showStickyCheck('Prüfen', ()=>chkOrder(window._ordCorrect), 'Reset', clrOrder);
+  window._ordCorrect = d.c;
 }
 function addW(idx,word){const chip=document.getElementById('ow-'+idx);if(!chip||chip.classList.contains('used'))return;chip.classList.add('used');ordSel.push({idx,word});updSlots();}
 function rmLast(){if(!ordSel.length)return;const last=ordSel.pop();const c=document.getElementById('ow-'+last.idx);if(c)c.classList.remove('used');updSlots();}
@@ -1229,6 +1236,7 @@ function clrOrder(){ordSel=[];document.querySelectorAll('.word-chip').forEach(c=
 function updSlots(){const s=document.getElementById('ord-slots');if(!s)return;if(!ordSel.length){s.innerHTML='<span style="font-size:.65rem;color:var(--muted)">← Klick zum Entfernen</span>';return;}s.innerHTML=ordSel.map(o=>`<span class="answer-slot">${o.word}</span>`).join('');}
 function chkOrder(correct){
   if(answered)return;answered=true;
+  hideStickyCheck();
   const ans=ordSel.map(o=>o.word).join(' '),ok=ans===correct;
   ok?(score.c++,score.st++,score.t++):(score.w++,score.st=0,score.t++);
   updScore();showFb(ok,correct);showNext();
@@ -1437,6 +1445,28 @@ function closeNav(){
 
 // ── Sticky Next ───────────────────────────────────────────────────────────
 let _stickyNextFn = null;
+
+function showStickyCheck(primaryLabel, primaryFn, ghostLabel, ghostFn){
+  const el = document.getElementById('sticky-check');
+  const inner = document.getElementById('sticky-check-inner');
+  inner.innerHTML = '';
+  const btn = document.createElement('button');
+  btn.className = 'sticky-check-btn';
+  btn.textContent = primaryLabel;
+  btn.onclick = () => { hideStickyCheck(); primaryFn(); };
+  inner.appendChild(btn);
+  if(ghostLabel && ghostFn){
+    const gb = document.createElement('button');
+    gb.className = 'sticky-check-ghost';
+    gb.textContent = ghostLabel;
+    gb.onclick = ghostFn;
+    inner.appendChild(gb);
+  }
+  el.style.display = 'block';
+}
+function hideStickyCheck(){
+  document.getElementById('sticky-check').style.display = 'none';
+}
 function showStickyNext(fn){
   _stickyNextFn = fn;
   document.getElementById('sticky-next').classList.add('show');
