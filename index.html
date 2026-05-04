@@ -1469,16 +1469,17 @@ function hideStickyCheck(){
   document.getElementById('sticky-check').style.display = 'none';
 }
 function showStickyNext(fn){
-  _stickyNextFn = fn;
+  _stickyNextFn = fn || nxt;
   document.getElementById('sticky-next').classList.add('show');
 }
 function hideStickyNext(){
-  _stickyNextFn = null;
   document.getElementById('sticky-next').classList.remove('show');
 }
 function stickyNext(){
-  hideStickyNext();
-  if(_stickyNextFn) _stickyNextFn();
+  // Snapshot + sofortige Aktion — fn wird NICHT vor Aufruf gelöscht
+  const fn = _stickyNextFn || nxt;
+  document.getElementById('sticky-next').classList.remove('show');
+  fn();
 }
 
 // ── Nav progress update ───────────────────────────────────────────────────
