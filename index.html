@@ -121,7 +121,7 @@ main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem 5rem;overflow-anchor:no
 .chat-bubble.user{background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px 0 8px 8px;margin-left:auto;text-align:right;}
 .chat-bubble .arabic{direction:rtl;font-family:'Playfair Display',serif;font-size:1rem;color:var(--gold2);}
 .chat-bubble .transl{font-size:.7rem;color:var(--muted);margin-top:.2rem;}
-.chat-options{display:flex;flex-direction:column;gap:.4rem;}
+.chat-options{display:flex;flex-direction:column;gap:.4rem;margin-bottom:4rem;}
 .chat-opt{padding:.6rem .9rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:.75rem;text-align:left;cursor:pointer;transition:border-color .15s;}
 .chat-opt:hover:not(:disabled){border-color:var(--gold);}
 .chat-opt.correct{border-color:var(--green);background:rgba(76,172,110,.1);}
@@ -1332,8 +1332,8 @@ function rConj(ex,el){
   const d=ex.data;
   el.innerHTML=`<div class="lesson-badge">${d.ls}</div>
   <div class="q-card"><div class="q-label">Konjugiere das Verb</div><div class="q-text" style="font-size:1rem">${d.v}</div></div>
-  <table class="conj-table"><thead><tr><th>Pronomen</th><th>Tounsi-Form</th><th>Transliteration</th></tr></thead>
-  <tbody>${d.rows.map((r,i)=>`<tr><td>${r.p}</td><td><input class="conj-input" id="ci-${i}" data-a="${r.a}" data-t="${r.t}" placeholder="..." /></td><td style="color:var(--muted);font-size:.72rem">${r.t}</td></tr>`).join('')}</tbody></table>
+  <table class="conj-table"><thead><tr><th>Pronomen</th><th>Tounsi-Form</th><th class="tr-col" style="display:none">Transliteration</th></tr></thead>
+  <tbody>${d.rows.map((r,i)=>`<tr><td>${r.p}</td><td><input class="conj-input" id="ci-${i}" data-a="${r.a}" data-t="${r.t}" placeholder="..." /></td><td class="tr-col" style="display:none;color:var(--muted);font-size:.72rem">${r.t}</td></tr>`).join('')}</tbody></table>
   <div id="btn-row" style="display:none;"></div><div class="feedback" id="feedback"></div>`;
   showStickyCheck('Alle prüfen', chkConj, 'Antworten zeigen', showCA);
 }
@@ -1341,10 +1341,26 @@ function chkConj(){
   if(answered)return;answered=true;
   hideStickyCheck();
   let c=0,t=0;
-  document.querySelectorAll('.conj-input').forEach(inp=>{t++;const ok=normalize(inp.value)===normalize(inp.dataset.a)||normalize(inp.value)===normalize(inp.dataset.t);inp.classList.add(ok?'correct':'wrong');inp.disabled=true;if(ok)c++;});
+  document.querySelectorAll('.conj-input').forEach(inp=>{
+    t++;
+    const ok=normalize(inp.value)===normalize(inp.dataset.a)||normalize(inp.value)===normalize(inp.dataset.t);
+    inp.classList.add(ok?'correct':'wrong');
+    inp.disabled=true;
+    if(ok)c++;
+    // Lösung anzeigen wenn falsch
+    if(!ok){
+      const sol=document.createElement('div');
+      sol.style.cssText='font-size:.65rem;color:var(--gold);margin-top:.2rem;';
+      sol.textContent='✓ '+inp.dataset.a+' ('+inp.dataset.t+')';
+      inp.parentNode.appendChild(sol);
+    }
+  });
+  // Transliteration-Spalte einblenden
+  document.querySelectorAll('.tr-col').forEach(td=>td.style.display='');
   score.c+=c;score.w+=(t-c);score.t+=t;if(c<t)score.st=0;else score.st++;updScore();
   const fb=document.getElementById('feedback');fb.className='feedback show '+(c===t?'correct':'wrong');
-  fb.textContent=c+'/'+t+' richtig'+(c<t?' — rote Felder kontrollieren!':'');showNext();
+  fb.textContent=c+'/'+t+' richtig'+(c<t?' — rote Felder kontrollieren!':'');
+  showNext();
 }
 function showCA(){
   hideStickyCheck();
