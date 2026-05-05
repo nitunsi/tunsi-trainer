@@ -489,6 +489,9 @@ function updateLessonChips(){
       if(ls === 'L5veg')   return v.ls==='L5' && v.tp==='Gemüse';
       if(ls === 'L7color') return v.ls==='L7' && v.tp==='Farben';
       if(ls === 'L4currency') return v.ls==='L4' && v.tp==='Währung';
+    if(ls === 'L9past') return v.ls==='L9' && v.tp==='Vergangenheit';
+    if(ls === 'L2nat') return v.ls==='L2' && v.tp==='Nationalitäten';
+    if(ls === 'L2num') return v.ls==='L2' && v.tp==='Zahlen';
       return v.ls === ls;
     });
     const due = countDueToday(lessonVocab);
@@ -821,6 +824,176 @@ const ALL_VOCAB=[
 {ar:'خرج',tr:'khraj',en:'er ging raus',ls:'L9',tp:'Vergangenheit'},
 {ar:'وصل',tr:'wsil',en:'er kam an',ls:'L9',tp:'Vergangenheit'},
 {ar:'شرب',tr:'shrab',en:'er trank',ls:'L9',tp:'Vergangenheit'},
+// L2 — Identität & Vorstellen
+{ar:'إسمي',tr:'ismi',en:'mein Name ist',ls:'L2',tp:'Vorstellen'},
+{ar:'آنا',tr:'ena',en:'ich',ls:'L2',tp:'Pronomen'},
+{ar:'إنتي',tr:'enti',en:'du',ls:'L2',tp:'Pronomen'},
+{ar:'هو',tr:'houa',en:'er',ls:'L2',tp:'Pronomen'},
+{ar:'هي',tr:'heya',en:'sie',ls:'L2',tp:'Pronomen'},
+{ar:'أحنا',tr:'a7na',en:'wir',ls:'L2',tp:'Pronomen'},
+{ar:'إنتوما',tr:'entouma',en:'ihr',ls:'L2',tp:'Pronomen'},
+{ar:'هوما',tr:'houma',en:'sie (Pl.)',ls:'L2',tp:'Pronomen'},
+{ar:'عمري',tr:'3omri',en:'ich bin ... Jahre alt',ls:'L2',tp:'Vorstellen'},
+{ar:'توني',tr:'tounsi',en:'tunesisch (m.)',ls:'L2',tp:'Nationalitäten'},
+{ar:'تونسية',tr:'tounsiya',en:'tunesisch (f.)',ls:'L2',tp:'Nationalitäten'},
+{ar:'أمريكاني',tr:'amrikeni',en:'amerikanisch (m.)',ls:'L2',tp:'Nationalitäten'},
+{ar:'فرنساوي',tr:'fransawi',en:'französisch (m.)',ls:'L2',tp:'Nationalitäten'},
+{ar:'ألماني',tr:'almani',en:'deutsch (m.)',ls:'L2',tp:'Nationalitäten'},
+{ar:'شسمك',tr:'shismik',en:'Wie heißt du?',ls:'L2',tp:'Vorstellen'},
+{ar:'منين إنتي',tr:'mnin enti',en:'Woher bist du?',ls:'L2',tp:'Vorstellen'},
+{ar:'نتشرفو',tr:'nitsharfou',en:'Freut mich',ls:'L2',tp:'Vorstellen'},
+{ar:'صفر',tr:'sfer',en:'null',ls:'L2',tp:'Zahlen'},
+{ar:'ثلاثين',tr:'thlethin',en:'dreißig',ls:'L2',tp:'Zahlen'},
+{ar:'أربعين',tr:'arb3in',en:'vierzig',ls:'L2',tp:'Zahlen'},
+{ar:'خمسين',tr:'khamsin',en:'fünfzig',ls:'L2',tp:'Zahlen'},
+{ar:'ستين',tr:'sittin',en:'sechzig',ls:'L2',tp:'Zahlen'},
+{ar:'سبعين',tr:'sab3in',en:'siebzig',ls:'L2',tp:'Zahlen'},
+{ar:'ثمانين',tr:'thmanin',en:'achtzig',ls:'L2',tp:'Zahlen'},
+{ar:'تسعين',tr:'tis3in',en:'neunzig',ls:'L2',tp:'Zahlen'},
+{ar:'مليون',tr:'malyoun',en:'Million',ls:'L2',tp:'Zahlen'},
+{ar:'مليار',tr:'milyar',en:'Milliarde',ls:'L2',tp:'Zahlen'},
+// L3 — fehlende Wochentage
+{ar:'الثلاث',tr:'el-tleth',en:'Dienstag',ls:'L3',tp:'Wochentage'},
+{ar:'الأربعاء',tr:'el-irb3a',en:'Mittwoch',ls:'L3',tp:'Wochentage'},
+{ar:'الخميس',tr:'el-khmis',en:'Donnerstag',ls:'L3',tp:'Wochentage'},
+{ar:'الأحد',tr:'el-a7ad',en:'Sonntag',ls:'L3',tp:'Wochentage'},
+// L8 — Post erweitert
+{ar:'كولي',tr:'colis',en:'Paket',ls:'L8',tp:'Post'},
+{ar:'كارت بوستال',tr:'carte postale',en:'Postkarte',ls:'L8',tp:'Post'},
+{ar:'ماصو',tr:'massou',en:'Briefumschlag',ls:'L8',tp:'Post'},
+{ar:'ورقة',tr:'warqa',en:'Blatt Papier',ls:'L8',tp:'Post'},
+{ar:'صندوق الجوابات',tr:'sandouq el jwebet',en:'Briefkasten',ls:'L8',tp:'Post'},
+{ar:'تنجم',tr:'tnijjem',en:'du kannst / es ist möglich',ls:'L8',tp:'Grammatik'},
+{ar:'وقتاش',tr:'waqtesh',en:'wann?',ls:'L8',tp:'Fragewörter'},
+{ar:'على خاطر',tr:'3la khater',en:'weil / da',ls:'L8',tp:'Ausdrücke'},
+{ar:'باش',tr:'besh-purpose',en:'um zu / damit',ls:'L8',tp:'Grammatik'},
+// L9 — Transport & Orte
+{ar:'مطار',tr:'matar',en:'Flughafen',ls:'L9',tp:'Transport'},
+{ar:'طيارة',tr:'tayyara',en:'Flugzeug',ls:'L9',tp:'Transport'},
+{ar:'فيزا',tr:'visa',en:'Visum',ls:'L9',tp:'Transport'},
+{ar:'الڤيشاي',tr:'el-guichet',en:'Schalter (Bahnhof/Bus)',ls:'L9',tp:'Transport'},
+{ar:'بلاصة',tr:'blasa',en:'Platz / Sitzplatz',ls:'L9',tp:'Transport'},
+{ar:'محطة الكيران',tr:'m7attet el kiren',en:'Busbahnhof',ls:'L9',tp:'Transport'},
+{ar:'مسافة',tr:'masefa',en:'Entfernung',ls:'L9',tp:'Transport'},
+{ar:'قريب',tr:'qrib',en:'nah / in der Nähe',ls:'L9',tp:'Richtungen'},
+{ar:'بعيد',tr:'b3id',en:'weit / entfernt',ls:'L9',tp:'Richtungen'},
+{ar:'الفايت',tr:'el feyit',en:'letzte/r/s (vergangen)',ls:'L9',tp:'Zeit'},
+{ar:'البارح',tr:'el ba7ri',en:'gestern',ls:'L9',tp:'Zeit'},
+// L9 — Vergangenheitsverben Gruppe 1
+{ar:'ركب',tr:'rkib',en:'er stieg ein',ls:'L9',tp:'Vergangenheit'},
+{ar:'هبط',tr:'hbat',en:'er stieg aus / landete',ls:'L9',tp:'Vergangenheit'},
+{ar:'طلع',tr:'tla3',en:'er ging hoch',ls:'L9',tp:'Vergangenheit'},
+{ar:'فهم',tr:'fhim',en:'er verstand',ls:'L9',tp:'Vergangenheit'},
+{ar:'فطر',tr:'ftar',en:'er frühstückte',ls:'L9',tp:'Vergangenheit'},
+{ar:'قعد',tr:'q3ad',en:'er blieb / saß',ls:'L9',tp:'Vergangenheit'},
+{ar:'سمع',tr:'sma3',en:'er hörte',ls:'L9',tp:'Vergangenheit'},
+{ar:'كتب',tr:'ktib',en:'er schrieb',ls:'L9',tp:'Vergangenheit'},
+{ar:'دخل',tr:'dkhal',en:'er trat ein',ls:'L9',tp:'Vergangenheit'},
+{ar:'عرف',tr:'3raf',en:'er wusste / erkannte',ls:'L9',tp:'Vergangenheit'},
+// L9 — Vergangenheitsverben Gruppe 2
+{ar:'نسى',tr:'nsa',en:'er vergaß',ls:'L9',tp:'Vergangenheit'},
+{ar:'بكى',tr:'bka',en:'er weinte',ls:'L9',tp:'Vergangenheit'},
+{ar:'قرى',tr:'qra',en:'er las / studierte',ls:'L9',tp:'Vergangenheit'},
+{ar:'كلى',tr:'kla',en:'er aß',ls:'L9',tp:'Vergangenheit'},
+{ar:'خذا',tr:'khtha',en:'er nahm',ls:'L9',tp:'Vergangenheit'},
+{ar:'لقى',tr:'lqa',en:'er fand',ls:'L9',tp:'Vergangenheit'},
+{ar:'رمى',tr:'rma',en:'er warf',ls:'L9',tp:'Vergangenheit'},
+{ar:'بدا',tr:'bda',en:'er begann',ls:'L9',tp:'Vergangenheit'},
+{ar:'جرى',tr:'jra',en:'er rannte',ls:'L9',tp:'Vergangenheit'},
+{ar:'عطى',tr:'3ta',en:'er gab',ls:'L9',tp:'Vergangenheit'},
+{ar:'تفضل',tr:'tfathal',en:'Bitte sehr / Kommen Sie',ls:'L3',tp:'Ausdrücke'},
+{ar:'شكرا',tr:'shokran',en:'Danke',ls:'L3',tp:'Ausdrücke'},
+{ar:'سامحني',tr:'sama7ni',en:'Entschuldigung / Verzeihung',ls:'L3',tp:'Ausdrücke'},
+{ar:'نهج',tr:'nahj',en:'Straße / Avenue',ls:'L3',tp:'Richtungen'},
+{ar:'زنقة',tr:'zanqa',en:'Gasse / kleine Straße',ls:'L3',tp:'Richtungen'},
+{ar:'شارع',tr:'shera3',en:'Straße (breite)',ls:'L3',tp:'Richtungen'},
+{ar:'باب',tr:'beb',en:'Tür / Tor',ls:'L3',tp:'Orte'},
+{ar:'شباك',tr:'shobbek',en:'Fenster / Schalter',ls:'L3',tp:'Orte'},
+{ar:'بنك',tr:'banka',en:'Bank',ls:'L3',tp:'Orte'},
+{ar:'سينما',tr:'sinema',en:'Kino',ls:'L3',tp:'Orte'},
+{ar:'أستاذ',tr:'ousteth',en:'Lehrer (m.)',ls:'L3',tp:'Personen'},
+{ar:'أستاذة',tr:'oustetha',en:'Lehrerin (f.)',ls:'L3',tp:'Personen'},
+{ar:'راجل',tr:'rajil',en:'Mann',ls:'L3',tp:'Personen'},
+{ar:'مرا',tr:'mra',en:'Frau',ls:'L3',tp:'Personen'},
+{ar:'إمشي',tr:'imshi',en:'Geh! (Imperativ)',ls:'L3',tp:'Verben'},
+{ar:'قف',tr:'eqif',en:'Halte an! (Imperativ)',ls:'L3',tp:'Verben'},
+{ar:'زيتونة',tr:'zitouna',en:'Olive',ls:'L5',tp:'Lebensmittel'},
+{ar:'ناس',tr:'nas',en:'Leute / Menschen',ls:'L5',tp:'Allgemein'},
+{ar:'مغرفة',tr:'mgharfa',en:'Schöpfkelle',ls:'L6',tp:'Küche'},
+{ar:'طنجرة',tr:'tanjra',en:'Kochtopf',ls:'L6',tp:'Küche'},
+{ar:'كسكاس',tr:'kiskes',en:'Couscous-Topf (Dämpfer)',ls:'L6',tp:'Küche'},
+{ar:'طبق',tr:'tbaq',en:'Tablett / Teller (flach)',ls:'L6',tp:'Küche'},
+{ar:'شقالة',tr:'shqala',en:'Waage',ls:'L6',tp:'Küche'},
+{ar:'كيسان',tr:'kisen',en:'Gläser (Pl.)',ls:'L6',tp:'Küche'},
+{ar:'فناجين',tr:'fnejin',en:'Tassen (Pl.)',ls:'L6',tp:'Küche'},
+{ar:'سكاكن',tr:'skekin',en:'Messer (Pl.)',ls:'L6',tp:'Küche'},
+{ar:'سخون',tr:'skhoun',en:'heiß (m.)',ls:'L6',tp:'Adjektive'},
+{ar:'بارد',tr:'berid',en:'kalt (m.)',ls:'L6',tp:'Adjektive'},
+{ar:'باردة',tr:'berda',en:'kalt (f.)',ls:'L6',tp:'Adjektive'},
+{ar:'خفيف',tr:'khfif',en:'leicht (m.)',ls:'L6',tp:'Adjektive'},
+{ar:'مر',tr:'morr',en:'bitter (m.)',ls:'L6',tp:'Adjektive'},
+{ar:'قوي',tr:'qwi',en:'stark / kräftig (m.)',ls:'L6',tp:'Adjektive'},
+{ar:'قهواجي',tr:'qahweji',en:'Kaffeehausbesitzer',ls:'L6',tp:'Café'},
+{ar:'عصير',tr:'3asir',en:'Saft',ls:'L6',tp:'Getränke'},
+{ar:'فانتا',tr:'fanta',en:'Fanta / Limonade',ls:'L6',tp:'Getränke'},
+{ar:'نعناع',tr:'na3ne3',en:'Minze',ls:'L6',tp:'Getränke'},
+{ar:'شكبة',tr:'chkobba',en:'Karten (Kartenspiel)',ls:'L6',tp:'Freizeit'},
+{ar:'الرامي',tr:'rami',en:'Rami (Kartenspiel)',ls:'L6',tp:'Freizeit'},
+{ar:'الديمينو',tr:'dimino',en:'Domino',ls:'L6',tp:'Freizeit'},
+{ar:'داكوردو',tr:'dakourdou',en:'Einverstanden / D'accord',ls:'L6',tp:'Ausdrücke'},
+{ar:'الله يعينك',tr:'allah y3inik',en:'Gott helfe dir',ls:'L6',tp:'Ausdrücke'},
+{ar:'تنجم',tr:'tnejjem',en:'du kannst / es ist möglich',ls:'L6',tp:'Grammatik'},
+{ar:'تابلو',tr:'tableau',en:'Tafel / Wandtafel',ls:'L1',tp:'Klassenzimmer'},
+{ar:'ستيلو',tr:'stylo',en:'Kugelschreiber',ls:'L1',tp:'Klassenzimmer'},
+{ar:'أوراق',tr:'wraq',en:'Blätter / Seiten (Pl.)',ls:'L1',tp:'Klassenzimmer'},
+{ar:'قسم',tr:'qasm',en:'Klasse / Unterrichtsraum',ls:'L1',tp:'Klassenzimmer'},
+{ar:'مكتب',tr:'maktab',en:'Schreibtisch / Büro',ls:'L1',tp:'Klassenzimmer'},
+{ar:'تلميذ',tr:'tilmith',en:'Schüler (m.)',ls:'L1',tp:'Klassenzimmer'},
+{ar:'درس',tr:'dars',en:'Lektion / Unterrichtsstunde',ls:'L1',tp:'Klassenzimmer'},
+{ar:'جملة',tr:'jomla',en:'Satz',ls:'L1',tp:'Klassenzimmer'},
+{ar:'كلمة',tr:'kilma',en:'Wort',ls:'L1',tp:'Klassenzimmer'},
+{ar:'يسلمك',tr:'ysalmik',en:'Gott schütze dich (Antwort)',ls:'L1',tp:'Begrüßung'},
+{ar:'آنستو',tr:'annistou',en:'Auf Wiedersehen (informell)',ls:'L1',tp:'Begrüßung'},
+{ar:'يعيشك',tr:'yansik',en:'Möge Gott dir Leben schenken',ls:'L1',tp:'Begrüßung'},
+{ar:'طلياني',tr:'talyeni',en:'italienisch (m.)',ls:'L2',tp:'Nationalitäten'},
+{ar:'مكسيكي',tr:'meksiki',en:'mexikanisch (m.)',ls:'L2',tp:'Nationalitäten'},
+{ar:'كبير',tr:'kbir',en:'groß / alt (m.)',ls:'L3',tp:'Adjektive'},
+{ar:'كبيرة',tr:'kbira',en:'groß / alt (f.)',ls:'L3',tp:'Adjektive'},
+{ar:'قطوس',tr:'qattous',en:'Kater',ls:'L3',tp:'Tiere'},
+{ar:'دجاجة',tr:'djeja',en:'Henne / Huhn (f.)',ls:'L3',tp:'Tiere'},
+{ar:'سرديوك',tr:'sardouk',en:'Hahn (m.)',ls:'L3',tp:'Tiere'},
+{ar:'سوق',tr:'souq',en:'Markt / Souk',ls:'L4',tp:'Orte'},
+{ar:'وردة',tr:'warda',en:'Rose / Blume',ls:'L4',tp:'Diverses'},
+{ar:'بلاد',tr:'bled',en:'Land / Heimat',ls:'L4',tp:'Allgemein'},
+{ar:'فرنك',tr:'frank',en:'Frank (Münze, 1 Frank)',ls:'L4',tp:'Währung'},
+{ar:'مليمات',tr:'millimet',en:'Millimes (Pl.)',ls:'L4',tp:'Währung'},
+{ar:'دينارات',tr:'dinarat',en:'Dinare (Pl.)',ls:'L4',tp:'Währung'},
+{ar:'بسكوي',tr:'beskwi',en:'Keks / Biskuit',ls:'L5',tp:'Lebensmittel'},
+{ar:'فارينة',tr:'ferina',en:'Mehl',ls:'L5',tp:'Lebensmittel'},
+{ar:'عظم',tr:'3tham',en:'Knochen / Knochensuppe',ls:'L5',tp:'Lebensmittel'},
+{ar:'جافال',tr:'jaffel',en:'Javel / Bleichmittel',ls:'L5',tp:'Haushalt'},
+{ar:'إطرة',tr:'itra',en:'Dose Öl',ls:'L5',tp:'Maße'},
+{ar:'دبابز',tr:'dbebiz',en:'Flaschen (Pl.)',ls:'L5',tp:'Maße'},
+{ar:'حكوك',tr:'kok7',en:'Dosen (Pl.)',ls:'L5',tp:'Maße'},
+{ar:'ڨاطو',tr:'guateau',en:'Kuchen / Gebäck',ls:'L6',tp:'Café'},
+{ar:'ساكوش',tr:'sacoche',en:'Handtasche',ls:'L7',tp:'Kleidung'},
+{ar:'لدريسة',tr:'ladrisa',en:'Adresse',ls:'L8',tp:'Post'},
+{ar:'تنبري',tr:'tinbri',en:'Briefmarke',ls:'L8',tp:'Post'},
+{ar:'لواج',tr:'louaj',en:'Louage (Sammeltaxi)',ls:'L9',tp:'Transport'},
+{ar:'شاطئ',tr:'shatt',en:'Strand',ls:'L9',tp:'Orte'},
+{ar:'رقد',tr:'rqad',en:'er schlief',ls:'L9',tp:'Vergangenheit'},
+{ar:'ارتاح',tr:'rte7',en:'er ruhte sich aus',ls:'L9',tp:'Vergangenheit'},
+{ar:'بعث',tr:'b3ath',en:'er schickte',ls:'L9',tp:'Vergangenheit'},
+{ar:'لبس',tr:'lbis',en:'er zog sich an',ls:'L9',tp:'Vergangenheit'},
+{ar:'لعب',tr:'l3ab',en:'er spielte',ls:'L9',tp:'Vergangenheit'},
+{ar:'خدم',tr:'khdim',en:'er arbeitete',ls:'L9',tp:'Vergangenheit'},
+{ar:'تفرج',tr:'tfarraj',en:'er schaute (TV)',ls:'L9',tp:'Vergangenheit'},
+{ar:'رجع',tr:'raj3',en:'er kam zurück',ls:'L9',tp:'Vergangenheit'},
+{ar:'نشد',tr:'nshid',en:'er fragte / suchte',ls:'L9',tp:'Vergangenheit'},
+{ar:'حسب',tr:'sib7',en:'er zählte / rechnete',ls:'L9',tp:'Vergangenheit'},
+{ar:'جاوب',tr:'jewib',en:'er antwortete',ls:'L9',tp:'Vergangenheit'},
+
+
 ];
 
 
@@ -1029,11 +1202,14 @@ function gv(){
   if(cLesson==='L5veg')return ALL_VOCAB.filter(v=>v.ls==='L5'&&v.tp==='Gemüse');
   if(cLesson==='L7color')return ALL_VOCAB.filter(v=>v.ls==='L7'&&v.tp==='Farben');
   if(cLesson==='L4currency')return ALL_VOCAB.filter(v=>v.ls==='L4'&&v.tp==='Währung');
+  if(cLesson==='L9past') return ALL_VOCAB.filter(v=>v.ls==='L9'&&v.tp==='Vergangenheit');
+  if(cLesson==='L2nat') return ALL_VOCAB.filter(v=>v.ls==='L2'&&v.tp==='Nationalitäten');
+  if(cLesson==='L2num') return ALL_VOCAB.filter(v=>v.ls==='L2'&&v.tp==='Zahlen');
   return ALL_VOCAB.filter(v=>v.ls===cLesson);
 }
 function gp(arr){
   if(cLesson==='all')return arr;
-  const k=cLesson==='L5fruit'||cLesson==='L5veg'?'L5':cLesson==='L7color'?'L7':cLesson==='L4currency'?'L4':cLesson;
+  const k=cLesson==='L5fruit'||cLesson==='L5veg'?'L5':cLesson==='L7color'?'L7':cLesson==='L4currency'?'L4':cLesson==='L9past'?'L9':cLesson==='L2nat'||cLesson==='L2num'?'L2':cLesson;
   const f=arr.filter(x=>x.ls===k);return f.length?f:arr;
 }
 function filterLesson(l,el){cLesson=l;document.querySelectorAll('.lesson-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');go();}
@@ -1291,7 +1467,63 @@ function startSpeed(){
     const f=document.getElementById('sp-fill'),te=document.getElementById('sp-time');
     if(f)f.style.width=(sTime/60*100)+'%';if(te)te.textContent=sTime+'s';
     if(sTime<=0){clearInterval(sTimer);sTimer=null;endSpeed();}
-  },1000);
+  },
+
+// L3 — Wegbeschreibung & Orte (aus Lesson_3 PDF)
+{ar:'تفضل',tr:'tfathal',en:'Bitte sehr / Kommen Sie',ls:'L3',tp:'Ausdrücke'},
+{ar:'شكرا',tr:'shokran',en:'Danke',ls:'L3',tp:'Ausdrücke'},
+{ar:'سامحني',tr:'sama7ni',en:'Entschuldigung',ls:'L3',tp:'Ausdrücke'},
+{ar:'نهج',tr:'nahj',en:'Straße / Avenue',ls:'L3',tp:'Richtungen'},
+{ar:'زنقة',tr:'zanqa',en:'Gasse / kleine Straße',ls:'L3',tp:'Richtungen'},
+{ar:'شارع',tr:'shera3',en:'Straße (breite)',ls:'L3',tp:'Richtungen'},
+{ar:'باب',tr:'beb',en:'Tür / Tor',ls:'L3',tp:'Orte'},
+{ar:'شباك',tr:'shobbek',en:'Fenster / Schalter',ls:'L3',tp:'Orte'},
+{ar:'بنك',tr:'banka',en:'Bank',ls:'L3',tp:'Orte'},
+{ar:'سينما',tr:'sinema',en:'Kino',ls:'L3',tp:'Orte'},
+{ar:'أستاذ',tr:'ousteth',en:'Lehrer (m.)',ls:'L3',tp:'Personen'},
+{ar:'أستاذة',tr:'oustetha',en:'Lehrerin (f.)',ls:'L3',tp:'Personen'},
+{ar:'راجل',tr:'rajil',en:'Mann',ls:'L3',tp:'Personen'},
+{ar:'مرا',tr:'mra',en:'Frau',ls:'L3',tp:'Personen'},
+{ar:'إمشي',tr:'imshi',en:'Geh! (Imperativ)',ls:'L3',tp:'Verben'},
+{ar:'قف',tr:'eqif',en:'Halte an! (Imperativ)',ls:'L3',tp:'Verben'},
+// L5 — zusätzliche Küche & Maße
+{ar:'إطرة',tr:'itra',en:'Dose Öl',ls:'L5',tp:'Maße'},
+{ar:'زيتونة',tr:'zitouna',en:'Olive',ls:'L5',tp:'Lebensmittel'},
+{ar:'ناس',tr:'nas',en:'Leute / Menschen',ls:'L5',tp:'Allgemein'},
+// L6 — Küche (erweitert)
+{ar:'مغرفة',tr:'mgharfa',en:'Schöpfkelle / Löffel',ls:'L6',tp:'Küche'},
+{ar:'طنجرة',tr:'tanjra',en:'Kochtopf',ls:'L6',tp:'Küche'},
+{ar:'كسكاس',tr:'kiskes',en:'Couscous-Topf',ls:'L6',tp:'Küche'},
+{ar:'طبق',tr:'tbaq',en:'Tablett / flache Schüssel',ls:'L6',tp:'Küche'},
+{ar:'مقفول',tr:'maqfoul',en:'geschlossen',ls:'L6',tp:'Adjektive'},
+{ar:'شقالة',tr:'shqala',en:'Waage',ls:'L6',tp:'Küche'},
+// L6 — Adjektive Essen
+{ar:'سخون',tr:'skhoun',en:'heiß (m.)',ls:'L6',tp:'Adjektive'},
+{ar:'بارد',tr:'berid',en:'kalt (m.)',ls:'L6',tp:'Adjektive'},
+{ar:'سخونة',tr:'skhouna',en:'heiß (f.)',ls:'L6',tp:'Adjektive'},
+{ar:'باردة',tr:'berda',en:'kalt (f.)',ls:'L6',tp:'Adjektive'},
+{ar:'خفيف',tr:'khfif',en:'leicht (m.)',ls:'L6',tp:'Adjektive'},
+{ar:'مر',tr:'morr',en:'bitter (m.)',ls:'L6',tp:'Adjektive'},
+{ar:'قوي',tr:'qwi',en:'stark / kräftig (m.)',ls:'L6',tp:'Adjektive'},
+// L6 — Café & Getränke (erweitert)
+{ar:'قهواجي',tr:'qahweji',en:'Kaffeehausbesitzer',ls:'L6',tp:'Café'},
+{ar:'عصير',tr:'3asir',en:'Saft',ls:'L6',tp:'Getränke'},
+{ar:'فانتا',tr:'fanta',en:'Fanta',ls:'L6',tp:'Getränke'},
+{ar:'نعناع',tr:'na3ne3',en:'Minze',ls:'L6',tp:'Getränke'},
+{ar:'كيسان',tr:'kisen',en:'Gläser (Pl.)',ls:'L6',tp:'Küche'},
+{ar:'فناجين',tr:'fnejin',en:'Tassen (Pl.)',ls:'L6',tp:'Küche'},
+{ar:'سكاكن',tr:'skekin',en:'Messer (Pl.)',ls:'L6',tp:'Küche'},
+// L6 — Spiele & Freizeit
+{ar:'شكبة',tr:'chkobba',en:'Karten (Kartenspiel)',ls:'L6',tp:'Freizeit'},
+{ar:'الرامي',tr:'rami',en:'Rami (Kartenspiel)',ls:'L6',tp:'Freizeit'},
+{ar:'الديمينو',tr:'dimino',en:'Domino',ls:'L6',tp:'Freizeit'},
+// L6 — Nützliche Ausdrücke
+{ar:'داكوردو',tr:'dakourdou',en:'Einverstanden / OK',ls:'L6',tp:'Ausdrücke'},
+{ar:'الله يعينك',tr:'allah y3inik',en:'Gott helfe dir',ls:'L6',tp:'Ausdrücke'},
+{ar:'تنجم',tr:'tnejjem',en:'du kannst / es geht',ls:'L6',tp:'Grammatik'},
+// L2 — Vorstellen (weitere nützliche Ausdrücke)
+{ar:'دايما بخير',tr:'deyma b khir',en:'immer gut',ls:'L2',tp:'Vorstellen'},
+1000);
 }
 function renderSpeed(){
   const w=window._sv[sIdx%window._sv.length];
