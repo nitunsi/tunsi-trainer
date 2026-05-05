@@ -1422,13 +1422,7 @@ function startSpeed(){
   sTimer=setInterval(()=>{sTime--;
     const f=document.getElementById('sp-fill'),te=document.getElementById('sp-time');
     if(f)f.style.width=(sTime/90*100)+'%';if(te)te.textContent=sTime+'s';
-    if(sTime<=0){clearInterval(sTimer);sTimer=null;endSpeed();}},1000)
-// L6 — Adjektive Essen
-// L6 — Café & Getränke (erweitert)
-// L6 — Spiele & Freizeit
-// L6 — Nützliche Ausdrücke
-// L2 — Vorstellen (weitere nützliche Ausdrücke)
-1000);
+    if(sTime<=0){clearInterval(sTimer);sTimer=null;endSpeed();}},1000);
 }
 function renderSpeed(){
   const w=window._sv[sIdx%window._sv.length];
