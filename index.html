@@ -523,7 +523,7 @@ async function sbApi(path,method='GET',body=null){
       'Content-Type':'application/json',
       'apikey':SB_KEY,
       'Authorization':'Bearer '+SB_KEY,
-      'Prefer':method==='POST'?'return=representation':'',
+      'Prefer':method==='POST'?'return=representation':''
     },
     body:body?JSON.stringify(body):null
   });
