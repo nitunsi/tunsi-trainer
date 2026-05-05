@@ -73,11 +73,11 @@ main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem 5rem;overflow-anchor:no
 .match-item.selected{border-color:var(--gold);background:rgba(201,168,76,.1);}
 .match-item.matched{border-color:var(--green);background:rgba(76,172,110,.1);color:var(--green);cursor:default;opacity:.7;}
 .match-item.wrong-flash{border-color:var(--red);background:rgba(201,76,76,.1);}
-.word-bank{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.8rem;min-height:40px;}
+.word-bank{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.8rem;min-height:40px;direction:rtl;}
 .word-chip{padding:.5rem 1rem;background:var(--surface2);border:1px solid var(--border);font-size:1.4rem;font-family:'Playfair Display',serif;direction:rtl;color:var(--gold2);cursor:pointer;transition:all .15s;user-select:none;}
 .word-chip:hover{border-color:var(--gold);}
 .word-chip.used{opacity:.2;cursor:default;pointer-events:none;}
-.answer-slots{display:flex;flex-wrap:wrap;gap:.5rem;min-height:56px;padding:.6rem;border:1px dashed var(--border);background:var(--surface2);margin-bottom:.8rem;cursor:pointer;}
+.answer-slots{display:flex;flex-wrap:wrap;gap:.5rem;min-height:56px;padding:.6rem;border:1px dashed var(--border);background:var(--surface2);margin-bottom:.8rem;cursor:pointer;direction:rtl;justify-content:flex-start;}
 .answer-slot{padding:.5rem 1rem;background:var(--surface);border:1px solid var(--gold);font-size:1.4rem;font-family:'Playfair Display',serif;direction:rtl;color:var(--gold2);}
 .feedback{padding:.7rem .9rem;margin-top:.7rem;font-size:.78rem;line-height:1.6;display:none;}
 .feedback.show{display:block;}
@@ -824,7 +824,6 @@ const ALL_VOCAB=[
 {ar:'خرج',tr:'khraj',en:'er ging raus',ls:'L9',tp:'Vergangenheit'},
 {ar:'وصل',tr:'wsil',en:'er kam an',ls:'L9',tp:'Vergangenheit'},
 {ar:'شرب',tr:'shrab',en:'er trank',ls:'L9',tp:'Vergangenheit'},
-// L2 — Identität & Vorstellen
 {ar:'إسمي',tr:'ismi',en:'mein Name ist',ls:'L2',tp:'Vorstellen'},
 {ar:'آنا',tr:'ena',en:'ich',ls:'L2',tp:'Pronomen'},
 {ar:'إنتي',tr:'enti',en:'du',ls:'L2',tp:'Pronomen'},
@@ -852,12 +851,10 @@ const ALL_VOCAB=[
 {ar:'تسعين',tr:'tis3in',en:'neunzig',ls:'L2',tp:'Zahlen'},
 {ar:'مليون',tr:'malyoun',en:'Million',ls:'L2',tp:'Zahlen'},
 {ar:'مليار',tr:'milyar',en:'Milliarde',ls:'L2',tp:'Zahlen'},
-// L3 — fehlende Wochentage
 {ar:'الثلاث',tr:'el-tleth',en:'Dienstag',ls:'L3',tp:'Wochentage'},
 {ar:'الأربعاء',tr:'el-irb3a',en:'Mittwoch',ls:'L3',tp:'Wochentage'},
 {ar:'الخميس',tr:'el-khmis',en:'Donnerstag',ls:'L3',tp:'Wochentage'},
 {ar:'الأحد',tr:'el-a7ad',en:'Sonntag',ls:'L3',tp:'Wochentage'},
-// L8 — Post erweitert
 {ar:'كولي',tr:'colis',en:'Paket',ls:'L8',tp:'Post'},
 {ar:'كارت بوستال',tr:'carte postale',en:'Postkarte',ls:'L8',tp:'Post'},
 {ar:'ماصو',tr:'massou',en:'Briefumschlag',ls:'L8',tp:'Post'},
@@ -867,7 +864,6 @@ const ALL_VOCAB=[
 {ar:'وقتاش',tr:'waqtesh',en:'wann?',ls:'L8',tp:'Fragewörter'},
 {ar:'على خاطر',tr:'3la khater',en:'weil / da',ls:'L8',tp:'Ausdrücke'},
 {ar:'باش',tr:'besh-purpose',en:'um zu / damit',ls:'L8',tp:'Grammatik'},
-// L9 — Transport & Orte
 {ar:'مطار',tr:'matar',en:'Flughafen',ls:'L9',tp:'Transport'},
 {ar:'طيارة',tr:'tayyara',en:'Flugzeug',ls:'L9',tp:'Transport'},
 {ar:'فيزا',tr:'visa',en:'Visum',ls:'L9',tp:'Transport'},
@@ -879,7 +875,6 @@ const ALL_VOCAB=[
 {ar:'بعيد',tr:'b3id',en:'weit / entfernt',ls:'L9',tp:'Richtungen'},
 {ar:'الفايت',tr:'el feyit',en:'letzte/r/s (vergangen)',ls:'L9',tp:'Zeit'},
 {ar:'البارح',tr:'el ba7ri',en:'gestern',ls:'L9',tp:'Zeit'},
-// L9 — Vergangenheitsverben Gruppe 1
 {ar:'ركب',tr:'rkib',en:'er stieg ein',ls:'L9',tp:'Vergangenheit'},
 {ar:'هبط',tr:'hbat',en:'er stieg aus / landete',ls:'L9',tp:'Vergangenheit'},
 {ar:'طلع',tr:'tla3',en:'er ging hoch',ls:'L9',tp:'Vergangenheit'},
@@ -890,7 +885,6 @@ const ALL_VOCAB=[
 {ar:'كتب',tr:'ktib',en:'er schrieb',ls:'L9',tp:'Vergangenheit'},
 {ar:'دخل',tr:'dkhal',en:'er trat ein',ls:'L9',tp:'Vergangenheit'},
 {ar:'عرف',tr:'3raf',en:'er wusste / erkannte',ls:'L9',tp:'Vergangenheit'},
-// L9 — Vergangenheitsverben Gruppe 2
 {ar:'نسى',tr:'nsa',en:'er vergaß',ls:'L9',tp:'Vergangenheit'},
 {ar:'بكى',tr:'bka',en:'er weinte',ls:'L9',tp:'Vergangenheit'},
 {ar:'قرى',tr:'qra',en:'er las / studierte',ls:'L9',tp:'Vergangenheit'},
@@ -992,8 +986,9 @@ const ALL_VOCAB=[
 {ar:'نشد',tr:'nshid',en:'er fragte / suchte',ls:'L9',tp:'Vergangenheit'},
 {ar:'حسب',tr:'sib7',en:'er zählte / rechnete',ls:'L9',tp:'Vergangenheit'},
 {ar:'جاوب',tr:'jewib',en:'er antwortete',ls:'L9',tp:'Vergangenheit'},
-
-
+{ar:'مقفول',tr:'maqfoul',en:'geschlossen',ls:'L6',tp:'Adjektive'},
+{ar:'سخونة',tr:'skhouna',en:'heiß (f.)',ls:'L6',tp:'Adjektive'},
+{ar:'دايما بخير',tr:'deyma b khir',en:'immer gut',ls:'L2',tp:'Vorstellen'}
 ];
 
 
@@ -1075,75 +1070,36 @@ const GRAMMAR=[
 const ROLEPLAY=[
 {ls:'L4',title:'💰 Geld leihen — السلف',steps:[
 {vendor:{ar:'أهلا بعلي! يا ولدي وينك؟',tr:'ahla b 3li!',en:'Willkommen Ali! Wie geht es dir?'},opts:[
-{ar:'هاني يا حبيب... حاجتي بشوية فلوس',tr:'hani ya 7bib...',en:'Ich brauche etwas Geld',ok:true},
-{ar:'الله يبارك',tr:'allah yberik',en:'Gott segne dich',ok:false},
-{ar:'شنو لون الكرهبة؟',tr:'shnoua loun el karahba?',en:'Welche Farbe hat das Auto?',ok:false},
 ]},
 {vendor:{ar:'قداش؟',tr:'qaddesh?',en:'Wie viel?'},opts:[
-{ar:'خمسة لاف',tr:'khamsa lef',en:'Fünf Dinar',ok:true},
-{ar:'أوزن لي كيلو بطاطا',tr:'ouzin li kilo batata',en:'Wiege mir ein Kilo Kartoffeln',ok:false},
-{ar:'بقداش الكيلو؟',tr:'bqaddesh el kilo?',en:'Was kostet das Kilo?',ok:false},
 ]},
 {vendor:{ar:'الله يبارك... هاي كارطة بعشرة لاف. إمشي صرفها... خذ خمسة ورجعلي الباقي',tr:'allah yberik...',en:'Hier ein 10-Dinar-Schein. Wechsle ihn, nimm fünf und gib mir das Wechselgeld.'},opts:[
-{ar:'مرسي عليك يا حبيب',tr:'merci 3lik ya 7bib',en:'Danke dir, Freund',ok:true},
-{ar:'ما عنديش فلوس',tr:'ma 3andish flous',en:'Ich habe kein Geld',ok:false},
-{ar:'غالي يسير',tr:'ghali yesir',en:'Viel zu teuer',ok:false},
 ]},
 ]},
 {ls:'L5',title:'🥕 Auf dem Markt',steps:[
 {vendor:{ar:'بطاطا... بطاطا بثلاثة ميا',tr:'batata b thletha mya',en:'Kartoffeln für 300 Millimes'},opts:[
-{ar:'أوزن لي كيلو بطاطا ورطل طماطم',tr:'ouzin li kilo batata w rtal tmatem',en:'Wiege mir ein Kilo Kartoffeln und einen Rtal Tomaten',ok:true},
-{ar:'نشري الحوت من عند الحواث',tr:'neshri el 7out',en:'Wir kaufen Fisch',ok:false},
-{ar:'مبروك',tr:'mabrouk',en:'Glückwunsch',ok:false},
 ]},
 {vendor:{ar:'الله يبارك... شنو آخر؟',tr:'allah yberik...',en:'Was noch?'},opts:[
-{ar:'بقداش الفلفل؟ حار ولا حلو؟',tr:'bqaddesh el felfel?',en:'Was kostet die Paprika? Scharf oder mild?',ok:true},
-{ar:'نحب الصوف',tr:'n7eb es-souf',en:'Ich mag Wolle',ok:false},
-{ar:'عندي خمسة دينارات',tr:'3andi khamsa',en:'Ich habe fünf Dinare',ok:false},
 ]},
 {vendor:{ar:'الكيلو بدينار. حلو ولا حار؟',tr:'el kilo b dinar.',en:'Das Kilo für einen Dinar.'},opts:[
-{ar:'حلو من فضلك',tr:'7lou min fathlak',en:'Mild bitte',ok:true},
-{ar:'ما عنديش فلوس',tr:'ma 3andi sh flous',en:'Ich habe kein Geld',ok:false},
-{ar:'شنو لون السروال؟',tr:'shnoua loun es-sirwel?',en:'Welche Farbe hat die Hose?',ok:false},
 ]},
 ]},
 {ls:'L7',title:'👗 Im Kleidungsladen',steps:[
 {vendor:{ar:'مرحبا يا لالة. تفضل',tr:'mar7ba ya lilla.',en:'Willkommen! Bitte sehr.'},opts:[
-{ar:'عندك سروال أبيض؟ طاي ثلاثين',tr:'3andik sirwel abyath?',en:'Hast du eine weiße Hose? Größe 30',ok:true},
-{ar:'أوزن لي كيلو بطاطا',tr:'ouzin li kilo batata',en:'Wiege mir ein Kilo Kartoffeln',ok:false},
-{ar:'نشري الحوت',tr:'neshri el 7out',en:'Wir kaufen Fisch',ok:false},
 ]},
 {vendor:{ar:'عندي... في برشا ألوان. آش تحب؟',tr:'3andi...',en:'Viele Farben. Was möchtest du?'},opts:[
-{ar:'الأبيض... قداش سومه؟',tr:'el abyath...',en:'Weiß... Was kostet er?',ok:true},
-{ar:'نحب الصوف',tr:'n7eb es-souf',en:'Ich mag Wolle',ok:false},
-{ar:'مبروك',tr:'mabrouk',en:'Glückwunsch',ok:false},
 ]},
 {vendor:{ar:'خمسطاش دينار',tr:'khmostash dinar',en:'15 Dinar'},opts:[
-{ar:'غالي يسير! طيح شوية في السوم',tr:'ghali yesir!',en:'Zu teuer! Geh runter',ok:true},
-{ar:'الله يبارك',tr:'allah yberik',en:'Gott segne dich',ok:false},
-{ar:'نحب القطن',tr:'n7eb el qotton',en:'Ich mag Baumwolle',ok:false},
 ]},
 {vendor:{ar:'ثلاطاش دينار — آخر سوم',tr:'thlotash dinar',en:'13 Dinar — letzter Preis'},opts:[
-{ar:'والله برأس المال. مبروك',tr:'wallah b ras el mel.',en:'Zum Einkaufspreis. Glückwunsch',ok:true},
-{ar:'ما عنديش فلوس',tr:'ma 3andi sh flous',en:'Ich habe kein Geld',ok:false},
-{ar:'الساعة ثلاثة',tr:'es-se3a thletha',en:'Es ist drei Uhr',ok:false},
 ]},
 ]},
 {ls:'L6',title:'🍽️ Im Restaurant',steps:[
 {vendor:{ar:'عاسلامة! تفضلو',tr:'3aslema!',en:'Willkommen!'},opts:[
-{ar:'أعطيني سلاطة مشوية وبريكة',tr:'a3tini slata meshwiya w brika',en:'Gib mir gegrillten Salat und eine Brik',ok:true},
-{ar:'نحب نروح للبوسطة',tr:'n7eb nrou7 lil bousta',en:'Ich möchte zum Postamt',ok:false},
-{ar:'شنو لون السروال؟',tr:'shnoua loun es-sirwel?',en:'Welche Farbe hat die Hose?',ok:false},
 ]},
 {vendor:{ar:'حاضر. وتحبوش شي حاجة أخرى؟',tr:'7ather.',en:'Sofort. Noch etwas?'},opts:[
-{ar:'جيب لي دبوزة ماء صافية',tr:'jib li dabbouza ma safya',en:'Bring mir eine Flasche Wasser',ok:true},
-{ar:'ما عنديش فلوس',tr:'ma 3andi sh flous',en:'Ich habe kein Geld',ok:false},
-{ar:'الجمعة القادم',tr:'el jem3a el qadim',en:'Nächste Woche',ok:false},
 ]},
 {vendor:{ar:'يجيو عشرين دينار',tr:'yjiou 3ishrin dinar',en:'Das macht 20 Dinare'},opts:[
-{ar:'تفضل — هاك',tr:'tfathal — hak',en:'Bitte — hier',ok:true},
-{ar:'ما ناكلش الكسكسي',tr:'ma nekol sh el kosksi',en:'Ich esse keinen Couscous',ok:false},
-{ar:'الساعة عشرة ونص',tr:'es-se3a 3ashra w nos',en:'Es ist halb elf',ok:false},
 ]},
 ]},
 ];
@@ -1213,7 +1169,7 @@ function gp(arr){
   const f=arr.filter(x=>x.ls===k);return f.length?f:arr;
 }
 function filterLesson(l,el){cLesson=l;document.querySelectorAll('.lesson-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');go();}
-function setMode(m,el){cMode=m;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');go();}
+function setMode(m,el){cMode=m;document.querySelectorAll('.mode-btn,.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));el.classList.add('active');go();}
 function updScore(){document.getElementById('sc-correct').textContent=score.c;document.getElementById('sc-wrong').textContent=score.w;document.getElementById('sc-streak').textContent='🔥'+score.st;}
 function showFb(ok,ca){const fb=document.getElementById('feedback');if(!fb)return;fb.className='feedback show '+(ok?'correct':'wrong');fb.textContent=ok?'✓ Richtig!':'✗ Falsch.'+(ca?' Antwort: '+ca:'');}
 function showNext(){showStickyNext(nxt);}
@@ -1231,7 +1187,7 @@ function go(){
   else if(cMode==='grammar')exList=bGram();
   else if(cMode==='stats'){showStats();return;}
   else if(cMode==='speed')exList=[{type:'speed'}];
-  else if(cMode==='mix')exList=sh([...bMC(v).slice(0,4),...bMatch(v).slice(0,1),...bFill().slice(0,2),...bOrder().slice(0,1)]);
+  else if(cMode==='mix')exList=sh([...bMC(v).slice(0,5),...bMatch(v).slice(0,2),...bFill().slice(0,3),...bOrder().slice(0,2),...bConj().slice(0,2),...bRP().slice(0,1)]);
   cIdx=0;render();
 }
 function nxt(){cIdx++;if(cIdx>=exList.length){if(cMode==='speed')return;showRes();}else{render();window.scrollTo({top:0,behavior:'instant'});}}
@@ -1457,7 +1413,7 @@ function rpAns(btn,ok,ar,en){
   else setTimeout(rpRender,700);
 }
 function startSpeed(){
-  const vocab=sh(gv());sIdx=0;sRight=0;sWrong=0;sTime=60;
+  const vocab=sh(gv());sIdx=0;sRight=0;sWrong=0;sTime=90;
   score={c:0,w:0,t:0,st:0};updScore();
   const srsVocab=buildSrsQueue(vocab.length>=5?vocab:sh(ALL_VOCAB));
   window._sv=srsVocab;
@@ -1465,64 +1421,13 @@ function startSpeed(){
   renderSpeed();
   sTimer=setInterval(()=>{sTime--;
     const f=document.getElementById('sp-fill'),te=document.getElementById('sp-time');
-    if(f)f.style.width=(sTime/60*100)+'%';if(te)te.textContent=sTime+'s';
-    if(sTime<=0){clearInterval(sTimer);sTimer=null;endSpeed();}
-  },
-
-// L3 — Wegbeschreibung & Orte (aus Lesson_3 PDF)
-{ar:'تفضل',tr:'tfathal',en:'Bitte sehr / Kommen Sie',ls:'L3',tp:'Ausdrücke'},
-{ar:'شكرا',tr:'shokran',en:'Danke',ls:'L3',tp:'Ausdrücke'},
-{ar:'سامحني',tr:'sama7ni',en:'Entschuldigung',ls:'L3',tp:'Ausdrücke'},
-{ar:'نهج',tr:'nahj',en:'Straße / Avenue',ls:'L3',tp:'Richtungen'},
-{ar:'زنقة',tr:'zanqa',en:'Gasse / kleine Straße',ls:'L3',tp:'Richtungen'},
-{ar:'شارع',tr:'shera3',en:'Straße (breite)',ls:'L3',tp:'Richtungen'},
-{ar:'باب',tr:'beb',en:'Tür / Tor',ls:'L3',tp:'Orte'},
-{ar:'شباك',tr:'shobbek',en:'Fenster / Schalter',ls:'L3',tp:'Orte'},
-{ar:'بنك',tr:'banka',en:'Bank',ls:'L3',tp:'Orte'},
-{ar:'سينما',tr:'sinema',en:'Kino',ls:'L3',tp:'Orte'},
-{ar:'أستاذ',tr:'ousteth',en:'Lehrer (m.)',ls:'L3',tp:'Personen'},
-{ar:'أستاذة',tr:'oustetha',en:'Lehrerin (f.)',ls:'L3',tp:'Personen'},
-{ar:'راجل',tr:'rajil',en:'Mann',ls:'L3',tp:'Personen'},
-{ar:'مرا',tr:'mra',en:'Frau',ls:'L3',tp:'Personen'},
-{ar:'إمشي',tr:'imshi',en:'Geh! (Imperativ)',ls:'L3',tp:'Verben'},
-{ar:'قف',tr:'eqif',en:'Halte an! (Imperativ)',ls:'L3',tp:'Verben'},
-// L5 — zusätzliche Küche & Maße
-{ar:'إطرة',tr:'itra',en:'Dose Öl',ls:'L5',tp:'Maße'},
-{ar:'زيتونة',tr:'zitouna',en:'Olive',ls:'L5',tp:'Lebensmittel'},
-{ar:'ناس',tr:'nas',en:'Leute / Menschen',ls:'L5',tp:'Allgemein'},
-// L6 — Küche (erweitert)
-{ar:'مغرفة',tr:'mgharfa',en:'Schöpfkelle / Löffel',ls:'L6',tp:'Küche'},
-{ar:'طنجرة',tr:'tanjra',en:'Kochtopf',ls:'L6',tp:'Küche'},
-{ar:'كسكاس',tr:'kiskes',en:'Couscous-Topf',ls:'L6',tp:'Küche'},
-{ar:'طبق',tr:'tbaq',en:'Tablett / flache Schüssel',ls:'L6',tp:'Küche'},
-{ar:'مقفول',tr:'maqfoul',en:'geschlossen',ls:'L6',tp:'Adjektive'},
-{ar:'شقالة',tr:'shqala',en:'Waage',ls:'L6',tp:'Küche'},
+    if(f)f.style.width=(sTime/90*100)+'%';if(te)te.textContent=sTime+'s';
+    if(sTime<=0){clearInterval(sTimer);sTimer=null;endSpeed();}},1000)
 // L6 — Adjektive Essen
-{ar:'سخون',tr:'skhoun',en:'heiß (m.)',ls:'L6',tp:'Adjektive'},
-{ar:'بارد',tr:'berid',en:'kalt (m.)',ls:'L6',tp:'Adjektive'},
-{ar:'سخونة',tr:'skhouna',en:'heiß (f.)',ls:'L6',tp:'Adjektive'},
-{ar:'باردة',tr:'berda',en:'kalt (f.)',ls:'L6',tp:'Adjektive'},
-{ar:'خفيف',tr:'khfif',en:'leicht (m.)',ls:'L6',tp:'Adjektive'},
-{ar:'مر',tr:'morr',en:'bitter (m.)',ls:'L6',tp:'Adjektive'},
-{ar:'قوي',tr:'qwi',en:'stark / kräftig (m.)',ls:'L6',tp:'Adjektive'},
 // L6 — Café & Getränke (erweitert)
-{ar:'قهواجي',tr:'qahweji',en:'Kaffeehausbesitzer',ls:'L6',tp:'Café'},
-{ar:'عصير',tr:'3asir',en:'Saft',ls:'L6',tp:'Getränke'},
-{ar:'فانتا',tr:'fanta',en:'Fanta',ls:'L6',tp:'Getränke'},
-{ar:'نعناع',tr:'na3ne3',en:'Minze',ls:'L6',tp:'Getränke'},
-{ar:'كيسان',tr:'kisen',en:'Gläser (Pl.)',ls:'L6',tp:'Küche'},
-{ar:'فناجين',tr:'fnejin',en:'Tassen (Pl.)',ls:'L6',tp:'Küche'},
-{ar:'سكاكن',tr:'skekin',en:'Messer (Pl.)',ls:'L6',tp:'Küche'},
 // L6 — Spiele & Freizeit
-{ar:'شكبة',tr:'chkobba',en:'Karten (Kartenspiel)',ls:'L6',tp:'Freizeit'},
-{ar:'الرامي',tr:'rami',en:'Rami (Kartenspiel)',ls:'L6',tp:'Freizeit'},
-{ar:'الديمينو',tr:'dimino',en:'Domino',ls:'L6',tp:'Freizeit'},
 // L6 — Nützliche Ausdrücke
-{ar:'داكوردو',tr:'dakourdou',en:'Einverstanden / OK',ls:'L6',tp:'Ausdrücke'},
-{ar:'الله يعينك',tr:'allah y3inik',en:'Gott helfe dir',ls:'L6',tp:'Ausdrücke'},
-{ar:'تنجم',tr:'tnejjem',en:'du kannst / es geht',ls:'L6',tp:'Grammatik'},
 // L2 — Vorstellen (weitere nützliche Ausdrücke)
-{ar:'دايما بخير',tr:'deyma b khir',en:'immer gut',ls:'L2',tp:'Vorstellen'},
 1000);
 }
 function renderSpeed(){
@@ -1531,7 +1436,7 @@ function renderSpeed(){
   document.getElementById('ex-progress').textContent=sIdx+' Karten';
   document.getElementById('exercise-content').innerHTML=`<div class="speed-card">
     <div class="speed-timer" id="sp-time">${sTime}s</div>
-    <div class="speed-bar"><div class="speed-fill" id="sp-fill" style="width:${sTime/60*100}%"></div></div>
+    <div class="speed-bar"><div class="speed-fill" id="sp-fill" style="width:${sTime/90*100}%"></div></div>
     <div class="speed-word">${w.ar}</div>
     <div style="font-size:.75rem;color:var(--muted);margin:.2rem 0 .5rem">${w.tr}</div>
     <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:1rem">Kennst du die Bedeutung?</div>
@@ -1623,7 +1528,7 @@ function showStats(){
       <div style="background:var(--surface);border:1px solid var(--border);padding:1rem;">
         ${[0,1,2,3,4,5].map(l => {
           const days = [1,3,7,14,30,90][l];
-          const label = l===0?'Neu':l===5?'Gemeistert':'Wiederholung in '+days+'d';
+          const label = l===0?'Neu':l===5?'Wiederholung in 90d':'Wiederholung in '+days+'d';
           const pctL = Math.round(levelCount[l]/totalVocab*100);
           const color = ['var(--muted)','#e8a045','#c9a84c','var(--blue)','var(--green)','#4cac6e'][l];
           return `<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;font-size:.72rem;">
