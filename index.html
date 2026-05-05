@@ -68,13 +68,15 @@ main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem 5rem;overflow-anchor:no
 .answer-input.wrong{border-color:var(--red);}
 .match-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;}
 .match-col{display:flex;flex-direction:column;gap:.4rem;}
-.match-item{padding:.6rem .8rem;background:var(--surface2);border:1px solid var(--border);font-size:.78rem;cursor:pointer;transition:border-color .15s,background .15s;text-align:center;user-select:none;}
+.match-col:last-child .match-item{font-size:.95rem;color:var(--text);}
+.match-item.arabic{font-size:2.4rem;font-family:'Playfair Display',serif;direction:rtl;color:var(--gold2);padding:1rem .8rem;}
+.match-item{padding:.8rem;background:var(--surface2);border:1px solid var(--border);font-size:.78rem;cursor:pointer;transition:border-color .15s,background .15s;text-align:center;user-select:none;}
 .match-item.arabic{font-size:2rem;direction:rtl;color:var(--gold2);line-height:1.4;padding:.8rem;}
 .match-item.selected{border-color:var(--gold);background:rgba(201,168,76,.1);}
 .match-item.matched{border-color:var(--green);background:rgba(76,172,110,.1);color:var(--green);cursor:default;opacity:.7;}
 .match-item.wrong-flash{border-color:var(--red);background:rgba(201,76,76,.1);}
 .word-bank{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.8rem;min-height:40px;direction:rtl;}
-.word-chip{padding:.5rem 1rem;background:var(--surface2);border:1px solid var(--border);font-size:1.4rem;font-family:'Playfair Display',serif;direction:rtl;color:var(--gold2);cursor:pointer;transition:all .15s;user-select:none;}
+.word-chip{padding:.6rem 1.1rem;background:var(--surface2);border:1px solid var(--border);font-size:1.8rem;font-family:'Playfair Display',serif;direction:rtl;color:var(--gold2);cursor:pointer;transition:all .15s;user-select:none;}
 .word-chip:hover{border-color:var(--gold);}
 .word-chip.used{opacity:.2;cursor:default;pointer-events:none;}
 .answer-slots{display:flex;flex-wrap:wrap;gap:.5rem;min-height:56px;padding:.6rem;border:1px dashed var(--border);background:var(--surface2);margin-bottom:.8rem;cursor:pointer;direction:rtl;justify-content:flex-start;}
@@ -1305,8 +1307,8 @@ function rFill(ex,el){
   const d=ex.data;
   const disp=d.s.replace('___',`<input class="answer-input" id="fill-input" placeholder="..." style="width:150px;display:inline-block" />`);
   el.innerHTML=`<div class="lesson-badge">${d.ls}</div>
-  <div class="q-card"><div class="q-label">Fülle die Lücke — <span style="color:var(--muted)">${d.h}</span></div>
-  <div style="font-size:1.05rem;direction:rtl;font-family:'Playfair Display',serif;line-height:2">${disp}</div>
+  <div class="q-card"><div class="q-label" style="font-size:.75rem">Fülle die Lücke — <span style="color:var(--text);font-size:1rem">${d.h}</span></div>
+  <div style="font-size:1.8rem;direction:rtl;font-family:'Playfair Display',serif;line-height:1.8">${disp}</div>
   <div class="q-sub" style="margin-top:.5rem">${d.t}</div></div>
   <div id="btn-row" style="display:none;"></div>
   <div class="q-hint" id="fh">Antwort: ${d.a} (${d.at})</div>
@@ -1331,7 +1333,7 @@ function rConj(ex,el){
   document.getElementById('ex-type-label').textContent='📐 Konjugation';
   const d=ex.data;
   el.innerHTML=`<div class="lesson-badge">${d.ls}</div>
-  <div class="q-card"><div class="q-label">Konjugiere das Verb</div><div class="q-text" style="font-size:1rem">${d.v}</div></div>
+  <div class="q-card"><div class="q-label">Konjugiere das Verb</div><div class="q-text" style="font-size:2rem;direction:rtl;font-family:'Playfair Display',serif;color:var(--gold2)">${d.v}</div></div>
   <table class="conj-table"><thead><tr><th>Pronomen</th><th>Tounsi-Form</th><th class="tr-col" style="display:none">Transliteration</th></tr></thead>
   <tbody>${d.rows.map((r,i)=>`<tr><td>${r.p}</td><td><input class="conj-input" id="ci-${i}" data-a="${r.a}" data-t="${r.t}" placeholder="..." /></td><td class="tr-col" style="display:none;color:var(--muted);font-size:.72rem">${r.t}</td></tr>`).join('')}</tbody></table>
   <div id="btn-row" style="display:none;"></div><div class="feedback" id="feedback"></div>`;
@@ -1372,7 +1374,7 @@ function rOrder(ex,el){
   const d=ex.data;ordSel=[];
   const sw=sh([...d.w]);
   el.innerHTML=`<div class="lesson-badge">${d.ls}</div>
-  <div class="q-card"><div class="q-label">Richtige Reihenfolge</div><div class="q-sub">${d.e}</div></div>
+  <div class="q-card"><div class="q-label">Richtige Reihenfolge</div><div style="font-size:1.1rem;color:var(--text);margin-top:.3rem">${d.e}</div></div>
   <div class="answer-slots" id="ord-slots" onclick="rmLast()"><span style="font-size:.65rem;color:var(--muted)">← Klick zum Entfernen</span></div>
   <div class="word-bank" id="ord-bank">${sw.map((w,i)=>`<span class="word-chip" id="ow-${i}" onclick="addW(${i},'${eq(w)}')">${w}</span>`).join('')}</div>
   <div id="btn-row" style="display:none;"></div><div class="feedback" id="feedback"></div>`;
@@ -1407,13 +1409,16 @@ function rRP(data,el){
   rpRender();
 }
 function rpRender(){
+  answered=false;
   const step=rpScenario.steps[rpStep];
   const log=document.getElementById('chat-log');
   const b=document.createElement('div');b.className='chat-bubble vendor';
-  b.innerHTML=`<div class="arabic">${step.vendor.ar}</div><div class="transl">${step.vendor.tr} — ${step.vendor.en}</div>`;
+  b.innerHTML=`<div style="font-size:1.4rem;direction:rtl;font-family:'Playfair Display',serif;color:var(--gold2);margin-bottom:.3rem">${step.vendor.ar}</div><div class="transl">${step.vendor.tr} — ${step.vendor.en}</div>`;
   log.appendChild(b);log.scrollTop=log.scrollHeight;
   const sOpts=sh(step.opts);
-  document.getElementById('chat-opts').innerHTML=`<div class="chat-options">${sOpts.map(o=>`<button class="chat-opt" onclick="rpAns(this,${o.ok},'${eq(o.ar)}','${eq(o.en)}')"><span style="direction:rtl;display:block">${o.ar}</span><span style="font-size:.68rem;color:var(--muted)">${o.tr} — ${o.en}</span></button>`).join('')}</div>`;
+  const optsEl=document.getElementById('chat-opts');
+  optsEl.innerHTML=`<div class="chat-options">${sOpts.map(o=>`<button class="chat-opt" onclick="rpAns(this,${o.ok},'${eq(o.ar)}','${eq(o.en)}')"><span style="font-size:1.2rem;direction:rtl;display:block;font-family:'Playfair Display',serif;color:var(--gold2)">${o.ar}</span><span style="font-size:.7rem;color:var(--muted)">${o.tr} — ${o.en}</span></button>`).join('')}</div>`;
+  optsEl.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function rpAns(btn,ok,ar,en){
   document.querySelectorAll('.chat-opt').forEach(b=>b.disabled=true);
