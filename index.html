@@ -1072,36 +1072,75 @@ const GRAMMAR=[
 const ROLEPLAY=[
 {ls:'L4',title:'💰 Geld leihen — السلف',steps:[
 {vendor:{ar:'أهلا بعلي! يا ولدي وينك؟',tr:'ahla b 3li!',en:'Willkommen Ali! Wie geht es dir?'},opts:[
+  {ar:'لاباس، الحمد لله',tr:'labes, el 7amdoullah',en:'Gut, Gott sei Dank',ok:true},
+  {ar:'ما عنديش فلوس',tr:'ma 3andish flous',en:'Ich habe kein Geld',ok:false},
+  {ar:'بسلامة',tr:'bislema',en:'Auf Wiedersehen',ok:false},
 ]},
 {vendor:{ar:'قداش؟',tr:'qaddesh?',en:'Wie viel?'},opts:[
+  {ar:'عندي خمسة دينارات',tr:'3andi khamsa dinarat',en:'Ich brauche 5 Dinar',ok:true},
+  {ar:'ما نحبش',tr:'ma n7ebsh',en:'Ich will nicht',ok:false},
+  {ar:'الله يبارك',tr:'allah yberik',en:'Gott segne dich',ok:false},
 ]},
-{vendor:{ar:'الله يبارك... هاي كارطة بعشرة لاف. إمشي صرفها... خذ خمسة ورجعلي الباقي',tr:'allah yberik...',en:'Hier ein 10-Dinar-Schein. Wechsle ihn, nimm fünf und gib mir das Wechselgeld.'},opts:[
+{vendor:{ar:'الله يبارك... هاي كارطة بعشرة لاف',tr:'allah yberik...',en:'Hier ein 10-Dinar-Schein'},opts:[
+  {ar:'يسلمو، نرجعلك الباقي',tr:'yislamu, narj3lek el beqi',en:'Danke, ich bringe dir das Wechselgeld zurück',ok:true},
+  {ar:'غالي برشا',tr:'ghali barsha',en:'Viel zu teuer',ok:false},
+  {ar:'ما فهمتش',tr:'ma fhemtsh',en:'Ich habe nicht verstanden',ok:false},
 ]},
 ]},
 {ls:'L5',title:'🥕 Auf dem Markt',steps:[
 {vendor:{ar:'بطاطا... بطاطا بثلاثة ميا',tr:'batata b thletha mya',en:'Kartoffeln für 300 Millimes'},opts:[
+  {ar:'أوزن لي كيلو بطاطا',tr:'ouzin li kilo batata',en:'Gib mir ein Kilo Kartoffeln',ok:true},
+  {ar:'ما نحبش البطاطا',tr:'ma n7ebsh el batata',en:'Ich mag keine Kartoffeln',ok:false},
+  {ar:'بقداش الكيلو؟',tr:'bqaddesh el kilo?',en:'Was kostet das Kilo?',ok:false},
 ]},
 {vendor:{ar:'الله يبارك... شنو آخر؟',tr:'allah yberik...',en:'Was noch?'},opts:[
+  {ar:'زيدلي رطل طماطم',tr:'zidli rtal tmatem',en:'Noch ein Pfund Tomaten bitte',ok:true},
+  {ar:'لا شكراً، يكفي',tr:'la shokran, yikfi',en:'Nein danke, das reicht',ok:false},
+  {ar:'غالي برشا',tr:'ghali barsha',en:'Das ist zu teuer',ok:false},
 ]},
-{vendor:{ar:'الكيلو بدينار. حلو ولا حار؟',tr:'el kilo b dinar.',en:'Das Kilo für einen Dinar.'},opts:[
+{vendor:{ar:'الكيلو بدينار. حلو ولا حار؟',tr:'el kilo b dinar.',en:'Das Kilo für einen Dinar. Süß oder scharf?'},opts:[
+  {ar:'حلو من فضلك',tr:'7lou min fathlak',en:'Mild bitte',ok:true},
+  {ar:'حار من فضلك',tr:'7ar min fathlak',en:'Scharf bitte',ok:true},
+  {ar:'ما نحبش الفلفل',tr:'ma n7ebsh el felfel',en:'Ich mag keinen Pfeffer',ok:false},
 ]},
 ]},
 {ls:'L7',title:'👗 Im Kleidungsladen',steps:[
 {vendor:{ar:'مرحبا يا لالة. تفضل',tr:'mar7ba ya lilla.',en:'Willkommen! Bitte sehr.'},opts:[
+  {ar:'نحب نشوف سروال',tr:'n7eb nshuf sirwel',en:'Ich möchte eine Hose sehen',ok:true},
+  {ar:'بسلامة',tr:'bislema',en:'Auf Wiedersehen',ok:false},
+  {ar:'ما عنديش وقت',tr:'ma 3andish waqt',en:'Ich habe keine Zeit',ok:false},
 ]},
 {vendor:{ar:'عندي... في برشا ألوان. آش تحب؟',tr:'3andi...',en:'Viele Farben. Was möchtest du?'},opts:[
+  {ar:'نحب الأبيض',tr:'n7eb el abyath',en:'Ich möchte Weiß',ok:true},
+  {ar:'نحب الأحمر',tr:'n7eb el a7mar',en:'Ich möchte Rot',ok:true},
+  {ar:'ما نعرفش',tr:'ma n3arfsh',en:'Ich weiß nicht',ok:false},
 ]},
 {vendor:{ar:'خمسطاش دينار',tr:'khmostash dinar',en:'15 Dinar'},opts:[
+  {ar:'غالي يسير! طيح شوية في السوم',tr:'ghali yesir! tayya7 shwayya fi s-soum',en:'Viel zu teuer! Geh etwas runter',ok:true},
+  {ar:'حسناً، هاك',tr:'7asnan, hak',en:'OK, hier',ok:false},
+  {ar:'ما عنديش',tr:'ma 3andish',en:'Ich habe nicht',ok:false},
 ]},
 {vendor:{ar:'ثلاطاش دينار — آخر سوم',tr:'thlotash dinar',en:'13 Dinar — letzter Preis'},opts:[
+  {ar:'حسناً، مبروك',tr:'7asnan, mabrouk',en:'OK, abgemacht!',ok:true},
+  {ar:'لا، غالي برشا',tr:'la, ghali barsha',en:'Nein, noch zu teuer',ok:false},
+  {ar:'بكره نرجع',tr:'bokra narj3',en:'Ich komme morgen wieder',ok:false},
 ]},
 ]},
 {ls:'L6',title:'🍽️ Im Restaurant',steps:[
 {vendor:{ar:'عاسلامة! تفضلو',tr:'3aslema!',en:'Willkommen!'},opts:[
+  {ar:'أعطيني سلاطة مشوية وبريكة',tr:'a3tini slata meshwiya w brika',en:'Gib mir Grillsalat und Brik',ok:true},
+  {ar:'ما نحبش ناكل',tr:'ma n7ebsh nekol',en:'Ich möchte nicht essen',ok:false},
+  {ar:'الحساب من فضلك',tr:'el 7seb min fathlak',en:'Die Rechnung bitte',ok:false},
 ]},
 {vendor:{ar:'حاضر. وتحبوش شي حاجة أخرى؟',tr:'7ather.',en:'Sofort. Noch etwas?'},opts:[
+  {ar:'جيب لي دبوزة ماء صافية',tr:'jib li dabbouza ma safya',en:'Bring mir eine Flasche Wasser',ok:true},
+  {ar:'لا، يكفي',tr:'la, yikfi',en:'Nein, das reicht',ok:true},
+  {ar:'ما فهمتش',tr:'ma fhemtsh',en:'Ich habe nicht verstanden',ok:false},
 ]},
 {vendor:{ar:'يجيو عشرين دينار',tr:'yjiou 3ishrin dinar',en:'Das macht 20 Dinare'},opts:[
+  {ar:'تفضل — هاك',tr:'tfathal — hak',en:'Bitte — hier',ok:true},
+  {ar:'غالي برشا!',tr:'ghali barsha!',en:'Viel zu teuer!',ok:false},
+  {ar:'ما عنديش فلوس',tr:'ma 3andish flous',en:'Ich habe kein Geld',ok:false},
 ]},
 ]},
 ];
