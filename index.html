@@ -1234,9 +1234,10 @@ function go(){
   else if(cMode==='order')exList=bOrder();
   else if(cMode==='roleplay')exList=bRP();
   else if(cMode==='grammar')exList=bGram();
+  else if(cMode==='flash')exList=bFlash(v);
   else if(cMode==='stats'){showStats();return;}
   else if(cMode==='speed')exList=[{type:'speed'}];
-  else if(cMode==='mix')exList=sh([...bMC(v).slice(0,5),...bMatch(v).slice(0,2),...bFill().slice(0,3),...bOrder().slice(0,2),...bConj().slice(0,2),...bRP().slice(0,1)]);
+  else if(cMode==='mix')exList=sh([...bMC(v).slice(0,4),...bFlash(v).slice(0,3),...bMatch(v).slice(0,2),...bFill().slice(0,2),...bOrder().slice(0,2),...bConj().slice(0,1),...bRP().slice(0,1)]);
   cIdx=0;render();
 }
 function nxt(){cIdx++;if(cIdx>=exList.length){if(cMode==='speed')return;showRes();}else{render();window.scrollTo({top:0,behavior:'instant'});}}
@@ -1255,6 +1256,7 @@ function render(){
   else if(ex.type==='fill')rFill(ex,c);
   else if(ex.type==='conj')rConj(ex,c);
   else if(ex.type==='order')rOrder(ex,c);
+  else if(ex.type==='flash')rFlash(ex,c);
   else if(ex.type==='roleplay')rRP(ex.data,c);
   else if(ex.type==='grammar')rGram(ex.data,c);
   else if(ex.type==='speed')startSpeed();
@@ -1271,6 +1273,17 @@ function bMC(vocab){
   const sorted=buildSrsQueue(vocab);
   const limit=Math.min(sorted.length,20);
   return sorted.slice(0,limit).map(v=>makeMCItem(v));
+}
+function bFlash(vocab){
+  if(vocab.length<2)vocab=[...vocab,...sh(ALL_VOCAB)].slice(0,20);
+  const sorted=buildSrsQueue(vocab);
+  const limit=Math.min(sorted.length,20);
+  // Beide Richtungen
+  const items=[];
+  sorted.slice(0,limit).forEach(v=>{
+    items.push({type:'flash',v,dir:Math.random()>.5?'ar2de':'de2ar'});
+  });
+  return sh(items);
 }
 function bMatch(vocab){if(vocab.length<4)vocab=sh(ALL_VOCAB);return[{type:'match',pairs:sh(vocab).slice(0,6)}];}
 function bFill(){const p=gp(FILL);return sh(p).slice(0,7).map(e=>({type:'fill',data:e}));}
@@ -1416,6 +1429,75 @@ function showCA(){
   document.querySelectorAll('.conj-input').forEach(inp=>{inp.value=inp.dataset.a;inp.classList.add('correct');inp.disabled=true;});
   const fb=document.getElementById('feedback');fb.className='feedback wrong show';fb.textContent='👁 Antworten angezeigt';showNext();
 }
+function rFlash(ex,el){
+  answered=false;
+  document.getElementById('ex-type-label').textContent='🃏 Vokabelkarten';
+  const v=ex.v, dir=ex.dir;
+  const isAr2De = dir==='ar2de';
+  el.innerHTML=`
+    <div class="lesson-badge">${v.ls} · ${v.tp}</div>
+    <div class="q-card" style="min-height:120px">
+      <div class="q-label">${isAr2De?'Wie lautet die deutsche Übersetzung?':'Wie lautet das arabische Wort?'}</div>
+      ${isAr2De
+        ? `<div class="q-arabic">${v.ar}</div><div class="q-sub">${v.tr}</div>`
+        : `<div class="q-text" style="font-size:1.4rem">${v.en}</div>`
+      }
+    </div>
+    <div style="display:flex;gap:.5rem;margin-bottom:.8rem">
+      <input id="flash-input" type="text"
+        style="flex:1;padding:.85rem 1rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:1rem;border-radius:6px;font-family:'IBM Plex Mono',monospace"
+        placeholder="${isAr2De?'Deutsch eingeben...':'Arabisch oder Transliteration...'}"
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+        onkeydown="if(event.key==='Enter')chkFlash()" />
+      <button class="btn primary" onclick="chkFlash()">Prüfen</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="btn-row" id="btn-row">
+      <button class="btn ghost" onclick="document.getElementById('flash-hint').classList.toggle('visible')">Hinweis</button>
+    </div>
+    <div class="q-hint" id="flash-hint">${isAr2De?v.en+' — '+v.tr:v.ar+' ('+v.tr+')'}</div>
+  `;
+  setTimeout(()=>{
+    const inp=document.getElementById('flash-input');
+    if(inp) inp.focus();
+  },100);
+}
+
+function chkFlash(){
+  if(answered)return; answered=true;
+  const inp=document.getElementById('flash-input');
+  if(!inp)return;
+  const val=inp.value.trim();
+  const ex=exList[cIdx];
+  const v=ex.v, dir=ex.dir;
+  let ok=false;
+  if(dir==='ar2de'){
+    // Deutsch eingegeben → mit en vergleichen
+    ok=normalize(val)===normalize(v.en);
+  } else {
+    // Arabisch/Transliteration eingegeben → ar oder tr
+    ok=normalize(val)===normalize(v.ar)||normalize(val)===normalize(v.tr);
+  }
+  inp.style.borderColor=ok?'var(--green)':'var(--red)';
+  inp.disabled=true;
+  // Lösung anzeigen wenn falsch
+  const fb=document.getElementById('feedback');
+  if(ok){
+    fb.className='feedback show correct';
+    fb.textContent='✓ Richtig!';
+  } else {
+    fb.className='feedback show wrong';
+    fb.innerHTML=dir==='ar2de'
+      ? '✗ '+v.en+' <span style="color:var(--muted);font-size:.8rem">('+v.tr+')</span>'
+      : '✗ <span style="font-family:\'Playfair Display\',serif;font-size:1.3rem;color:var(--gold2)">'+v.ar+'</span> <span style="color:var(--muted);font-size:.8rem">('+v.tr+')</span>';
+  }
+  // SRS update
+  srsAnswer(v, ok).then(()=>updateLessonChips());
+  ok?(score.c++,score.st++,score.t++):(score.w++,score.st=0,score.t++);
+  updScore();
+  showNext();
+}
+
 function rOrder(ex,el){
   document.getElementById('ex-type-label').textContent='🔀 Wortfolge';
   const d=ex.data;ordSel=[];
@@ -1515,7 +1597,7 @@ function spAns(ok){
   ok?(sRight++,score.c++,score.st++):(sWrong++,score.w++,score.st=0);
   // SRS update im Speed-Modus
   const cv=window._sv[sIdx%window._sv.length];
-  if(cv) srsAnswer(cv, ok).then(()=>updateLessonChips()); // async
+  // Speed: nur SRS-Sortierung, kein Update
   score.t++;sIdx++;updScore();if(sTime>0)renderSpeed();
 }
 function endSpeed(){
