@@ -315,18 +315,35 @@ body.hide-latin .chat-opt .latin {
 function normalize(s){
   if(!s)return'';
   s=s.trim().toLowerCase();
+  // Diakritische Zeichen
   s=s.replace(/[éèêë]/g,'e').replace(/[àâäå]/g,'a');
   s=s.replace(/[îï]/g,'i').replace(/[ôö]/g,'o').replace(/[ûüùú]/g,'u');
   s=s.replace(/ñ/g,'n').replace(/ç/g,'c');
+  // Deutsche Tastatur-Ersatz: ae→ä→a, oe→ö→o, ue→ü→u, ß→ss
+  s=s.replace(/ae/g,'a').replace(/oe/g,'o').replace(/ue/g,'u');
+  s=s.replace(/ß/g,'ss');
+  // Arabische Umschrift
   s=s.replace(/ʿ/g,'3').replace(/ħ/g,'7').replace(/ʔ/g,'').replace(/2/g,'');
+  // Konsonanten-Varianten (Reihenfolge wichtig: längere zuerst)
   s=s.replace(/sch/g,'sh').replace(/kh/g,'x').replace(/ch/g,'x');
-  s=s.replace(/gh/g,'g').replace(/dh/g,'d').replace(/th/g,'t').replace(/tj/g,'j');
+  s=s.replace(/gh/g,'g').replace(/dh/g,'d').replace(/th/g,'t');
+  s=s.replace(/tj/g,'j').replace(/dj/g,'j'); // dj→j
   s=s.replace(/q/g,'k');
+  // Artikel
   s=s.replace(/\bel[\-\s]/g,'el ').replace(/\bal[\-\s]/g,'el ');
+  // Vokal-Varianten
   s=s.replace(/oo/g,'u').replace(/ou/g,'u').replace(/ey/g,'i').replace(/ei/g,'i');
-  s=s.replace(/\([^)]*\)/g,'');// (m.) (f.) (Pl.) etc. ignorieren
+  // y am Wortende → i (3andy→3andi)
+  s=s.replace(/y$/g,'i').replace(/y(\s)/g,'i$1');
+  // Doppelkonsonanten → einfach (kaddesh→kadesh)
+  s=s.replace(/([bcdfghjklmnpqrstvwxz])\1/g,'$1');
+  // Klammern entfernen (m.) (f.) etc.
+  s=s.replace(/\([^)]*\)/g,'');
+  // Satzzeichen + Bindestrich
   s=s.replace(/-/g,'').replace(/[?!.,;:\u2014\u2013()"\u00ab\u00bb]/g,'');
+  // 7→h, 3→leer (nach allen anderen Ersetzungen)
   s=s.replace(/7/g,'h').replace(/3/g,'');
+  // Alle Leerzeichen entfernen
   s=s.replace(/\s/g,'');
   return s;
 }
