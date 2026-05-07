@@ -597,6 +597,7 @@ function updateLessonChips(){
     if(ls === 'L9past') return v.ls==='L9' && v.tp==='Vergangenheit';
     if(ls === 'L2nat') return v.ls==='L2' && v.tp==='Nationalitäten';
     if(ls === 'L2num') return v.ls==='L2' && v.tp==='Zahlen';
+    if(ls === 'L10months') return v.ls==='L10' && v.tp==='Monate';
       return v.ls === ls;
     });
     const due = countDueToday(lessonVocab);
@@ -1093,6 +1094,175 @@ const ALL_VOCAB=[
 {ar:'جاوب',tr:'jewib',en:'er antwortete',ls:'L9',tp:'Vergangenheit'},
 {ar:'مقفول',tr:'maqfoul',en:'geschlossen',ls:'L6',tp:'Adjektive'},
 {ar:'سخونة',tr:'skhouna',en:'heiß (f.)',ls:'L6',tp:'Adjektive'},
+// L2 — Nationalitäten korrigiert + fehlende
+{ar:'إيطاليا',tr:'iTalya',en:'Italien',ls:'L2',tp:'Nationalitäten'},
+{ar:'إيطالياني',tr:'iTalyani',en:'italienisch (m.)',ls:'L2',tp:'Nationalitäten'},
+{ar:'المكسيك',tr:'ilmiksi:k',en:'Mexiko',ls:'L2',tp:'Nationalitäten'},
+{ar:'مكسيكي',tr:'meksiki',en:'mexikanisch (m.)',ls:'L2',tp:'Nationalitäten'},
+{ar:'ألمانيا',tr:'almanya',en:'Deutschland',ls:'L2',tp:'Nationalitäten'},
+{ar:'فرنسا',tr:'fransa',en:'Frankreich',ls:'L2',tp:'Nationalitäten'},
+{ar:'أمريكا',tr:'amri:ka',en:'Amerika',ls:'L2',tp:'Nationalitäten'},
+// L3 — Präpositionen fehlend
+{ar:'قدام',tr:'quddame',en:'vor / gegenüber',ls:'L3',tp:'Präpositionen'},
+{ar:'ورا',tr:'wara',en:'hinter',ls:'L3',tp:'Präpositionen'},
+{ar:'فوق',tr:'fouq',en:'oben / über',ls:'L3',tp:'Präpositionen'},
+{ar:'تحت',tr:'ta7t',en:'unten / unter',ls:'L3',tp:'Präpositionen'},
+{ar:'جنب',tr:'jnib',en:'neben',ls:'L3',tp:'Präpositionen'},
+{ar:'بين',tr:'b-in',en:'zwischen',ls:'L3',tp:'Präpositionen'},
+// L5 — fehlende Händler
+{ar:'حواط',tr:'7awwat',en:'Fischhändler',ls:'L5',tp:'Händler'},
+// L8 — fehlende Post/Kommunikation
+{ar:'تلفون',tr:'talifu:n',en:'Telefon',ls:'L8',tp:'Post'},
+{ar:'تلغراف',tr:'tiligra:m',en:'Telegramm',ls:'L8',tp:'Post'},
+// L10 — Familie
+{ar:'جد',tr:'jidd',en:'Großvater',ls:'L10',tp:'Familie'},
+{ar:'جدة',tr:'jadda',en:'Großmutter',ls:'L10',tp:'Familie'},
+{ar:'بو',tr:'bu:',en:'Vater (umg.)',ls:'L10',tp:'Familie'},
+{ar:'أم',tr:'umm',en:'Mutter',ls:'L10',tp:'Familie'},
+{ar:'خالة',tr:'xa:la',en:'Tante (mütterlicherseits)',ls:'L10',tp:'Familie'},
+{ar:'خال',tr:'xa:l',en:'Onkel (mütterlicherseits)',ls:'L10',tp:'Familie'},
+{ar:'عمة',tr:'3amma',en:'Tante (väterlicherseits)',ls:'L10',tp:'Familie'},
+{ar:'عم',tr:'3amm',en:'Onkel (väterlicherseits)',ls:'L10',tp:'Familie'},
+{ar:'أخت',tr:'uxt',en:'Schwester',ls:'L10',tp:'Familie'},
+{ar:'أخو',tr:'xu:',en:'Bruder',ls:'L10',tp:'Familie'},
+{ar:'شيراز',tr:'shira:z',en:'Cousine (m.)',ls:'L10',tp:'Familie'},
+{ar:'ولد العم',tr:'wild il3amm',en:'Cousin (väterlicherseits)',ls:'L10',tp:'Familie'},
+{ar:'بنت العم',tr:'bint il3amm',en:'Cousine (väterlicherseits)',ls:'L10',tp:'Familie'},
+{ar:'ولد الخال',tr:'wild ilxa:l',en:'Cousin (mütterlicherseits)',ls:'L10',tp:'Familie'},
+{ar:'زوز',tr:'zu:z',en:'Ehemann (umg.)',ls:'L10',tp:'Familie'},
+{ar:'مرأة',tr:'mratu:',en:'Ehefrau',ls:'L10',tp:'Familie'},
+{ar:'عزيز',tr:'3zi:z',en:'Verlobter',ls:'L10',tp:'Familie'},
+// L10 — Monate
+{ar:'جانفي',tr:'ja:nfi',en:'Januar',ls:'L10',tp:'Monate'},
+{ar:'فيفري',tr:'fi:fri',en:'Februar',ls:'L10',tp:'Monate'},
+{ar:'مارس',tr:'ma:rs',en:'März',ls:'L10',tp:'Monate'},
+{ar:'أفريل',tr:'a:fri:l',en:'April',ls:'L10',tp:'Monate'},
+{ar:'ماي',tr:'ma:i',en:'Mai',ls:'L10',tp:'Monate'},
+{ar:'جوان',tr:'jwa:n',en:'Juni',ls:'L10',tp:'Monate'},
+{ar:'جويلية',tr:'jwi:lya',en:'Juli',ls:'L10',tp:'Monate'},
+{ar:'أوت',tr:'u:t',en:'August',ls:'L10',tp:'Monate'},
+{ar:'سبتمبر',tr:'sibtambir',en:'September',ls:'L10',tp:'Monate'},
+{ar:'أكتوبر',tr:'uktu:bir',en:'Oktober',ls:'L10',tp:'Monate'},
+{ar:'نوفمبر',tr:'nu:fa:mbir',en:'November',ls:'L10',tp:'Monate'},
+{ar:'ديسمبر',tr:'di:sa:mbir',en:'Dezember',ls:'L10',tp:'Monate'},
+// L10 — Jahreszeiten
+{ar:'الربيع',tr:'irbi:3',en:'Frühling',ls:'L10',tp:'Jahreszeiten'},
+{ar:'الصيف',tr:'is-sif',en:'Sommer',ls:'L10',tp:'Jahreszeiten'},
+{ar:'الخريف',tr:'il-xri:f',en:'Herbst',ls:'L10',tp:'Jahreszeiten'},
+{ar:'الشتاء',tr:'ish-shta',en:'Winter',ls:'L10',tp:'Jahreszeiten'},
+// L11 — Wohnen
+{ar:'دار',tr:'da:r',en:'Haus / Zuhause',ls:'L11',tp:'Wohnen'},
+{ar:'فيلا',tr:'vi:lla',en:'Villa',ls:'L11',tp:'Wohnen'},
+{ar:'برطمان',tr:'burTma:n',en:'Wohnung / Apartment',ls:'L11',tp:'Wohnen'},
+{ar:'بيت الصالة',tr:'bi:t issa:la',en:'Wohnzimmer',ls:'L11',tp:'Zimmer'},
+{ar:'بيت النوم',tr:'bi:t innu:m',en:'Schlafzimmer',ls:'L11',tp:'Zimmer'},
+{ar:'بيت الفطور',tr:'bi:t ilftu:r',en:'Esszimmer',ls:'L11',tp:'Zimmer'},
+{ar:'الكوجينة',tr:'ilku:ji:na',en:'Küche',ls:'L11',tp:'Zimmer'},
+{ar:'بيت الراحة',tr:'bi:t irra:ha',en:'Bad / WC',ls:'L11',tp:'Zimmer'},
+{ar:'المنشير',tr:'ilmanshi:r',en:'Korridor / Flur',ls:'L11',tp:'Zimmer'},
+{ar:'الدرّوج',tr:'iddru:j',en:'Treppe',ls:'L11',tp:'Zimmer'},
+{ar:'وسط الدار',tr:'wist idda:r',en:'Innenhof / Patio',ls:'L11',tp:'Wohnen'},
+{ar:'الكوجينة',tr:'ikku:ji:na',en:'Küche (Villa)',ls:'L11',tp:'Zimmer'},
+{ar:'فاراندا',tr:'fa:ra:nda',en:'Veranda / Balkon',ls:'L11',tp:'Zimmer'},
+{ar:'بيت التّوم',tr:'bi:t ittu:m',en:'Toilette',ls:'L11',tp:'Zimmer'},
+{ar:'الماء',tr:'ilma:',en:'Wasser',ls:'L11',tp:'Wohnen'},
+{ar:'الكهرباء',tr:'ilkahirba:',en:'Strom / Elektrizität',ls:'L11',tp:'Wohnen'},
+{ar:'كراء',tr:'kra:',en:'Miete',ls:'L11',tp:'Wohnen'},
+// L12 — Körper
+{ar:'راس',tr:'ra:s',en:'Kopf',ls:'L12',tp:'Körper'},
+{ar:'ذراع',tr:'dhra:3',en:'Arm',ls:'L12',tp:'Körper'},
+{ar:'كرش',tr:'kirsh',en:'Bauch',ls:'L12',tp:'Körper'},
+{ar:'ظهر',tr:'dha:hir',en:'Rücken',ls:'L12',tp:'Körper'},
+{ar:'يد',tr:'yiddi',en:'Hand',ls:'L12',tp:'Körper'},
+{ar:'رجل',tr:'rijli',en:'Bein / Fuß',ls:'L12',tp:'Körper'},
+{ar:'عين',tr:'wi:dni',en:'Ohr',ls:'L12',tp:'Körper'},
+{ar:'عين',tr:'3i:n',en:'Auge',ls:'L12',tp:'Körper'},
+{ar:'سنة',tr:'sinn',en:'Zahn',ls:'L12',tp:'Körper'},
+{ar:'أنف',tr:'un:f',en:'Nase',ls:'L12',tp:'Körper'},
+{ar:'حلق',tr:'7alq',en:'Hals',ls:'L12',tp:'Körper'},
+{ar:'صدر',tr:'sidir',en:'Brust',ls:'L12',tp:'Körper'},
+{ar:'ركبة',tr:'rikbi',en:'Knie',ls:'L12',tp:'Körper'},
+// L12 — Krankheit
+{ar:'يوجع',tr:'yu:ja3',en:'es tut weh',ls:'L12',tp:'Krankheit'},
+{ar:'مريض',tr:'mri:dh',en:'krank',ls:'L12',tp:'Krankheit'},
+{ar:'مجروح',tr:'majru:7',en:'verletzt',ls:'L12',tp:'Krankheit'},
+{ar:'مقطوع',tr:'maktu:3',en:'gebrochen',ls:'L12',tp:'Krankheit'},
+{ar:'دواء',tr:'dwa:',en:'Medizin / Medikament',ls:'L12',tp:'Krankheit'},
+{ar:'دكتور',tr:'duxt',en:'Arzt',ls:'L12',tp:'Krankheit'},
+{ar:'صيدلية',tr:'sidaliya',en:'Apotheke',ls:'L12',tp:'Krankheit'},
+{ar:'مستشفى',tr:'mustashfa',en:'Krankenhaus',ls:'L12',tp:'Krankheit'},
+{ar:'حرارة',tr:'7ara:ra',en:'Fieber / Temperatur',ls:'L12',tp:'Krankheit'},
+// L13 — Notfall
+{ar:'إجري ولي',tr:'ijri:wli:',en:'Hilfe!',ls:'L13',tp:'Notfall'},
+{ar:'صاحبي تصل حادث',tr:'sa:7bi: 3mal 7a:dith',en:'Mein Freund hatte einen Unfall',ls:'L13',tp:'Notfall'},
+{ar:'صاحبي مجروح',tr:'sa:7bi: majru:7',en:'Mein Freund ist verletzt',ls:'L13',tp:'Notfall'},
+{ar:'جرح خطير',tr:'jur7 xTi:r',en:'eine ernste Wunde',ls:'L13',tp:'Notfall'},
+{ar:'اطلب أمبولانس',tr:'uTlub ambuluns',en:'Ruf einen Krankenwagen',ls:'L13',tp:'Notfall'},
+{ar:'اطلب تاكسي',tr:'uTlub ta:ksi:',en:'Ruf ein Taxi',ls:'L13',tp:'Notfall'},
+{ar:'الشرطة',tr:'ishshurTa',en:'Polizei',ls:'L13',tp:'Notfall'},
+{ar:'الحماية',tr:'il7ima:ya',en:'Feuerwehr',ls:'L13',tp:'Notfall'},
+{ar:'البلادية',tr:'ilbala:diyya',en:'Stadtverwaltung',ls:'L13',tp:'Notfall'},
+{ar:'سرقة',tr:'sirqa',en:'Diebstahl',ls:'L13',tp:'Notfall'},
+{ar:'فمة حريقة في الدار',tr:'famma 7ri:qa f-idda:r',en:'Das Haus brennt',ls:'L13',tp:'Notfall'},
+{ar:'يبط للحماية',tr:'3ayyiT l-il7ima:ya',en:'Ruf die Feuerwehr',ls:'L13',tp:'Notfall'},
+{ar:'يبط للشرطة',tr:'3ayyiT l-ishshurTa',en:'Ruf die Polizei',ls:'L13',tp:'Notfall'},
+// L14 — Arbeit
+{ar:'خدمة',tr:'xidma',en:'Arbeit / Dienst',ls:'L14',tp:'Arbeit'},
+{ar:'أجر',tr:'ajr',en:'Lohn / Gehalt',ls:'L14',tp:'Arbeit'},
+{ar:'كونجي',tr:'ku:nji:',en:'Urlaub / Auszeit',ls:'L14',tp:'Arbeit'},
+{ar:'راس الشهر',tr:'ra:s ishshhar',en:'Monatsende / Gehaltstag',ls:'L14',tp:'Arbeit'},
+{ar:'شهادة',tr:'sha:di:ka:t',en:'Zertifikat / Diplom',ls:'L14',tp:'Arbeit'},
+{ar:'تجربة',tr:'tājrba',en:'Erfahrung',ls:'L14',tp:'Arbeit'},
+{ar:'مدرسة',tr:'madrasa',en:'Schule',ls:'L14',tp:'Bildung'},
+{ar:'جامعة',tr:'ja:mi3a',en:'Universität',ls:'L14',tp:'Bildung'},
+{ar:'يقرا',tr:'yiqra',en:'er liest / studiert',ls:'L14',tp:'Verben'},
+{ar:'يكتب',tr:'yiktib',en:'er schreibt',ls:'L14',tp:'Verben'},
+{ar:'يفهم',tr:'yifhim',en:'er versteht',ls:'L14',tp:'Verben'},
+{ar:'يخدم',tr:'yixdim',en:'er arbeitet',ls:'L14',tp:'Verben'},
+// L15 — Religion
+{ar:'الإسلام',tr:'ilisla:m',en:'Islam',ls:'L15',tp:'Religion'},
+{ar:'دين',tr:'di:n',en:'Religion / Glaube',ls:'L15',tp:'Religion'},
+{ar:'الله',tr:'alla:h',en:'Gott (Allah)',ls:'L15',tp:'Religion'},
+{ar:'الرسول',tr:'irrasuil',en:'Der Prophet (Mohammed)',ls:'L15',tp:'Religion'},
+{ar:'المسجد',tr:'ilmasjid',en:'Moschee',ls:'L15',tp:'Religion'},
+{ar:'الكنيسية',tr:'ilknisiyya',en:'Kirche',ls:'L15',tp:'Religion'},
+{ar:'الجمعة',tr:'ijjim3a:l15',en:'Freitag (heiliger Tag)',ls:'L15',tp:'Religion'},
+{ar:'الأحد',tr:'ilah-had',en:'Sonntag (christl. Feiertag)',ls:'L15',tp:'Religion'},
+{ar:'الإمام',tr:'ilima:m',en:'Imam',ls:'L15',tp:'Religion'},
+{ar:'البابا',tr:'ilba:ba:',en:'Der Papst',ls:'L15',tp:'Religion'},
+{ar:'الجنة',tr:'iljanna',en:'Paradies',ls:'L15',tp:'Religion'},
+{ar:'النار',tr:'inna:r',en:'Hölle / Feuer',ls:'L15',tp:'Religion'},
+{ar:'مكة',tr:'makka',en:'Mekka',ls:'L15',tp:'Religion'},
+{ar:'القرآن',tr:'ilqura:n',en:'Koran',ls:'L15',tp:'Religion'},
+{ar:'الإنجيل',tr:'ilinji:l',en:'Bibel / Evangelium',ls:'L15',tp:'Religion'},
+{ar:'الشهادة',tr:'ishshha:da',en:'Glaubensbekenntnis (1. Säule)',ls:'L15',tp:'Religion'},
+{ar:'الصلاة',tr:'issa:la:t',en:'Gebet (2. Säule)',ls:'L15',tp:'Religion'},
+{ar:'الزكاة',tr:'izzaka:t',en:'Armensteuer (3. Säule)',ls:'L15',tp:'Religion'},
+{ar:'الصوم',tr:'issawm',en:'Fasten (4. Säule)',ls:'L15',tp:'Religion'},
+{ar:'الحج',tr:'il7ajj',en:'Pilgerfahrt (5. Säule)',ls:'L15',tp:'Religion'},
+{ar:'حرام',tr:'7ra:m',en:'verboten / haram',ls:'L15',tp:'Religion'},
+{ar:'حلال',tr:'7la:l',en:'erlaubt / halal',ls:'L15',tp:'Religion'},
+{ar:'الشيطان',tr:'ishshiTa:n',en:'Teufel / Satan',ls:'L15',tp:'Religion'},
+// L15 — Politik
+{ar:'السياسة',tr:'issiya:sa',en:'Politik',ls:'L15',tp:'Politik'},
+{ar:'بلاد',tr:'bla:d-pl',en:'Länder (Pl.)',ls:'L15',tp:'Politik'},
+{ar:'دولة',tr:'dawla',en:'Staat',ls:'L15',tp:'Politik'},
+{ar:'حكومة',tr:'7ku:ma',en:'Regierung',ls:'L15',tp:'Politik'},
+{ar:'رئيس',tr:'ra:is',en:'Präsident',ls:'L15',tp:'Politik'},
+{ar:'وزير',tr:'wzi:r',en:'Minister',ls:'L15',tp:'Politik'},
+{ar:'وزارة',tr:'wza:ra',en:'Ministerium',ls:'L15',tp:'Politik'},
+{ar:'مجلس النواب',tr:'ma:jlis innuwa:b',en:'Parlament',ls:'L15',tp:'Politik'},
+{ar:'انتخابات',tr:'intixa:ba:t',en:'Wahlen',ls:'L15',tp:'Politik'},
+{ar:'حزب',tr:'7izb',en:'Partei',ls:'L15',tp:'Politik'},
+{ar:'قانون',tr:'qa:nu:n',en:'Gesetz',ls:'L15',tp:'Politik'},
+{ar:'اقتصاد',tr:'iliqtisa:d',en:'Wirtschaft',ls:'L15',tp:'Politik'},
+{ar:'أزمة',tr:'a:zma',en:'Krise',ls:'L15',tp:'Politik'},
+{ar:'بطالة',tr:'ilbTa:la',en:'Arbeitslosigkeit',ls:'L15',tp:'Politik'},
+{ar:'الشرق الأوسط',tr:'ishsharq ilawSaT',en:'Naher Osten',ls:'L15',tp:'Politik'},
+{ar:'سياسة خارجية',tr:'issiya:sa ilxa:rijiyya',en:'Außenpolitik',ls:'L15',tp:'Politik'},
+{ar:'حرب',tr:'7arb',en:'Krieg',ls:'L15',tp:'Politik'},
+
+
 {ar:'دايما بخير',tr:'deyma b khir',en:'immer gut',ls:'L2',tp:'Vorstellen'}
 ];
 
@@ -1305,11 +1475,12 @@ function gv(){
   if(cLesson==='L9past') return ALL_VOCAB.filter(v=>v.ls==='L9'&&v.tp==='Vergangenheit');
   if(cLesson==='L2nat') return ALL_VOCAB.filter(v=>v.ls==='L2'&&v.tp==='Nationalitäten');
   if(cLesson==='L2num') return ALL_VOCAB.filter(v=>v.ls==='L2'&&v.tp==='Zahlen');
+  if(cLesson==='L10months') return ALL_VOCAB.filter(v=>v.ls==='L10'&&v.tp==='Monate');
   return ALL_VOCAB.filter(v=>v.ls===cLesson);
 }
 function gp(arr){
   if(cLesson==='all')return arr;
-  const k=cLesson==='L5fruit'||cLesson==='L5veg'?'L5':cLesson==='L7color'?'L7':cLesson==='L4currency'?'L4':cLesson==='L9past'?'L9':cLesson==='L2nat'||cLesson==='L2num'?'L2':cLesson;
+  const k=cLesson==='L5fruit'||cLesson==='L5veg'?'L5':cLesson==='L7color'?'L7':cLesson==='L4currency'?'L4':cLesson==='L9past'?'L9':cLesson==='L2nat'||cLesson==='L2num'?'L2':cLesson==='L10months'?'L10':cLesson;
   return arr.filter(x=>x.ls===k);
 }
 function filterLesson(l,el){cLesson=l;document.querySelectorAll('.lesson-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');go();}
