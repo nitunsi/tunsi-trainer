@@ -196,6 +196,17 @@ main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem 5rem;overflow-anchor:no
   .word-chip{font-size:1.5rem;}
   .score-num{font-size:1.2rem;}
 }
+
+/* Lateinisch ausblenden */
+body.hide-latin .q-sub,
+body.hide-latin .transl,
+body.hide-latin [data-latin],
+body.hide-latin .choice-btn .latin,
+body.hide-latin .match-item .latin,
+body.hide-latin .word-chip .latin,
+body.hide-latin .chat-opt .latin {
+  display:none !important;
+}
 </style>
 </head>
 <body>
@@ -228,7 +239,7 @@ main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem 5rem;overflow-anchor:no
     <span class="nav-score" style="color:var(--red)" id="sc-wrong">0</span>
     <span class="nav-score" style="color:var(--gold)" id="sc-streak">🔥0</span>
     <button class="nav-toggle" id="nav-toggle-btn" onclick="toggleNav()">▼ Menü</button>
-    <button class="logout-btn" id="dbg-btn" onclick="toggleDebug()" style="color:var(--gold);border-color:var(--gold);font-size:.6rem;padding:.3rem .5rem;">DBG</button>
+    <button onclick="toggleLatin()" id="latin-toggle" style="margin-right:.3rem">TR AN</button><button class="logout-btn" id="dbg-btn" onclick="toggleDebug()" style="color:var(--gold);border-color:var(--gold);font-size:.6rem;padding:.3rem .5rem;">DBG</button>
   </div>
 </div>
 <!-- ── Aufklappbares Panel ── -->
@@ -271,7 +282,7 @@ main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem 5rem;overflow-anchor:no
 </div>
 <main>
   <div id="exercise-screen">
-    <div class="exercise-header">
+    <div class="exercise-header" style="display:flex;justify-content:space-between;align-items:center;">
       <span class="ex-type" id="ex-type-label">&Uuml;bung</span>
       <span class="ex-progress" id="ex-progress">1 / 10</span>
     </div>
@@ -349,6 +360,23 @@ function dbg(msg, cls){
   d.textContent = new Date().toLocaleTimeString() + ' ' + msg;
   log.appendChild(d);
   log.scrollTop = log.scrollHeight;
+}
+
+
+// Lateinisch ein/aus
+let latinVisible = localStorage.getItem('latin-visible') !== 'false';
+function applyLatin(){
+  document.body.classList.toggle('hide-latin', !latinVisible);
+  const btn = document.getElementById('latin-toggle');
+  if(btn){
+    btn.textContent = latinVisible ? 'TR AN' : 'TR AUS';
+    btn.style.opacity = latinVisible ? '1' : '.5';
+  }
+}
+function toggleLatin(){
+  latinVisible = !latinVisible;
+  localStorage.setItem('latin-visible', latinVisible);
+  applyLatin();
 }
 
 // ══ SRS — Spaced Repetition (Tage-basiert, Supabase) ════════════════════════
@@ -600,7 +628,7 @@ async function doLogin(){
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app-screen').style.display='block';
     document.getElementById('header-user').textContent='v8 \u00b7 '+currentUser.username;
-    srsLoadFromSupabase().then(()=>{ go(); updateLessonChips(); });
+    srsLoadFromSupabase().then(()=>{ go(); updateLessonChips(); applyLatin(); });
   }catch(e){showLoginError('Verbindungsfehler: '+e.message);btn.textContent=isRegMode?'Registrieren':'Anmelden';btn.disabled=false;}
 }
 function doLogout(){
@@ -1319,7 +1347,7 @@ function rMC(ex,el){
   const v=ex.v,dir=ex.dir;
   el.innerHTML=`<div class="lesson-badge">${v.ls} · ${v.tp}</div>
   <div class="q-card"><div class="q-label">${dir==='ar2en'?'Was bedeutet dieses Wort?':'Welches Tounsi-Wort bedeutet:'}</div>
-  ${dir==='ar2en'?`<div class="q-arabic">${v.ar}</div><div class="q-sub">${v.tr}</div>`:`<div class="q-text">${v.en}</div>`}
+  ${dir==='ar2en'?`<div class="q-arabic">${v.ar}</div><div class="q-sub latin">${v.tr}</div>`:`<div class="q-text">${v.en}</div>`}
   </div>
   <div class="choices" id="choices"></div>
   <div class="feedback" id="feedback"></div>
@@ -1328,7 +1356,7 @@ function rMC(ex,el){
   const L=['A','B','C','D'],ce=document.getElementById('choices');
   ex.opts.forEach((opt,i)=>{
     const btn=document.createElement('button');btn.className='choice-btn';
-    if(dir==='en2ar'){const ar=opt.split(' (')[0];const tr2=opt.includes('(')?opt.split(' (')[1].replace(')',''):'';btn.innerHTML=`<span class="choice-letter">${L[i]}</span><span style="flex:1;text-align:right"><span style="direction:rtl;font-size:1.6rem;font-family:'Playfair Display',serif;color:var(--gold2);display:block;line-height:1.3">${ar}</span>${tr2?`<span style="font-size:.68rem;color:var(--muted)">${tr2}</span>`:''}</span>`;}
+    if(dir==='en2ar'){const ar=opt.split(' (')[0];const tr2=opt.includes('(')?opt.split(' (')[1].replace(')',''):'';btn.innerHTML=`<span class="choice-letter">${L[i]}</span><span style="flex:1;text-align:right"><span style="direction:rtl;font-size:1.6rem;font-family:'Playfair Display',serif;color:var(--gold2);display:block;line-height:1.3">${ar}</span>${tr2?`<span class="latin" style="font-size:.68rem;color:var(--muted)">${tr2}</span>`:''}</span>`;}
     else btn.innerHTML=`<span class="choice-letter">${L[i]}</span>${opt}`;
     btn.onclick=()=>aMC(btn,opt===ex.ca,ex.ca,ce);ce.appendChild(btn);
   });
@@ -1392,7 +1420,7 @@ function rFill(ex,el){
   el.innerHTML=`<div class="lesson-badge">${d.ls}</div>
   <div class="q-card"><div class="q-label">Fülle die Lücke — <span style="color:var(--muted);font-size:.78rem">${d.h}</span></div>
   <div style="font-size:1.8rem;direction:rtl;font-family:'Playfair Display',serif;line-height:1.8">${disp}</div>
-  <div class="q-sub" style="margin-top:.5rem">${d.t}</div></div>
+  <div class="q-sub latin" style="margin-top:.5rem">${d.t}</div></div>
   <div id="btn-row" style="display:none;"></div>
   <div class="q-hint" id="fh">Antwort: ${d.a} (${d.at})</div>
   <div class="feedback" id="feedback"></div>`;
@@ -1462,7 +1490,7 @@ function rFlash(ex,el){
     <div class="q-card" style="min-height:120px">
       <div class="q-label">${isAr2De?'Wie lautet die deutsche Übersetzung?':'Wie lautet das arabische Wort?'}</div>
       ${isAr2De
-        ? `<div class="q-arabic">${v.ar}</div><div class="q-sub">${v.tr}</div>`
+        ? `<div class="q-arabic">${v.ar}</div><div class="q-sub latin">${v.tr}</div>`
         : `<div class="q-text" style="font-size:1.4rem">${v.en}</div>`
       }
     </div>
@@ -1555,7 +1583,7 @@ function rGram(data,el){
 function rRP(data,el){
   document.getElementById('ex-type-label').textContent='🛒 Rollenspiel';
   rpScenario=data;rpStep=0;
-  el.innerHTML=`<div class="q-card"><div class="q-label">${data.title}</div><div class="q-sub">Wähle die richtige Antwort.</div></div>
+  el.innerHTML=`<div class="q-card"><div class="q-label">${data.title}</div><div class="q-sub latin">Wähle die richtige Antwort.</div></div>
   <div class="chat" id="chat-log"></div><div id="chat-opts"></div>
   <div class="feedback" id="feedback"></div><div class="btn-row" id="btn-row"></div>`;
   rpRender();
@@ -1565,11 +1593,11 @@ function rpRender(){
   const step=rpScenario.steps[rpStep];
   const log=document.getElementById('chat-log');
   const b=document.createElement('div');b.className='chat-bubble vendor';
-  b.innerHTML=`<div style="font-size:1.8rem;direction:rtl;font-family:'Playfair Display',serif;color:var(--gold2);line-height:1.3">${step.vendor.ar}</div><div style="font-size:.72rem;color:var(--muted);margin-top:.2rem">${step.vendor.tr} · ${step.vendor.en}</div>`;
+  b.innerHTML=`<div style="font-size:1.8rem;direction:rtl;font-family:'Playfair Display',serif;color:var(--gold2);line-height:1.3">${step.vendor.ar}</div><div class="latin" style="font-size:.72rem;color:var(--muted);margin-top:.2rem">${step.vendor.tr} · ${step.vendor.en}</div>`;
   log.appendChild(b);log.scrollTop=log.scrollHeight;
   const sOpts=sh(step.opts);
   const optsEl=document.getElementById('chat-opts');
-  optsEl.innerHTML=`<div class="chat-options">${sOpts.map(o=>`<button class="chat-opt" onclick="rpAns(this,${o.ok},'${eq(o.ar)}','${eq(o.en)}')"><span style="font-size:1.5rem;direction:rtl;display:block;font-family:'Playfair Display',serif;color:var(--gold2);line-height:1.3">${o.ar}</span><span style="font-size:.68rem;color:var(--muted);display:block;margin-top:.15rem">${o.tr} · ${o.en}</span></button>`).join('')}</div>`;
+  optsEl.innerHTML=`<div class="chat-options">${sOpts.map(o=>`<button class="chat-opt" onclick="rpAns(this,${o.ok},'${eq(o.ar)}','${eq(o.en)}')"><span style="font-size:1.5rem;direction:rtl;display:block;font-family:'Playfair Display',serif;color:var(--gold2);line-height:1.3">${o.ar}</span><span class="latin" style="font-size:.68rem;color:var(--muted);display:block;margin-top:.15rem">${o.tr} · ${o.en}</span></button>`).join('')}</div>`;
   optsEl.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function rpAns(btn,ok,ar,en){
