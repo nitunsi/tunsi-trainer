@@ -324,11 +324,21 @@ function normalize(s){
   s=s.replace(/q/g,'k');
   s=s.replace(/\bel[\-\s]/g,'el ').replace(/\bal[\-\s]/g,'el ');
   s=s.replace(/oo/g,'u').replace(/ou/g,'u').replace(/ey/g,'i').replace(/ei/g,'i');
+  s=s.replace(/\([^)]*\)/g,'');// (m.) (f.) (Pl.) etc. ignorieren
   s=s.replace(/-/g,'').replace(/[?!.,;:\u2014\u2013()"\u00ab\u00bb]/g,'');
   s=s.replace(/7/g,'h').replace(/3/g,'');
   s=s.replace(/\s/g,'');
   return s;
 }
+
+// Prüft ob Eingabe einer der /-getrennten Varianten entspricht
+function checkAnswer(input, answer){
+  const n = normalize(input);
+  // Splitte Antwort bei ' / ' oder '/' und prüfe alle Varianten
+  const variants = answer.split(/\s*\/\s*/).map(v => normalize(v.trim()));
+  return variants.some(v => v !== '' && n === v);
+}
+
 
 
 // Debug Panel
@@ -1433,7 +1443,7 @@ function chkFill(){
   if(answered)return;answered=true;
   hideStickyCheck();
   const inp=document.getElementById('fill-input'),val=inp.value.trim();
-  const ok=normalize(val)===normalize(window._fa)||normalize(val)===normalize(window._fat);
+  const ok=checkAnswer(val,window._fa)||checkAnswer(val,window._fat);
   inp.classList.add(ok?'correct':'wrong');inp.disabled=true;
   ok?(score.c++,score.st++,score.t++):(score.w++,score.st=0,score.t++);
   // SRS update
@@ -1456,7 +1466,7 @@ function chkConj(){
   let c=0,t=0;
   document.querySelectorAll('.conj-input').forEach(inp=>{
     t++;
-    const ok=normalize(inp.value)===normalize(inp.dataset.a)||normalize(inp.value)===normalize(inp.dataset.t);
+    const ok=checkAnswer(inp.value,inp.dataset.a)||checkAnswer(inp.value,inp.dataset.t);
     inp.classList.add(ok?'correct':'wrong');
     inp.disabled=true;
     if(ok)c++;
@@ -1524,10 +1534,10 @@ function chkFlash(){
   let ok=false;
   if(dir==='ar2de'){
     // Deutsch eingegeben → mit en vergleichen
-    ok=normalize(val)===normalize(v.en);
+    ok=checkAnswer(val,v.en);
   } else {
     // Arabisch/Transliteration eingegeben → ar oder tr
-    ok=normalize(val)===normalize(v.ar)||normalize(val)===normalize(v.tr);
+    ok=checkAnswer(val,v.ar)||checkAnswer(val,v.tr);
   }
   inp.style.borderColor=ok?'var(--green)':'var(--red)';
   inp.disabled=true;
