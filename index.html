@@ -331,12 +331,29 @@ function normalize(s){
   return s;
 }
 
-// Prüft ob Eingabe einer der /-getrennten Varianten entspricht
+function levenshtein(a, b){
+  const m=a.length, n=b.length;
+  const dp=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i===0?j:j===0?i:0));
+  for(let i=1;i<=m;i++)
+    for(let j=1;j<=n;j++)
+      dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+  return dp[m][n];
+}
+
 function checkAnswer(input, answer){
   const n = normalize(input);
-  // Splitte Antwort bei ' / ' oder '/' und prüfe alle Varianten
-  const variants = answer.split(/\s*\/\s*/).map(v => normalize(v.trim()));
-  return variants.some(v => v !== '' && n === v);
+  const variants = answer.split(/\s*\/\s*/).map(v => normalize(v.trim())).filter(v=>v!=='');
+  // Exakter Match
+  if(variants.some(v => n === v)) return {ok:true, exact:true, correct:answer};
+  // Fuzzy: 1 Buchstabe Toleranz ab 5 Zeichen
+  const best = variants.reduce((b,v)=>{
+    const d=levenshtein(n,v);
+    return d<b.dist?{dist:d,v}:b;
+  },{dist:99,v:''});
+  if(best.dist===1 && n.length>=5){
+    return {ok:true, exact:false, correct:answer};
+  }
+  return {ok:false, exact:false, correct:answer};
 }
 
 
@@ -744,7 +761,7 @@ const ALL_VOCAB=[
 {ar:'فراز',tr:'fraise',en:'Erdbeeren',ls:'L5',tp:'Obst'},
 {ar:'هندي',tr:'hindi',en:'Kaktusfeigen',ls:'L5',tp:'Obst'},
 {ar:'رمان',tr:'rommen',en:'Granatäpfel',ls:'L5',tp:'Obst'},
-{ar:'دلاع',tr:'dille3',en:'Wassermelonen',ls:'L5',tp:'Obst'},
+{ar:'دلاع',tr:'dlaa',en:'Wassermelone / Wassermelonen',ls:'L5',tp:'Obst'},
 {ar:'بنان',tr:'banen',en:'Bananen',ls:'L5',tp:'Obst'},
 {ar:'بطيخ',tr:'battikh',en:'Melonen',ls:'L5',tp:'Obst'},
 {ar:'غلة',tr:'ghalla',en:'Früchte / Obst (allg.)',ls:'L5',tp:'Obst'},
@@ -1443,12 +1460,16 @@ function chkFill(){
   if(answered)return;answered=true;
   hideStickyCheck();
   const inp=document.getElementById('fill-input'),val=inp.value.trim();
-  const ok=checkAnswer(val,window._fa)||checkAnswer(val,window._fat);
+  const res1=checkAnswer(val,window._fa),res2=checkAnswer(val,window._fat);
+  const ok=(res1.ok||res2.ok);
+  const exact=(res1.exact||res2.exact);
+  const correctText=res1.ok?window._fa:window._fat;
   inp.classList.add(ok?'correct':'wrong');inp.disabled=true;
   ok?(score.c++,score.st++,score.t++):(score.w++,score.st=0,score.t++);
   // SRS update
   if(exList[cIdx]&&exList[cIdx].data&&exList[cIdx].data._vocab) srsAnswer(exList[cIdx].data._vocab,ok);
-  updScore();showFb(ok,window._fa+' ('+window._fat+')');showNext();
+  const fillHint = ok&&!exact ? '~'+correctText+' (1 Buchstabe daneben — gut!)' : window._fa+' ('+window._fat+')';
+  updScore();showFb(ok,fillHint);showNext();
 }
 function rConj(ex,el){
   document.getElementById('ex-type-label').textContent='📐 Konjugation';
@@ -1466,7 +1487,8 @@ function chkConj(){
   let c=0,t=0;
   document.querySelectorAll('.conj-input').forEach(inp=>{
     t++;
-    const ok=checkAnswer(inp.value,inp.dataset.a)||checkAnswer(inp.value,inp.dataset.t);
+    const res=checkAnswer(inp.value,inp.dataset.a).ok||checkAnswer(inp.value,inp.dataset.t).ok;
+    const ok=res;
     inp.classList.add(ok?'correct':'wrong');
     inp.disabled=true;
     if(ok)c++;
@@ -1526,6 +1548,7 @@ function rFlash(ex,el){
 
 function chkFlash(){
   if(answered)return; answered=true;
+  let flashFuzzy=null;
   const inp=document.getElementById('flash-input');
   if(!inp)return;
   const val=inp.value.trim();
@@ -1534,10 +1557,10 @@ function chkFlash(){
   let ok=false;
   if(dir==='ar2de'){
     // Deutsch eingegeben → mit en vergleichen
-    ok=checkAnswer(val,v.en);
+    {const r=checkAnswer(val,v.en);ok=r.ok;if(ok&&!r.exact)flashFuzzy=v.en;}
   } else {
     // Arabisch/Transliteration eingegeben → ar oder tr
-    ok=checkAnswer(val,v.ar)||checkAnswer(val,v.tr);
+    {const r1=checkAnswer(val,v.ar),r2=checkAnswer(val,v.tr);ok=r1.ok||r2.ok;if(ok&&!(r1.exact||r2.exact))flashFuzzy=v.ar+'('+v.tr+')';}
   }
   inp.style.borderColor=ok?'var(--green)':'var(--red)';
   inp.disabled=true;
@@ -1545,7 +1568,7 @@ function chkFlash(){
   const fb=document.getElementById('feedback');
   if(ok){
     fb.className='feedback show correct';
-    fb.textContent='✓ Richtig!';
+    fb.textContent = flashFuzzy ? '~ Fast! Richtige Schreibung: '+flashFuzzy : '✓ Richtig!';
   } else {
     fb.className='feedback show wrong';
     fb.innerHTML=dir==='ar2de'
