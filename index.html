@@ -1310,7 +1310,7 @@ function gv(){
 function gp(arr){
   if(cLesson==='all')return arr;
   const k=cLesson==='L5fruit'||cLesson==='L5veg'?'L5':cLesson==='L7color'?'L7':cLesson==='L4currency'?'L4':cLesson==='L9past'?'L9':cLesson==='L2nat'||cLesson==='L2num'?'L2':cLesson;
-  const f=arr.filter(x=>x.ls===k);return f.length?f:arr;
+  return arr.filter(x=>x.ls===k);
 }
 function filterLesson(l,el){cLesson=l;document.querySelectorAll('.lesson-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');go();}
 function setMode(m,el){cMode=m;document.querySelectorAll('.mode-btn,.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));el.classList.add('active');go();}
@@ -1324,15 +1324,15 @@ function go(){
   const v=sh(gv());
   if(cMode==='mc')exList=bMC(v);
   else if(cMode==='match')exList=bMatch(v);
-  else if(cMode==='fill')exList=bFill();
-  else if(cMode==='conj')exList=bConj();
-  else if(cMode==='order')exList=bOrder();
-  else if(cMode==='roleplay')exList=bRP();
-  else if(cMode==='grammar')exList=bGram();
+  else if(cMode==='fill'){exList=bFill();if(!exList.length){showNoContent('Lückentext');return;}}
+  else if(cMode==='conj'){exList=bConj();if(!exList.length){showNoContent('Konjugation');return;}}
+  else if(cMode==='order'){exList=bOrder();if(!exList.length){showNoContent('Wortfolge');return;}}
+  else if(cMode==='roleplay'){exList=bRP();if(!exList.length){showNoContent('Roleplay');return;}}
+  else if(cMode==='grammar'){exList=bGram();if(!exList.length){showNoContent('Grammatik');return;}}
   else if(cMode==='flash')exList=bFlash(v);
   else if(cMode==='stats'){showStats();return;}
   else if(cMode==='speed')exList=[{type:'speed'}];
-  else if(cMode==='mix')exList=sh([...bMC(v).slice(0,4),...bFlash(v).slice(0,3),...bMatch(v).slice(0,2),...bFill().slice(0,2),...bOrder().slice(0,2),...bConj().slice(0,1),...bRP().slice(0,1)]);
+  else if(cMode==='mix'){const _f=bFill(),_o=bOrder(),_c=bConj(),_r=bRP();exList=sh([...bMC(v).slice(0,4),...bFlash(v).slice(0,3),...bMatch(v).slice(0,2),..._f.slice(0,2),..._o.slice(0,2),..._c.slice(0,1),..._r.slice(0,1)]);}
   cIdx=0;render();
 }
 function nxt(){cIdx++;if(cIdx>=exList.length){if(cMode==='speed')return;showRes();}else{render();window.scrollTo({top:0,behavior:'instant'});}}
@@ -1878,6 +1878,25 @@ function updateNavContext(){
   if(ctx) ctx.textContent = (modeNames[cMode] || cMode) + ' · ' + lessonName + (total > 1 ? ' · ' + cur + '/' + total : '');
   const fill = document.getElementById('nav-progress-fill');
   if(fill && total > 1) fill.style.width = Math.round((cIdx / total) * 100) + '%';
+}
+
+
+function showNoContent(mode){
+  const c=document.getElementById('exercise-content');
+  if(!c)return;
+  const lesson=cLesson==='all'?'Alle Lektionen':cLesson;
+  c.innerHTML=`<div class="q-card" style="text-align:center;padding:2rem">
+    <div style="font-size:2rem;margin-bottom:1rem">📭</div>
+    <div class="q-label" style="margin-bottom:.5rem">${mode}</div>
+    <div style="color:var(--muted);font-size:.85rem">
+      Keine ${mode}-Übungen für <strong style="color:var(--gold2)">${lesson}</strong> vorhanden.
+    </div>
+    <div style="color:var(--muted);font-size:.78rem;margin-top:.8rem">
+      Wähle eine andere Lektion oder einen anderen Modus.
+    </div>
+  </div>`;
+  document.getElementById('ex-type-label').textContent=mode;
+  document.getElementById('ex-progress').textContent='';
 }
 
 function restartExercise(){document.getElementById('result-screen').classList.remove('show');go();}
