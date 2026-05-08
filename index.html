@@ -247,19 +247,32 @@ body.hide-latin .chat-opt .latin {
   <div class="nav-section-label">Lektion</div>
   <div class="nav-chips">
     <button class="lesson-chip active" onclick="filterLesson('all',this);closeNav()">Alle</button>
-    <button class="lesson-chip" data-ls="L1" onclick="filterLesson('L1',this);closeNav()">L1 · Begrüßung</button>
-    <button class="lesson-chip" data-ls="L2" onclick="filterLesson('L2',this);closeNav()">L2 · Zahlen</button>
-    <button class="lesson-chip" data-ls="L3" onclick="filterLesson('L3',this);closeNav()">L3 · Alltag</button>
-    <button class="lesson-chip" data-ls="L4" onclick="filterLesson('L4',this);closeNav()">L4 · Geld</button>
-    <button class="lesson-chip" data-ls="L4currency" onclick="filterLesson('L4currency',this);closeNav()">L4 · Währung</button>
-    <button class="lesson-chip" data-ls="L5" onclick="filterLesson('L5',this);closeNav()">L5 · Einkaufen</button>
-    <button class="lesson-chip" data-ls="L5fruit" onclick="filterLesson('L5fruit',this);closeNav()">L5 · Obst</button>
-    <button class="lesson-chip" data-ls="L5veg" onclick="filterLesson('L5veg',this);closeNav()">L5 · Gemüse</button>
-    <button class="lesson-chip" data-ls="L6" onclick="filterLesson('L6',this);closeNav()">L6 · Essen</button>
-    <button class="lesson-chip" data-ls="L7" onclick="filterLesson('L7',this);closeNav()">L7 · Kleidung</button>
-    <button class="lesson-chip" data-ls="L7color" onclick="filterLesson('L7color',this);closeNav()">L7 · Farben</button>
-    <button class="lesson-chip" data-ls="L8" onclick="filterLesson('L8',this);closeNav()">L8 · Post</button>
-    <button class="lesson-chip" data-ls="L9" onclick="filterLesson('L9',this);closeNav()">L9 · Transport</button>
+    <button class="lesson-chip" onclick="filterLesson('L1',this);closeNav()">L1 · Begrüßung</button>
+    <button class="lesson-chip" onclick="filterLesson('L1greet',this);closeNav()">L1 · Begrüßungsformeln</button>
+    <button class="lesson-chip" onclick="filterLesson('L1class',this);closeNav()">L1 · Klassenzimmer</button>
+    <button class="lesson-chip" onclick="filterLesson('L2',this);closeNav()">L2 · Vorstellen</button>
+    <button class="lesson-chip" onclick="filterLesson('L2nat',this);closeNav()">L2 · Nationalitäten</button>
+    <button class="lesson-chip" onclick="filterLesson('L2num',this);closeNav()">L2 · Zahlen</button>
+    <button class="lesson-chip" onclick="filterLesson('L3',this);closeNav()">L3 · Alltag</button>
+    <button class="lesson-chip" onclick="filterLesson('L4',this);closeNav()">L4 · Geld</button>
+    <button class="lesson-chip" onclick="filterLesson('L4currency',this);closeNav()">L4 · Währung</button>
+    <button class="lesson-chip" onclick="filterLesson('L5',this);closeNav()">L5 · Einkaufen</button>
+    <button class="lesson-chip" onclick="filterLesson('L5veg',this);closeNav()">L5 · Gemüse</button>
+    <button class="lesson-chip" onclick="filterLesson('L5fruit',this);closeNav()">L5 · Obst</button>
+    <button class="lesson-chip" onclick="filterLesson('L6',this);closeNav()">L6 · Essen</button>
+    <button class="lesson-chip" onclick="filterLesson('L6cafe',this);closeNav()">L6 · Café</button>
+    <button class="lesson-chip" onclick="filterLesson('L7',this);closeNav()">L7 · Kleidung</button>
+    <button class="lesson-chip" onclick="filterLesson('L7color',this);closeNav()">L7 · Farben</button>
+    <button class="lesson-chip" onclick="filterLesson('L8',this);closeNav()">L8 · Post</button>
+    <button class="lesson-chip" onclick="filterLesson('L9',this);closeNav()">L9 · Transport</button>
+    <button class="lesson-chip" onclick="filterLesson('L9past',this)">L9 · Vergangenheit</button>
+    <button class="lesson-chip" onclick="filterLesson('L10',this);closeNav()">L10 · Familie</button>
+    <button class="lesson-chip" onclick="filterLesson('L10months',this);closeNav()">L10 · Monate</button>
+    <button class="lesson-chip" onclick="filterLesson('L11',this);closeNav()">L11 · Wohnen</button>
+    <button class="lesson-chip" onclick="filterLesson('L12',this);closeNav()">L12 · Gesundheit</button>
+    <button class="lesson-chip" onclick="filterLesson('L13',this);closeNav()">L13 · Notfall</button>
+    <button class="lesson-chip" onclick="filterLesson('L14',this);closeNav()">L14 · Arbeit</button>
+    <button class="lesson-chip" onclick="filterLesson('L15',this);closeNav()">L15 · Gesellschaft</button>
   </div>
   <div class="nav-section-label">Übungsmodus</div>
   <div class="nav-chips">
@@ -1628,7 +1641,7 @@ function gv(){
 }
 function gp(arr){
   if(cLesson==='all')return arr;
-  const k=cLesson==='L5fruit'||cLesson==='L5veg'?'L5':cLesson==='L7color'?'L7':cLesson==='L4currency'?'L4':cLesson==='L9past'?'L9':cLesson==='L2nat'||cLesson==='L2num'?'L2':cLesson==='L10months'?'L10':cLesson;
+  const k=cLesson==='L5fruit'||cLesson==='L5veg'?'L5':cLesson==='L6cafe'?'L6':cLesson==='L7color'?'L7':cLesson==='L4currency'?'L4':cLesson==='L9past'?'L9':cLesson==='L2nat'||cLesson==='L2num'?'L2':cLesson==='L10months'?'L10':cLesson==='L1greet'||cLesson==='L1class'?'L1':cLesson;
   return arr.filter(x=>x.ls===k);
 }
 function filterLesson(l,el){cLesson=l;document.querySelectorAll('.lesson-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');go();}
