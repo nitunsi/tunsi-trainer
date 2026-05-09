@@ -467,14 +467,15 @@ async function srsLoadFromSupabase(){
     dbg('Geladen: ' + allVocab.length + ' Vokabeln', 'ok');
 
     // ALL_VOCAB nur beim ersten Laden befüllen
-    if(ALL_VOCAB.length === 0){ // Nur beim ersten Login befüllen
+    if(!_vocabLoadedFromDB){ // Nur beim ersten Login aus Supabase befüllen
       ALL_VOCAB.length = 0; // leeren
       allVocab.forEach(v => {
         const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
         const tp = v.topic || 'Allgemein';
         ALL_VOCAB.push({ ar: v.arabic_script || '', tr: v.darija || '', en: v.german || '', ls, tp });
       });
-      dbg('ALL_VOCAB befüllt: ' + ALL_VOCAB.length + ' Einträge', 'ok');
+      _vocabLoadedFromDB = true;
+      dbg('ALL_VOCAB befüllt: ' + ALL_VOCAB.length + ' Einträge aus Supabase', 'ok');
     } else {
       dbg('ALL_VOCAB bereits geladen: ' + ALL_VOCAB.length + ' Einträge', 'ok');
     }
@@ -726,6 +727,7 @@ function doLogout(){
   document.getElementById('login-btn').disabled=false;
 }
 
+let _vocabLoadedFromDB = false;
 let ALL_VOCAB=[
 {ar:'عاسلامة',tr:'3aslema',en:'Hallo',ls:'L1',tp:'Begrüßung'},
 {ar:'أهلا',tr:'ahla',en:'Willkommen / Hallo',ls:'L1',tp:'Begrüßung'},
