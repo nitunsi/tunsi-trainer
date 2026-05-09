@@ -1673,8 +1673,8 @@ function render(){
 function makeMCItem(v){
   const dir=Math.random()>.5?'ar2en':'en2ar';
   const pool=ALL_VOCAB.filter(x=>x.ar!==v.ar);
-  if(dir==='ar2en'){const opts=sh([v.en,...sh(pool).slice(0,3).map(x=>x.en)]);return{type:'mc',v,opts,ca:v.en,dir};}
-  else{const c=v.ar+' ('+v.tr+')';const opts=sh([c,...sh(pool).slice(0,3).map(x=>x.ar+' ('+x.tr+')')]);return{type:'mc',v,opts,ca:c,dir};}
+  if(dir==='ar2en'){const opts=sh([v.en,...sh(pool).slice(0,10).map(x=>x.en)]);return{type:'mc',v,opts,ca:v.en,dir};}
+  else{const c=v.ar+' ('+v.tr+')';const opts=sh([c,...sh(pool).slice(0,10).map(x=>x.ar+' ('+x.tr+')')]);return{type:'mc',v,opts,ca:c,dir};}
 }
 function bMC(vocab){
   const due = _dueQueue.length ? _dueQueue : buildSrsQueue(vocab);
@@ -1690,10 +1690,10 @@ function bFlash(vocab){
   });
   return sh(items);
 }
-function bMatch(vocab){if(vocab.length<4)vocab=sh(ALL_VOCAB);return[{type:'match',pairs:sh(vocab).slice(0,6)}];}
-function bFill(){const p=gp(FILL);return sh(p).slice(0,7).map(e=>({type:'fill',data:e}));}
-function bConj(){const p=gp(CONJ);return sh(p).slice(0,3).map(d=>({type:'conj',data:d}));}
-function bOrder(){const p=gp(ORDER);return sh(p).slice(0,6).map(e=>({type:'order',data:e}));}
+function bMatch(vocab){if(vocab.length<4)vocab=sh(ALL_VOCAB);return[{type:'match',pairs:sh(vocab).slice(0,10)}];}
+function bFill(){const p=gp(FILL);return sh(p).slice(0,10).map(e=>({type:'fill',data:e}));}
+function bConj(){const p=gp(CONJ);return sh(p).slice(0,10).map(d=>({type:'conj',data:d}));}
+function bOrder(){const p=gp(ORDER);return sh(p).slice(0,10).map(e=>({type:'order',data:e}));}
 function bRP(){const p=gp(ROLEPLAY);return p.map(r=>({type:'roleplay',data:r}));}
 function bGram(){const p=gp(GRAMMAR);return p.map(g=>({type:'grammar',data:g}));}
 function rMC(ex,el){
