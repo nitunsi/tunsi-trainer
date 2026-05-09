@@ -1532,13 +1532,16 @@ function timeAgo(date){
   return diff+'T';
 }
 function srsInfoBadge(vocab){
+  if(!vocab || !vocab.tr) return '';
   const vocabId = vocabIdMap[vocab.tr];
   const p = vocabId ? srsProgress[vocabId] : null;
-  const level = p ? p.level : 0;
-  const stars = '⭐'.repeat(level)+'<span style="opacity:.25">'+('⭐'.repeat(5-level))+'</span>';
-  const reviewed = p ? timeAgo(p.last_reviewed) : '—';
-  const correct = p ? timeAgo(p.last_correct) : '—';
-  return `<div class="srs-info-badge">${stars} &nbsp;|&nbsp; 📅 ${reviewed} &nbsp;|&nbsp; ✓ ${correct}</div>`;
+  const level = p ? (p.level||0) : 0;
+  const filled = '⭐'.repeat(level);
+  const empty = '<span style="opacity:.2">⭐</span>'.repeat(5-level);
+  const reviewed = (p && p.last_reviewed) ? timeAgo(p.last_reviewed) : '—';
+  const correct = (p && p.last_correct) ? timeAgo(p.last_correct) : '—';
+  const lvlColor = ['#888','#e8a045','#c9a84c','#4cac6e','#4c8aac','#8a4cac'][level];
+  return `<div class="srs-info-badge">${filled}${empty} <span style="color:${lvlColor};font-size:.65rem;margin-left:.2rem">L${level}</span> &nbsp;·&nbsp; 📅 ${reviewed} &nbsp;·&nbsp; ✓ ${correct}</div>`;
 }
 
 function sh(a){return[...a].sort(()=>Math.random()-.5);}
@@ -1638,7 +1641,7 @@ function bGram(){const p=gp(GRAMMAR);return p.map(g=>({type:'grammar',data:g}));
 function rMC(ex,el){
   document.getElementById('ex-type-label').textContent='🎯 Multiple Choice';
   const v=ex.v,dir=ex.dir;
-  el.innerHTML=`<div class="lesson-badge">${v.ls} · ${v.tp}</div>${srsInfoBadge(v)}${srsInfoBadge(v)}
+  el.innerHTML=`<div class="lesson-badge">${v.ls} · ${v.tp}</div>${srsInfoBadge(v)}
   <div class="q-card"><div class="q-label">${dir==='ar2en'?'Was bedeutet dieses Wort?':'Welches Tounsi-Wort bedeutet:'}</div>
   ${dir==='ar2en'?`<div class="q-arabic">${v.ar}</div><div class="q-sub latin">${v.tr}</div>`:`<div class="q-text">${v.en}</div>`}
   </div>
@@ -1710,7 +1713,7 @@ function rFill(ex,el){
   document.getElementById('ex-type-label').textContent='✏️ Lückentext';
   const d=ex.data;
   const disp=d.s.replace('___',`<input class="answer-input" id="fill-input" placeholder="..." style="width:150px;display:inline-block" />`);
-  el.innerHTML=`<div class="lesson-badge">${d.ls}</div>`+srsInfoBadge(ALL_VOCAB.find(v=>v.ar===window._fa)||{})+`
+  el.innerHTML=`<div class="lesson-badge">${d.ls}</div>`+srsInfoBadge(ALL_VOCAB.find(v=>v.ar===window._fa)||{tr:'',ls:''})+`
   <div class="q-card"><div class="q-label">Fülle die Lücke — <span style="color:var(--muted);font-size:.78rem">${d.h}</span></div>
   <div style="font-size:1.8rem;direction:rtl;font-family:'Playfair Display',serif;line-height:1.8">${disp}</div>
   <div class="q-sub latin" style="margin-top:.5rem">${d.t}</div></div>
@@ -1740,7 +1743,7 @@ function chkFill(){
 function rConj(ex,el){
   document.getElementById('ex-type-label').textContent='📐 Konjugation';
   const d=ex.data;
-  el.innerHTML=`<div class="lesson-badge">${d.ls}</div>`+srsInfoBadge(ALL_VOCAB.find(v=>v.ar===window._fa)||{})+`
+  el.innerHTML=`<div class="lesson-badge">${d.ls}</div>`+srsInfoBadge(ALL_VOCAB.find(v=>v.ar===window._fa)||{tr:'',ls:''})+`
   <div class="q-card"><div class="q-label">Konjugiere das Verb</div><div class="q-text" style="font-size:2rem;direction:rtl;font-family:'Playfair Display',serif;color:var(--gold2)">${d.v}</div></div>
   <table class="conj-table"><thead><tr><th>Pronomen</th><th>Tounsi-Form</th><th class="tr-col" style="display:none">Transliteration</th></tr></thead>
   <tbody>${d.rows.map((r,i)=>`<tr><td>${r.p}</td><td><input class="conj-input" id="ci-${i}" data-a="${r.a}" data-t="${r.t}" placeholder="..." /></td><td class="tr-col" style="display:none;color:var(--muted);font-size:.72rem">${r.t}</td></tr>`).join('')}</tbody></table>
@@ -1852,7 +1855,7 @@ function rOrder(ex,el){
   document.getElementById('ex-type-label').textContent='🔀 Wortfolge';
   const d=ex.data;ordSel=[];
   const sw=sh([...d.w]);
-  el.innerHTML=`<div class="lesson-badge">${d.ls}</div>`+srsInfoBadge(ALL_VOCAB.find(v=>v.ar===window._fa)||{})+`
+  el.innerHTML=`<div class="lesson-badge">${d.ls}</div>`+srsInfoBadge(ALL_VOCAB.find(v=>v.ar===window._fa)||{tr:'',ls:''})+`
   <div class="q-card"><div class="q-label">Richtige Reihenfolge</div><div style="font-size:.82rem;color:var(--muted);margin-top:.2rem;letter-spacing:.01em">${d.e}</div></div>
   <div class="answer-slots" id="ord-slots" onclick="rmLast()"><span style="font-size:.65rem;color:var(--muted)">← Klick zum Entfernen</span></div>
   <div class="word-bank" id="ord-bank">${sw.map((w,i)=>`<span class="word-chip" id="ow-${i}" onclick="addW(${i},'${eq(w)}')">${w}</span>`).join('')}</div>
