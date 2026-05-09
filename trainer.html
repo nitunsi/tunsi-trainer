@@ -1600,10 +1600,11 @@ function updScore(){document.getElementById('sc-correct').textContent=score.c;do
 function showFb(ok,ca){const fb=document.getElementById('feedback');if(!fb)return;fb.className='feedback show '+(ok?'correct':'wrong');fb.textContent=ok?'✓ Richtig!':'✗ Falsch.'+(ca?' Antwort: '+ca:'');}
 function showNext(){showStickyNext(nxt);}
 function go(){
-
   score={c:0,w:0,t:0,st:0};updScore();
   if(sTimer){clearInterval(sTimer);sTimer=null;}
   document.getElementById('result-screen').classList.remove('show');
+  // Fällige Vokabeln einmal berechnen — alle b-Funktionen nutzen das
+  _dueQueue = buildSrsQueue(gv());
   const v=sh(gv());
   if(cMode==='mc')exList=bMC(v);
   else if(cMode==='match')exList=bMatch(v);
