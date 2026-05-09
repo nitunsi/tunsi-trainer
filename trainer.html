@@ -295,7 +295,7 @@ body.hide-latin .chat-opt .latin {
     <button class="lesson-chip" onclick="setMode('stats',this);closeNav()">📊 Statistik</button>
   </div>
   <div class="nav-footer">
-    <span class="nav-user" id="header-user">v8</span>
+    <span class="nav-user" id="header-user">v9</span>
     <button class="logout-btn" onclick="doLogout()">Abmelden</button>
   </div>
 </div>
@@ -713,7 +713,7 @@ async function doLogin(){
     }
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app-screen').style.display='block';
-    document.getElementById('header-user').textContent='v8 \u00b7 '+currentUser.username;
+    document.getElementById('header-user').textContent='v9 · '+currentUser.username;
     srsLoadFromSupabase().then(()=>{
       // go() nur aufrufen wenn noch keine Übung läuft
       if(exList.length === 0) go();
