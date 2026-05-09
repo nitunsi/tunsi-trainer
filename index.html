@@ -455,7 +455,7 @@ async function srsLoadFromSupabase(){
 
     // Lade progress des Nutzers
     const progress = await sbApi(
-      'progress?user_id=eq.'+currentUser.id+'&select=id,vocabulary_id,correct_count,wrong_count,next_review'
+      'progress?user_id=eq.'+currentUser.id+'&select=id,vocabulary_id,correct_count,wrong_count,next_review,last_reviewed,last_correct'
     );
     progress.forEach(p => {
       const level = Math.min(p.correct_count, 5);
@@ -515,6 +515,8 @@ async function srsAnswer(vocab, correct){
     correct_count: correct ? level : Math.max(0, level),
     wrong_count: correct ? 0 : 1,
     next_review: nextReview.toISOString(),
+    last_reviewed: new Date().toISOString(),
+    last_correct: correct ? new Date().toISOString() : null,
   };
 
   try{
@@ -523,6 +525,8 @@ async function srsAnswer(vocab, correct){
       await sbApi('progress?id=eq.'+existing.id, 'PATCH', {
         correct_count: data.correct_count,
         next_review: data.next_review,
+        last_reviewed: new Date().toISOString(),
+        last_correct: correct ? new Date().toISOString() : (existing.last_correct ? existing.last_correct.toISOString() : null),
       });
       srsProgress[vocabId].level = level;
       srsProgress[vocabId].next_review = nextReview;
@@ -1558,7 +1562,7 @@ function gp(arr){
   return arr.filter(x=>x.ls===k);
 }
 function filterLesson(l,el){cLesson=l;document.querySelectorAll('.lesson-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');go();}
-function setMode(m,el){cMode=m;document.querySelectorAll('.mode-btn,.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));el.classList.add('active');go();}
+function setMode(m,el){cMode=m;document.querySelectorAll('.mode-btn,.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));el.classList.add('active');if(m==='vocab'){showVocabList();return;}if(m==='stats'){showStats();return;}go();}
 function updScore(){document.getElementById('sc-correct').textContent=score.c;document.getElementById('sc-wrong').textContent=score.w;document.getElementById('sc-streak').textContent='🔥'+score.st;}
 function showFb(ok,ca){const fb=document.getElementById('feedback');if(!fb)return;fb.className='feedback show '+(ok?'correct':'wrong');fb.textContent=ok?'✓ Richtig!':'✗ Falsch.'+(ca?' Antwort: '+ca:'');}
 function showNext(){showStickyNext(nxt);}
@@ -1575,8 +1579,7 @@ function go(){
   else if(cMode==='roleplay'){exList=bRP();if(!exList.length){showNoContent('Roleplay');return;}}
   else if(cMode==='grammar'){exList=bGram();if(!exList.length){showNoContent('Grammatik');return;}}
   else if(cMode==='flash')exList=bFlash(v);
-  else if(cMode==='vocab'){showVocabList();return;}
-  else if(cMode==='stats'){showStats();return;}
+
   else if(cMode==='speed')exList=[{type:'speed'}];
   else if(cMode==='mix'){const _f=bFill(),_o=bOrder(),_c=bConj(),_r=bRP();exList=sh([...bMC(v).slice(0,4),...bFlash(v).slice(0,3),...bMatch(v).slice(0,2),..._f.slice(0,2),..._o.slice(0,2),..._c.slice(0,1),..._r.slice(0,1)]);}
   cIdx=0;render();
@@ -2123,6 +2126,7 @@ function updateNavContext(){
   const cur = Math.min(cIdx + 1, total);
   if(ctx) ctx.textContent = (modeNames[cMode] || cMode) + ' · ' + lessonName + (total > 1 ? ' · ' + cur + '/' + total : '');
   const fill = document.getElementById('nav-progress-fill');
+  const np=document.getElementById('nav-progress');if(np)np.style.visibility='visible';
   if(fill && total > 1) fill.style.width = Math.round((cIdx / total) * 100) + '%';
 }
 
@@ -2150,7 +2154,7 @@ function showVocabList(){
   if(!c) return;
   document.getElementById('ex-type-label').textContent = '📚 Vokabeln';
   document.getElementById('ex-progress').textContent = '';
-  document.getElementById('nav-progress').style.display = 'none';
+  document.getElementById('nav-progress').style.visibility = 'hidden';
 
   const vocab = cLesson==='all' ? ALL_VOCAB : gv();
 
