@@ -1631,10 +1631,20 @@ function render(){
   hideStickyNext();
   hideStickyCheck();
   updateNavContext();
+  // Modus-Label im exercise-header
+  const _modeLabels = {mc:'🎯 MC',mix:'🎲 Mix',match:'🔗 Matching',fill:'✏️ Lückentext',
+    conj:'📐 Konjugation',order:'🔀 Wortfolge',roleplay:'🛒 Roleplay',
+    grammar:'📖 Grammatik',speed:'⚡ Speed',flash:'🃏 Karten'};
+  const _lbl = document.getElementById('ex-type-label');
+  if(_lbl) _lbl.textContent = _modeLabels[cMode] || cMode;
   try{window.scrollTo({top:0,behavior:'instant'});}catch(e){window.scrollTo(0,0);}
   const pct=exList.length>1?Math.round(cIdx/exList.length*100):0;
   document.getElementById('progress-fill').style.width=pct+'%';
-  document.getElementById('ex-progress').textContent=(cIdx+1)+' / '+exList.length;
+  // Counter immer sichtbar halten
+  const _total = exList.length;
+  const _cur = cIdx + 1;
+  document.getElementById('ex-progress').textContent = _cur + ' / ' + _total;
+  document.getElementById('ex-progress').style.display = 'inline';
   const c=document.getElementById('exercise-content');c.innerHTML='';
   if(ex.type==='mc')rMC(ex,c);
   else if(ex.type==='match')rMatch(ex,c);
@@ -1820,7 +1830,7 @@ function showCA(){
 }
 function rFlash(ex,el){
   answered=false;
-  document.getElementById('ex-type-label').textContent='🃏 Vokabelkarten';
+  // ex-type-label wird von render()/updateNavContext gesetzt
   const v=ex.v, dir=ex.dir;
   const isAr2De = dir==='ar2de';
   el.innerHTML=`
