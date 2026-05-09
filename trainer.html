@@ -466,19 +466,14 @@ async function srsLoadFromSupabase(){
     allVocab.forEach(v => { vocabIdMap[v.darija] = v.id; });
     dbg('Geladen: ' + allVocab.length + ' Vokabeln', 'ok');
 
-    // ALL_VOCAB nur beim ersten Laden befüllen
-    if(!_vocabLoadedFromDB){ // Nur beim ersten Login aus Supabase befüllen
-      ALL_VOCAB.length = 0; // leeren
-      allVocab.forEach(v => {
-        const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
-        const tp = v.topic || 'Allgemein';
-        ALL_VOCAB.push({ ar: v.arabic_script || '', tr: v.darija || '', en: v.german || '', ls, tp });
-      });
-      _vocabLoadedFromDB = true;
-      dbg('ALL_VOCAB befüllt: ' + ALL_VOCAB.length + ' Einträge aus Supabase', 'ok');
-    } else {
-      dbg('ALL_VOCAB bereits geladen: ' + ALL_VOCAB.length + ' Einträge', 'ok');
-    }
+    // ALL_VOCAB aus Supabase befüllen (dauerhaft, überschreibt hardcoded)
+    ALL_VOCAB.length = 0;
+    allVocab.forEach(v => {
+      const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
+      const tp = v.topic || 'Allgemein';
+      ALL_VOCAB.push({ ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp });
+    });
+    dbg('ALL_VOCAB: ' + ALL_VOCAB.length + ' Einträge', 'ok');
 
     // Lade progress des Nutzers
     const progress = await sbApi(
@@ -1514,6 +1509,7 @@ const ROLEPLAY=[
 ];
 // STATE
 let cMode='mix',cLesson='all',cIdx=0,exList=[];
+let _dueQueue=[];
 // SRS: Spaced Repetition State
 let srsLevels={};  // {vocabKey: level 0-5}
 let srsQueue=[];   // Aktive Lernqueue mit {vocab, dueIn} Objekten
@@ -1604,10 +1600,7 @@ function updScore(){document.getElementById('sc-correct').textContent=score.c;do
 function showFb(ok,ca){const fb=document.getElementById('feedback');if(!fb)return;fb.className='feedback show '+(ok?'correct':'wrong');fb.textContent=ok?'✓ Richtig!':'✗ Falsch.'+(ca?' Antwort: '+ca:'');}
 function showNext(){showStickyNext(nxt);}
 function go(){
-  // Nicht neu starten wenn Übung läuft (z.B. nach SRS-Reload)
-  if(exList.length > 0 && cIdx >= 0 && cIdx < exList.length){
-    render(); return;
-  }
+
   score={c:0,w:0,t:0,st:0};updScore();
   if(sTimer){clearInterval(sTimer);sTimer=null;}
   document.getElementById('result-screen').classList.remove('show');
@@ -1631,9 +1624,14 @@ function go(){
   render();
 }
 function nxt(){
-  // Erledigte Vokabel aus exList entfernen (nicht überspringen)
+  // Erledigte Vokabel aus exList entfernen
   exList.splice(cIdx, 1);
-  // cIdx bleibt gleich — zeigt jetzt auf das nächste Element
+  // Alle 10 erledigten: Zwischenmeldung
+  const done = score.c + score.w;
+  if(done > 0 && done % 10 === 0 && exList.length > 0){
+    showMidRes();
+    return;
+  }
   if(cIdx >= exList.length){
     if(cMode==='speed') return;
     showRes();
@@ -1679,18 +1677,15 @@ function makeMCItem(v){
   else{const c=v.ar+' ('+v.tr+')';const opts=sh([c,...sh(pool).slice(0,3).map(x=>x.ar+' ('+x.tr+')')]);return{type:'mc',v,opts,ca:c,dir};}
 }
 function bMC(vocab){
-  const sorted=buildSrsQueue(vocab);
-  if(!sorted.length) return [];
-  // Für MC brauchen wir mind. 4 Vokabeln für Antwortoptionen
-  // Falsche Antworten aus allen Vokabeln nehmen (nicht aus Queue)
-  return sorted.slice(0,20).map(v=>makeMCItem(v));
+  const due = _dueQueue.length ? _dueQueue : buildSrsQueue(vocab);
+  if(!due.length) return [];
+  return due.slice(0,10).map(v=>makeMCItem(v));
 }
 function bFlash(vocab){
-  const sorted=buildSrsQueue(vocab);
-  if(!sorted.length) return [];
+  const due = _dueQueue.length ? _dueQueue : buildSrsQueue(vocab);
+  if(!due.length) return [];
   const items=[];
-  // Max 10 Vokabeln, beide Richtungen möglich
-  sorted.slice(0,10).forEach(v=>{
+  due.slice(0,10).forEach(v=>{
     items.push({type:'flash',v,dir:Math.random()>.5?'ar2de':'de2ar'});
   });
   return sh(items);
@@ -2527,6 +2522,44 @@ async function saveNewVocab(){
   } catch(e){
     fb.style.color='var(--red)'; fb.textContent='Fehler: '+e.message;
   }
+}
+
+function showMidRes(){
+  const pct = score.t > 0 ? Math.round(score.c / score.t * 100) : 0;
+  const remaining = exList.length;
+  const msgs = pct>=80
+    ? ['مْلِيح بَرشَة 👏', 'زِين! Zin!', 'هَكَّة نَعرَف!']
+    : ['شْوَيَّة شْوَيَّة...', 'عَاوِد مَرَّة أُخرى!', 'مَا يَهمَّش!'];
+  const msg = msgs[Math.floor(Math.random()*msgs.length)];
+
+  const area = document.getElementById('exercise-area');
+  if(area) area.style.display = 'block';
+  const c = document.getElementById('exercise-content');
+  c.innerHTML = `
+    <div style="text-align:center;padding:2rem 1rem">
+      <div style="font-size:2.5rem;margin-bottom:.8rem">${pct>=80?'🌟':'💪'}</div>
+      <div style="color:var(--gold2);font-size:1.3rem;font-weight:700;margin-bottom:.4rem">${msg}</div>
+      <div style="color:var(--muted);font-size:.85rem;margin-bottom:1.5rem">
+        <span style="color:var(--green)">✓ ${score.c} richtig</span> &nbsp;·&nbsp;
+        <span style="color:var(--red)">✗ ${score.w} falsch</span>
+      </div>
+      <div style="color:var(--muted);font-size:.82rem;margin-bottom:1.5rem">
+        Noch <strong style="color:var(--gold)">${remaining}</strong> Vokabeln fällig
+      </div>
+      <button onclick="continueRound()" style="width:100%;padding:.9rem;background:linear-gradient(135deg,var(--gold),#a07020);border:none;color:#0e0c0a;font-family:'IBM Plex Mono',monospace;font-size:.9rem;font-weight:700;cursor:pointer;border-radius:6px;letter-spacing:.05em">
+        Weiter →
+      </button>
+    </div>
+  `;
+  document.getElementById('ex-type-label').textContent = '⏸ Pause';
+  document.getElementById('ex-progress').textContent = '';
+  const sticky = document.getElementById('sticky-next');
+  if(sticky) sticky.classList.remove('show');
+}
+
+function continueRound(){
+  render();
+  window.scrollTo({top:0,behavior:'instant'});
 }
 
 function restartExercise(){document.getElementById('result-screen').classList.remove('show');go();}
