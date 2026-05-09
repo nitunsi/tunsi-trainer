@@ -1816,16 +1816,19 @@ function rFlash(ex,el){
   const v=ex.v, dir=ex.dir;
   const isAr2De = dir==='ar2de';
   el.innerHTML=`
-    <div class="flash-sticky-top">
-      <div class="lesson-badge">${v.ls} · ${v.tp}</div>${srsInfoBadge(v)}
-      <div class="q-card" style="min-height:80px;margin-bottom:.5rem">
-        <div class="q-label" style="font-size:.65rem">${isAr2De?'Wie lautet die deutsche Übersetzung?':'Wie lautet das arabische Wort?'}</div>
-        ${isAr2De
-          ? `<div class="q-arabic" style="font-size:2.8rem">${v.ar}</div><div class="q-sub latin">${v.tr}</div>`
-          : `<div class="q-text" style="font-size:1.3rem">${v.en}</div>`
-        }
-      </div>
+    <div class="lesson-badge">${v.ls} · ${v.tp}</div>
+    <div class="q-card" style="min-height:80px;margin-bottom:.5rem">
+      <div class="q-label" style="font-size:.65rem">${isAr2De?'Wie lautet die deutsche Übersetzung?':'Wie lautet das arabische Wort?'}</div>
+      ${isAr2De
+        ? `<div class="q-arabic" style="font-size:2.8rem">${v.ar}</div><div class="q-sub latin">${v.tr}</div>`
+        : `<div class="q-text" style="font-size:1.3rem">${v.en}</div>`
+      }
     </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;gap:.5rem">
+      <div style="flex:1">${srsInfoBadge(v)}</div>
+      <button class="btn ghost" style="white-space:nowrap;padding:.3rem .7rem;font-size:.7rem" onclick="document.getElementById('flash-hint').classList.toggle('visible')">💡 Hinweis</button>
+    </div>
+    <div class="q-hint" id="flash-hint" style="margin-bottom:.6rem">${isAr2De?v.en+' — '+v.tr:v.ar+' ('+v.tr+')'}</div>
     <div style="display:flex;gap:.5rem;margin-bottom:.8rem">
       <input id="flash-input" type="text"
         style="flex:1;padding:.85rem 1rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:1rem;border-radius:6px;font-family:'IBM Plex Mono',monospace"
@@ -1835,10 +1838,6 @@ function rFlash(ex,el){
       <button class="btn primary" onclick="chkFlash()">Prüfen</button>
     </div>
     <div class="feedback" id="feedback"></div>
-    <div class="btn-row" id="btn-row">
-      <button class="btn ghost" onclick="document.getElementById('flash-hint').classList.toggle('visible')">Hinweis</button>
-    </div>
-    <div class="q-hint" id="flash-hint">${isAr2De?v.en+' — '+v.tr:v.ar+' ('+v.tr+')'}</div>
   `;
   setTimeout(()=>{
     const inp=document.getElementById('flash-input');
