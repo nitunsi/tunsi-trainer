@@ -466,14 +466,18 @@ async function srsLoadFromSupabase(){
     allVocab.forEach(v => { vocabIdMap[v.darija] = v.id; });
     dbg('Geladen: ' + allVocab.length + ' Vokabeln', 'ok');
 
-    // ALL_VOCAB dynamisch aus Supabase befüllen
-    ALL_VOCAB.length = 0; // leeren
-    allVocab.forEach(v => {
-      const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
-      const tp = v.topic || 'Allgemein';
-      ALL_VOCAB.push({ ar: v.arabic_script || '', tr: v.darija || '', en: v.german || '', ls, tp });
-    });
-    dbg('ALL_VOCAB befüllt: ' + ALL_VOCAB.length + ' Einträge', 'ok');
+    // ALL_VOCAB nur beim ersten Laden befüllen
+    if(ALL_VOCAB.length === 0){ // Nur beim ersten Login befüllen
+      ALL_VOCAB.length = 0; // leeren
+      allVocab.forEach(v => {
+        const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
+        const tp = v.topic || 'Allgemein';
+        ALL_VOCAB.push({ ar: v.arabic_script || '', tr: v.darija || '', en: v.german || '', ls, tp });
+      });
+      dbg('ALL_VOCAB befüllt: ' + ALL_VOCAB.length + ' Einträge', 'ok');
+    } else {
+      dbg('ALL_VOCAB bereits geladen: ' + ALL_VOCAB.length + ' Einträge', 'ok');
+    }
 
     // Lade progress des Nutzers
     const progress = await sbApi(
