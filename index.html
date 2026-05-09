@@ -1592,7 +1592,24 @@ function go(){
   }
   render();
 }
-function nxt(){cIdx++;if(cIdx>=exList.length){if(cMode==='speed')return;showRes();}else{render();window.scrollTo({top:0,behavior:'instant'});}}
+function nxt(){
+  cIdx++;
+  // Überspringe Einträge die nicht mehr fällig sind
+  while(cIdx < exList.length){
+    const ex = exList[cIdx];
+    // Nur bei SRS-relevanten Modi prüfen
+    if(ex && ex.v && !srsIsDue(ex.v)){ cIdx++; continue; }
+    if(ex && ex.data && ex.data._vocab && !srsIsDue(ex.data._vocab)){ cIdx++; continue; }
+    break;
+  }
+  if(cIdx>=exList.length){
+    if(cMode==='speed')return;
+    showRes();
+  } else {
+    render();
+    window.scrollTo({top:0,behavior:'instant'});
+  }
+}
 function render(){
   const ex=exList[cIdx];answered=false;
   hideStickyNext();
