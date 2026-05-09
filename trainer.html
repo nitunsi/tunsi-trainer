@@ -1615,17 +1615,11 @@ function go(){
   render();
 }
 function nxt(){
-  cIdx++;
-  // Überspringe Einträge die nicht mehr fällig sind
-  while(cIdx < exList.length){
-    const ex = exList[cIdx];
-    // Nur bei SRS-relevanten Modi prüfen
-    if(ex && ex.v && !srsIsDue(ex.v)){ cIdx++; continue; }
-    if(ex && ex.data && ex.data._vocab && !srsIsDue(ex.data._vocab)){ cIdx++; continue; }
-    break;
-  }
-  if(cIdx>=exList.length){
-    if(cMode==='speed')return;
+  // Erledigte Vokabel aus exList entfernen (nicht überspringen)
+  exList.splice(cIdx, 1);
+  // cIdx bleibt gleich — zeigt jetzt auf das nächste Element
+  if(cIdx >= exList.length){
+    if(cMode==='speed') return;
     showRes();
   } else {
     render();
@@ -1669,7 +1663,8 @@ function bFlash(vocab){
   const sorted=buildSrsQueue(vocab);
   if(!sorted.length) return [];
   const items=[];
-  sorted.slice(0,20).forEach(v=>{
+  // Max 10 Vokabeln, beide Richtungen möglich
+  sorted.slice(0,10).forEach(v=>{
     items.push({type:'flash',v,dir:Math.random()>.5?'ar2de':'de2ar'});
   });
   return sh(items);
@@ -2006,7 +2001,14 @@ function endSpeed(){
 function showRes(){
   const pct=score.t>0?Math.round(score.c/score.t*100):0;
   document.getElementById('result-pct').textContent=pct+'%';
-  document.getElementById('result-msg').textContent=pct>=90?"Māshā'llāh! 🎉":pct>=70?'Mlīḥ barsha! 👏':pct>=50?'Shwayya shwayya...':'Yalla, 3awid!';
+  const msgs = pct>=90
+    ? ['مَشَاءَ الله! 🎉 Māsha allah!', 'بَارَك الله فيك 🌟', 'زِين بَرشَة! Zin barsha!']
+    : pct>=70
+    ? ['مْلِيح بَرشَة 👏 Mli7 barsha!', 'يَسلَمو إيدَيك! Yislamu idik!', 'هَكَّة نَعرَف! Hakka na3ref!']
+    : pct>=50
+    ? ['شْوَيَّة شْوَيَّة... Shwayya shwayya', 'عَاوِد مَرَّة أُخرى! 3awid marra okhra', 'مَا يَهمَّش، عَاوِد! Ma yehemsh, 3awid!']
+    : ['يَالَّة، عَاوِد! Yalla, 3awid! 💪', 'كُل بِدَايَة صْعِيبَة Kull bidaya s3iba', 'صَبرَا جَمِيل Sabra jmil!'];
+  document.getElementById('result-msg').textContent = msgs[Math.floor(Math.random()*msgs.length)];
   document.getElementById('result-sub').innerHTML=`<span style="color:var(--green)">✓ ${score.c} richtig</span> · <span style="color:var(--red)">✗ ${score.w} falsch</span> · ${score.t} gesamt`;
   document.getElementById('result-screen').classList.add('show');
 }
