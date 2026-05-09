@@ -2107,7 +2107,9 @@ function hideStickyCheck(){
 }
 function showStickyNext(fn){
   _stickyNextFn = fn || nxt;
-  document.getElementById('sticky-next').classList.add('show');
+  const el = document.getElementById('sticky-next');
+  el.style.display = '';
+  el.classList.add('show');
 }
 function hideStickyNext(){
   document.getElementById('sticky-next').classList.remove('show');
@@ -2196,7 +2198,7 @@ function showVocabList(){
   const area = document.getElementById('exercise-area');
   if(area) area.style.display = 'block';
   const stickyNext = document.getElementById('sticky-next');
-  if(stickyNext) stickyNext.style.display = 'none';
+  if(stickyNext) stickyNext.classList.remove('show');
   const c = document.getElementById('exercise-content');
   if(!c) return;
   document.getElementById('ex-type-label').textContent = '📚 Vokabeln';
@@ -2242,37 +2244,108 @@ function renderVocabTable(vocab){
     return;
   }
 
-  let html = '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem">'+vocab.length+' Vokabeln</div>';
-  html += '<table style="width:100%;border-collapse:collapse;font-size:.78rem">';
-  html += '<thead><tr style="color:var(--muted);font-size:.65rem;text-transform:uppercase;letter-spacing:.05em">';
-  html += '<th style="text-align:right;padding:.3rem .4rem;border-bottom:1px solid var(--border)">Arabisch</th>';
-  html += '<th style="text-align:left;padding:.3rem .4rem;border-bottom:1px solid var(--border)">Transliteration</th>';
-  html += '<th style="text-align:left;padding:.3rem .4rem;border-bottom:1px solid var(--border)">Deutsch</th>';
-  html += '<th style="text-align:center;padding:.3rem .4rem;border-bottom:1px solid var(--border)">Lvl</th>';
-  html += '<th style="text-align:center;padding:.3rem .4rem;border-bottom:1px solid var(--border)">Wdh</th>';
-  html += '<th style="text-align:center;padding:.3rem .4rem;border-bottom:1px solid var(--border)">✓</th>';
-  html += '</tr></thead><tbody>';
+  let h = '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem">'+vocab.length+' Vokabeln</div>';
+  h += '<table style="width:100%;border-collapse:collapse;font-size:.75rem">';
+  h += '<thead><tr style="color:var(--muted);font-size:.62rem;text-transform:uppercase;letter-spacing:.05em">';
+  h += '<th style="text-align:left;padding:.3rem .3rem;border-bottom:1px solid var(--border)">L</th>';
+  h += '<th style="text-align:right;padding:.3rem .3rem;border-bottom:1px solid var(--border)">Arabisch</th>';
+  h += '<th style="text-align:left;padding:.3rem .3rem;border-bottom:1px solid var(--border)">Tr.</th>';
+  h += '<th style="text-align:left;padding:.3rem .3rem;border-bottom:1px solid var(--border)">Deutsch</th>';
+  h += '<th style="text-align:center;padding:.3rem .3rem;border-bottom:1px solid var(--border)">Lvl</th>';
+  h += '<th style="text-align:center;padding:.3rem .3rem;border-bottom:1px solid var(--border)">Wdh</th>';
+  h += '<th style="text-align:center;padding:.3rem .3rem;border-bottom:1px solid var(--border)">✓</th>';
+  h += '<th style="padding:.3rem .3rem;border-bottom:1px solid var(--border)"></th>';
+  h += '</tr></thead><tbody>';
 
-  vocab.forEach(v => {
+  vocab.forEach((v,i) => {
     const vocabId = vocabIdMap[v.tr];
     const p = vocabId ? srsProgress[vocabId] : null;
     const level = p ? p.level : 0;
     const color = SRS_COLORS[level];
     const reviewed = p ? timeAgo(p.last_reviewed) : '—';
     const correct = p ? timeAgo(p.last_correct) : '—';
+    const rowId = 'vrow-'+i;
+    const editId = 'vedit-'+i;
+    const vIdx = ALL_VOCAB.indexOf(v);
 
-    html += '<tr style="border-bottom:1px solid rgba(58,50,40,.5)">';
-    html += '<td style="text-align:right;padding:.4rem;font-family:\'Playfair Display\',serif;font-size:1.1rem;color:var(--gold2);direction:rtl">'+v.ar+'</td>';
-    html += '<td style="padding:.4rem;color:var(--muted)">'+v.tr+'</td>';
-    html += '<td style="padding:.4rem">'+v.en+'</td>';
-    html += '<td style="text-align:center;padding:.4rem"><span style="color:'+color+';font-weight:700">'+SRS_LABELS[level]+'</span></td>';
-    html += '<td style="text-align:center;padding:.4rem;color:var(--muted)">'+reviewed+'</td>';
-    html += '<td style="text-align:center;padding:.4rem;color:var(--muted)">'+correct+'</td>';
-    html += '</tr>';
+    h += '<tr id="'+rowId+'" style="border-bottom:1px solid rgba(58,50,40,.4)">';
+    h += '<td style="padding:.3rem;color:var(--muted);font-size:.65rem">'+v.ls+'</td>';
+    h += '<td style="text-align:right;padding:.3rem;font-family:\'Playfair Display\',serif;font-size:1rem;color:var(--gold2);direction:rtl">'+v.ar+'</td>';
+    h += '<td style="padding:.3rem;color:var(--muted);font-size:.7rem">'+v.tr+'</td>';
+    h += '<td style="padding:.3rem">'+v.en+'</td>';
+    h += '<td style="text-align:center;padding:.3rem"><span style="color:'+color+';font-weight:700;font-size:.7rem">'+SRS_LABELS[level]+'</span></td>';
+    h += '<td style="text-align:center;padding:.3rem;color:var(--muted);font-size:.7rem">'+reviewed+'</td>';
+    h += '<td style="text-align:center;padding:.3rem;color:var(--muted);font-size:.7rem">'+correct+'</td>';
+    h += '<td style="padding:.3rem"><button onclick="openVocabEdit('+vIdx+')" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.65rem;padding:.15rem .4rem;cursor:pointer;border-radius:3px">✏️</button></td>';
+    h += '</tr>';
+    // Edit-Row (initial versteckt)
+    h += '<tr id="'+editId+'" style="display:none;background:var(--surface2)">';
+    h += '<td colspan="8" style="padding:.5rem">';
+    h += '<div style="display:grid;gap:.4rem">';
+    h += '<input id="ei-ar-'+i+'" value="'+v.ar.replace(/"/g,'&quot;')+'" placeholder="Arabisch" style="font-family:\'Playfair Display\',serif;direction:rtl;font-size:1rem;padding:.4rem;background:var(--surface);border:1px solid var(--border);color:var(--gold2);border-radius:4px">';
+    h += '<input id="ei-tr-'+i+'" value="'+v.tr.replace(/"/g,'&quot;')+'" placeholder="Transliteration" style="padding:.4rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.85rem">';
+    h += '<input id="ei-en-'+i+'" value="'+v.en.replace(/"/g,'&quot;')+'" placeholder="Deutsch" style="padding:.4rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.85rem">';
+    h += '<div style="display:flex;gap:.4rem">';
+    h += '<button onclick="saveVocabEdit('+vIdx+','+i+')" style="flex:1;background:var(--gold);border:none;color:#0e0c0a;padding:.4rem;cursor:pointer;border-radius:4px;font-weight:700;font-size:.8rem">Speichern</button>';
+    h += '<button onclick="closeVocabEdit('+i+')" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);padding:.4rem;cursor:pointer;border-radius:4px;font-size:.8rem">Abbrechen</button>';
+    h += '</div></div></td></tr>';
   });
 
-  html += '</tbody></table>';
-  el.innerHTML = html;
+  h += '</tbody></table>';
+  el.innerHTML = h;
+}
+
+function openVocabEdit(vIdx){
+  // Finde die row-index anhand vIdx
+  const vocab = cLesson==='all' ? ALL_VOCAB : gv();
+  const i = vocab.indexOf(ALL_VOCAB[vIdx]);
+  if(i < 0) return;
+  document.getElementById('vedit-'+i).style.display = '';
+}
+
+function closeVocabEdit(i){
+  document.getElementById('vedit-'+i).style.display = 'none';
+}
+
+async function saveVocabEdit(vIdx, i){
+  const v = ALL_VOCAB[vIdx];
+  if(!v) return;
+  const newAr = document.getElementById('ei-ar-'+i).value.trim();
+  const newTr = document.getElementById('ei-tr-'+i).value.trim();
+  const newEn = document.getElementById('ei-en-'+i).value.trim();
+  if(!newAr || !newTr || !newEn){ alert('Alle Felder ausfüllen'); return; }
+
+  // Lokal aktualisieren
+  const oldTr = v.tr;
+  v.ar = newAr;
+  v.tr = newTr;
+  v.en = newEn;
+
+  // Supabase aktualisieren (wenn vocabId bekannt)
+  const vocabId = vocabIdMap[oldTr];
+  if(vocabId){
+    try{
+      await sbApi('vocabulary?id=eq.'+vocabId, 'PATCH', {
+        arabic_script: newAr,
+        darija: newTr,
+        german: newEn,
+      });
+      // vocabIdMap aktualisieren wenn tr geändert
+      if(newTr !== oldTr){
+        vocabIdMap[newTr] = vocabIdMap[oldTr];
+        delete vocabIdMap[oldTr];
+      }
+      // Zeile aktualisieren
+      closeVocabEdit(i);
+      filterVocabList();
+      dbg('Vokabel gespeichert: '+newTr, 'ok');
+    } catch(e){
+      alert('Fehler: ' + e.message);
+    }
+  } else {
+    closeVocabEdit(i);
+    filterVocabList();
+  }
 }
 
 function restartExercise(){document.getElementById('result-screen').classList.remove('show');go();}
