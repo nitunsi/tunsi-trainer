@@ -715,7 +715,13 @@ async function doLogin(){
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app-screen').style.display='block';
     document.getElementById('header-user').textContent='v8 \u00b7 '+currentUser.username;
-    srsLoadFromSupabase().then(()=>{ go(); updateLessonChips(); applyLatin(); });
+    srsLoadFromSupabase().then(()=>{
+      // go() nur aufrufen wenn noch keine Übung läuft
+      if(exList.length === 0) go();
+      else render(); // exList behalten, nur neu rendern
+      updateLessonChips();
+      applyLatin();
+    });
   }catch(e){showLoginError('Verbindungsfehler: '+e.message);btn.textContent=isRegMode?'Registrieren':'Anmelden';btn.disabled=false;}
 }
 function doLogout(){
@@ -1599,7 +1605,7 @@ function showFb(ok,ca){const fb=document.getElementById('feedback');if(!fb)retur
 function showNext(){showStickyNext(nxt);}
 function go(){
   // Nicht neu starten wenn Übung läuft (z.B. nach SRS-Reload)
-  if(exList.length > 0 && cIdx > 0 && cIdx < exList.length){
+  if(exList.length > 0 && cIdx >= 0 && cIdx < exList.length){
     render(); return;
   }
   score={c:0,w:0,t:0,st:0};updScore();
