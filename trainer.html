@@ -287,6 +287,7 @@ body.hide-latin .chat-opt .latin {
     <button class="lesson-chip" onclick="setMode('speed',this);closeNav()">⚡ Speed</button>
     <button class="lesson-chip" onclick="setMode('flash',this);closeNav()">🃏 Vokabelkarten</button>
     <button class="lesson-chip" onclick="setMode('vocab',this);closeNav()">📚 Vokabeln</button>
+    <button class="lesson-chip" onclick="setMode('addvocab',this);closeNav()">➕ Vokabel hinzufügen</button>
     <button class="lesson-chip" onclick="setMode('stats',this);closeNav()">📊 Statistik</button>
   </div>
   <div class="nav-footer">
@@ -447,20 +448,32 @@ function srsKey(v){ return v.tr; }
 async function srsLoadFromSupabase(){
   if(!currentUser) return;
   try{
-    // Lade vocabulary IDs
-    // Vokabeln in Batches laden (Supabase row limit umgehen)
+    // Lade alle Vokabeln aus Supabase inkl. Lektion und Thema
     let allVocab = [];
     let offset = 0;
     const batchSize = 100;
     while(true){
-      const batch = await sbApi('vocabulary?select=id,darija&order=id.asc&limit='+batchSize+'&offset='+offset);
+      const batch = await sbApi(
+        'vocabulary?select=id,darija,arabic_script,german,topic,lessons(lesson_number)' +
+        '&order=id.asc&limit='+batchSize+'&offset='+offset
+      );
       if(!batch || batch.length === 0) break;
       allVocab = allVocab.concat(batch);
       if(batch.length < batchSize) break;
       offset += batchSize;
     }
+    // vocabIdMap befüllen
     allVocab.forEach(v => { vocabIdMap[v.darija] = v.id; });
     dbg('Geladen: ' + allVocab.length + ' Vokabeln', 'ok');
+
+    // ALL_VOCAB dynamisch aus Supabase befüllen
+    ALL_VOCAB.length = 0; // leeren
+    allVocab.forEach(v => {
+      const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
+      const tp = v.topic || 'Allgemein';
+      ALL_VOCAB.push({ ar: v.arabic_script || '', tr: v.darija || '', en: v.german || '', ls, tp });
+    });
+    dbg('ALL_VOCAB befüllt: ' + ALL_VOCAB.length + ' Einträge', 'ok');
 
     // Lade progress des Nutzers
     const progress = await sbApi(
@@ -709,7 +722,7 @@ function doLogout(){
   document.getElementById('login-btn').disabled=false;
 }
 
-const ALL_VOCAB=[
+let ALL_VOCAB=[
 {ar:'عاسلامة',tr:'3aslema',en:'Hallo',ls:'L1',tp:'Begrüßung'},
 {ar:'أهلا',tr:'ahla',en:'Willkommen / Hallo',ls:'L1',tp:'Begrüßung'},
 {ar:'أهلا وسهلا',tr:'ahla w sahla',en:'Herzlich willkommen',ls:'L1',tp:'Begrüßung'},
@@ -1574,7 +1587,7 @@ function gp(arr){
   return arr.filter(x=>x.ls===k);
 }
 function filterLesson(l,el){cLesson=l;document.querySelectorAll('.lesson-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');go();}
-function setMode(m,el){cMode=m;document.querySelectorAll('.mode-btn,.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));el.classList.add('active');if(m==='vocab'){showVocabList();return;}if(m==='stats'){showStats();return;}go();}
+function setMode(m,el){cMode=m;document.querySelectorAll('.mode-btn,.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));el.classList.add('active');if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}go();}
 function updScore(){document.getElementById('sc-correct').textContent=score.c;document.getElementById('sc-wrong').textContent=score.w;document.getElementById('sc-streak').textContent='🔥'+score.st;}
 function showFb(ok,ca){const fb=document.getElementById('feedback');if(!fb)return;fb.className='feedback show '+(ok?'correct':'wrong');fb.textContent=ok?'✓ Richtig!':'✗ Falsch.'+(ca?' Antwort: '+ca:'');}
 function showNext(){showStickyNext(nxt);}
@@ -2356,6 +2369,7 @@ async function saveVocabEdit(vIdx, i){
         arabic_script: newAr,
         darija: newTr,
         german: newEn,
+        topic: v.tp,
       });
       // vocabIdMap aktualisieren wenn tr geändert
       if(newTr !== oldTr){
@@ -2372,6 +2386,118 @@ async function saveVocabEdit(vIdx, i){
   } else {
     closeVocabEdit(i);
     filterVocabList();
+  }
+}
+
+function showAddVocab(){
+  const area = document.getElementById('exercise-area');
+  if(area) area.style.display = 'block';
+  const sticky = document.getElementById('sticky-next');
+  if(sticky) sticky.classList.remove('show');
+  const c = document.getElementById('exercise-content');
+  if(!c) return;
+  document.getElementById('ex-type-label').textContent = '➕ Neue Vokabel';
+  document.getElementById('ex-progress').textContent = '';
+  const np = document.getElementById('nav-progress');
+  if(np) np.style.visibility = 'hidden';
+
+  // Lektionen für Dropdown
+  const lessons = [...new Set(ALL_VOCAB.map(v=>v.ls))].sort((a,b)=>{
+    return parseInt(a.slice(1))-parseInt(b.slice(1));
+  });
+  const lessonOptions = lessons.map(ls=>`<option value="${ls}">${ls}</option>`).join('');
+
+  c.innerHTML = `
+    <div style="padding:.5rem 0">
+      <div style="color:var(--gold2);font-size:1rem;font-weight:700;margin-bottom:1.2rem">Neue Vokabel hinzufügen</div>
+      <div style="display:grid;gap:.7rem">
+        <div>
+          <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem">Arabisch</div>
+          <input id="nv-ar" type="text" placeholder="عربي"
+            style="width:100%;direction:rtl;font-family:'Playfair Display',serif;font-size:1.4rem;padding:.7rem 1rem;background:var(--surface2);border:1px solid var(--border);color:var(--gold2);border-radius:6px"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+        </div>
+        <div>
+          <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem">Transliteration</div>
+          <input id="nv-tr" type="text" placeholder="z.B. kteb"
+            style="width:100%;padding:.7rem 1rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;font-size:.95rem"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+        </div>
+        <div>
+          <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem">Deutsch</div>
+          <input id="nv-en" type="text" placeholder="z.B. Buch"
+            style="width:100%;padding:.7rem 1rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;font-size:.95rem"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+          <div>
+            <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem">Lektion</div>
+            <select id="nv-ls" style="width:100%;padding:.7rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;font-size:.9rem">
+              ${lessonOptions}
+            </select>
+          </div>
+          <div>
+            <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem">Thema</div>
+            <input id="nv-tp" type="text" placeholder="z.B. Essen"
+              style="width:100%;padding:.7rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;font-size:.9rem"/>
+          </div>
+        </div>
+        <button onclick="saveNewVocab()" style="width:100%;padding:.9rem;background:linear-gradient(135deg,var(--gold),#a07020);border:none;color:#0e0c0a;font-family:'IBM Plex Mono',monospace;font-size:.9rem;font-weight:700;cursor:pointer;border-radius:6px;letter-spacing:.05em;margin-top:.3rem">
+          ➕ Speichern
+        </button>
+        <div id="nv-feedback" style="font-size:.82rem;text-align:center;min-height:1.2rem"></div>
+      </div>
+    </div>
+  `;
+}
+
+async function saveNewVocab(){
+  const ar = document.getElementById('nv-ar').value.trim();
+  const tr = document.getElementById('nv-tr').value.trim();
+  const en = document.getElementById('nv-en').value.trim();
+  const ls = document.getElementById('nv-ls').value;
+  const tp = document.getElementById('nv-tp').value.trim() || 'Allgemein';
+  const fb = document.getElementById('nv-feedback');
+
+  if(!ar || !tr || !en){ fb.style.color='var(--red)'; fb.textContent='Alle Felder ausfüllen (außer Thema)'; return; }
+
+  // Doppelt prüfen
+  if(ALL_VOCAB.find(v=>v.tr===tr)){ fb.style.color='var(--red)'; fb.textContent='Transliteration bereits vorhanden: '+tr; return; }
+
+  fb.style.color='var(--muted)'; fb.textContent='Speichern...';
+
+  try{
+    // Lektion-ID aus Supabase
+    const lsNum = parseInt(ls.replace('L',''));
+    const lessons = await sbApi('lessons?lesson_number=eq.'+lsNum+'&select=id');
+    if(!lessons || !lessons.length) throw new Error('Lektion '+ls+' nicht gefunden');
+    const lessonId = lessons[0].id;
+
+    // In Supabase einfügen
+    const res = await sbApi('vocabulary', 'POST', {
+      lesson_id: lessonId,
+      arabic_script: ar,
+      darija: tr,
+      german: en,
+      topic: tp,
+    });
+
+    if(res && res.length){
+      // Lokal hinzufügen
+      const newVocab = { ar, tr, en, ls, tp };
+      ALL_VOCAB.push(newVocab);
+      vocabIdMap[tr] = res[0].id;
+
+      fb.style.color='var(--green)'; fb.textContent='✓ Gespeichert: '+tr;
+
+      // Felder leeren für nächste Eingabe
+      document.getElementById('nv-ar').value='';
+      document.getElementById('nv-tr').value='';
+      document.getElementById('nv-en').value='';
+      document.getElementById('nv-tp').value='';
+      document.getElementById('nv-ar').focus();
+    }
+  } catch(e){
+    fb.style.color='var(--red)'; fb.textContent='Fehler: '+e.message;
   }
 }
 
