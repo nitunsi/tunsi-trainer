@@ -1631,7 +1631,9 @@ function nxt(){
   exList.splice(cIdx, 1);
   // Alle 10 erledigten in dieser Runde: Zwischenmeldung
   _roundDone++;
-  if(_roundDone % 10 === 0 && exList.length > 0){
+  // Zwischenmeldung nur bei Einzelvokabel-Modi (nicht Match/Roleplay/Grammar)
+  const _singleModes = ['mc','flash','fill','conj','order'];
+  if(_singleModes.includes(cMode) && _roundDone % 10 === 0 && exList.length > 0){
     showMidRes();
     return;
   }
@@ -2343,7 +2345,7 @@ function renderVocabTable(vocab){
     h += '<td style="text-align:center;padding:.3rem"><span style="color:'+color+';font-weight:700;font-size:.7rem">'+SRS_LABELS[level]+'</span></td>';
     h += '<td style="text-align:center;padding:.3rem;color:var(--muted);font-size:.7rem">'+reviewed+'</td>';
     h += '<td style="text-align:center;padding:.3rem;color:var(--muted);font-size:.7rem">'+correct+'</td>';
-    h += '<td style="padding:.3rem"><button onclick="openVocabEdit('+vIdx+')" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.65rem;padding:.15rem .4rem;cursor:pointer;border-radius:3px">✏️</button></td>';
+    h += '<td style="padding:.3rem"><button onclick="openVocabEdit(\''+encodeURIComponent(v.tr)+'\','+i+')" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.65rem;padding:.15rem .4rem;cursor:pointer;border-radius:3px">✏️</button></td>';
     h += '</tr>';
     // Edit-Row (initial versteckt)
     h += '<tr id="'+editId+'" style="display:none;background:var(--surface2)">';
@@ -2362,12 +2364,10 @@ function renderVocabTable(vocab){
   el.innerHTML = h;
 }
 
-function openVocabEdit(vIdx){
-  // Finde die row-index anhand vIdx
-  const vocab = cLesson==='all' ? ALL_VOCAB : gv();
-  const i = vocab.indexOf(ALL_VOCAB[vIdx]);
-  if(i < 0) return;
+function openVocabEdit(tr, i){
   document.getElementById('vedit-'+i).style.display = '';
+  // tr als Identifier speichern für saveVocabEdit
+  document.getElementById('vedit-'+i).dataset.tr = decodeURIComponent(tr);
 }
 
 function closeVocabEdit(i){
@@ -2375,7 +2375,10 @@ function closeVocabEdit(i){
 }
 
 async function saveVocabEdit(vIdx, i){
-  const v = ALL_VOCAB[vIdx];
+  // tr aus dataset (gesetzt von openVocabEdit)
+  const editRow = document.getElementById('vedit-'+i);
+  const tr = editRow ? editRow.dataset.tr : null;
+  const v = tr ? ALL_VOCAB.find(x=>x.tr===tr) : ALL_VOCAB[vIdx];
   if(!v) return;
   const newAr = document.getElementById('ei-ar-'+i).value.trim();
   const newTr = document.getElementById('ei-tr-'+i).value.trim();
