@@ -1510,6 +1510,7 @@ const ROLEPLAY=[
 // STATE
 let cMode='mix',cLesson='all',cIdx=0,exList=[];
 let _dueQueue=[];
+let _roundDone=0;
 // SRS: Spaced Repetition State
 let srsLevels={};  // {vocabKey: level 0-5}
 let srsQueue=[];   // Aktive Lernqueue mit {vocab, dueIn} Objekten
@@ -1601,6 +1602,7 @@ function showFb(ok,ca){const fb=document.getElementById('feedback');if(!fb)retur
 function showNext(){showStickyNext(nxt);}
 function go(){
   score={c:0,w:0,t:0,st:0};updScore();
+  _roundDone=0;
   if(sTimer){clearInterval(sTimer);sTimer=null;}
   document.getElementById('result-screen').classList.remove('show');
   // Fällige Vokabeln einmal berechnen — alle b-Funktionen nutzen das
@@ -1627,9 +1629,9 @@ function go(){
 function nxt(){
   // Erledigte Vokabel aus exList entfernen
   exList.splice(cIdx, 1);
-  // Alle 10 erledigten: Zwischenmeldung
-  const done = score.c + score.w;
-  if(done > 0 && done % 10 === 0 && exList.length > 0){
+  // Alle 10 erledigten in dieser Runde: Zwischenmeldung
+  _roundDone++;
+  if(_roundDone % 10 === 0 && exList.length > 0){
     showMidRes();
     return;
   }
@@ -1978,6 +1980,7 @@ function rpAns(btn,ok,ar,en){
 function startSpeed(){
   const vocab=sh(gv());sIdx=0;sRight=0;sWrong=0;sTime=90;
   score={c:0,w:0,t:0,st:0};updScore();
+  _roundDone=0;
   const srsVocab=buildSrsQueue(vocab.length>=5?vocab:sh(ALL_VOCAB));
   window._sv=srsVocab;
   window._svIdx=0;
@@ -2393,7 +2396,6 @@ async function saveVocabEdit(vIdx, i){
         arabic_script: newAr,
         darija: newTr,
         german: newEn,
-        topic: v.tp,
       });
       // vocabIdMap aktualisieren wenn tr geändert
       if(newTr !== oldTr){
