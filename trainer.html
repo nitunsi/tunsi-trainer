@@ -4223,6 +4223,7 @@ function renderPartnerQueue(){
     h += '</div>';
     h += '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;flex-shrink:0">';
     h += psLabel;
+    h += '<button onclick="copyQueueEntry(' + v.id + ', this)" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.72rem;padding:.25rem .5rem;cursor:pointer;border-radius:3px">📋 Kopieren</button>';
     if(idx >= 0){
       h += '<button onclick="openVocabEdit(' + v.id + ',' + idx + ')" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.72rem;padding:.25rem .5rem;cursor:pointer;border-radius:3px">✏️ Edit</button>';
     }
@@ -4233,6 +4234,42 @@ function renderPartnerQueue(){
 
   h += '</div>';
   el.innerHTML = h;
+}
+
+// Kopiert alle Felder eines Queue-Eintrags als Klartext in die Zwischenablage,
+// damit Nils die Vokabel z.B. in einem anderen Claude-Chat diskutieren kann.
+function copyQueueEntry(vocabId, btnEl){
+  const v = pqAllResults.find(x => x.id === vocabId);
+  if(!v) return;
+  const ls = v.lessons ? 'L' + v.lessons.lesson_number : '?';
+  const text = 'ID: ' + v.id + '\n' +
+    'Arabisch: ' + (v.arabic_script || '-') + '\n' +
+    'Darija: ' + (v.darija || '-') + '\n' +
+    'Deutsch: ' + (v.german || '-') + '\n' +
+    'Lektion: ' + ls + '\n' +
+    'Thema: ' + (v.topic || '-') + '\n' +
+    'Partner-Status: ' + (v.partner_status || '-') + '\n' +
+    'Kommentar: ' + (v.partner_comment || '-');
+  const flash = (label) => {
+    if(!btnEl) return;
+    const orig = btnEl.textContent;
+    btnEl.textContent = label;
+    setTimeout(() => { btnEl.textContent = orig; }, 1500);
+  };
+  const legacyCopy = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    let ok = false;
+    try{ ok = document.execCommand('copy'); }catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    flash(ok ? '✓ Kopiert' : 'Fehler');
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(() => flash('✓ Kopiert')).catch(legacyCopy);
+  } else {
+    legacyCopy();
+  }
 }
 
 function showDupeCheck(){
