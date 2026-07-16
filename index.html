@@ -1685,10 +1685,20 @@ function showPartnerCheckMode(){
   partnerInit('exercise-content');
 }
 
+// Kleine Tab-Bar oben im Partner-Bereich, um zwischen Prüfen und Vorschlagen umzuschalten.
+function partnerTabBar(active){
+  const tab=(mode,label,onclick)=>'<button onclick="'+onclick+'" style="flex:1;padding:.55rem;border-radius:6px;font-family:\'IBM Plex Mono\',monospace;font-size:.78rem;cursor:pointer;'+
+    (active===mode?'background:var(--gold);border:1px solid var(--gold);color:#0e0c0a;font-weight:700;':'background:transparent;border:1px solid var(--border);color:var(--muted);')+'">'+label+'</button>';
+  return '<div style="display:flex;gap:.5rem;margin-bottom:1rem">'+
+    tab('review','🔍 Prüfen','partnerInit(_pContainerId)')+
+    tab('suggest','💡 Vorschlagen','partnerShowSuggest()')+
+    '</div>';
+}
+
 async function partnerInit(containerId){
   _pContainerId = containerId || 'partner-main';
   const main=_pMain();
-  main.innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted)">Lade…</div>';
+  main.innerHTML=partnerTabBar('review')+'<div style="text-align:center;padding:2rem;color:var(--muted)">Lade…</div>';
   try{
   // 1. pending + skipped mit Fälligkeit (next_review <= now), nach next_review
   // 2. pending + skipped ohne Fälligkeit, zufällig
@@ -1766,7 +1776,7 @@ async function partnerInit(containerId){
   _pEditIdx = null;
   partnerShowCard();
   }catch(err){
-    main.innerHTML='<div style="padding:1.5rem;background:rgba(201,76,76,.1);border:1px solid var(--red);border-radius:8px;color:var(--red);font-size:.85rem;word-break:break-all"><strong>Fehler:</strong><br>'+err.message+'<br><br><span style="color:var(--muted)">'+JSON.stringify(err)+'</span></div>';
+    main.innerHTML=partnerTabBar('review')+'<div style="padding:1.5rem;background:rgba(201,76,76,.1);border:1px solid var(--red);border-radius:8px;color:var(--red);font-size:.85rem;word-break:break-all"><strong>Fehler:</strong><br>'+err.message+'<br><br><span style="color:var(--muted)">'+JSON.stringify(err)+'</span></div>';
   }
 }
 
@@ -1801,7 +1811,7 @@ function partnerRenderCard(v, existing){
                       v.partner_status === null ? '<span style="color:var(--border);font-size:.75rem">neu</span>' : '';
   const progressText = existing ? 'Bearbeiten' : (_pIdx+1)+' / '+_pBatch.length;
   const prefillComment = existing ? (existing.comment||'') : '';
-  main.innerHTML=`
+  main.innerHTML=partnerTabBar('review')+`
     <div class="partner-progress">${progressText}</div>
     <div class="partner-card">
       <div class="partner-card-darija">${v.darija||''}</div>
@@ -1842,7 +1852,7 @@ function partnerRenderSummary(){
       ${comment}
     </div>`;
   }).join('');
-  main.innerHTML=`
+  main.innerHTML=partnerTabBar('review')+`
     <div class="partner-done" style="padding-top:1rem">
       <div class="partner-done-icon">🎉</div>
       <div class="partner-done-text">Yalla, fertig!</div>
@@ -1861,6 +1871,104 @@ function partnerEdit(idx){
 function partnerCancelEdit(){
   _pEditIdx = null;
   partnerShowCard();
+}
+
+// ── Vorschlags-Modus: Semia gibt Darija + Deutsch ein, landet als "suggested" ──
+// in Nils' Partner-Queue. Dublettenprüfung ist reine Info, blockiert nicht.
+let _psLite = null;      // Cache: [{id,darija,german,arabic_script}] für den Mini-Dubletten-Check
+let _psDebounce = null;  // Timer-Handle fürs Debouncing der Live-Prüfung
+
+async function partnerShowSuggest(){
+  const main=_pMain();
+  main.innerHTML = partnerTabBar('suggest')+'<div style="text-align:center;padding:2rem;color:var(--muted)">Lade…</div>';
+  if(!_psLite){
+    try{
+      _psLite = await sbApiPaged('vocabulary?select=id,darija,german,arabic_script&order=id.asc', 1000);
+    }catch(e){
+      _psLite = [];
+    }
+  }
+  partnerRenderSuggestForm();
+}
+
+function partnerRenderSuggestForm(){
+  const main=_pMain();
+  main.innerHTML = partnerTabBar('suggest')+`
+    <div style="text-align:left">
+      <div style="font-size:.8rem;color:var(--muted);margin-bottom:1rem">Neue Vokabel vorschlagen — landet in Nils' Prüf-Queue.</div>
+      <div style="margin-bottom:.8rem">
+        <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem">Darija</div>
+        <input id="ps-darija" type="text" placeholder="z.B. kteb" oninput="partnerSuggestCheckDupes()"
+          style="width:100%;padding:.7rem 1rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;font-size:.95rem"
+          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      </div>
+      <div style="margin-bottom:.6rem">
+        <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem">Deutsch</div>
+        <input id="ps-german" type="text" placeholder="z.B. Buch" oninput="partnerSuggestCheckDupes()"
+          style="width:100%;padding:.7rem 1rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;font-size:.95rem"/>
+      </div>
+      <div id="ps-dupes" style="min-height:1rem;margin-bottom:.8rem"></div>
+      <button onclick="partnerSubmitSuggestion()" style="width:100%;padding:.9rem;background:linear-gradient(135deg,var(--gold),#a07020);border:none;color:#0e0c0a;font-family:'IBM Plex Mono',monospace;font-size:.9rem;font-weight:700;cursor:pointer;border-radius:6px;letter-spacing:.05em">💡 Vorschlag einreichen</button>
+      <div id="ps-feedback" style="font-size:.82rem;text-align:center;min-height:1.2rem;margin-top:.6rem"></div>
+    </div>`;
+}
+
+// Reine Info-Anzeige ähnlicher Einträge — blockiert die Eingabe/Einreichung nicht.
+function partnerSuggestCheckDupes(){
+  clearTimeout(_psDebounce);
+  _psDebounce = setTimeout(()=>{
+    const box = document.getElementById('ps-dupes');
+    if(!box) return;
+    const dEl = document.getElementById('ps-darija');
+    const gEl = document.getElementById('ps-german');
+    const dVal = dEl ? dEl.value.trim() : '';
+    const gVal = gEl ? gEl.value.trim() : '';
+    const dKey = normKey(dVal), gKey = normKey(gVal);
+    if(dKey.length < 2 && gKey.length < 2){ box.innerHTML=''; return; }
+    const hits = (_psLite||[]).filter(v=>{
+      const vd = normKey(v.darija||''), vg = normKey(v.german||'');
+      return (dKey.length>=2 && vd && (vd===dKey || vd.includes(dKey) || dKey.includes(vd)))
+          || (gKey.length>=2 && vg && (vg===gKey || vg.includes(gKey) || gKey.includes(vg)));
+    }).slice(0,5);
+    if(!hits.length){ box.innerHTML=''; return; }
+    box.innerHTML = '<div style="padding:.6rem .7rem;background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px">'+
+      '<div style="font-size:.72rem;color:var(--gold);margin-bottom:.4rem">⚠️ Ähnliche Einträge existieren schon:</div>'+
+      hits.map(h=>'<div style="font-size:.78rem;color:var(--muted);padding:.15rem 0">'+(h.arabic_script?h.arabic_script+' · ':'')+(h.darija||'')+' — '+(h.german||'')+'</div>').join('')+
+      '</div>';
+  }, 400);
+}
+
+async function partnerSubmitSuggestion(){
+  const dEl = document.getElementById('ps-darija');
+  const gEl = document.getElementById('ps-german');
+  const darija = dEl.value.trim();
+  const german = gEl.value.trim();
+  const fb = document.getElementById('ps-feedback');
+  if(!darija || !german){
+    if(fb){ fb.style.color='var(--red)'; fb.textContent='Bitte beide Felder ausfüllen.'; }
+    return;
+  }
+  if(fb){ fb.style.color='var(--muted)'; fb.textContent='Speichern…'; }
+  try{
+    // Lektion 1 als Platzhalter — Nils ordnet beim Review die richtige Lektion zu.
+    const lessons = await sbApi('lessons?lesson_number=eq.1&select=id');
+    if(!lessons || !lessons.length) throw new Error('Platzhalter-Lektion nicht gefunden');
+    const lessonId = lessons[0].id;
+
+    const res = await sbApi('vocabulary', 'POST', {
+      lesson_id: lessonId,
+      darija, german,
+      arabic_script: '', topic: '',
+      partner_status: 'suggested'
+    });
+    if(res && res.length && _psLite) _psLite.push({id:res[0].id, darija, german, arabic_script:''});
+    dEl.value=''; gEl.value='';
+    const box=document.getElementById('ps-dupes'); if(box) box.innerHTML='';
+    if(fb){ fb.style.color='var(--green)'; fb.textContent='✓ Vorschlag eingereicht — danke!'; }
+    dEl.focus();
+  }catch(e){
+    if(fb){ fb.style.color='var(--red)'; fb.textContent='Fehler: '+e.message; }
+  }
 }
 
 async function partnerAct(status){
@@ -2670,7 +2778,10 @@ function showStats(){
 
   c.innerHTML = `
     ${cLesson === 'all' ? `<div id="partner-stats-block" style="margin-bottom:.6rem;">
-      <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:.4rem;">Prüf-Aktivität</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.4rem;">
+        <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);">Prüf-Aktivität</div>
+        <span id="partner-last-active" style="font-size:.62rem;color:var(--muted);"></span>
+      </div>
       <div style="background:var(--surface);border:1px solid var(--border);padding:.7rem;font-size:.78rem;">
         Lade…
       </div>
@@ -2891,18 +3002,15 @@ async function loadPartnerStats(){
     const rejectedN = await sbApiCount('vocabulary?partner_status=eq.rejected&select=id');
     const unknownN  = await sbApiCount('vocabulary?partner_status=eq.unknown&select=id');
     const pendingN  = await sbApiCount('vocabulary?partner_status=eq.pending&select=id');
-    const queueN    = await sbApiCount('vocabulary?or=(partner_status.eq.rejected,partner_status.eq.suggested,partner_status.eq.unknown,partner_comment.not.is.null)&select=id');
+    const suggestedN = await sbApiCount('vocabulary?partner_status=eq.suggested&select=id');
+    const commentedN = await sbApiCount('vocabulary?partner_comment=not.is.null&select=id');
 
-    const queueHtml = queueN > 0
-      ? '<div onclick="jumpToPartnerQueue(\'all\')" style="cursor:pointer;margin-bottom:.6rem;padding:.4rem .6rem;background:rgba(201,168,76,.08);border:1px solid var(--gold);font-size:.75rem;color:var(--gold)">📬 ' + queueN + ' Eintr' + (queueN===1?'ag':'äge') + ' in deiner Queue →</div>'
-      : '';
+    // Letzte Aktivität kompakt in die Kopfzeile neben dem Abschnittstitel
+    const lastActiveEl = document.getElementById('partner-last-active');
+    if(lastActiveEl){ lastActiveEl.style.color = activityColor; lastActiveEl.textContent = activityText; }
 
-    el.innerHTML = warningHtml + queueHtml +
-      '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem">' +
-        '<span style="color:var(--muted);font-size:.72rem">Letzte Aktivität:</span>' +
-        '<span style="color:' + activityColor + ';font-size:.78rem">' + activityText + '</span>' +
-      '</div>' +
-      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.4rem;text-align:center">' +
+    el.innerHTML = warningHtml +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem;text-align:center">' +
         '<div style="padding:.4rem;background:var(--surface2);border:1px solid var(--border);">' +
           '<div style="font-size:1.1rem;font-weight:700;color:var(--gold)">' + pendingN + '</div>' +
           '<div style="font-size:.62rem;color:var(--muted)">⏳ Offen</div>' +
@@ -2911,6 +3019,10 @@ async function loadPartnerStats(){
           '<div style="font-size:1.1rem;font-weight:700;color:var(--green)">' + approvedN + '</div>' +
           '<div style="font-size:.62rem;color:var(--muted)">✅ OK</div>' +
         '</div>' +
+        '<div onclick="jumpToPartnerQueue(\'suggested\')" style="cursor:pointer;padding:.4rem;background:var(--surface2);border:1px solid var(--border);">' +
+          '<div style="font-size:1.1rem;font-weight:700;color:var(--blue)">' + suggestedN + '</div>' +
+          '<div style="font-size:.62rem;color:var(--muted)">💡 Vorschlag</div>' +
+        '</div>' +
         '<div onclick="jumpToPartnerQueue(\'rejected\')" style="cursor:pointer;padding:.4rem;background:var(--surface2);border:1px solid var(--border);">' +
           '<div style="font-size:1.1rem;font-weight:700;color:var(--red)">' + rejectedN + '</div>' +
           '<div style="font-size:.62rem;color:var(--muted)">❌ Falsch</div>' +
@@ -2918,6 +3030,10 @@ async function loadPartnerStats(){
         '<div onclick="jumpToPartnerQueue(\'unknown\')" style="cursor:pointer;padding:.4rem;background:var(--surface2);border:1px solid var(--border);">' +
           '<div style="font-size:1.1rem;font-weight:700;color:var(--muted)">' + unknownN + '</div>' +
           '<div style="font-size:.62rem;color:var(--muted)">❓ Unklar</div>' +
+        '</div>' +
+        '<div onclick="jumpToPartnerQueue(\'commented\')" style="cursor:pointer;padding:.4rem;background:var(--surface2);border:1px solid var(--border);">' +
+          '<div style="font-size:1.1rem;font-weight:700;color:var(--gold2)">' + commentedN + '</div>' +
+          '<div style="font-size:.62rem;color:var(--muted)">💬 Kommentar</div>' +
         '</div>' +
       '</div>';
   } catch(e) {
@@ -4015,6 +4131,18 @@ async function showPartnerQueue(filter){
       500
     );
     pqAllResults = res;
+
+    // Einträge, die noch nicht im lokalen Cache stehen (z.B. gerade erst von Semia
+    // vorgeschlagen), nachtragen — sonst fehlt der ✏️ Edit-Button in der Queue.
+    res.forEach(v => {
+      if(!VOCAB_BY_ID[v.id]){
+        const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
+        const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp: v.topic||'', ps: v.partner_status||null, pc: v.partner_comment||null };
+        ALL_VOCAB.push(entry);
+        VOCAB_BY_ID[v.id] = entry;
+      }
+    });
+
     renderPartnerQueue();
   } catch(e) {
     el.innerHTML = '<div style="color:var(--red);padding:1rem">Fehler: ' + e.message + '</div>';
