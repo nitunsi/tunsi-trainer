@@ -2370,7 +2370,7 @@ function rFlash(ex,el){
     inner.innerHTML =
       '<button class="sticky-check-btn" onclick="hideStickyCheck();chkFlash()">Prüfen</button>' +
       '<button class="sticky-check-ghost" onclick="skipFlash()" title="Überspringen">⏭</button>' +
-      '<button class="sticky-check-ghost" onclick="document.getElementById(\'flash-hint\').classList.toggle(\'visible\')" title="Hinweis">💡</button>' +
+      flashPrevBtnHtml() +
       '<button class="sticky-check-ghost" id="latin-toggle" onclick="toggleLatin()">' + latinLabel + '</button>' +
       '<button class="sticky-check-ghost flag-btn ' + (flagged ? 'flagged' : '') + '" onclick="toggleFlag(\'' + vtr + '\',this)">' + (flagged ? '🚩' : '🏳️') + '</button>';
     document.getElementById('sticky-check').style.display = 'block';
@@ -2452,28 +2452,18 @@ function hideFlashActionBar(){
   if(sn){ sn.style.display=''; }
 }
 
-function markFlashCorrect(){
-  if(cMode !== 'flash') return;
-  const last = window._lastFlashVocab;
-  if(!last || last.ok) return;
-  last.ok = true;
-  score.c++; score.w = Math.max(0, score.w - 1); score.st++;
-  updScore();
-  const vid = last.v.id;
-  const orig = window._lastFlashOrigProgress;
-  // Direkt patchen statt srsAnswer() nochmal aufzurufen:
-  // - srsAnswer(false) hat bereits review_count+1 und wrong_count+1 geschrieben
-  // - wir korrigieren: Level = orig.level+1 (war fällig, sonst wäre die Vokabel
-  //   nicht in der Session gewesen), next_review neu berechnen, wrong_count zurück
-  (async ()=>{
-    // WICHTIG: Erst warten bis der vorherige srsAnswer(false)-Write vollständig
-    // abgeschlossen ist (PATCH/POST fertig oder in Queue). Sonst Race Condition:
-    // der Falsch-Write könnte die Korrektur wieder überschreiben.
-    if(window._lastFlashSrsPromise){
-      try{ await window._lastFlashSrsPromise; }catch(e){}
-    }
-    const p = srsProgress[vid];
-    if(!p){ updateLessonChips(); await correctLastFlashLog(true); return; }
+// Gemeinsame Korrektur-Logik (DB-Patch + lokaler State) für richtig<->falsch.
+// Wird sowohl von der Action-Bar direkt nach dem Antworten ("War doch
+// richtig/falsch") als auch vom persistenten Korrektur-Chip auf Folgekarten
+// ("↩ korrigieren") verwendet — dort greift IMMER nur die zuletzt beantwortete
+// Vokabel (window._lastFlashVocab wird bei jedem chkFlash() überschrieben).
+async function _applyFlashCorrection(vid, toOk, orig){
+  const p = srsProgress[vid];
+  if(!p){ updateLessonChips(); await correctLastFlashLog(toOk); return; }
+  if(toOk){
+    // War fälschlich falsch → jetzt richtig: Level = orig.level+1
+    // (war fällig, sonst wäre die Vokabel nicht in der Session gewesen),
+    // next_review neu berechnen, wrong_count zurück auf Vor-Antwort-Stand.
     const origLevel = orig ? (orig.level||0) : 0;
     const newLevel = Math.min(origLevel + 1, 6);
     const nextReview = nextReviewDE(SRS_DAYS[newLevel], newLevel >= 3 ? srsJitter(newLevel) : 0);
@@ -2484,27 +2474,17 @@ function markFlashCorrect(){
       next_review: nextReview.toISOString(),
       last_correct: new Date().toISOString(),
     };
-    // Optimistic update sofort
-    p.level = newLevel;
-    p.correct_count = newLevel;
-    p.wrong_count = origWrongCount;
-    p.next_review = nextReview;
-    p.last_correct = new Date();
+    p.level = newLevel; p.correct_count = newLevel; p.wrong_count = origWrongCount;
+    p.next_review = nextReview; p.last_correct = new Date();
     updateLessonChips();
     if(!p.id){
-      // POST der Falsch-Antwort ging offline in die Queue → Korrektur ebenfalls
-      // als Upsert-POST anhängen (FIFO: Korrektur wird zuletzt angewendet)
-      dbg('markFlashCorrect: keine id (offline) → Korrektur-Upsert in Queue','info');
+      dbg('_applyFlashCorrection(true): keine id (offline) → Korrektur-Upsert in Queue','info');
       try{
         await oqPush({ vocabId: vid, is_patch: false, payload: {
-          user_id: currentUser.id,
-          vocabulary_id: vid,
-          correct_count: newLevel,
-          wrong_count: origWrongCount,
-          review_count: p.review_count || 1,
-          next_review: nextReview.toISOString(),
-          last_reviewed: new Date().toISOString(),
-          last_correct: new Date().toISOString(),
+          user_id: currentUser.id, vocabulary_id: vid,
+          correct_count: newLevel, wrong_count: origWrongCount,
+          review_count: p.review_count || 1, next_review: nextReview.toISOString(),
+          last_reviewed: new Date().toISOString(), last_correct: new Date().toISOString(),
         }});
         syncUpdateIcon();
       }catch(qe){ dbg('Queue FEHLER: '+qe.message,'err'); }
@@ -2513,16 +2493,74 @@ function markFlashCorrect(){
     }
     try{
       await sbApi('progress?id=eq.'+p.id, 'PATCH', patchPayload);
-      dbg('markFlashCorrect ✓ level='+newLevel, 'ok');
+      dbg('_applyFlashCorrection(true) ✓ level='+newLevel, 'ok');
       syncUpdateIcon();
     }catch(e){
-      dbg('markFlashCorrect offline → Queue: '+e.message,'err');
-      try{
-        await oqPush({ vocabId: vid, existing_id: p.id, is_patch: true, payload: patchPayload });
-        syncUpdateIcon();
-      }catch(qe){ dbg('Queue FEHLER: '+qe.message,'err'); }
+      dbg('_applyFlashCorrection(true) offline → Queue: '+e.message,'err');
+      try{ await oqPush({ vocabId: vid, existing_id: p.id, is_patch: true, payload: patchPayload }); syncUpdateIcon(); }
+      catch(qe){ dbg('Queue FEHLER: '+qe.message,'err'); }
     }
     await correctLastFlashLog(true);
+  } else {
+    // War fälschlich richtig → jetzt falsch: Level zurück auf 0, sofort fällig,
+    // wrong_count auf Vor-Antwort-Stand +1.
+    const origWrongCount = orig ? (orig.wrong_count||0) : (p.wrong_count||0);
+    const newWrongCount = origWrongCount + 1;
+    const nextReview = new Date();
+    const origLastCorrectISO = orig && orig.last_correct ? new Date(orig.last_correct).toISOString() : null;
+    const patchPayload = {
+      correct_count: 0,
+      wrong_count: newWrongCount,
+      next_review: nextReview.toISOString(),
+      last_correct: origLastCorrectISO,
+    };
+    p.level = 0; p.correct_count = 0; p.wrong_count = newWrongCount;
+    p.next_review = nextReview; p.last_correct = orig ? orig.last_correct : null;
+    updateLessonChips();
+    if(!p.id){
+      dbg('_applyFlashCorrection(false): keine id (offline) → Korrektur-Upsert in Queue','info');
+      try{
+        await oqPush({ vocabId: vid, is_patch: false, payload: {
+          user_id: currentUser.id, vocabulary_id: vid,
+          correct_count: 0, wrong_count: newWrongCount,
+          review_count: p.review_count || 1, next_review: nextReview.toISOString(),
+          last_reviewed: new Date().toISOString(), last_correct: origLastCorrectISO,
+        }});
+        syncUpdateIcon();
+      }catch(qe){ dbg('Queue FEHLER: '+qe.message,'err'); }
+      await correctLastFlashLog(false);
+      return;
+    }
+    try{
+      await sbApi('progress?id=eq.'+p.id, 'PATCH', patchPayload);
+      dbg('_applyFlashCorrection(false) ✓', 'ok');
+      syncUpdateIcon();
+    }catch(e){
+      dbg('_applyFlashCorrection(false) offline → Queue: '+e.message,'err');
+      try{ await oqPush({ vocabId: vid, existing_id: p.id, is_patch: true, payload: patchPayload }); syncUpdateIcon(); }
+      catch(qe){ dbg('Queue FEHLER: '+qe.message,'err'); }
+    }
+    await correctLastFlashLog(false);
+  }
+}
+
+function markFlashCorrect(){
+  if(cMode !== 'flash') return;
+  const last = window._lastFlashVocab;
+  if(!last || last.ok) return;
+  last.ok = true;
+  score.c++; score.w = Math.max(0, score.w - 1); score.st++;
+  updScore();
+  const vid = last.v.id;
+  const orig = window._lastFlashOrigProgress;
+  (async ()=>{
+    // WICHTIG: Erst warten bis der vorherige srsAnswer(false)-Write vollständig
+    // abgeschlossen ist (PATCH/POST fertig oder in Queue). Sonst Race Condition:
+    // der Falsch-Write könnte die Korrektur wieder überschreiben.
+    if(window._lastFlashSrsPromise){
+      try{ await window._lastFlashSrsPromise; }catch(e){}
+    }
+    await _applyFlashCorrection(vid, true, orig);
   })();
   const fb = document.getElementById('feedback');
   if(fb){ fb.className='feedback show correct'; fb.innerHTML='✓ Als richtig gewertet.'; }
@@ -2539,67 +2577,63 @@ function markFlashWrong(){
   updScore();
   const vid = last.v.id;
   const orig = window._lastFlashOrigProgress; // Zustand VOR der ursprünglichen (fälschlich "richtig" gewerteten) Antwort
-  // Direkt patchen statt srsAnswer(false) erneut aufzurufen:
-  // srsAnswer(true) hat bereits review_count+1 geschrieben — ein zweiter Aufruf
-  // würde review_count nochmal erhöhen (derselbe Bug, den wir bei markFlashCorrect
-  // schon gefixt haben, hier spiegelverkehrt).
   (async ()=>{
     if(window._lastFlashSrsPromise){
       try{ await window._lastFlashSrsPromise; }catch(e){}
     }
-    const p = srsProgress[vid];
-    if(!p){ updateLessonChips(); await correctLastFlashLog(false); return; }
-    const origWrongCount = orig ? (orig.wrong_count||0) : (p.wrong_count||0);
-    const newWrongCount = origWrongCount + 1;
-    const nextReview = new Date(); // sofort fällig, wie srsAnswer(false) es setzen würde
-    const origLastCorrectISO = orig && orig.last_correct ? new Date(orig.last_correct).toISOString() : null;
-    const patchPayload = {
-      correct_count: 0,
-      wrong_count: newWrongCount,
-      next_review: nextReview.toISOString(),
-      last_correct: origLastCorrectISO,
-    };
-    p.level = 0;
-    p.correct_count = 0;
-    p.wrong_count = newWrongCount;
-    p.next_review = nextReview;
-    p.last_correct = orig ? orig.last_correct : null;
-    updateLessonChips();
-    if(!p.id){
-      dbg('markFlashWrong: keine id (offline) → Korrektur-Upsert in Queue','info');
-      try{
-        await oqPush({ vocabId: vid, is_patch: false, payload: {
-          user_id: currentUser.id,
-          vocabulary_id: vid,
-          correct_count: 0,
-          wrong_count: newWrongCount,
-          review_count: p.review_count || 1,
-          next_review: nextReview.toISOString(),
-          last_reviewed: new Date().toISOString(),
-          last_correct: origLastCorrectISO,
-        }});
-        syncUpdateIcon();
-      }catch(qe){ dbg('Queue FEHLER: '+qe.message,'err'); }
-      await correctLastFlashLog(false);
-      return;
-    }
-    try{
-      await sbApi('progress?id=eq.'+p.id, 'PATCH', patchPayload);
-      dbg('markFlashWrong ✓', 'ok');
-      syncUpdateIcon();
-    }catch(e){
-      dbg('markFlashWrong offline → Queue: '+e.message,'err');
-      try{
-        await oqPush({ vocabId: vid, existing_id: p.id, is_patch: true, payload: patchPayload });
-        syncUpdateIcon();
-      }catch(qe){ dbg('Queue FEHLER: '+qe.message,'err'); }
-    }
-    await correctLastFlashLog(false);
+    await _applyFlashCorrection(vid, false, orig);
   })();
   const fb = document.getElementById('feedback');
   if(fb){ fb.className='feedback show wrong'; fb.innerHTML='✗ Als falsch gewertet.'; }
   hideFlashActionBar();
   showFlashNextBar(last.v, false);
+}
+
+// Button-HTML für ⏮ — Rahmen/Icon-Farbe zeigt den Status der zuletzt
+// beantworteten Vokabel: grün = war richtig, rot = war falsch, grau = noch
+// keine Antwort in dieser Session.
+function flashPrevBtnHtml(){
+  const last = window._lastFlashVocab;
+  const known = !!last;
+  const ok = known ? last.ok : null;
+  const color = !known ? 'var(--muted)' : (ok ? 'var(--green)' : 'var(--red)');
+  const title = !known ? 'Keine vorherige Antwort' : ('Letzte Antwort ('+last.v.tr+') war '+(ok?'richtig':'falsch')+' — antippen zum Korrigieren');
+  return '<button class="sticky-check-ghost" id="flash-prev-btn" onclick="correctPreviousFlashCard()" title="'+title+'" style="border-color:'+color+';color:'+color+'">⏮</button>';
+}
+// Aktualisiert nur den ⏮-Button in-place (ohne die ganze Leiste neu zu bauen)
+function refreshFlashPrevBtn(){
+  const btn = document.getElementById('flash-prev-btn');
+  if(!btn) return;
+  const tmp = document.createElement('div');
+  tmp.innerHTML = flashPrevBtnHtml();
+  const newBtn = tmp.firstElementChild;
+  btn.replaceWith(newBtn);
+}
+
+// ── Korrektur der zuletzt beantworteten Karte, auch nachdem schon zur
+//    nächsten Karte weitergeblättert wurde (⏮-Button in der Prüfen-Leiste).
+//    Bezieht sich IMMER nur auf window._lastFlashVocab (die zuletzt per
+//    chkFlash() beantwortete Vokabel) — sobald die nächste Karte beantwortet
+//    wird, zeigt der Button auf die neue "letzte" Vokabel; die alte ist
+//    nicht mehr erreichbar (bewusst: nur die letzte Antwort ist korrigierbar).
+function correctPreviousFlashCard(){
+  const last = window._lastFlashVocab;
+  if(!last){ showToast('Keine vorherige Antwort zum Korrigieren','warn'); return; }
+  const newOk = !last.ok;
+  last.ok = newOk;
+  if(newOk){ score.c++; score.w = Math.max(0, score.w - 1); }
+  else { score.c = Math.max(0, score.c - 1); score.w++; }
+  updScore();
+  const vid = last.v.id;
+  const orig = window._lastFlashOrigProgress;
+  refreshFlashPrevBtn(); // Button-Farbe sofort umschalten
+  (async ()=>{
+    if(window._lastFlashSrsPromise){
+      try{ await window._lastFlashSrsPromise; }catch(e){}
+    }
+    await _applyFlashCorrection(vid, newOk, orig);
+    showToast((newOk?'✓ Korrigiert: ':'✗ Korrigiert: ')+last.v.tr+' jetzt als '+(newOk?'richtig':'falsch')+' gewertet', newOk?'ok':'warn');
+  })();
 }
 
 function skipFlash(){
