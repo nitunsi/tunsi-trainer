@@ -490,6 +490,39 @@ function dbg(msg, cls){
   log.scrollTop = log.scrollHeight;
 }
 
+// Zeigt alle Offline-Queue-Einträge im DBG-Panel — hängende (fails>0) mit
+// Fehlermeldung und Lösch-Button, damit man sie gezielt entfernen kann, ohne
+// den kompletten Website-Speicher (inkl. Login) zu leeren.
+async function dbgShowQueue(){
+  const wrap = document.getElementById('debug-queue');
+  if(!wrap) return;
+  const panel = document.getElementById('debug-panel');
+  if(panel) panel.style.display = 'block';
+  let items;
+  try{ items = await oqGetAll(); }catch(e){ wrap.innerHTML = '<div style="color:#c94c4c">Queue-Fehler: '+e.message+'</div>'; return; }
+  if(items.length === 0){ wrap.innerHTML = '<div style="color:#4cac6e;margin-bottom:.4rem">✓ Queue leer</div>'; return; }
+  let h = '<div style="color:#c9a84c;margin-bottom:.3rem">'+items.length+' Einträge in der Queue:</div>';
+  items.forEach(it => {
+    const stuck = (it.fails||0) > 0;
+    h += '<div style="border:1px solid '+(stuck?'#c94c4c':'#3a3530')+';border-radius:3px;padding:.35rem;margin-bottom:.3rem">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center">'
+      + '<span style="color:'+(stuck?'#c94c4c':'#f0e8d8')+'">qid='+it.qid+' · '+(it.type||(it.is_patch?'progress-patch':'progress-post'))+(stuck?' · '+it.fails+'× fehlgeschlagen':'')+'</span>'
+      + '<button onclick="dbgDeleteQueueItem('+it.qid+')" style="background:none;border:1px solid #c94c4c;color:#c94c4c;cursor:pointer;font-size:.6rem;padding:.1rem .35rem;border-radius:3px">löschen</button>'
+      + '</div>'
+      + (stuck ? '<div style="color:#c94c4c;font-size:.58rem;margin-top:.2rem;word-break:break-all">'+(it.lastError||'').slice(0,200)+'</div>' : '')
+      + '</div>';
+  });
+  wrap.innerHTML = h;
+}
+async function dbgDeleteQueueItem(qid){
+  try{
+    await oqDelete(qid);
+    dbg('Queue-Eintrag qid='+qid+' manuell gelöscht','ok');
+    await dbgShowQueue();
+    syncUpdateIcon();
+  }catch(e){ dbg('Löschen fehlgeschlagen: '+e.message,'err'); }
+}
+
 
 // Lateinisch ein/aus
 let latinVisible = localStorage.getItem('latin-visible') !== 'false';
@@ -1415,6 +1448,25 @@ async function oqUpdatePayload(qid, changes){
     tx.onerror    = e => rej(e.target.error);
   });
 }
+// Trägt bei einem permanent fehlschlagenden Queue-Eintrag die Fehler-Anzahl
+// und die letzte Fehlermeldung ein (für die Anzeige im DBG-Panel).
+async function oqSetFails(qid, fails, lastError){
+  const db = await oqOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(OQ_STORE,'readwrite');
+    const store = tx.objectStore(OQ_STORE);
+    const getReq = store.get(qid);
+    getReq.onsuccess = () => {
+      const rec = getReq.result;
+      if(!rec){ res(false); return; }
+      rec.fails = fails;
+      rec.lastError = lastError;
+      store.put(rec);
+    };
+    tx.oncomplete = () => res(true);
+    tx.onerror    = e => rej(e.target.error);
+  });
+}
 
 async function oqGetAll(){
   const db = await oqOpen();
@@ -1451,13 +1503,20 @@ async function syncUpdateIcon(){
   const btn = document.getElementById('sync-btn');
   if(!btn) return;
   try{
-    const n = await oqCount();
+    const items = await oqGetAll();
+    const n = items.length;
+    const stuckN = items.filter(it => (it.fails||0) > 0).length;
     btn.style.display = '';
     if(n === 0){
       btn.textContent = '✅';
       btn.style.color = 'var(--green)';
       btn.style.borderColor = 'var(--green)';
       btn.title = 'Alles gespeichert';
+    } else if(stuckN > 0){
+      btn.textContent = '⚠️ '+stuckN;
+      btn.style.color = 'var(--red)';
+      btn.style.borderColor = 'var(--red)';
+      btn.title = stuckN+' hängen fest — DBG-Panel öffnen für Details';
     } else {
       btn.textContent = '⏳ '+n;
       btn.style.color = 'var(--gold)';
@@ -1469,6 +1528,10 @@ async function syncUpdateIcon(){
 
 // Alle Queue-Einträge an Supabase senden
 let _syncRunning = false;
+function _isNetworkError(e){
+  // Fetch-Level-Fehler (kein Netz) vs. eine vom Server abgelehnte Anfrage (permanenter Fehler)
+  return e instanceof TypeError || /Failed to fetch|NetworkError|Load failed|Zeitüberschreitung/i.test(e.message||'');
+}
 async function syncFlush(manual=false){
   if(_syncRunning) return;
   _syncRunning = true;
@@ -1497,9 +1560,21 @@ async function syncFlush(manual=false){
         sent++;
         dbg('Sync OK: qid='+item.qid, 'ok');
       } catch(e){
-        dbg('Sync FEHLER qid='+item.qid+': '+e.message, 'err');
-        // Netz noch weg — abbrechen, beim nächsten Loop weitermachen
-        break;
+        if(_isNetworkError(e)){
+          // Kein Netz — nicht der Eintrag ist schuld, sondern die Verbindung.
+          // Abbrechen und beim nächsten Loop (10s) alles erneut versuchen.
+          dbg('Sync FEHLER (Netzwerk) qid='+item.qid+': '+e.message,'err');
+          break;
+        }
+        // Server hat die Anfrage abgelehnt (z.B. falsches Feld/Datentyp) — das ist
+        // KEIN Netzwerkproblem und wird durch Wiederholen nicht besser. Eintrag
+        // NICHT löschen (damit er im DBG-Panel sichtbar & prüfbar bleibt), aber
+        // auch nicht die ganze Queue blockieren: Zähler hochsetzen, weiter mit
+        // dem nächsten Eintrag.
+        const fails = (item.fails||0) + 1;
+        try{ await oqSetFails(item.qid, fails, e.message); }catch(_e){}
+        dbg('Sync FEHLER (permanent, Versuch '+fails+') qid='+item.qid+': '+e.message,'err');
+        continue;
       }
     }
     if(manual && sent > 0) dbg('Sync: '+sent+' gespeichert', 'ok');
@@ -3503,7 +3578,6 @@ function renderVocabTable(vocab){
     const correct = p ? timeAgo(p.last_correct) : '—';
     const rowId = 'vrow-'+i;
     const editId = 'vedit-'+i;
-    const vIdx = ALL_VOCAB.indexOf(v);
 
     h += '<tr id="'+rowId+'" style="border-bottom:1px solid rgba(58,50,40,.4)">';
     const flagMark = flaggedVocab.has(v.tr) ? ' 🚩' : '';
@@ -5225,8 +5299,12 @@ window.addEventListener('unhandledrejection', (e) => {
 <div id="debug-panel" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a1612;border-top:2px solid #c9a84c;padding:.5rem;font-size:.6rem;font-family:monospace;color:#f0e8d8;max-height:40vh;overflow-y:auto;z-index:200;">
   <div style="display:flex;justify-content:space-between;margin-bottom:.3rem;">
     <span style="color:#c9a84c;font-weight:700;">DEBUG</span>
-    <button onclick="document.getElementById('debug-panel').style.display='none'" style="background:none;border:none;color:#c94c4c;cursor:pointer;font-size:.8rem;">✕</button>
+    <span>
+      <button onclick="dbgShowQueue()" style="background:none;border:1px solid #c9a84c;color:#c9a84c;cursor:pointer;font-size:.65rem;padding:.15rem .4rem;border-radius:3px;margin-right:.4rem;">Queue</button>
+      <button onclick="document.getElementById('debug-panel').style.display='none'" style="background:none;border:none;color:#c94c4c;cursor:pointer;font-size:.8rem;">✕</button>
+    </span>
   </div>
+  <div id="debug-queue"></div>
   <div id="debug-log"></div>
 </div>
 
