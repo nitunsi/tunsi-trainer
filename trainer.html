@@ -320,6 +320,8 @@ body.hide-latin .chat-opt .latin {
     <button class="lesson-chip" onclick="setMode('mc',this);closeNav()">🎯 Multiple Choice</button>
     <button class="lesson-chip" onclick="setMode('sentences',this);closeNav()">💬 Sätze</button>
     <button class="lesson-chip" onclick="setMode('flash',this);closeNav()">🃏 Vokabelkarten</button>
+    <button class="lesson-chip" onclick="setMode('course',this);closeNav()">🎓 Kurs</button>
+    <button class="lesson-chip" onclick="setMode('pairs',this);closeNav()">🔗 Antwort-Paare</button>
     <button class="lesson-chip" onclick="setMode('vocab',this);closeNav()">📚 Vokabeln</button>
     <button class="lesson-chip" onclick="setMode('addvocab',this);closeNav()">➕ Vokabel hinzufügen</button>
     <button class="lesson-chip" onclick="setMode('stats',this);closeNav()">📊 Statistik</button>
@@ -488,39 +490,6 @@ function dbg(msg, cls){
   d.textContent = new Date().toLocaleTimeString() + ' ' + msg;
   log.appendChild(d);
   log.scrollTop = log.scrollHeight;
-}
-
-// Zeigt alle Offline-Queue-Einträge im DBG-Panel — hängende (fails>0) mit
-// Fehlermeldung und Lösch-Button, damit man sie gezielt entfernen kann, ohne
-// den kompletten Website-Speicher (inkl. Login) zu leeren.
-async function dbgShowQueue(){
-  const wrap = document.getElementById('debug-queue');
-  if(!wrap) return;
-  const panel = document.getElementById('debug-panel');
-  if(panel) panel.style.display = 'block';
-  let items;
-  try{ items = await oqGetAll(); }catch(e){ wrap.innerHTML = '<div style="color:#c94c4c">Queue-Fehler: '+e.message+'</div>'; return; }
-  if(items.length === 0){ wrap.innerHTML = '<div style="color:#4cac6e;margin-bottom:.4rem">✓ Queue leer</div>'; return; }
-  let h = '<div style="color:#c9a84c;margin-bottom:.3rem">'+items.length+' Einträge in der Queue:</div>';
-  items.forEach(it => {
-    const stuck = (it.fails||0) > 0;
-    h += '<div style="border:1px solid '+(stuck?'#c94c4c':'#3a3530')+';border-radius:3px;padding:.35rem;margin-bottom:.3rem">'
-      + '<div style="display:flex;justify-content:space-between;align-items:center">'
-      + '<span style="color:'+(stuck?'#c94c4c':'#f0e8d8')+'">qid='+it.qid+' · '+(it.type||(it.is_patch?'progress-patch':'progress-post'))+(stuck?' · '+it.fails+'× fehlgeschlagen':'')+'</span>'
-      + '<button onclick="dbgDeleteQueueItem('+it.qid+')" style="background:none;border:1px solid #c94c4c;color:#c94c4c;cursor:pointer;font-size:.6rem;padding:.1rem .35rem;border-radius:3px">löschen</button>'
-      + '</div>'
-      + (stuck ? '<div style="color:#c94c4c;font-size:.58rem;margin-top:.2rem;word-break:break-all">'+(it.lastError||'').slice(0,200)+'</div>' : '')
-      + '</div>';
-  });
-  wrap.innerHTML = h;
-}
-async function dbgDeleteQueueItem(qid){
-  try{
-    await oqDelete(qid);
-    dbg('Queue-Eintrag qid='+qid+' manuell gelöscht','ok');
-    await dbgShowQueue();
-    syncUpdateIcon();
-  }catch(e){ dbg('Löschen fehlgeschlagen: '+e.message,'err'); }
 }
 
 
@@ -1448,25 +1417,6 @@ async function oqUpdatePayload(qid, changes){
     tx.onerror    = e => rej(e.target.error);
   });
 }
-// Trägt bei einem permanent fehlschlagenden Queue-Eintrag die Fehler-Anzahl
-// und die letzte Fehlermeldung ein (für die Anzeige im DBG-Panel).
-async function oqSetFails(qid, fails, lastError){
-  const db = await oqOpen();
-  return new Promise((res, rej) => {
-    const tx = db.transaction(OQ_STORE,'readwrite');
-    const store = tx.objectStore(OQ_STORE);
-    const getReq = store.get(qid);
-    getReq.onsuccess = () => {
-      const rec = getReq.result;
-      if(!rec){ res(false); return; }
-      rec.fails = fails;
-      rec.lastError = lastError;
-      store.put(rec);
-    };
-    tx.oncomplete = () => res(true);
-    tx.onerror    = e => rej(e.target.error);
-  });
-}
 
 async function oqGetAll(){
   const db = await oqOpen();
@@ -1503,20 +1453,13 @@ async function syncUpdateIcon(){
   const btn = document.getElementById('sync-btn');
   if(!btn) return;
   try{
-    const items = await oqGetAll();
-    const n = items.length;
-    const stuckN = items.filter(it => (it.fails||0) > 0).length;
+    const n = await oqCount();
     btn.style.display = '';
     if(n === 0){
       btn.textContent = '✅';
       btn.style.color = 'var(--green)';
       btn.style.borderColor = 'var(--green)';
       btn.title = 'Alles gespeichert';
-    } else if(stuckN > 0){
-      btn.textContent = '⚠️ '+stuckN;
-      btn.style.color = 'var(--red)';
-      btn.style.borderColor = 'var(--red)';
-      btn.title = stuckN+' hängen fest — DBG-Panel öffnen für Details';
     } else {
       btn.textContent = '⏳ '+n;
       btn.style.color = 'var(--gold)';
@@ -1528,10 +1471,6 @@ async function syncUpdateIcon(){
 
 // Alle Queue-Einträge an Supabase senden
 let _syncRunning = false;
-function _isNetworkError(e){
-  // Fetch-Level-Fehler (kein Netz) vs. eine vom Server abgelehnte Anfrage (permanenter Fehler)
-  return e instanceof TypeError || /Failed to fetch|NetworkError|Load failed|Zeitüberschreitung/i.test(e.message||'');
-}
 async function syncFlush(manual=false){
   if(_syncRunning) return;
   _syncRunning = true;
@@ -1560,21 +1499,9 @@ async function syncFlush(manual=false){
         sent++;
         dbg('Sync OK: qid='+item.qid, 'ok');
       } catch(e){
-        if(_isNetworkError(e)){
-          // Kein Netz — nicht der Eintrag ist schuld, sondern die Verbindung.
-          // Abbrechen und beim nächsten Loop (10s) alles erneut versuchen.
-          dbg('Sync FEHLER (Netzwerk) qid='+item.qid+': '+e.message,'err');
-          break;
-        }
-        // Server hat die Anfrage abgelehnt (z.B. falsches Feld/Datentyp) — das ist
-        // KEIN Netzwerkproblem und wird durch Wiederholen nicht besser. Eintrag
-        // NICHT löschen (damit er im DBG-Panel sichtbar & prüfbar bleibt), aber
-        // auch nicht die ganze Queue blockieren: Zähler hochsetzen, weiter mit
-        // dem nächsten Eintrag.
-        const fails = (item.fails||0) + 1;
-        try{ await oqSetFails(item.qid, fails, e.message); }catch(_e){}
-        dbg('Sync FEHLER (permanent, Versuch '+fails+') qid='+item.qid+': '+e.message,'err');
-        continue;
+        dbg('Sync FEHLER qid='+item.qid+': '+e.message, 'err');
+        // Netz noch weg — abbrechen, beim nächsten Loop weitermachen
+        break;
       }
     }
     if(manual && sent > 0) dbg('Sync: '+sent+' gespeichert', 'ok');
@@ -2156,8 +2083,12 @@ function sh(a){return[...a].sort(()=>Math.random()-.5);}
 function lsNum(v){ const m=/^L(\d+)/.exec(v && v.ls || ''); return m ? parseInt(m[1],10) : -1; }
 function eq(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
 function ek(s){return btoa(encodeURIComponent(s)).replace(/[^a-zA-Z0-9]/g,'').slice(0,20);}
+let COURSE_VOCAB_FILTER = null; // {ids:Set<number>, tr:Set<string>} — gesetzt von courseGoToVocab()
 function gv(){
   if(cLesson==='all')return ALL_VOCAB;
+  if(cLesson==='COURSEVOCAB' && COURSE_VOCAB_FILTER){
+    return ALL_VOCAB.filter(v=> COURSE_VOCAB_FILTER.ids.has(v.id) || COURSE_VOCAB_FILTER.tr.has(v.tr));
+  }
   return ALL_VOCAB.filter(v=>v.ls===cLesson);
 }
 const LESSON_TITLES = {};
@@ -2217,7 +2148,7 @@ function filterLesson(l,el){cLesson=l;document.querySelectorAll('#lesson-chips .
 function setMode(m,el){cMode=m;document.querySelectorAll('.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));el.classList.add('active');
   // Bulk-Bar verstecken wenn nicht Vocab-Modus
   const bb=document.getElementById('vl-bulk-bar');if(bb&&m!=='vocab')bb.style.display='none';
-  if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}go();}
+  if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}go();}
 function updScore(){document.getElementById('sc-correct').textContent=score.c;document.getElementById('sc-wrong').textContent=score.w;document.getElementById('sc-streak').textContent='🔥'+score.st;}
 function showFb(ok,ca){const fb=document.getElementById('feedback');if(!fb)return;fb.className='feedback show '+(ok?'correct':'wrong');fb.textContent=ok?'✓ Richtig!':'✗ Falsch.'+(ca?' Antwort: '+ca:'');}
 function showNext(){showStickyNext(nxt);}
@@ -3358,7 +3289,15 @@ function showVocabList(){
 
   const vocab = cLesson==='all' ? ALL_VOCAB : gv();
 
+  const courseFilterBanner = cLesson==='COURSEVOCAB'
+    ? '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(201,168,76,.1);border:1px solid var(--gold);border-radius:6px;padding:.5rem .7rem;margin-bottom:.6rem;font-size:.75rem;color:var(--gold2)">'
+      + '<span>🎓 Nur Vokabeln dieser Kurs-Lektion</span>'
+      + '<button onclick="courseClearVocabFilter()" style="background:none;border:1px solid var(--gold);color:var(--gold);font-size:.68rem;padding:.2rem .5rem;cursor:pointer;border-radius:3px">Filter aufheben</button>'
+      + '</div>'
+    : '';
+
   c.innerHTML = `
+    ${courseFilterBanner}
     <div id="vl-since-banner"></div>
     <div style="margin-bottom:.8rem">
       <input id="vocab-search" type="text" placeholder="Suchen... (Arabisch, Transliteration, Deutsch)"
@@ -3578,6 +3517,7 @@ function renderVocabTable(vocab){
     const correct = p ? timeAgo(p.last_correct) : '—';
     const rowId = 'vrow-'+i;
     const editId = 'vedit-'+i;
+    const vIdx = ALL_VOCAB.indexOf(v);
 
     h += '<tr id="'+rowId+'" style="border-bottom:1px solid rgba(58,50,40,.4)">';
     const flagMark = flaggedVocab.has(v.tr) ? ' 🚩' : '';
@@ -4012,6 +3952,434 @@ async function saveNewLesson(){
     renderLessonsAdmin();
   } catch(e){ fb.style.color='var(--red)'; fb.textContent='Fehler: '+e.message; }
 }
+
+
+// ── Kurs-Modus ───────────────────────────────────────────────────────────────
+// Datenmodell: course_lessons (1 Zeile/Lektion), course_exercises (Teilaufgaben),
+// course_progress (Fortschritt pro Nutzer/Lektion). Schreibt NICHT in progress/SRS.
+
+let COURSE_LESSONS = [];               // [{id, course_number, skript, title, dialog_text, grammar_notes, vocab_lesson_refs}]
+let COURSE_EXERCISES_BY_LESSON = {};   // course_lesson_id -> [exercise, ...] sortiert nach position
+let COURSE_PROGRESS_BY_LESSON = {};    // course_lesson_id -> progress-Zeile des aktuellen Nutzers (oder undefined)
+let _courseLoaded = false;
+let _courseTest = null;                // aktiver Test-Durchlauf, siehe courseStartTest()
+const COURSE_GRADABLE_TYPES = ['translate_de_tn','fill_blank','answer_pattern','grammar_card','grammar_drill','fixed_response'];
+
+function courseGradableCount(lessonId){
+  return (COURSE_EXERCISES_BY_LESSON[lessonId]||[]).filter(e=>COURSE_GRADABLE_TYPES.includes(e.exercise_type)).length;
+}
+
+async function loadCourseData(force){
+  if(_courseLoaded && !force) return;
+  const [lessons, exercises, progress] = await Promise.all([
+    sbApi('course_lessons?select=*&order=course_number.asc'),
+    sbApi('course_exercises?select=*&order=course_lesson_id.asc,position.asc'),
+    sbApi('course_progress?user_id=eq.'+currentUser.id+'&select=*')
+  ]);
+  COURSE_LESSONS = lessons || [];
+  COURSE_EXERCISES_BY_LESSON = {};
+  (exercises||[]).forEach(e=>{
+    if(!COURSE_EXERCISES_BY_LESSON[e.course_lesson_id]) COURSE_EXERCISES_BY_LESSON[e.course_lesson_id]=[];
+    COURSE_EXERCISES_BY_LESSON[e.course_lesson_id].push(e);
+  });
+  COURSE_PROGRESS_BY_LESSON = {};
+  (progress||[]).forEach(p=>{ COURSE_PROGRESS_BY_LESSON[p.course_lesson_id]=p; });
+  _courseLoaded = true;
+}
+
+// Schlichtes Markdown: ### Überschrift, - Bullet-Punkt, **bold**, Absätze.
+function mdLite(s){
+  if(!s) return '';
+  const escLine = (t)=>{ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; };
+  const bold = (t)=> t.replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--gold2)">$1</strong>');
+  const lines = s.split('\n');
+  let html=''; let inList=false;
+  lines.forEach(line=>{
+    const t = line.trim();
+    if(t.startsWith('### ')){
+      if(inList){ html+='</ul>'; inList=false; }
+      html += '<div style="font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--gold);margin:1rem 0 .35rem;font-weight:700">'+escLine(t.slice(4))+'</div>';
+    } else if(t.startsWith('- ')){
+      if(!inList){ html+='<ul style="margin:.2rem 0 .7rem;padding-left:1.15rem">'; inList=true; }
+      html += '<li style="margin-bottom:.35rem">'+bold(escLine(t.slice(2)))+'</li>';
+    } else if(t===''){
+      if(inList){ html+='</ul>'; inList=false; }
+    } else {
+      if(inList){ html+='</ul>'; inList=false; }
+      html += '<div style="margin-bottom:.4rem">'+bold(escLine(t))+'</div>';
+    }
+  });
+  if(inList) html += '</ul>';
+  return html;
+}
+
+async function showCourseOverview(){
+  const area = document.getElementById('exercise-screen');
+  if(area) area.style.display = 'block';
+  const actScr = document.getElementById('act-screen');
+  if(actScr){ actScr.style.display='none'; actScr.style.pointerEvents='none'; }
+  const ab = document.getElementById('act-batch-bar'); if(ab) ab.style.display='none';
+  const sticky = document.getElementById('sticky-next'); if(sticky) sticky.classList.remove('show');
+  document.getElementById('ex-type-label').textContent = '🎓 Kurs';
+  document.getElementById('ex-progress').textContent = '';
+  const c = document.getElementById('exercise-content');
+  if(!c) return;
+  c.innerHTML = '<div style="padding:1.5rem 1rem;color:var(--muted);font-size:.85rem">Lade Kurs…</div>';
+  try{
+    await loadCourseData();
+  }catch(e){
+    c.innerHTML = '<div style="padding:1.5rem 1rem;color:var(--red)">Fehler: '+e.message+'</div>';
+    return;
+  }
+  renderCourseOverview();
+}
+
+function renderCourseOverview(){
+  const c = document.getElementById('exercise-content');
+  if(!c) return;
+  if(!COURSE_LESSONS.length){
+    c.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted)">Noch keine Kurs-Lektionen angelegt.</div>';
+    return;
+  }
+  let h = '<div style="padding:1rem;max-width:600px;margin:0 auto">';
+  h += '<div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:1rem">Uni-Wien-Kurs</div>';
+  h += '<div style="display:flex;flex-direction:column;gap:.5rem">';
+  COURSE_LESSONS.forEach((l,i)=>{
+    const prog = COURSE_PROGRESS_BY_LESSON[l.id];
+    const status = prog ? prog.status : 'open';
+    const prevDone = i===0 || (COURSE_PROGRESS_BY_LESSON[COURSE_LESSONS[i-1].id] && COURSE_PROGRESS_BY_LESSON[COURSE_LESSONS[i-1].id].status==='done');
+    const locked = !prevDone && status!=='done' && status!=='in_progress';
+    const icon = status==='done' ? '✅' : status==='in_progress' ? '▶️' : locked ? '🔒' : '▶️';
+    const scoreTxt = (status==='done' && prog.score_self!=null) ? ' · zuletzt '+prog.score_self+' von '+courseGradableCount(l.id)+' richtig' : '';
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;display:flex;justify-content:space-between;align-items:center;gap:.6rem">';
+    h += '<div style="flex:1;min-width:0">';
+    h += '<div style="font-size:.9rem;color:var(--text)">'+icon+' L'+l.course_number+' <span style="color:var(--gold2)">'+escHtml(l.title||'')+'</span></div>';
+    h += '<div style="font-size:.68rem;color:var(--muted);margin-top:.15rem">'+(status==='done'?'abgeschlossen':status==='in_progress'?'in Bearbeitung':'offen')+scoreTxt+'</div>';
+    h += '</div>';
+    if(locked){
+      h += '<button onclick="showCourseLesson('+l.id+')" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.68rem;padding:.3rem .55rem;cursor:pointer;border-radius:3px;white-space:nowrap">trotzdem öffnen</button>';
+    } else {
+      h += '<button onclick="showCourseLesson('+l.id+')" style="padding:.35rem .7rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.75rem;font-weight:700;cursor:pointer;border-radius:4px;white-space:nowrap">Öffnen</button>';
+    }
+    h += '</div>';
+  });
+  h += '</div></div>';
+  c.innerHTML = h;
+}
+
+let _courseCurLesson = null;
+let _courseCurTab = 'learn';
+
+function showCourseLesson(lessonId, tab){
+  _courseCurLesson = COURSE_LESSONS.find(l=>l.id===lessonId);
+  _courseCurTab = tab || 'learn';
+  _courseTest = null;
+  renderCourseLesson();
+}
+
+function courseSetTab(tab){
+  _courseCurTab = tab;
+  if(tab==='test') courseStartTest();
+  renderCourseLesson();
+}
+
+function renderCourseLesson(){
+  const c = document.getElementById('exercise-content');
+  const l = _courseCurLesson;
+  if(!c || !l) return;
+  const tabBtn = (key,label)=>'<button onclick="courseSetTab(\''+key+'\')" style="flex:1;padding:.5rem;border-radius:6px;font-family:\'IBM Plex Mono\',monospace;font-size:.75rem;cursor:pointer;'+
+    (_courseCurTab===key?'background:var(--gold);border:1px solid var(--gold);color:#0e0c0a;font-weight:700;':'background:transparent;border:1px solid var(--border);color:var(--muted);')+'">'+label+'</button>';
+
+  let h = '<div style="padding:1rem;max-width:600px;margin:0 auto">';
+  h += '<button onclick="showCourseOverview()" style="background:none;border:none;color:var(--muted);font-size:.72rem;cursor:pointer;padding:0;margin-bottom:.6rem">← Kurs-Übersicht</button>';
+  h += '<div style="font-size:1rem;color:var(--gold2);margin-bottom:.8rem">L'+l.course_number+' · '+escHtml(l.title||'')+'</div>';
+  h += '<div style="display:flex;gap:.4rem;margin-bottom:1rem">'+tabBtn('learn','📖 Lernen')+tabBtn('vocab','📚 Vokabeln')+tabBtn('test','✍️ Test')+'</div>';
+  h += '<div id="course-tab-content"></div>';
+  h += '</div>';
+  c.innerHTML = h;
+
+  const tc = document.getElementById('course-tab-content');
+  if(_courseCurTab==='learn') renderCourseLearnTab(tc, l);
+  else if(_courseCurTab==='vocab') renderCourseVocabTab(tc, l);
+  else if(_courseCurTab==='test') renderCourseTestTab(tc, l);
+}
+
+function renderCourseLearnTab(tc, l){
+  let h = '';
+  if(l.dialog_text){
+    h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem">Dialoge</div>';
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7;margin-bottom:1.2rem">'+mdLite(l.dialog_text)+'</div>';
+  }
+  if(l.grammar_notes){
+    h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem">Grammatik</div>';
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7">'+mdLite(l.grammar_notes)+'</div>';
+  }
+  if(!l.dialog_text && !l.grammar_notes){
+    h = '<div style="color:var(--muted);font-size:.85rem;text-align:center;padding:2rem 0">Noch kein Lernmaterial für diese Lektion.</div>';
+  }
+  tc.innerHTML = h;
+}
+
+function parseCourseVocabRefs(refString){
+  const out = {ids:new Set(), tr:new Set()};
+  if(!refString) return out;
+  refString.split('|').forEach(part=>{
+    const m = part.split(':');
+    if(m.length<2) return;
+    const key = m[0].trim();
+    const vals = m[1].split(',').map(s=>s.trim()).filter(Boolean);
+    if(key==='ids') vals.forEach(v=>{ const n=parseInt(v,10); if(!isNaN(n)) out.ids.add(n); });
+    else if(key==='darija') vals.forEach(v=>out.tr.add(v));
+  });
+  return out;
+}
+
+function renderCourseVocabTab(tc, l){
+  const filter = parseCourseVocabRefs(l.vocab_lesson_refs);
+  const count = filter.ids.size + filter.tr.size;
+  let h = '<div style="color:var(--muted);font-size:.85rem;line-height:1.6;margin-bottom:1rem">';
+  h += count
+    ? 'Diese Lektion umfasst '+count+' Vokabeln. Im Karten-Modus lernst du nur diese, solange der Filter aktiv ist.'
+    : 'Für diese Lektion sind noch keine Vokabeln verknüpft.';
+  h += '</div>';
+  h += '<button onclick="courseGoToVocab('+l.id+')" style="width:100%;padding:.6rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">📚 Nur diese Vokabeln anzeigen/lernen</button>';
+  tc.innerHTML = h;
+}
+
+function courseGoToVocab(lessonId){
+  const l = COURSE_LESSONS.find(x=>x.id===lessonId) || _courseCurLesson;
+  if(!l) return;
+  COURSE_VOCAB_FILTER = parseCourseVocabRefs(l.vocab_lesson_refs);
+  cLesson = 'COURSEVOCAB';
+  document.querySelectorAll('.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));
+  const chip = document.querySelector('.lesson-chip[onclick*="setMode(\'vocab\'"]');
+  if(chip) chip.classList.add('active');
+  cMode = 'vocab';
+  showVocabList();
+}
+
+// Filter wieder aufheben (Button erscheint oben in der gefilterten Vokabelliste)
+function courseClearVocabFilter(){
+  cLesson = 'all';
+  COURSE_VOCAB_FILTER = null;
+  showVocabList();
+}
+
+// ── Test-Flow ──────────────────────────────────────────────────────────────
+
+function courseStartTest(){
+  const l = _courseCurLesson;
+  if(!l) return;
+  const all = COURSE_EXERCISES_BY_LESSON[l.id] || [];
+  const items = all.filter(e=>e.exercise_type!=='grammar_card');
+  const gcItems = all.filter(e=>e.exercise_type==='grammar_card');
+  _courseTest = {
+    lessonId: l.id, items, gcItems,
+    idx: 0, gcIdx: 0,
+    phase: items.length ? 'main' : (gcItems.length ? 'grammar' : 'summary'),
+    revealed: false,
+    mainC:0, mainW:0, gcC:0, gcW:0,
+    doneIds: []
+  };
+}
+
+function renderCourseTestTab(tc, l){
+  if(!_courseTest || _courseTest.lessonId!==l.id) courseStartTest();
+  const t = _courseTest;
+
+  if(t.phase==='summary'){
+    const totalTallyable = t.mainC+t.mainW+t.gcC+t.gcW;
+    let h = '<div style="text-align:center;padding:1.5rem 0">';
+    h += '<div style="font-size:2rem;margin-bottom:.5rem">'+(t.items.length+t.gcItems.length===0?'🤷':'🎉')+'</div>';
+    if(totalTallyable>0){
+      h += '<div style="font-size:1.1rem;color:var(--gold2)">'+(t.mainC+t.gcC)+' von '+totalTallyable+' richtig</div>';
+    } else {
+      h += '<div style="color:var(--muted);font-size:.85rem">Keine Test-Aufgaben für diese Lektion.</div>';
+    }
+    h += '<button id="course-finish-btn" onclick="courseFinishTest()" style="margin-top:1.2rem;padding:.65rem 1.4rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.85rem;font-weight:700;cursor:pointer;border-radius:4px">✓ Lektion abschließen</button>';
+    h += '</div>';
+    tc.innerHTML = h;
+    return;
+  }
+
+  let ex, total, cur;
+  if(t.phase==='main'){ ex = t.items[t.idx]; total = t.items.length; cur = t.idx+1; }
+  else { ex = t.gcItems[t.gcIdx]; total = t.gcItems.length; cur = t.gcIdx+1; }
+  if(!ex){ courseAdvancePhase(); renderCourseTestTab(tc, l); return; }
+
+  const isGrammar = t.phase==='grammar';
+  const gradable = COURSE_GRADABLE_TYPES.includes(ex.exercise_type);
+  const label = isGrammar ? '🧠 Grammatik-Check' : ({translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',build_dialog:'Dialog bilden',grammar_drill:'Grammatik-Übung',fixed_response:'Feste Antwort'})[ex.exercise_type] || ex.exercise_type;
+
+  let h = '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.3rem">'+label+' · '+cur+' / '+total+'</div>';
+  if(ex.instruction) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(ex.instruction)+'</div>';
+  if(ex.prompt) h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem;font-size:.95rem;margin-bottom:.8rem">'+escHtml(ex.prompt)+'</div>';
+
+  if(!gradable){
+    // pronunciation / build_dialog: keine Bewertung, aber build_dialog braucht eine konkrete Anleitung statt bloßem "Weiter"
+    if(ex.exercise_type==='build_dialog'){
+      h += '<div style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:1rem">'
+         + 'Das ist eine freie Aufgabe ohne feste Lösung — sprich oder schreib dir selbst einen kurzen Dialog, '
+         + 'z.B. mit diesem Ablauf:<br><br>'
+         + '1. Begrüßung (is-salam 3likom / 3aslema / ahla)<br>'
+         + '2. "Wie geht\'s?" fragen (shnowwa 7welik?)<br>'
+         + '3. Antworten (lbas, il-7amdulla)<br>'
+         + '4. Verabschieden (b-is-slama)<br><br>'
+         + 'Wenn du das einmal laut oder schriftlich durchgespielt hast, geh weiter.'
+         + '</div>';
+    } else if(ex.solution){
+      h += '<div style="color:var(--gold2);font-size:.85rem;margin-bottom:1rem">'+escHtml(ex.solution)+'</div>';
+    }
+    h += '<button onclick="courseNextItem(null)" style="width:100%;padding:.6rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">Weiter</button>';
+  } else if(!t.revealed){
+    h += '<button onclick="courseReveal()" style="width:100%;padding:.6rem;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;cursor:pointer;border-radius:4px">Lösung zeigen</button>';
+  } else {
+    h += '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2);margin-bottom:.8rem">'+escHtml(ex.solution||'—')+'</div>';
+    if(ex.partner_status===null || ex.partner_status===undefined){
+      h += '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.6rem">⚠️ ungeprüft — wartet auf Semias Prüfung</div>';
+    }
+    h += '<div style="display:flex;gap:.5rem">';
+    h += '<button onclick="courseNextItem(true)" style="flex:1;padding:.6rem;background:rgba(90,168,90,.15);border:1px solid var(--green);color:var(--green);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">✔️ Richtig</button>';
+    h += '<button onclick="courseNextItem(false)" style="flex:1;padding:.6rem;background:rgba(201,76,76,.12);border:1px solid var(--red);color:var(--red);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">✖️ Falsch</button>';
+    h += '</div>';
+  }
+  tc.innerHTML = h;
+}
+
+function courseReveal(){
+  if(_courseTest) _courseTest.revealed = true;
+  renderCourseLesson();
+}
+
+function courseAdvancePhase(){
+  const t = _courseTest;
+  if(!t) return;
+  if(t.phase==='main') t.phase = t.gcItems.length ? 'grammar' : 'summary';
+  else if(t.phase==='grammar') t.phase = 'summary';
+}
+
+function courseNextItem(correct){
+  const t = _courseTest;
+  if(!t) return;
+  const isGrammar = t.phase==='grammar';
+  const list = isGrammar ? t.gcItems : t.items;
+  const idxKey = isGrammar ? 'gcIdx' : 'idx';
+  const ex = list[t[idxKey]];
+  if(ex) t.doneIds.push(ex.id);
+  if(correct===true){ if(isGrammar) t.gcC++; else t.mainC++; }
+  else if(correct===false){ if(isGrammar) t.gcW++; else t.mainW++; }
+  t[idxKey]++;
+  t.revealed = false;
+  if(t[idxKey] >= list.length) courseAdvancePhase();
+  renderCourseLesson();
+}
+
+async function courseFinishTest(){
+  const t = _courseTest;
+  const l = _courseCurLesson;
+  if(!t || !l) return;
+  const score = t.mainC + t.gcC;
+  const existing = COURSE_PROGRESS_BY_LESSON[l.id];
+  const payload = {
+    status: 'done',
+    exercises_done: t.doneIds,
+    score_self: score,
+    completed_at: new Date().toISOString()
+  };
+  const btn = document.getElementById('course-finish-btn');
+  if(btn){ btn.disabled = true; btn.textContent = 'Speichere…'; }
+  try{
+    if(existing){
+      await sbApi('course_progress?id=eq.'+existing.id, 'PATCH', payload);
+      Object.assign(existing, payload);
+    } else {
+      const res = await sbApi('course_progress?select=*', 'POST', Object.assign({user_id:currentUser.id, course_lesson_id:l.id}, payload), 'return=representation');
+      const row = Array.isArray(res) ? res[0] : res;
+      COURSE_PROGRESS_BY_LESSON[l.id] = row;
+    }
+    showToast('✓ Lektion abgeschlossen — gespeichert','ok');
+    showCourseOverview();
+  }catch(e){
+    showToast('Fehler beim Speichern: '+e.message,'err');
+    if(btn){ btn.disabled = false; btn.textContent = '✓ Nochmal versuchen'; }
+  }
+}
+
+// ── Antwort-Paare-Modus ────────────────────────────────────────────────────
+// Fragt lektionsübergreifend alle fixed_response-Übungen ab (feste Frage→Antwort-
+// Formeln, z.B. Grußformeln). Schreibt nirgends in progress/course_progress —
+// reine Wiederholungsrunde, wie MC/Sätze.
+
+let _pairsItems = [];
+let _pairsIdx = 0;
+let _pairsRevealed = false;
+let _pairsC = 0;
+let _pairsW = 0;
+
+async function showPairsMode(){
+  const area = document.getElementById('exercise-screen');
+  if(area) area.style.display = 'block';
+  const actScr = document.getElementById('act-screen');
+  if(actScr){ actScr.style.display='none'; actScr.style.pointerEvents='none'; }
+  const ab = document.getElementById('act-batch-bar'); if(ab) ab.style.display='none';
+  const sticky = document.getElementById('sticky-next'); if(sticky) sticky.classList.remove('show');
+  document.getElementById('ex-type-label').textContent = '🔗 Antwort-Paare';
+  document.getElementById('ex-progress').textContent = '';
+  const c = document.getElementById('exercise-content');
+  if(!c) return;
+  c.innerHTML = '<div style="padding:1.5rem 1rem;color:var(--muted);font-size:.85rem">Lade…</div>';
+  try{
+    const rows = await sbApi('course_exercises?exercise_type=eq.fixed_response&select=id,prompt,solution,instruction&order=id.asc');
+    _pairsItems = sh(rows||[]);
+  }catch(e){
+    c.innerHTML = '<div style="padding:1.5rem 1rem;color:var(--red)">Fehler: '+e.message+'</div>';
+    return;
+  }
+  _pairsIdx = 0; _pairsRevealed = false; _pairsC = 0; _pairsW = 0;
+  renderPairsItem();
+}
+
+function renderPairsItem(){
+  const c = document.getElementById('exercise-content');
+  if(!c) return;
+  if(!_pairsItems.length){
+    c.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted)">Noch keine festen Antwort-Formeln erfasst.</div>';
+    return;
+  }
+  if(_pairsIdx >= _pairsItems.length){
+    let h = '<div style="text-align:center;padding:1.5rem 0">';
+    h += '<div style="font-size:2rem;margin-bottom:.5rem">🔗</div>';
+    h += '<div style="font-size:1.1rem;color:var(--gold2)">'+_pairsC+' von '+(_pairsC+_pairsW)+' richtig</div>';
+    h += '<button onclick="showPairsMode()" style="margin-top:1.2rem;padding:.65rem 1.4rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.85rem;font-weight:700;cursor:pointer;border-radius:4px">↻ Nochmal</button>';
+    h += '</div>';
+    c.innerHTML = h;
+    return;
+  }
+  const ex = _pairsItems[_pairsIdx];
+  let h = '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.3rem">🔗 Antwort-Paare · '+(_pairsIdx+1)+' / '+_pairsItems.length+'</div>';
+  h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(ex.instruction||'Was antwortet man darauf?')+'</div>';
+  h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem;font-size:.95rem;margin-bottom:.8rem">'+escHtml(ex.prompt||'')+'</div>';
+  if(!_pairsRevealed){
+    h += '<button onclick="pairsReveal()" style="width:100%;padding:.6rem;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;cursor:pointer;border-radius:4px">Antwort zeigen</button>';
+  } else {
+    h += '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2);margin-bottom:.8rem">'+escHtml(ex.solution||'—')+'</div>';
+    h += '<div style="display:flex;gap:.5rem">';
+    h += '<button onclick="pairsNext(true)" style="flex:1;padding:.6rem;background:rgba(90,168,90,.15);border:1px solid var(--green);color:var(--green);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">✔️ Richtig</button>';
+    h += '<button onclick="pairsNext(false)" style="flex:1;padding:.6rem;background:rgba(201,76,76,.12);border:1px solid var(--red);color:var(--red);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">✖️ Falsch</button>';
+    h += '</div>';
+  }
+  c.innerHTML = h;
+}
+
+function pairsReveal(){ _pairsRevealed = true; renderPairsItem(); }
+
+function pairsNext(correct){
+  if(correct) _pairsC++; else _pairsW++;
+  _pairsIdx++;
+  _pairsRevealed = false;
+  renderPairsItem();
+}
+
 
 
 // ── Export ────────────────────────────────────────────────────────────────────
@@ -5299,12 +5667,8 @@ window.addEventListener('unhandledrejection', (e) => {
 <div id="debug-panel" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a1612;border-top:2px solid #c9a84c;padding:.5rem;font-size:.6rem;font-family:monospace;color:#f0e8d8;max-height:40vh;overflow-y:auto;z-index:200;">
   <div style="display:flex;justify-content:space-between;margin-bottom:.3rem;">
     <span style="color:#c9a84c;font-weight:700;">DEBUG</span>
-    <span>
-      <button onclick="dbgShowQueue()" style="background:none;border:1px solid #c9a84c;color:#c9a84c;cursor:pointer;font-size:.65rem;padding:.15rem .4rem;border-radius:3px;margin-right:.4rem;">Queue</button>
-      <button onclick="document.getElementById('debug-panel').style.display='none'" style="background:none;border:none;color:#c94c4c;cursor:pointer;font-size:.8rem;">✕</button>
-    </span>
+    <button onclick="document.getElementById('debug-panel').style.display='none'" style="background:none;border:none;color:#c94c4c;cursor:pointer;font-size:.8rem;">✕</button>
   </div>
-  <div id="debug-queue"></div>
   <div id="debug-log"></div>
 </div>
 
