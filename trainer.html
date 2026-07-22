@@ -3098,6 +3098,9 @@ async function pullForwardVocab(){
     .map(([vocabId, p]) => [vocabId, p, vById(vocabId)])
     .filter(([vocabId, p, v]) => {
       if(cLesson === 'all') return true;
+      if(cLesson === 'COURSEVOCAB' && COURSE_VOCAB_FILTER){
+        return v && (COURSE_VOCAB_FILTER.ids.has(v.id) || COURSE_VOCAB_FILTER.tr.has(v.tr));
+      }
       return v && v.ls === cLesson;
     })
     .sort((a, b) => {
@@ -4518,6 +4521,14 @@ async function runKnowledgeExport(){
     prog.textContent = 'Lade users\u2026';
     const users = await sbApi('users?select=id,username,is_admin,is_partner,created_at,last_active_at');
 
+    // 4. course_lessons
+    prog.textContent = 'Lade course_lessons\u2026';
+    const courseLessons = await sbApi('course_lessons?select=*&order=course_number.asc');
+
+    // 5. course_exercises
+    prog.textContent = 'Lade course_exercises\u2026';
+    const courseExercises = await sbApi('course_exercises?select=*&order=course_lesson_id.asc,position.asc');
+
     // Build single MD file
     prog.textContent = 'Erstelle Datei\u2026';
     const today = new Date().toISOString().slice(0,10);
@@ -4525,7 +4536,7 @@ async function runKnowledgeExport(){
     const lines = [];
 
     lines.push('# Tounsi Trainer — Projektwissen');
-    lines.push('Stand: ' + today + ' · ' + vocab.length + ' Vokabeln · ' + lessons.length + ' Lektionen');
+    lines.push('Stand: ' + today + ' · ' + vocab.length + ' Vokabeln · ' + lessons.length + ' Lektionen · ' + courseLessons.length + ' Kurs-Lektionen · ' + courseExercises.length + ' Kurs-Übungen');
     lines.push('');
 
     lines.push('## Schema');
@@ -4542,11 +4553,18 @@ async function runKnowledgeExport(){
     lines.push('### users');
     lines.push('Spalten: id, username, is_admin, is_partner, created_at, last_active_at, last_reminder_sent_at');
     lines.push('');
+    lines.push('### course_lessons');
+    lines.push('Spalten: id, course_number, skript (1 oder 2), title, dialog_text, grammar_notes, vocab_lesson_refs (Format: "ids:1,2,3|darija:wort1,wort2" — verknüpfte vocabulary-Einträge)');
+    lines.push('');
+    lines.push('### course_exercises');
+    lines.push('Spalten: id, course_lesson_id (FK zu course_lessons.id, NULL = lektionsübergreifend), position, exercise_type (translate_de_tn/fill_blank/answer_pattern/grammar_card/grammar_drill/fixed_response/build_dialog), instruction, prompt, solution, partner_status (wie vocabulary.partner_status), partner_comment, source (original/constructed, rein informativ), meta (jsonb, z.B. prompt_de/solution_de bei fixed_response)');
+    lines.push('');
     lines.push('## Regeln');
     lines.push('- lesson_id immer frisch nachschlagen, nie hardcoden');
     lines.push('- Duplikat-Check über arabic_script, darija UND german separat');
     lines.push('- partner_status null = ungeprüft, pending = wartet auf Prüfung');
     lines.push('- Transliteration: Chat-Alphabet (3=ayin, 7=ha, q=qaf, sh=shin)');
+    lines.push('- Kurs-Übungen (course_exercises) mit partner_status null erscheinen in Semias Prüf-Queue, original/approved nicht');
     lines.push('');
 
     lines.push('## Lessons');
@@ -4577,11 +4595,31 @@ async function runKnowledgeExport(){
       lines.push([v.id, v.lesson_id, esc(v.arabic_script), esc(v.darija), esc(v.german), esc(v.topic), v.flagged?'true':'false', esc(v.partner_status), esc(v.partner_comment), esc(v.status_updated_at)].join(','));
     });
     lines.push('```');
+    lines.push('');
+
+    lines.push('## Course Lessons');
+    lines.push('');
+    lines.push('```csv');
+    lines.push('id,course_number,skript,title,dialog_text,grammar_notes,vocab_lesson_refs');
+    courseLessons.forEach(function(cl){
+      lines.push([cl.id, cl.course_number, cl.skript, esc(cl.title), esc(cl.dialog_text), esc(cl.grammar_notes), esc(cl.vocab_lesson_refs)].join(','));
+    });
+    lines.push('```');
+    lines.push('');
+
+    lines.push('## Course Exercises');
+    lines.push('');
+    lines.push('```csv');
+    lines.push('id,course_lesson_id,position,exercise_type,instruction,prompt,solution,partner_status,partner_comment,source,meta');
+    courseExercises.forEach(function(ce){
+      lines.push([ce.id, ce.course_lesson_id==null?'':ce.course_lesson_id, ce.position, esc(ce.exercise_type), esc(ce.instruction), esc(ce.prompt), esc(ce.solution), esc(ce.partner_status), esc(ce.partner_comment), esc(ce.source), esc(ce.meta?JSON.stringify(ce.meta):'')].join(','));
+    });
+    lines.push('```');
 
     const mdContent = lines.join('\n');
     const filename = 'tounsi_db_' + today + '.md';
 
-    prog.textContent = '\u2713 ' + vocab.length + ' Vokabeln · ' + Math.round(mdContent.length/1024) + ' KB';
+    prog.textContent = '\u2713 ' + vocab.length + ' Vokabeln · ' + courseLessons.length + ' Kurs-Lektionen · ' + courseExercises.length + ' Kurs-Übungen · ' + Math.round(mdContent.length/1024) + ' KB';
     dl.innerHTML = '';
     const btn = document.createElement('button');
     btn.style.cssText = 'width:100%;padding:.7rem;background:linear-gradient(135deg,var(--gold),#a07020);border:none;color:#0e0c0a;font-family:IBM Plex Mono,monospace;font-size:.85rem;font-weight:700;cursor:pointer;border-radius:4px';
