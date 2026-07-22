@@ -4329,7 +4329,7 @@ async function showPairsMode(){
   if(!c) return;
   c.innerHTML = '<div style="padding:1.5rem 1rem;color:var(--muted);font-size:.85rem">Lade…</div>';
   try{
-    const rows = await sbApi('course_exercises?exercise_type=eq.fixed_response&select=id,prompt,solution,instruction&order=id.asc');
+    const rows = await sbApi('course_exercises?exercise_type=eq.fixed_response&select=id,prompt,solution,instruction,meta&order=id.asc');
     _pairsItems = sh(rows||[]);
   }catch(e){
     c.innerHTML = '<div style="padding:1.5rem 1rem;color:var(--red)">Fehler: '+e.message+'</div>';
@@ -4356,13 +4356,18 @@ function renderPairsItem(){
     return;
   }
   const ex = _pairsItems[_pairsIdx];
+  const md = ex.meta || {};
   let h = '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.3rem">🔗 Antwort-Paare · '+(_pairsIdx+1)+' / '+_pairsItems.length+'</div>';
   h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(ex.instruction||'Was antwortet man darauf?')+'</div>';
-  h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem;font-size:.95rem;margin-bottom:.8rem">'+escHtml(ex.prompt||'')+'</div>';
+  h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem;font-size:.95rem;margin-bottom:.8rem">'+escHtml(ex.prompt||'');
+  if(_pairsRevealed && md.prompt_de) h += '<div style="font-size:.72rem;color:var(--muted);margin-top:.4rem">'+escHtml(md.prompt_de)+'</div>';
+  h += '</div>';
   if(!_pairsRevealed){
     h += '<button onclick="pairsReveal()" style="width:100%;padding:.6rem;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;cursor:pointer;border-radius:4px">Antwort zeigen</button>';
   } else {
-    h += '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2);margin-bottom:.8rem">'+escHtml(ex.solution||'—')+'</div>';
+    h += '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2);margin-bottom:.8rem">'+escHtml(ex.solution||'—');
+    if(md.solution_de) h += '<div style="font-size:.72rem;color:var(--muted);margin-top:.4rem">'+escHtml(md.solution_de)+'</div>';
+    h += '</div>';
     h += '<div style="display:flex;gap:.5rem">';
     h += '<button onclick="pairsNext(true)" style="flex:1;padding:.6rem;background:rgba(90,168,90,.15);border:1px solid var(--green);color:var(--green);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">✔️ Richtig</button>';
     h += '<button onclick="pairsNext(false)" style="flex:1;padding:.6rem;background:rgba(201,76,76,.12);border:1px solid var(--red);color:var(--red);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">✖️ Falsch</button>';
