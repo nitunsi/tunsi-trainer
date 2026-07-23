@@ -4256,7 +4256,14 @@ function renderCourseTestTab(tc, l){
   const label = isGrammar ? '🧠 Grammatik-Check' : ({translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',build_dialog:'Dialog bilden',grammar_drill:'Grammatik-Übung',fixed_response:'Feste Antwort'})[ex.exercise_type] || ex.exercise_type;
 
   let h = '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.3rem">'+label+' · '+cur+' / '+total+'</div>';
-  if(ex.instruction) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(ex.instruction)+'</div>';
+  if(ex.exercise_type==='answer_pattern'){
+    h += '<div style="border:1px solid var(--border);border-radius:6px;padding:.6rem .8rem;margin-bottom:.8rem;font-size:.78rem;color:var(--text)">'
+       + '<div style="color:var(--gold);font-weight:700;margin-bottom:.3rem">📝 Zu erledigen:</div>'
+       + '<div>☐ Frage auf Deutsch übersetzen</div>'
+       + '<div>☐ Frage auf Tounsi beantworten</div>'
+       + '<div>☐ Deine Antwort auf Deutsch übersetzen</div>'
+       + '</div>';
+  } else if(ex.instruction) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(ex.instruction)+'</div>';
   if(ex.prompt) h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem;font-size:.95rem;margin-bottom:.8rem">'+escHtml(ex.prompt)+'</div>';
 
   if(!gradable){
@@ -4278,7 +4285,21 @@ function renderCourseTestTab(tc, l){
   } else if(!t.revealed){
     h += '<button onclick="courseReveal()" style="width:100%;padding:.6rem;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;cursor:pointer;border-radius:4px">Lösung zeigen</button>';
   } else {
-    h += '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2);margin-bottom:.8rem">'+escHtml(ex.solution||'—')+'</div>';
+    let solHtml = null;
+    if(ex.exercise_type==='answer_pattern'){
+      const m = (ex.solution||'').match(/^(.*?)\s*\(([^—]+)—\s*(.*)\)\s*$/);
+      if(m){
+        const antwortTn = m[1].trim(), frageDe = m[2].trim(), antwortDe = m[3].trim();
+        const row = (label,val) => '<div style="margin-bottom:.5rem"><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.15rem">'+label+'</div><div>'+escHtml(val)+'</div></div>';
+        solHtml = '<div>'
+          + row('Frage auf Deutsch', frageDe)
+          + row('Deine Antwort (Tounsi)', antwortTn)
+          + row('Antwort auf Deutsch', antwortDe)
+          + '</div>';
+      }
+    }
+    if(!solHtml) solHtml = escHtml(ex.solution||'—');
+    h += '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2);margin-bottom:.8rem">'+solHtml+'</div>';
     if(ex.partner_status===null || ex.partner_status===undefined){
       h += '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.6rem">⚠️ ungeprüft — wartet auf Semias Prüfung</div>';
     }
