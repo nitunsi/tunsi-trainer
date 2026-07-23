@@ -4455,12 +4455,15 @@ async function showExport(){
         ⬇ Alle Vokabeln laden &amp; exportieren
       </button>
       <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border)">
-        <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:.5rem">Projektwissen-Export</div>
+        <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:.5rem">📦🗄 Backup-Routine</div>
         <div style="font-size:.78rem;color:var(--muted);margin-bottom:.8rem;line-height:1.5">
-          Alle Tabellen als eine .md-Datei — ins Projektwissen hochladen und alte Datei ersetzen.
+          Ein Klick lädt beide Dateien direkt herunter, mit gleichem Datumsstempel:<br>
+          • <strong>.md</strong> — ins Projektwissen hochladen (Duplikat-Check-Basis für Claude).<br>
+          • <strong>.sql</strong> — restore-fähiges Vollbackup (INSERT … ON CONFLICT DO UPDATE, alle 8 Tabellen). <strong>Nicht</strong> ins Projektwissen — lokal/Drive sichern. ⚠️ users.password_hash ist aus Sicherheitsgründen nicht enthalten.<br>
+          Da beide Dateien immer zusammen entstehen, zeigt das Datum der .md im Projektwissen automatisch auch, dass ein Backup gemacht wurde.
         </div>
-        <button onclick="runKnowledgeExport()" style="width:100%;padding:.75rem;background:var(--surface2);border:1px solid var(--gold);color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:.85rem;font-weight:700;cursor:pointer;border-radius:4px;margin-bottom:.6rem">
-          📦 Daten laden
+        <button onclick="runCombinedExport()" style="width:100%;padding:.75rem;background:var(--surface2);border:1px solid var(--gold);color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:.85rem;font-weight:700;cursor:pointer;border-radius:4px;margin-bottom:.6rem">
+          📦🗄 Beide Dateien herunterladen
         </button>
         <div id="knowledge-export-progress" style="font-size:.78rem;color:var(--muted);min-height:1.2rem;margin-bottom:.6rem"></div>
         <div id="knowledge-export-downloads" style="display:none;display:flex;flex-direction:column;gap:.4rem"></div>
@@ -4532,154 +4535,255 @@ async function runExport(){
   }
 }
 
-async function runKnowledgeExport(){
+// ── SQL-Backup-Export (restore-fähig, für Disaster Recovery) ────────────────
+function sqlEsc(v){ return v===null||v===undefined ? 'NULL' : "'" + String(v).replace(/'/g,"''") + "'"; }
+function sqlBoolLit(v){ return v===null||v===undefined ? 'NULL' : (v?'TRUE':'FALSE'); }
+function sqlNumLit(v){ return v===null||v===undefined||v==='' ? 'NULL' : Number(v); }
+function sqlJsonLit(v){ return v===null||v===undefined ? 'NULL' : "'" + JSON.stringify(v).replace(/'/g,"''") + "'::jsonb"; }
+
+async function fetchAllPaged(table, select, orderBy){
+  let all = [], offset = 0; const batchSize = 1000;
+  while(true){
+    const batch = await sbApi(table+'?select='+select+(orderBy?'&order='+orderBy:'')+'&limit='+batchSize+'&offset='+offset);
+    if(!batch || !batch.length) break;
+    all = all.concat(batch);
+    if(batch.length < batchSize) break;
+    offset += batchSize;
+  }
+  return all;
+}
+
+// Baut INSERT ... ON CONFLICT (id) DO UPDATE-Statements in Batches (Zeilen-Chunks),
+// damit einzelne Statements nicht zu lang werden. cols: [{name, type}], type in 'str'|'num'|'bool'|'json'.
+function buildUpsertSQL(table, cols, rows, batchSize){
+  batchSize = batchSize || 300;
+  if(!rows.length) return '-- (keine Zeilen)';
+  const colNames = cols.map(c=>c.name).join(', ');
+  const updateSet = cols.filter(c=>c.name!=='id').map(c=>c.name+'=EXCLUDED.'+c.name).join(', ');
+  const lit = (c, v) => c.type==='num' ? sqlNumLit(v) : c.type==='bool' ? sqlBoolLit(v) : c.type==='json' ? sqlJsonLit(v) : sqlEsc(v);
+  const out = [];
+  for(let i=0;i<rows.length;i+=batchSize){
+    const chunk = rows.slice(i, i+batchSize);
+    const values = chunk.map(r => '(' + cols.map(c=>lit(c, r[c.name])).join(', ') + ')').join(',\n  ');
+    out.push('INSERT INTO '+table+' ('+colNames+') VALUES\n  '+values+'\nON CONFLICT (id) DO UPDATE SET '+updateSet+';');
+  }
+  return out.join('\n\n');
+}
+
+// Baut den Projektwissen-.md-Inhalt (Duplikat-Check-Basis) aus bereits geladenen Daten.
+function buildKnowledgeMD(data, today){
+  const esc = function(s){ return '"' + (s||'').replace(/"/g,'""') + '"'; };
+  const { vocab, lessons, users, courseLessons, courseExercises } = data;
+  const lines = [];
+  lines.push('# Tounsi Trainer — Projektwissen');
+  lines.push('Stand: ' + today + ' · ' + vocab.length + ' Vokabeln · ' + lessons.length + ' Lektionen · ' + courseLessons.length + ' Kurs-Lektionen · ' + courseExercises.length + ' Kurs-Übungen');
+  lines.push('');
+  lines.push('## Schema');
+  lines.push('');
+  lines.push('### vocabulary');
+  lines.push('Spalten: id, lesson_id (FK zu lessons.id — NICHT lesson_number!), arabic_script, darija, german, topic, flagged, partner_status (null/pending/approved/rejected/unknown/skipped/suggested), partner_comment, status_updated_at (Zeitpunkt der letzten partner_status-Änderung)');
+  lines.push('');
+  lines.push('### lessons');
+  lines.push('Spalten: id (= vocabulary.lesson_id), lesson_number, title');
+  lines.push('');
+  lines.push('### progress');
+  lines.push('Spalten: id, user_id (FK users.id), vocabulary_id (FK vocabulary.id), correct_count (SRS-Level 0-6), wrong_count, review_count, next_review, last_reviewed, last_correct');
+  lines.push('');
+  lines.push('### users');
+  lines.push('Spalten: id, username, is_admin, is_partner, created_at, last_active_at, last_reminder_sent_at');
+  lines.push('');
+  lines.push('### course_lessons');
+  lines.push('Spalten: id, course_number, skript (1 oder 2), title, dialog_text, grammar_notes, vocab_lesson_refs (Format: "ids:1,2,3|darija:wort1,wort2" — verknüpfte vocabulary-Einträge)');
+  lines.push('');
+  lines.push('### course_exercises');
+  lines.push('Spalten: id, course_lesson_id (FK zu course_lessons.id, NULL = lektionsübergreifend), position, exercise_type (translate_de_tn/fill_blank/answer_pattern/grammar_card/grammar_drill/fixed_response/build_dialog), instruction, prompt, solution, partner_status (wie vocabulary.partner_status), partner_comment, source (original/constructed, rein informativ), meta (jsonb, z.B. prompt_de/solution_de bei fixed_response)');
+  lines.push('');
+  lines.push('## Regeln');
+  lines.push('- lesson_id immer frisch nachschlagen, nie hardcoden');
+  lines.push('- Duplikat-Check über arabic_script, darija UND german separat');
+  lines.push('- partner_status null = ungeprüft, pending = wartet auf Prüfung');
+  lines.push('- Transliteration: Chat-Alphabet (3=ayin, 7=ha, q=qaf, sh=shin)');
+  lines.push('- Kurs-Übungen (course_exercises) mit partner_status null erscheinen in Semias Prüf-Queue, original/approved nicht');
+  lines.push('- Diese Datei entsteht immer zusammen mit einem tounsi_backup_'+today+'.sql-Vollbackup (Backup-Routine im Export-Screen) — ihr Datum zeigt also auch, dass ein Backup gemacht wurde');
+  lines.push('');
+  lines.push('## Lessons');
+  lines.push('');
+  lines.push('```csv');
+  lines.push('id,lesson_number,title');
+  lessons.forEach(function(l){ lines.push([l.id, l.lesson_number, esc(l.title)].join(',')); });
+  lines.push('```');
+  lines.push('');
+  lines.push('## Users');
+  lines.push('');
+  lines.push('```csv');
+  lines.push('id,username,is_admin,is_partner,created_at,last_active_at');
+  users.forEach(function(u){ lines.push([esc(u.id), esc(u.username), u.is_admin?'true':'false', u.is_partner?'true':'false', esc(u.created_at), esc(u.last_active_at)].join(',')); });
+  lines.push('```');
+  lines.push('');
+  lines.push('## Vocabulary');
+  lines.push('');
+  lines.push('```csv');
+  lines.push('id,lesson_id,arabic_script,darija,german,topic,flagged,partner_status,partner_comment,status_updated_at');
+  vocab.forEach(function(v){ lines.push([v.id, v.lesson_id, esc(v.arabic_script), esc(v.darija), esc(v.german), esc(v.topic), v.flagged?'true':'false', esc(v.partner_status), esc(v.partner_comment), esc(v.status_updated_at)].join(',')); });
+  lines.push('```');
+  lines.push('');
+  lines.push('## Course Lessons');
+  lines.push('');
+  lines.push('```csv');
+  lines.push('id,course_number,skript,title,dialog_text,grammar_notes,vocab_lesson_refs');
+  courseLessons.forEach(function(cl){ lines.push([cl.id, cl.course_number, cl.skript, esc(cl.title), esc(cl.dialog_text), esc(cl.grammar_notes), esc(cl.vocab_lesson_refs)].join(',')); });
+  lines.push('```');
+  lines.push('');
+  lines.push('## Course Exercises');
+  lines.push('');
+  lines.push('```csv');
+  lines.push('id,course_lesson_id,position,exercise_type,instruction,prompt,solution,partner_status,partner_comment,source,meta');
+  courseExercises.forEach(function(ce){ lines.push([ce.id, ce.course_lesson_id==null?'':ce.course_lesson_id, ce.position, esc(ce.exercise_type), esc(ce.instruction), esc(ce.prompt), esc(ce.solution), esc(ce.partner_status), esc(ce.partner_comment), esc(ce.source), esc(ce.meta?JSON.stringify(ce.meta):'')].join(',')); });
+  lines.push('```');
+  return lines.join('\n');
+}
+
+// Baut den restore-fähigen SQL-Vollbackup-Inhalt aus bereits geladenen Daten.
+function buildBackupSQL(data, today){
+  const { vocab, lessons, users, progress, reviewLog, courseLessons, courseExercises, courseProgress } = data;
+  const parts = [];
+  parts.push('-- Tounsi Trainer — Vollbackup (restore-fähig)');
+  parts.push('-- Stand: ' + today + ' (gehört zusammen mit tounsi_db_' + today + '.md)');
+  parts.push('-- Reihenfolge beachtet Foreign Keys: lessons → vocabulary → users → progress → review_log → course_lessons → course_exercises → course_progress');
+  parts.push('-- ⚠️ users.password_hash ist NICHT enthalten (per REVOKE SELECT geschützt, siehe Login-Hardening 2026-07-16).');
+  parts.push('-- Bestehende Zeilen (per id) werden per ON CONFLICT DO UPDATE aktualisiert, ohne password_hash zu berühren.');
+  parts.push('-- Bei Restore in eine LEERE Datenbank (neue users-Zeilen) müssen Passwörter separat neu gesetzt werden.');
+  parts.push('');
+  parts.push('-- lessons ('+lessons.length+' Zeilen)');
+  parts.push(buildUpsertSQL('lessons', [
+    {name:'id',type:'num'},{name:'lesson_number',type:'num'},{name:'title',type:'str'}
+  ], lessons));
+  parts.push('');
+  parts.push('-- vocabulary ('+vocab.length+' Zeilen)');
+  parts.push(buildUpsertSQL('vocabulary', [
+    {name:'id',type:'num'},{name:'lesson_id',type:'num'},{name:'arabic_script',type:'str'},{name:'darija',type:'str'},
+    {name:'german',type:'str'},{name:'topic',type:'str'},{name:'flagged',type:'bool'},{name:'partner_status',type:'str'},
+    {name:'partner_comment',type:'str'},{name:'status_updated_at',type:'str'}
+  ], vocab));
+  parts.push('');
+  parts.push('-- users ('+users.length+' Zeilen, ohne password_hash)');
+  parts.push(buildUpsertSQL('users', [
+    {name:'id',type:'str'},{name:'username',type:'str'},{name:'is_admin',type:'bool'},{name:'is_partner',type:'bool'},
+    {name:'created_at',type:'str'},{name:'last_active_at',type:'str'},{name:'last_reminder_sent_at',type:'str'}
+  ], users));
+  parts.push('');
+  parts.push('-- progress ('+progress.length+' Zeilen)');
+  parts.push(buildUpsertSQL('progress', [
+    {name:'id',type:'num'},{name:'user_id',type:'str'},{name:'vocabulary_id',type:'num'},{name:'correct_count',type:'num'},
+    {name:'wrong_count',type:'num'},{name:'review_count',type:'num'},{name:'next_review',type:'str'},
+    {name:'last_reviewed',type:'str'},{name:'last_correct',type:'bool'}
+  ], progress));
+  parts.push('');
+  parts.push('-- review_log ('+reviewLog.length+' Zeilen)');
+  parts.push(buildUpsertSQL('review_log', [
+    {name:'id',type:'num'},{name:'user_id',type:'str'},{name:'vocabulary_id',type:'num'},{name:'correct',type:'bool'},
+    {name:'mode',type:'str'},{name:'created_at',type:'str'}
+  ], reviewLog));
+  parts.push('');
+  parts.push('-- course_lessons ('+courseLessons.length+' Zeilen)');
+  parts.push(buildUpsertSQL('course_lessons', [
+    {name:'id',type:'num'},{name:'course_number',type:'num'},{name:'skript',type:'num'},{name:'title',type:'str'},
+    {name:'dialog_text',type:'str'},{name:'grammar_notes',type:'str'},{name:'vocab_lesson_refs',type:'str'}
+  ], courseLessons));
+  parts.push('');
+  parts.push('-- course_exercises ('+courseExercises.length+' Zeilen)');
+  parts.push(buildUpsertSQL('course_exercises', [
+    {name:'id',type:'num'},{name:'course_lesson_id',type:'num'},{name:'position',type:'num'},{name:'exercise_type',type:'str'},
+    {name:'instruction',type:'str'},{name:'prompt',type:'str'},{name:'solution',type:'str'},{name:'partner_status',type:'str'},
+    {name:'partner_comment',type:'str'},{name:'source',type:'str'},{name:'meta',type:'json'}
+  ], courseExercises));
+  parts.push('');
+  parts.push('-- course_progress ('+courseProgress.length+' Zeilen)');
+  parts.push(buildUpsertSQL('course_progress', [
+    {name:'id',type:'num'},{name:'user_id',type:'str'},{name:'course_lesson_id',type:'num'},{name:'status',type:'str'},
+    {name:'exercises_done',type:'json'},{name:'score_self',type:'num'},{name:'completed_at',type:'str'}
+  ], courseProgress));
+  return parts.join('\n');
+}
+
+function triggerDownload(content, filename, mime){
+  const blob = new Blob([content], {type:mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Lädt alle Tabellen EINMAL und erzeugt daraus beide Dateien mit gleichem Datumsstempel:
+// tounsi_db_<Datum>.md (→ Projektwissen) und tounsi_backup_<Datum>.sql (→ lokal/Drive, NICHT ins Projektwissen).
+async function runCombinedExport(){
   const prog = document.getElementById('knowledge-export-progress');
   const dl = document.getElementById('knowledge-export-downloads');
   dl.style.display = 'none';
   prog.style.color = 'var(--muted)';
-  prog.textContent = 'Lade Daten\u2026';
+  try{
+    prog.textContent = 'Lade lessons…';
+    const lessons = await fetchAllPaged('lessons', 'id,lesson_number,title', 'lesson_number.asc');
+    prog.textContent = 'Lade vocabulary…';
+    const vocab = await fetchAllPaged('vocabulary', 'id,lesson_id,arabic_script,darija,german,topic,flagged,partner_status,partner_comment,status_updated_at', 'id.asc');
+    prog.textContent = 'Lade users…';
+    const users = await fetchAllPaged('users', 'id,username,is_admin,is_partner,created_at,last_active_at,last_reminder_sent_at', 'id.asc');
+    prog.textContent = 'Lade progress…';
+    const progress = await fetchAllPaged('progress', 'id,user_id,vocabulary_id,correct_count,wrong_count,review_count,next_review,last_reviewed,last_correct', 'id.asc');
+    prog.textContent = 'Lade review_log…';
+    const reviewLog = await fetchAllPaged('review_log', 'id,user_id,vocabulary_id,correct,mode,created_at', 'id.asc');
+    prog.textContent = 'Lade course_lessons…';
+    const courseLessons = await fetchAllPaged('course_lessons', 'id,course_number,skript,title,dialog_text,grammar_notes,vocab_lesson_refs', 'course_number.asc');
+    prog.textContent = 'Lade course_exercises…';
+    const courseExercises = await fetchAllPaged('course_exercises', 'id,course_lesson_id,position,exercise_type,instruction,prompt,solution,partner_status,partner_comment,source,meta', 'course_lesson_id.asc,position.asc');
+    prog.textContent = 'Lade course_progress…';
+    const courseProgress = await fetchAllPaged('course_progress', 'id,user_id,course_lesson_id,status,exercises_done,score_self,completed_at', 'id.asc');
 
-  const esc = function(s){ return '"' + (s||'').replace(/"/g,'""') + '"'; };
-
-  try {
-    // 1. vocabulary
-    prog.textContent = 'Lade vocabulary\u2026';
-    let vocab = [];
-    let offset = 0;
-    while(true){
-      const batch = await sbApi('vocabulary?select=id,lesson_id,arabic_script,darija,german,topic,flagged,partner_status,partner_comment,status_updated_at&order=id.asc&limit=1000&offset='+offset);
-      if(!batch || !batch.length) break;
-      vocab = vocab.concat(batch);
-      if(batch.length < 1000) break;
-      offset += 1000;
-    }
-
-    // 2. lessons
-    prog.textContent = 'Lade lessons\u2026';
-    const lessons = await sbApi('lessons?select=id,lesson_number,title&order=lesson_number.asc');
-
-    // 3. users
-    prog.textContent = 'Lade users\u2026';
-    const users = await sbApi('users?select=id,username,is_admin,is_partner,created_at,last_active_at');
-
-    // 4. course_lessons
-    prog.textContent = 'Lade course_lessons\u2026';
-    const courseLessons = await sbApi('course_lessons?select=*&order=course_number.asc');
-
-    // 5. course_exercises
-    prog.textContent = 'Lade course_exercises\u2026';
-    const courseExercises = await sbApi('course_exercises?select=*&order=course_lesson_id.asc,position.asc');
-
-    // Build single MD file
-    prog.textContent = 'Erstelle Datei\u2026';
+    prog.textContent = 'Erstelle Dateien…';
     const today = new Date().toISOString().slice(0,10);
+    const data = { vocab, lessons, users, progress, reviewLog, courseLessons, courseExercises, courseProgress };
 
-    const lines = [];
+    const mdContent = buildKnowledgeMD(data, today);
+    const mdFilename = 'tounsi_db_' + today + '.md';
 
-    lines.push('# Tounsi Trainer — Projektwissen');
-    lines.push('Stand: ' + today + ' · ' + vocab.length + ' Vokabeln · ' + lessons.length + ' Lektionen · ' + courseLessons.length + ' Kurs-Lektionen · ' + courseExercises.length + ' Kurs-Übungen');
-    lines.push('');
+    const sqlContent = buildBackupSQL(data, today);
+    const sqlFilename = 'tounsi_backup_' + today + '.sql';
 
-    lines.push('## Schema');
-    lines.push('');
-    lines.push('### vocabulary');
-    lines.push('Spalten: id, lesson_id (FK zu lessons.id — NICHT lesson_number!), arabic_script, darija, german, topic, flagged, partner_status (null/pending/approved/rejected/unknown/skipped/suggested), partner_comment, status_updated_at (Zeitpunkt der letzten partner_status-Änderung)');
-    lines.push('');
-    lines.push('### lessons');
-    lines.push('Spalten: id (= vocabulary.lesson_id), lesson_number, title');
-    lines.push('');
-    lines.push('### progress');
-    lines.push('Spalten: id, user_id (FK users.id), vocabulary_id (FK vocabulary.id), correct_count (SRS-Level 0-6), wrong_count, review_count, next_review, last_reviewed, last_correct');
-    lines.push('');
-    lines.push('### users');
-    lines.push('Spalten: id, username, is_admin, is_partner, created_at, last_active_at, last_reminder_sent_at');
-    lines.push('');
-    lines.push('### course_lessons');
-    lines.push('Spalten: id, course_number, skript (1 oder 2), title, dialog_text, grammar_notes, vocab_lesson_refs (Format: "ids:1,2,3|darija:wort1,wort2" — verknüpfte vocabulary-Einträge)');
-    lines.push('');
-    lines.push('### course_exercises');
-    lines.push('Spalten: id, course_lesson_id (FK zu course_lessons.id, NULL = lektionsübergreifend), position, exercise_type (translate_de_tn/fill_blank/answer_pattern/grammar_card/grammar_drill/fixed_response/build_dialog), instruction, prompt, solution, partner_status (wie vocabulary.partner_status), partner_comment, source (original/constructed, rein informativ), meta (jsonb, z.B. prompt_de/solution_de bei fixed_response)');
-    lines.push('');
-    lines.push('## Regeln');
-    lines.push('- lesson_id immer frisch nachschlagen, nie hardcoden');
-    lines.push('- Duplikat-Check über arabic_script, darija UND german separat');
-    lines.push('- partner_status null = ungeprüft, pending = wartet auf Prüfung');
-    lines.push('- Transliteration: Chat-Alphabet (3=ayin, 7=ha, q=qaf, sh=shin)');
-    lines.push('- Kurs-Übungen (course_exercises) mit partner_status null erscheinen in Semias Prüf-Queue, original/approved nicht');
-    lines.push('');
+    const totalRows = lessons.length+vocab.length+users.length+progress.length+reviewLog.length+courseLessons.length+courseExercises.length+courseProgress.length;
 
-    lines.push('## Lessons');
-    lines.push('');
-    lines.push('```csv');
-    lines.push('id,lesson_number,title');
-    lessons.forEach(function(l){
-      lines.push([l.id, l.lesson_number, esc(l.title)].join(','));
-    });
-    lines.push('```');
-    lines.push('');
+    // Beide Downloads automatisch anstoßen (leicht versetzt, damit Mobile-Browser den zweiten nicht blocken)
+    triggerDownload(mdContent, mdFilename, 'text/markdown;charset=utf-8');
+    setTimeout(function(){ triggerDownload(sqlContent, sqlFilename, 'text/plain;charset=utf-8'); }, 400);
 
-    lines.push('## Users');
-    lines.push('');
-    lines.push('```csv');
-    lines.push('id,username,is_admin,is_partner,created_at,last_active_at');
-    users.forEach(function(u){
-      lines.push([esc(u.id), esc(u.username), u.is_admin?'true':'false', u.is_partner?'true':'false', esc(u.created_at), esc(u.last_active_at)].join(','));
-    });
-    lines.push('```');
-    lines.push('');
+    prog.textContent = '✓ ' + vocab.length + ' Vokabeln · ' + totalRows + ' Zeilen gesamt · ' + Math.round((mdContent.length+sqlContent.length)/1024) + ' KB — beide Downloads gestartet';
 
-    lines.push('## Vocabulary');
-    lines.push('');
-    lines.push('```csv');
-    lines.push('id,lesson_id,arabic_script,darija,german,topic,flagged,partner_status,partner_comment,status_updated_at');
-    vocab.forEach(function(v){
-      lines.push([v.id, v.lesson_id, esc(v.arabic_script), esc(v.darija), esc(v.german), esc(v.topic), v.flagged?'true':'false', esc(v.partner_status), esc(v.partner_comment), esc(v.status_updated_at)].join(','));
-    });
-    lines.push('```');
-    lines.push('');
-
-    lines.push('## Course Lessons');
-    lines.push('');
-    lines.push('```csv');
-    lines.push('id,course_number,skript,title,dialog_text,grammar_notes,vocab_lesson_refs');
-    courseLessons.forEach(function(cl){
-      lines.push([cl.id, cl.course_number, cl.skript, esc(cl.title), esc(cl.dialog_text), esc(cl.grammar_notes), esc(cl.vocab_lesson_refs)].join(','));
-    });
-    lines.push('```');
-    lines.push('');
-
-    lines.push('## Course Exercises');
-    lines.push('');
-    lines.push('```csv');
-    lines.push('id,course_lesson_id,position,exercise_type,instruction,prompt,solution,partner_status,partner_comment,source,meta');
-    courseExercises.forEach(function(ce){
-      lines.push([ce.id, ce.course_lesson_id==null?'':ce.course_lesson_id, ce.position, esc(ce.exercise_type), esc(ce.instruction), esc(ce.prompt), esc(ce.solution), esc(ce.partner_status), esc(ce.partner_comment), esc(ce.source), esc(ce.meta?JSON.stringify(ce.meta):'')].join(','));
-    });
-    lines.push('```');
-
-    const mdContent = lines.join('\n');
-    const filename = 'tounsi_db_' + today + '.md';
-
-    prog.textContent = '\u2713 ' + vocab.length + ' Vokabeln · ' + courseLessons.length + ' Kurs-Lektionen · ' + courseExercises.length + ' Kurs-Übungen · ' + Math.round(mdContent.length/1024) + ' KB';
+    // Fallback-Links, falls der Browser einen der beiden automatischen Downloads blockiert hat
     dl.innerHTML = '';
-    const btn = document.createElement('button');
-    btn.style.cssText = 'width:100%;padding:.7rem;background:linear-gradient(135deg,var(--gold),#a07020);border:none;color:#0e0c0a;font-family:IBM Plex Mono,monospace;font-size:.85rem;font-weight:700;cursor:pointer;border-radius:4px';
-    btn.textContent = '\u2b07 ' + filename + ' herunterladen';
-    btn.onclick = function(){
-      const blob = new Blob([mdContent], {type:'text/markdown;charset=utf-8'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = filename; a.click();
-      URL.revokeObjectURL(url);
-    };
-    dl.appendChild(btn);
-    dl.style.display = 'block';
+    const hint = document.createElement('div');
+    hint.style.cssText = 'font-size:.72rem;color:var(--muted);margin-bottom:.2rem';
+    hint.textContent = 'Nichts angekommen? Erneut einzeln herunterladen:';
+    dl.appendChild(hint);
+
+    const mdBtn = document.createElement('button');
+    mdBtn.style.cssText = 'width:100%;padding:.55rem;background:var(--surface2);border:1px solid var(--gold);color:var(--gold);font-family:IBM Plex Mono,monospace;font-size:.78rem;cursor:pointer;border-radius:4px';
+    mdBtn.textContent = '⬇ ' + mdFilename + ' (→ Projektwissen)';
+    mdBtn.onclick = function(){ triggerDownload(mdContent, mdFilename, 'text/markdown;charset=utf-8'); };
+    dl.appendChild(mdBtn);
+
+    const sqlBtn = document.createElement('button');
+    sqlBtn.style.cssText = 'width:100%;padding:.55rem;background:var(--surface2);border:1px solid var(--red);color:var(--red);font-family:IBM Plex Mono,monospace;font-size:.78rem;cursor:pointer;border-radius:4px';
+    sqlBtn.textContent = '⬇ ' + sqlFilename + ' (→ lokal/Drive sichern)';
+    sqlBtn.onclick = function(){ triggerDownload(sqlContent, sqlFilename, 'text/plain;charset=utf-8'); };
+    dl.appendChild(sqlBtn);
+
+    dl.style.display = 'flex';
 
   } catch(e) {
     prog.style.color = 'var(--red)';
     prog.textContent = 'Fehler: ' + e.message;
   }
 }
+
 function downloadExportCSV(){
   if(!_exportCSV) return;
   const blob = new Blob([_exportCSV], {type:'text/csv;charset=utf-8'});
