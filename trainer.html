@@ -1577,7 +1577,7 @@ function enterApp(user){
       const statsBtn = document.querySelector('.lesson-chip[onclick*="\'stats\'"]');
       if(statsBtn) statsBtn.classList.add('active');
       loadOverlayUpdate('Lektionen laden…', 97, '');
-      loadLessonChips().then(()=>{
+      loadLessonChips().then(()=>loadCourseLessonOptions()).then(()=>{
         showStats();
         updateLessonChips();
         applyLatin();
@@ -2083,7 +2083,8 @@ function sh(a){return[...a].sort(()=>Math.random()-.5);}
 function lsNum(v){ const m=/^L(\d+)/.exec(v && v.ls || ''); return m ? parseInt(m[1],10) : -1; }
 function eq(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
 function ek(s){return btoa(encodeURIComponent(s)).replace(/[^a-zA-Z0-9]/g,'').slice(0,20);}
-let COURSE_VOCAB_FILTER = null; // {ids:Set<number>, tr:Set<string>} — gesetzt von courseGoToVocab()
+let COURSE_VOCAB_FILTER = null; // {ids:Set<number>, tr:Set<string>} — gesetzt von courseGoToVocab() oder manuell per Dropdown
+let cCourseId = null; // ID der aktuell gewählten Kurs-Lektion, falls cLesson==='COURSEVOCAB' (für Dropdown-Sync)
 function gv(){
   if(cLesson==='all')return ALL_VOCAB;
   if(cLesson==='COURSEVOCAB' && COURSE_VOCAB_FILTER){
@@ -2130,7 +2131,17 @@ async function loadLessonChips(){
   }
 }
 function filterLessonDropdown(val){
-  cLesson = val;
+  if(val && val.indexOf('COURSE:')===0){
+    const id = parseInt(val.slice(7),10);
+    const l = COURSE_LESSONS.find(x=>x.id===id);
+    if(!l){ showToast('Kurs-Lektion nicht geladen','warn'); return; }
+    COURSE_VOCAB_FILTER = parseCourseVocabRefs(l.vocab_lesson_refs);
+    cLesson = 'COURSEVOCAB';
+    cCourseId = id;
+  } else {
+    cLesson = val;
+    cCourseId = null;
+  }
   if(cMode==='vocab'){showVocabList();return;}
   if(cMode==='stats'){showStats();return;}
   if(cMode==='addvocab'){showAddVocab();return;}
@@ -2141,7 +2152,8 @@ function filterLessonDropdown(val){
 }
 function updateLessonDropdown(val){
   const sel = document.getElementById('lesson-select');
-  if(sel) sel.value = val || 'all';
+  if(!sel) return;
+  sel.value = (val==='COURSEVOCAB' && cCourseId) ? ('COURSE:'+cCourseId) : (val || 'all');
 }
 
 function filterLesson(l,el){cLesson=l;document.querySelectorAll('#lesson-chips .lesson-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');if(cMode==='vocab'){showVocabList();return;}if(cMode==='stats'){showStats();return;}if(cMode==='addvocab'){showAddVocab();return;}if(cMode==='activate'){showActivate();return;}if(cMode==='dupes'){showDupeCheck();return;}go();}
@@ -3292,9 +3304,10 @@ function showVocabList(){
 
   const vocab = cLesson==='all' ? ALL_VOCAB : gv();
 
+  const _courseFilterLesson = cCourseId ? COURSE_LESSONS.find(x=>x.id===cCourseId) : null;
   const courseFilterBanner = cLesson==='COURSEVOCAB'
     ? '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(201,168,76,.1);border:1px solid var(--gold);border-radius:6px;padding:.5rem .7rem;margin-bottom:.6rem;font-size:.75rem;color:var(--gold2)">'
-      + '<span>🎓 Nur Vokabeln dieser Kurs-Lektion</span>'
+      + '<span>🎓 Nur Vokabeln der Kurs-Lektion' + (_courseFilterLesson ? ' „K'+_courseFilterLesson.skript+'.'+_courseFilterLesson.course_number+(_courseFilterLesson.title?' · '+escHtml(_courseFilterLesson.title):'')+'“' : '') + '</span>'
       + '<button onclick="courseClearVocabFilter()" style="background:none;border:1px solid var(--gold);color:var(--gold);font-size:.68rem;padding:.2rem .5rem;cursor:pointer;border-radius:3px">Filter aufheben</button>'
       + '</div>'
     : '';
@@ -3927,7 +3940,7 @@ async function saveLessonEdit(id){
       LESSON_NUM_TO_ID[num] = id;
       // lesson-select Dropdown neu aufbauen
       const sel = document.getElementById('lesson-select');
-      if(sel){ const cur=sel.value; sel.innerHTML='<option value="all">Alle Lektionen</option>'; _allLessons.slice().sort((a,b)=>a.lesson_number-b.lesson_number).forEach(x=>{ const o=document.createElement('option'); o.value='L'+x.lesson_number; o.textContent='L'+x.lesson_number+(x.title?' · '+x.title:''); sel.appendChild(o); }); sel.value=cur; }
+      if(sel){ const cur=sel.value; sel.innerHTML='<option value="all">Alle Lektionen</option>'; _allLessons.slice().sort((a,b)=>a.lesson_number-b.lesson_number).forEach(x=>{ const o=document.createElement('option'); o.value='L'+x.lesson_number; o.textContent='L'+x.lesson_number+(x.title?' · '+x.title:''); sel.appendChild(o); }); loadCourseLessonOptions().then(()=>{ sel.value=cur; }); }
     }
     showToast('✓ Gespeichert','ok');
     renderLessonsAdmin();
@@ -3972,6 +3985,30 @@ function courseGradableCount(lessonId){
   return (COURSE_EXERCISES_BY_LESSON[lessonId]||[]).filter(e=>COURSE_GRADABLE_TYPES.includes(e.exercise_type)).length;
 }
 
+// Befüllt das Lektion-Dropdown zusätzlich mit einer "🎓 Kurs"-Gruppe, damit man
+// manuell nach einer Kurs-Lektion filtern kann (analog zur normalen Lektion).
+async function loadCourseLessonOptions(){
+  try{
+    await loadCourseData();
+    const sel = document.getElementById('lesson-select');
+    if(!sel || !COURSE_LESSONS.length) return;
+    const old = document.getElementById('lesson-select-course-group');
+    if(old) old.remove();
+    const og = document.createElement('optgroup');
+    og.id = 'lesson-select-course-group';
+    og.label = '🎓 Kurs';
+    COURSE_LESSONS.forEach(l=>{
+      const opt = document.createElement('option');
+      opt.value = 'COURSE:'+l.id;
+      opt.textContent = 'K'+l.skript+'.'+l.course_number + (l.title ? ' · '+l.title : '');
+      og.appendChild(opt);
+    });
+    sel.appendChild(og);
+    dbg('Kurs-Lektionen im Filter geladen: ' + COURSE_LESSONS.length, 'ok');
+  }catch(e){
+    dbg('Fehler beim Laden der Kurs-Lektionen für Filter: '+e.message, 'warn');
+  }
+}
 async function loadCourseData(force){
   if(_courseLoaded && !force) return;
   const [lessons, exercises, progress] = await Promise.all([
@@ -4154,10 +4191,12 @@ function courseGoToVocab(lessonId){
   if(!l) return;
   COURSE_VOCAB_FILTER = parseCourseVocabRefs(l.vocab_lesson_refs);
   cLesson = 'COURSEVOCAB';
+  cCourseId = l.id;
   document.querySelectorAll('.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));
   const chip = document.querySelector('.lesson-chip[onclick*="setMode(\'vocab\'"]');
   if(chip) chip.classList.add('active');
   cMode = 'vocab';
+  updateLessonChips();
   showVocabList();
 }
 
@@ -4165,6 +4204,8 @@ function courseGoToVocab(lessonId){
 function courseClearVocabFilter(){
   cLesson = 'all';
   COURSE_VOCAB_FILTER = null;
+  cCourseId = null;
+  updateLessonChips();
   showVocabList();
 }
 
