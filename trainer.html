@@ -527,6 +527,18 @@ let vocabIdMap = {};  // {darija_tr: vocabulary_id}
 let VOCAB_BY_ID = {}; // {vocabulary_id: ALL_VOCAB-Eintrag} — O(1)-Lookup, kollisionsfrei (im Gegensatz zu vocabIdMap)
 function vById(id){ return VOCAB_BY_ID[id] || null; }
 
+// ── Audio-Wiedergabe (ninja_audio_url) ──────────────────────────────────────
+let _audioPlayer = null;
+function playVocabAudio(url, ev){
+  if(ev) ev.stopPropagation();
+  if(!url) return;
+  try{
+    if(_audioPlayer){ _audioPlayer.pause(); _audioPlayer = null; }
+    _audioPlayer = new Audio(url);
+    _audioPlayer.play().catch(()=>{});
+  }catch(e){}
+}
+
 function srsKey(v){ return v.tr; }
 
 // ── Lade-Overlay-Steuerung ───────────────────────────────────────────────────
@@ -575,7 +587,7 @@ async function srsLoadFromSupabase(){
     _updLoadUI();
 
     const loadVocabTask = sbApiPaged(
-      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,lessons(lesson_number)&order=id.asc',
+      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,lessons(lesson_number)&order=id.asc',
       1000,
       (loaded) => { _vLoaded = loaded; _updLoadUI(); }
     );
@@ -601,7 +613,7 @@ async function srsLoadFromSupabase(){
     allVocab.forEach(v => {
       const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
       const tp = v.topic || 'Allgemein';
-      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null };
+      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null };
       ALL_VOCAB.push(entry);
       VOCAB_BY_ID[v.id] = entry;
       if(v.flagged) flaggedVocab.add(v.darija||'');
@@ -1710,7 +1722,7 @@ async function partnerInit(containerId){
 
   // Lade alle pending+skipped
   const pendingSkipped = await sbApi(
-    'vocabulary?partner_status=in.(pending,skipped)&select=id,darija,german,partner_status&limit=200'
+    'vocabulary?partner_status=in.(pending,skipped)&select=id,darija,german,partner_status,ninja_audio_url&limit=200'
   );
   // Lade progress für diese IDs um next_review zu kennen
   const ids = pendingSkipped.map(v=>v.id);
@@ -1749,7 +1761,7 @@ async function partnerInit(containerId){
     const need = 10 - batch.length;
     const existingIds = batch.map(v=>v.id);
     const fallback = await sbApi(
-      'vocabulary?partner_status=is.null&select=id,darija,german,partner_status&limit=200'
+      'vocabulary?partner_status=is.null&select=id,darija,german,partner_status,ninja_audio_url&limit=200'
     );
     // Annotate fallback mit next_review
     const fbIds = fallback.map(v=>v.id);
@@ -1816,7 +1828,7 @@ function partnerRenderCard(v, existing){
   main.innerHTML=partnerTabBar('review')+`
     <div class="partner-progress">${progressText}</div>
     <div class="partner-card">
-      <div class="partner-card-darija">${v.darija||''}</div>
+      <div class="partner-card-darija">${v.darija||''}${v.ninja_audio_url ? ` <button onclick="playVocabAudio('${v.ninja_audio_url.replace(/'/g,"\\'")}',event)" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.85rem;padding:.1rem .5rem;cursor:pointer;border-radius:3px;vertical-align:middle">🔊</button>` : ''}</div>
       <div class="partner-card-german">${v.german||''}</div>
       <div class="partner-card-meta">${statusLabel}</div>
     </div>
@@ -2363,6 +2375,7 @@ function rFlash(ex,el){
       ${isNew ? `<span style="font-size:.65rem;font-weight:700;color:var(--gold);background:rgba(201,166,74,.15);border:1px solid var(--gold);padding:.1rem .45rem;border-radius:3px">🆕 Neu</span>` : ''}
       <span style="flex:1;font-size:.68rem">${srsInfoBadge(v)}</span>
       ${v.ps ? `<span style="font-size:.85rem" title="Partner: ${v.ps}">${v.ps==='approved'?'✅':v.ps==='rejected'?'❌':v.ps==='unknown'?'❓':v.ps==='pending'?'⏳':v.ps==='skipped'?'⏭':'💡'}</span>` : ''}
+      ${v.au ? `<button onclick="playVocabAudio('${v.au.replace(/'/g,"\\'")}',event)" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.8rem;padding:.1rem .4rem;border-radius:3px;cursor:pointer;line-height:1.4">🔊</button>` : ''}
       <span style="font-size:.7rem;color:var(--muted)">${_prog}</span>
     </div>
     <div class="q-card" style="min-height:80px;margin-bottom:.5rem">
@@ -3521,6 +3534,7 @@ function renderVocabTable(vocab){
   h += '<th style="text-align:center;padding:.3rem .3rem;border-bottom:1px solid var(--border)">🔁</th>';
   h += '<th style="text-align:center;padding:.3rem .3rem;border-bottom:1px solid var(--border)">Fällig</th>';
   h += '<th style="text-align:center;padding:.3rem .3rem;border-bottom:1px solid var(--border)" title="Partner-Status">P</th>';
+  h += '<th style="text-align:center;padding:.3rem .3rem;border-bottom:1px solid var(--border)" title="Aussprache">🔊</th>';
   h += '<th style="padding:.3rem .3rem;border-bottom:1px solid var(--border)"></th>';
   h += '</tr></thead><tbody>';
 
@@ -3560,6 +3574,8 @@ function renderVocabTable(vocab){
                  : ps==='suggested'?'<span title="Vorschlag" style="color:var(--blue)">💡</span>'
                  : '<span style="color:var(--border)">·</span>';
     h += '<td style="text-align:center;padding:.3rem">'+psIcon+'</td>';
+    const audioBtn = v.au ? '<button onclick="playVocabAudio(\''+v.au.replace(/'/g,"\\'")+'\',event)" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.15rem .4rem;cursor:pointer;border-radius:3px">🔊</button>' : '<span style="color:var(--border)">·</span>';
+    h += '<td style="text-align:center;padding:.3rem">'+audioBtn+'</td>';
     h += '<td style="padding:.3rem"><button onclick="openVocabEdit('+vid+','+i+')" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.65rem;padding:.15rem .4rem;cursor:pointer;border-radius:3px">✏️</button></td>';
     h += '</tr>';
     // Edit-Row entfernt — Edit-Panel ist jetzt ein fixes Bottom-Sheet
