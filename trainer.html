@@ -3402,6 +3402,7 @@ let vocabLsFilter = 'all';
 let vocabPsFilter = 'all';
 let vocabSinceDays = null; // z.B. 7 = "nur status_updated_at innerhalb der letzten 7 Tage"
 const selectedVocabIds = new Set();
+let vocabTableRenderedIds = []; // IDs der aktuell in #vocab-table gerenderten Zeilen (fuer schnellen Select-All-Abgleich ohne DOM-Scan)
 
 function toggleFlagFilter(){
   showOnlyFlagged = !showOnlyFlagged;
@@ -3517,8 +3518,10 @@ function renderVocabTable(vocab){
 
   if(!vocab.length){
     el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem">Keine Vokabeln gefunden</div>';
+    vocabTableRenderedIds = [];
     return;
   }
+  vocabTableRenderedIds = vocab.map(v => v.id);
 
   let h = '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem">'+vocab.length+' Vokabeln</div>';
   h += '<table style="width:100%;border-collapse:collapse;font-size:.75rem">';
@@ -3591,21 +3594,20 @@ function toggleVocabSelect(cb){
   if(cb.checked) selectedVocabIds.add(vid);
   else selectedVocabIds.delete(vid);
   updateBulkBar();
-  // Sync "Alle"-Checkbox
+  // Sync "Alle"-Checkbox — rein aus In-Memory-State, kein DOM-Scan (vermeidet erzwungenes Reflow bei grossen Tabellen)
   const all = document.getElementById('vl-check-all');
-  if(all){
-    const boxes = document.querySelectorAll('#vocab-table input[type=checkbox][data-vid]');
-    all.checked = boxes.length > 0 && [...boxes].every(b=>b.checked);
-    all.indeterminate = !all.checked && [...boxes].some(b=>b.checked);
+  if(all && vocabTableRenderedIds.length){
+    const selectedCount = vocabTableRenderedIds.reduce((n,id) => n + (selectedVocabIds.has(id) ? 1 : 0), 0);
+    all.checked = selectedCount === vocabTableRenderedIds.length;
+    all.indeterminate = selectedCount > 0 && !all.checked;
   }
 }
 
 function toggleSelectAll(cb){
+  if(cb.checked) vocabTableRenderedIds.forEach(id => selectedVocabIds.add(id));
+  else vocabTableRenderedIds.forEach(id => selectedVocabIds.delete(id));
   document.querySelectorAll('#vocab-table input[type=checkbox][data-vid]').forEach(box => {
     box.checked = cb.checked;
-    const vid = parseInt(box.dataset.vid);
-    if(cb.checked) selectedVocabIds.add(vid);
-    else selectedVocabIds.delete(vid);
   });
   updateBulkBar();
 }
