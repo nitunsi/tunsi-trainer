@@ -5044,7 +5044,7 @@ async function showNinjaCheckQueue(){
 
   try {
     const res = await sbApi(
-      'vocabulary_review?select=vocabulary_id,arabic_script,darija,ninja_audio_url,change_reason,change_category,' +
+      'vocabulary_review?select=vocabulary_id,arabic_script,darija,ninja_audio_url,change_reason,change_category,user_comment,' +
       'vocabulary(arabic_script,darija,german,ninja_audio_url,flagged,lessons(lesson_number))' +
       '&change_category=in.(ninja_check_pending,ninja_check_kein_vorschlag)&order=vocabulary_id.asc'
     );
@@ -5089,8 +5089,10 @@ function renderNinjaCheckQueue(){
       h += '<div style="font-size:.8rem;color:var(--muted)">' + (orig.darija||'') + origAudio + '</div>';
       h += '</div>';
       h += reason;
-      h += '<div style="display:flex;gap:.5rem;margin-top:.6rem">';
+      h += '<textarea id="nq-comment-' + row.vocabulary_id + '" placeholder="Hinweis für erneute Prüfung (z. B. Kontext, Vermutung, alternativer Suchbegriff)…" style="width:100%;box-sizing:border-box;min-height:3rem;margin-top:.5rem;padding:.4rem .5rem;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:inherit;font-size:.78rem;font-family:inherit;resize:vertical">' + (row.user_comment||'') + '</textarea>';
+      h += '<div style="display:flex;gap:.5rem;margin-top:.5rem">';
       h += '<button onclick="ninjaCheckAcknowledge(' + row.vocabulary_id + ')" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);font-size:.78rem;padding:.4rem;cursor:pointer;border-radius:4px">👍 Verstanden</button>';
+      h += '<button onclick="ninjaCheckSaveComment(' + row.vocabulary_id + ')" style="flex:1;background:none;border:1px solid var(--gold);color:var(--gold2);font-size:.78rem;padding:.4rem;cursor:pointer;border-radius:4px">💬 Erneut prüfen lassen</button>';
       h += '</div>';
     } else {
       const suggAudio = row.ninja_audio_url
@@ -5173,12 +5175,34 @@ async function ninjaCheckIgnore(vocabId){
 async function ninjaCheckAcknowledge(vocabId){
   try {
     await sbApi('vocabulary_review?vocabulary_id=eq.' + vocabId, 'PATCH', {
+      change_category: 'ninja_check_kein_vorschlag_bestaetigt',
       reviewed: true,
       status_updated_at: new Date().toISOString()
     });
     nqAllResults = nqAllResults.filter(x => x.vocabulary_id !== vocabId);
     renderNinjaCheckQueue();
     showToast('✓ zur Kenntnis genommen','ok');
+  } catch(e) {
+    showToast('Fehler: ' + e.message, 'err');
+  }
+}
+
+// Hinweis zu einem Eintrag ohne Ninja-Vorschlag hinterlegen, damit er
+// bei der naechsten Pruefung mit diesem Kontext erneut untersucht wird.
+async function ninjaCheckSaveComment(vocabId){
+  const ta = document.getElementById('nq-comment-' + vocabId);
+  const comment = ta ? ta.value.trim() : '';
+  if(!comment){ showToast('Bitte einen Hinweis eingeben','err'); return; }
+  try {
+    await sbApi('vocabulary_review?vocabulary_id=eq.' + vocabId, 'PATCH', {
+      user_comment: comment,
+      change_category: 'ninja_check_kommentiert',
+      reviewed: false,
+      status_updated_at: new Date().toISOString()
+    });
+    nqAllResults = nqAllResults.filter(x => x.vocabulary_id !== vocabId);
+    renderNinjaCheckQueue();
+    showToast('✓ Kommentar gespeichert – wird erneut geprüft','ok');
   } catch(e) {
     showToast('Fehler: ' + e.message, 'err');
   }
