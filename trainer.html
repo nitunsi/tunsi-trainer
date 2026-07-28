@@ -329,6 +329,7 @@ body.hide-latin .chat-opt .latin {
     <button class="lesson-chip" onclick="setMode('dupes',this);closeNav()">🔍 Duplikate</button>
     <button class="lesson-chip" onclick="setMode('partnerqueue',this);closeNav()">📬 Partner-Queue</button>
     <button class="lesson-chip" onclick="setMode('partnercheck',this);closeNav()">🙋 Partner-Check</button>
+    <button class="lesson-chip" onclick="setMode('ninjacheck',this);closeNav()">🥷 Ninja-Check</button>
     <button class="lesson-chip" onclick="setMode('lessons',this);closeNav()">📖 Lektionen</button>
     <button class="lesson-chip" onclick="setMode('export',this);closeNav()">💾 Export</button>
   </div>
@@ -2172,7 +2173,7 @@ function filterLesson(l,el){cLesson=l;document.querySelectorAll('#lesson-chips .
 function setMode(m,el){cMode=m;document.querySelectorAll('.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));el.classList.add('active');
   // Bulk-Bar verstecken wenn nicht Vocab-Modus
   const bb=document.getElementById('vl-bulk-bar');if(bb&&m!=='vocab')bb.style.display='none';
-  if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}go();}
+  if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='ninjacheck'){showNinjaCheckQueue();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}go();}
 function updScore(){document.getElementById('sc-correct').textContent=score.c;document.getElementById('sc-wrong').textContent=score.w;document.getElementById('sc-streak').textContent='🔥'+score.st;}
 function showFb(ok,ca){const fb=document.getElementById('feedback');if(!fb)return;fb.className='feedback show '+(ok?'correct':'wrong');fb.textContent=ok?'✓ Richtig!':'✗ Falsch.'+(ca?' Antwort: '+ca:'');}
 function showNext(){showStickyNext(nxt);}
@@ -4850,6 +4851,7 @@ async function copyExportCSV(){
 
 let pqAllResults = [];
 let pqFilter = 'all';
+let nqAllResults = [];
 
 // Springt aus der Statistik direkt in die Partner-Queue, optional vorgefiltert.
 // filter: 'all' | 'rejected' | 'suggested' | 'unknown' | 'commented'
@@ -5022,6 +5024,132 @@ function copyQueueEntry(vocabId, btnEl){
     navigator.clipboard.writeText(text).then(() => flash('✓ Kopiert')).catch(legacyCopy);
   } else {
     legacyCopy();
+  }
+}
+
+// ── Ninja-Check-Queue ────────────────────────────────────────────────────────
+// Zeigt Vokabeln, die gegen derja.ninja geprueft wurden und bei denen ein
+// Vorschlag zur Uebernahme in vocabulary_review liegt (change_category =
+// 'ninja_check_pending'). Herkunft: manuell markierte (flagged) Vokabeln
+// oder neue, noch nie geprüfte Vokabeln — die eigentliche Ninja-Recherche
+// laeuft ausserhalb der App (Claude-Routine), diese Ansicht ist nur fuer
+// die menschliche Freigabe/Ablehnung der Vorschlaege.
+async function showNinjaCheckQueue(){
+  const area = document.getElementById('exercise-screen');
+  if(area) area.style.display = 'block';
+  document.getElementById('act-screen').style.display='none';
+  document.getElementById('act-screen').style.pointerEvents='none';
+  const el = document.getElementById('exercise-content');
+  el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Lade…</div>';
+
+  try {
+    const res = await sbApi(
+      'vocabulary_review?select=vocabulary_id,arabic_script,darija,ninja_audio_url,change_reason,' +
+      'vocabulary(arabic_script,darija,german,ninja_audio_url,flagged,lessons(lesson_number))' +
+      '&change_category=eq.ninja_check_pending&order=vocabulary_id.asc'
+    );
+    nqAllResults = res || [];
+    renderNinjaCheckQueue();
+  } catch(e) {
+    el.innerHTML = '<div style="color:var(--red);padding:1rem">Fehler: ' + e.message + '</div>';
+  }
+}
+
+function renderNinjaCheckQueue(){
+  const el = document.getElementById('exercise-content');
+  if(!el) return;
+
+  if(!nqAllResults.length){
+    el.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted)"><div style="font-size:2rem;margin-bottom:.8rem">🥷</div><div>Keine offenen Ninja-Vorschläge</div></div>';
+    return;
+  }
+
+  let h = '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.8rem">' + nqAllResults.length + ' offene Vorschläge</div>';
+  h += '<div style="display:flex;flex-direction:column;gap:.6rem">';
+
+  nqAllResults.forEach(row => {
+    const orig = row.vocabulary || {};
+    const ls = orig.lessons ? 'L' + orig.lessons.lesson_number : '?';
+    const origAudio = orig.ninja_audio_url
+      ? '<button onclick="playVocabAudio(\'' + orig.ninja_audio_url.replace(/'/g,"\\'") + '\',event)" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.1rem .4rem;cursor:pointer;border-radius:3px;vertical-align:middle;margin-left:.3rem">🔊</button>'
+      : '<span title="Kein Audio hinterlegt" style="color:var(--border);margin-left:.3rem;vertical-align:middle">🔇</span>';
+    const suggAudio = row.ninja_audio_url
+      ? '<button onclick="playVocabAudio(\'' + row.ninja_audio_url.replace(/'/g,"\\'") + '\',event)" title="Ninja-Aussprache abspielen" style="background:none;border:1px solid var(--gold);color:var(--gold2);font-size:.75rem;padding:.1rem .4rem;cursor:pointer;border-radius:3px;vertical-align:middle;margin-left:.3rem">🔊</button>'
+      : '<span title="Kein Audio hinterlegt" style="color:var(--border);margin-left:.3rem;vertical-align:middle">🔇</span>';
+    const reason = row.change_reason
+      ? '<div style="margin-top:.4rem;padding:.4rem .5rem;background:rgba(255,255,255,.04);border-left:2px solid var(--gold);border-radius:2px;font-size:.72rem;color:var(--muted)">💡 ' + row.change_reason + '</div>'
+      : '';
+
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem">';
+    h += '<div style="font-size:.7rem;color:var(--muted);margin-bottom:.4rem">' + ls + ' · ' + (orig.german||'') + (orig.flagged ? ' · 🚩 markiert' : '') + '</div>';
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">';
+    h += '<div style="min-width:0">';
+    h += '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--border);margin-bottom:.2rem">Aktuell</div>';
+    h += '<div style="font-family:\'Playfair Display\',serif;font-size:1.05rem;color:var(--muted);direction:rtl;text-align:right">' + (orig.arabic_script||'') + '</div>';
+    h += '<div style="font-size:.8rem;color:var(--muted)">' + (orig.darija||'') + origAudio + '</div>';
+    h += '</div>';
+    h += '<div style="min-width:0">';
+    h += '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--gold);margin-bottom:.2rem">Ninja-Vorschlag</div>';
+    h += '<div style="font-family:\'Playfair Display\',serif;font-size:1.05rem;color:var(--gold2);direction:rtl;text-align:right">' + (row.arabic_script||'') + '</div>';
+    h += '<div style="font-size:.8rem">' + (row.darija||'') + suggAudio + '</div>';
+    h += '</div>';
+    h += '</div>';
+    h += reason;
+    h += '<div style="display:flex;gap:.5rem;margin-top:.6rem">';
+    h += '<button onclick="ninjaCheckApprove(' + row.vocabulary_id + ')" style="flex:1;background:var(--green);border:none;color:#0e0c0a;font-weight:700;font-size:.78rem;padding:.4rem;cursor:pointer;border-radius:4px">✅ Übernehmen</button>';
+    h += '<button onclick="ninjaCheckIgnore(' + row.vocabulary_id + ')" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);font-size:.78rem;padding:.4rem;cursor:pointer;border-radius:4px">🚫 Ignorieren</button>';
+    h += '</div>';
+    h += '</div>';
+  });
+
+  h += '</div>';
+  el.innerHTML = h;
+}
+
+async function ninjaCheckApprove(vocabId){
+  const row = nqAllResults.find(x => x.vocabulary_id === vocabId);
+  if(!row) return;
+  try {
+    await sbApi('vocabulary?id=eq.' + vocabId, 'PATCH', {
+      arabic_script: row.arabic_script,
+      darija: row.darija,
+      ninja_audio_url: row.ninja_audio_url,
+      flagged: false,
+      ninja_checked_at: new Date().toISOString()
+    });
+    await sbApi('vocabulary_review?vocabulary_id=eq.' + vocabId, 'PATCH', {
+      change_category: 'ninja_check_uebernommen',
+      reviewed: true,
+      status_updated_at: new Date().toISOString()
+    });
+    const v = vById(vocabId);
+    if(v){ v.ar = row.arabic_script; v.tr = row.darija; v.au = row.ninja_audio_url; }
+    nqAllResults = nqAllResults.filter(x => x.vocabulary_id !== vocabId);
+    renderNinjaCheckQueue();
+    showToast('✓ übernommen','ok');
+  } catch(e) {
+    showToast('Fehler: ' + e.message, 'err');
+  }
+}
+
+async function ninjaCheckIgnore(vocabId){
+  const row = nqAllResults.find(x => x.vocabulary_id === vocabId);
+  if(!row) return;
+  try {
+    await sbApi('vocabulary?id=eq.' + vocabId, 'PATCH', {
+      flagged: false,
+      ninja_checked_at: new Date().toISOString()
+    });
+    await sbApi('vocabulary_review?vocabulary_id=eq.' + vocabId, 'PATCH', {
+      change_category: 'ninja_check_ignoriert',
+      reviewed: true,
+      status_updated_at: new Date().toISOString()
+    });
+    nqAllResults = nqAllResults.filter(x => x.vocabulary_id !== vocabId);
+    renderNinjaCheckQueue();
+    showToast('Ignoriert','ok');
+  } catch(e) {
+    showToast('Fehler: ' + e.message, 'err');
   }
 }
 
