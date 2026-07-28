@@ -5044,9 +5044,9 @@ async function showNinjaCheckQueue(){
 
   try {
     const res = await sbApi(
-      'vocabulary_review?select=vocabulary_id,arabic_script,darija,ninja_audio_url,change_reason,' +
+      'vocabulary_review?select=vocabulary_id,arabic_script,darija,ninja_audio_url,change_reason,change_category,' +
       'vocabulary(arabic_script,darija,german,ninja_audio_url,flagged,lessons(lesson_number))' +
-      '&change_category=eq.ninja_check_pending&order=vocabulary_id.asc'
+      '&change_category=in.(ninja_check_pending,ninja_check_kein_vorschlag)&order=vocabulary_id.asc'
     );
     nqAllResults = res || [];
     renderNinjaCheckQueue();
@@ -5064,7 +5064,9 @@ function renderNinjaCheckQueue(){
     return;
   }
 
-  let h = '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.8rem">' + nqAllResults.length + ' offene Vorschläge</div>';
+  const pendingCount = nqAllResults.filter(r => r.change_category === 'ninja_check_pending').length;
+  const noSuggCount = nqAllResults.length - pendingCount;
+  let h = '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.8rem">' + pendingCount + ' offene Vorschläge' + (noSuggCount ? ' · ' + noSuggCount + ' ohne Vorschlag' : '') + '</div>';
   h += '<div style="display:flex;flex-direction:column;gap:.6rem">';
 
   nqAllResults.forEach(row => {
@@ -5073,32 +5075,45 @@ function renderNinjaCheckQueue(){
     const origAudio = orig.ninja_audio_url
       ? '<button onclick="playVocabAudio(\'' + orig.ninja_audio_url.replace(/'/g,"\\'") + '\',event)" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.1rem .4rem;cursor:pointer;border-radius:3px;vertical-align:middle;margin-left:.3rem">🔊</button>'
       : '<span title="Kein Audio hinterlegt" style="color:var(--border);margin-left:.3rem;vertical-align:middle">🔇</span>';
-    const suggAudio = row.ninja_audio_url
-      ? '<button onclick="playVocabAudio(\'' + row.ninja_audio_url.replace(/'/g,"\\'") + '\',event)" title="Ninja-Aussprache abspielen" style="background:none;border:1px solid var(--gold);color:var(--gold2);font-size:.75rem;padding:.1rem .4rem;cursor:pointer;border-radius:3px;vertical-align:middle;margin-left:.3rem">🔊</button>'
-      : '<span title="Kein Audio hinterlegt" style="color:var(--border);margin-left:.3rem;vertical-align:middle">🔇</span>';
     const reason = row.change_reason
       ? '<div style="margin-top:.4rem;padding:.4rem .5rem;background:rgba(255,255,255,.04);border-left:2px solid var(--gold);border-radius:2px;font-size:.72rem;color:var(--muted)">💡 ' + row.change_reason + '</div>'
       : '';
 
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem">';
-    h += '<div style="font-size:.7rem;color:var(--muted);margin-bottom:.4rem">' + ls + ' · ' + (orig.german||'') + (orig.flagged ? ' · 🚩 markiert' : '') + '</div>';
-    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">';
-    h += '<div style="min-width:0">';
-    h += '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--border);margin-bottom:.2rem">Aktuell</div>';
-    h += '<div style="font-family:\'Playfair Display\',serif;font-size:1.05rem;color:var(--muted);direction:rtl;text-align:right">' + (orig.arabic_script||'') + '</div>';
-    h += '<div style="font-size:.8rem;color:var(--muted)">' + (orig.darija||'') + origAudio + '</div>';
-    h += '</div>';
-    h += '<div style="min-width:0">';
-    h += '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--gold);margin-bottom:.2rem">Ninja-Vorschlag</div>';
-    h += '<div style="font-family:\'Playfair Display\',serif;font-size:1.05rem;color:var(--gold2);direction:rtl;text-align:right">' + (row.arabic_script||'') + '</div>';
-    h += '<div style="font-size:.8rem">' + (row.darija||'') + suggAudio + '</div>';
-    h += '</div>';
-    h += '</div>';
-    h += reason;
-    h += '<div style="display:flex;gap:.5rem;margin-top:.6rem">';
-    h += '<button onclick="ninjaCheckApprove(' + row.vocabulary_id + ')" style="flex:1;background:var(--green);border:none;color:#0e0c0a;font-weight:700;font-size:.78rem;padding:.4rem;cursor:pointer;border-radius:4px">✅ Übernehmen</button>';
-    h += '<button onclick="ninjaCheckIgnore(' + row.vocabulary_id + ')" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);font-size:.78rem;padding:.4rem;cursor:pointer;border-radius:4px">🚫 Ignorieren</button>';
-    h += '</div>';
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem' + (row.change_category==='ninja_check_kein_vorschlag' ? ';opacity:.75' : '') + '">';
+    h += '<div style="font-size:.7rem;color:var(--muted);margin-bottom:.4rem">' + ls + ' · ' + (orig.german||'') + (orig.flagged ? ' · 🚩 markiert' : '') + (row.change_category==='ninja_check_kein_vorschlag' ? ' · 🤷 kein Vorschlag' : '') + '</div>';
+
+    if(row.change_category === 'ninja_check_kein_vorschlag'){
+      h += '<div style="min-width:0">';
+      h += '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--border);margin-bottom:.2rem">Aktuell (unverändert)</div>';
+      h += '<div style="font-family:\'Playfair Display\',serif;font-size:1.05rem;color:var(--muted);direction:rtl;text-align:right">' + (orig.arabic_script||'') + '</div>';
+      h += '<div style="font-size:.8rem;color:var(--muted)">' + (orig.darija||'') + origAudio + '</div>';
+      h += '</div>';
+      h += reason;
+      h += '<div style="display:flex;gap:.5rem;margin-top:.6rem">';
+      h += '<button onclick="ninjaCheckAcknowledge(' + row.vocabulary_id + ')" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);font-size:.78rem;padding:.4rem;cursor:pointer;border-radius:4px">👍 Verstanden</button>';
+      h += '</div>';
+    } else {
+      const suggAudio = row.ninja_audio_url
+        ? '<button onclick="playVocabAudio(\'' + row.ninja_audio_url.replace(/'/g,"\\'") + '\',event)" title="Ninja-Aussprache abspielen" style="background:none;border:1px solid var(--gold);color:var(--gold2);font-size:.75rem;padding:.1rem .4rem;cursor:pointer;border-radius:3px;vertical-align:middle;margin-left:.3rem">🔊</button>'
+        : '<span title="Kein Audio hinterlegt" style="color:var(--border);margin-left:.3rem;vertical-align:middle">🔇</span>';
+      h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">';
+      h += '<div style="min-width:0">';
+      h += '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--border);margin-bottom:.2rem">Aktuell</div>';
+      h += '<div style="font-family:\'Playfair Display\',serif;font-size:1.05rem;color:var(--muted);direction:rtl;text-align:right">' + (orig.arabic_script||'') + '</div>';
+      h += '<div style="font-size:.8rem;color:var(--muted)">' + (orig.darija||'') + origAudio + '</div>';
+      h += '</div>';
+      h += '<div style="min-width:0">';
+      h += '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--gold);margin-bottom:.2rem">Ninja-Vorschlag</div>';
+      h += '<div style="font-family:\'Playfair Display\',serif;font-size:1.05rem;color:var(--gold2);direction:rtl;text-align:right">' + (row.arabic_script||'') + '</div>';
+      h += '<div style="font-size:.8rem">' + (row.darija||'') + suggAudio + '</div>';
+      h += '</div>';
+      h += '</div>';
+      h += reason;
+      h += '<div style="display:flex;gap:.5rem;margin-top:.6rem">';
+      h += '<button onclick="ninjaCheckApprove(' + row.vocabulary_id + ')" style="flex:1;background:var(--green);border:none;color:#0e0c0a;font-weight:700;font-size:.78rem;padding:.4rem;cursor:pointer;border-radius:4px">✅ Übernehmen</button>';
+      h += '<button onclick="ninjaCheckIgnore(' + row.vocabulary_id + ')" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);font-size:.78rem;padding:.4rem;cursor:pointer;border-radius:4px">🚫 Ignorieren</button>';
+      h += '</div>';
+    }
     h += '</div>';
   });
 
@@ -5148,6 +5163,22 @@ async function ninjaCheckIgnore(vocabId){
     nqAllResults = nqAllResults.filter(x => x.vocabulary_id !== vocabId);
     renderNinjaCheckQueue();
     showToast('Ignoriert','ok');
+  } catch(e) {
+    showToast('Fehler: ' + e.message, 'err');
+  }
+}
+
+// Fuer Eintraege ohne Ninja-Vorschlag (change_category = 'ninja_check_kein_vorschlag'):
+// nur zur Kenntnis nehmen, es gibt nichts zu uebernehmen oder abzulehnen.
+async function ninjaCheckAcknowledge(vocabId){
+  try {
+    await sbApi('vocabulary_review?vocabulary_id=eq.' + vocabId, 'PATCH', {
+      reviewed: true,
+      status_updated_at: new Date().toISOString()
+    });
+    nqAllResults = nqAllResults.filter(x => x.vocabulary_id !== vocabId);
+    renderNinjaCheckQueue();
+    showToast('✓ zur Kenntnis genommen','ok');
   } catch(e) {
     showToast('Fehler: ' + e.message, 'err');
   }
