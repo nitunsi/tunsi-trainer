@@ -4876,7 +4876,7 @@ async function showPartnerQueue(filter){
     // Lade alle rejected, suggested, unknown ("nicht gewusst"), oder mit Kommentar — paginiert
     const res = await sbApiPaged(
       'vocabulary?or=(partner_status.eq.rejected,partner_status.eq.suggested,partner_status.eq.unknown,partner_comment.not.is.null)' +
-      '&select=id,arabic_script,darija,german,topic,partner_status,partner_comment,lessons(lesson_number)' +
+      '&select=id,arabic_script,darija,german,topic,partner_status,partner_comment,ninja_audio_url,lessons(lesson_number)' +
       '&order=id.asc',
       500
     );
@@ -4887,7 +4887,7 @@ async function showPartnerQueue(filter){
     res.forEach(v => {
       if(!VOCAB_BY_ID[v.id]){
         const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
-        const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp: v.topic||'', ps: v.partner_status||null, pc: v.partner_comment||null };
+        const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp: v.topic||'', ps: v.partner_status||null, pc: v.partner_comment||null, au: v.ninja_audio_url||null };
         ALL_VOCAB.push(entry);
         VOCAB_BY_ID[v.id] = entry;
       }
@@ -4966,7 +4966,10 @@ function renderPartnerQueue(){
     h += '<div style="display:flex;align-items:flex-start;gap:.5rem;flex-wrap:wrap">';
     h += '<div style="flex:1;min-width:0">';
     h += '<div style="font-family:\'Playfair Display\',serif;font-size:1.1rem;color:var(--gold2);direction:rtl;text-align:right">' + (v.arabic_script||'') + '</div>';
-    h += '<div style="font-size:.82rem;margin-top:.2rem">' + (v.darija||'') + '</div>';
+    const audioCtrl = v.ninja_audio_url
+      ? '<button onclick="playVocabAudio(\'' + v.ninja_audio_url.replace(/'/g,"\\'") + '\',event)" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.78rem;padding:.1rem .45rem;cursor:pointer;border-radius:3px;vertical-align:middle;margin-left:.35rem">🔊</button>'
+      : '<span title="Kein Audio hinterlegt" style="color:var(--border);margin-left:.35rem;vertical-align:middle">🔇</span>';
+    h += '<div style="font-size:.82rem;margin-top:.2rem">' + (v.darija||'') + audioCtrl + '</div>';
     h += '<div style="font-size:.82rem;color:var(--muted)">' + (v.german||'') + '</div>';
     h += '<div style="font-size:.68rem;color:var(--border);margin-top:.2rem">' + ls + ' · ' + (v.topic||'') + '</div>';
     h += comment;
