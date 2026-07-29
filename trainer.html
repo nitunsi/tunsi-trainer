@@ -3303,6 +3303,7 @@ function showVocabList(){
   vocabTopicFilter = 'all';
   vocabLsFilter = 'all';
   vocabPsFilter = 'all';
+  vocabAudioFilter = 'all';
   vocabSinceDays = null;
   selectedVocabIds.clear();
   const area = document.getElementById('exercise-screen');
@@ -3379,6 +3380,12 @@ function showVocabList(){
         <option value="skipped">⏭ skipped</option>
         <option value="suggested">💡 suggested</option>
       </select>
+      <select id="vl-audio-filter" onchange="vocabAudioFilter=this.value;filterVocabList()"
+        style="flex:1;min-width:110px;padding:.4rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.8rem;font-family:'IBM Plex Mono',monospace">
+        <option value="all">Alle (Audio)</option>
+        <option value="with">🔊 mit Audio</option>
+        <option value="without">· ohne Audio</option>
+      </select>
     </div>
     <div id="vocab-table"></div>
   `;
@@ -3401,6 +3408,7 @@ let vocabLevelFilter = 'all'; // 'all' | 0..5
 let vocabTopicFilter = 'all';
 let vocabLsFilter = 'all';
 let vocabPsFilter = 'all';
+let vocabAudioFilter = 'all'; // 'all' | 'with' | 'without'
 let vocabSinceDays = null; // z.B. 7 = "nur status_updated_at innerhalb der letzten 7 Tage"
 const selectedVocabIds = new Set();
 let vocabTableRenderedIds = []; // IDs der aktuell in #vocab-table gerenderten Zeilen (fuer schnellen Select-All-Abgleich ohne DOM-Scan)
@@ -3452,6 +3460,12 @@ function filterVocabList(){
   if(vocabPsFilter !== 'all'){
     if(vocabPsFilter === 'null') vocab = vocab.filter(v => !v.ps);
     else vocab = vocab.filter(v => v.ps === vocabPsFilter);
+  }
+
+  // Audio-Filter
+  if(vocabAudioFilter !== 'all'){
+    if(vocabAudioFilter === 'with') vocab = vocab.filter(v => !!v.au);
+    else vocab = vocab.filter(v => !v.au);
   }
 
   // "Zuletzt geändert"-Filter (z.B. von Statistik → Prüf-Aktivität aus gesprungen)
