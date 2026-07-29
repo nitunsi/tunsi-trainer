@@ -5396,9 +5396,9 @@ async function saveDupeEdit(id){
 async function deleteDupeVocab(vocabId, groupIdx){
   if(!confirm('Vokabel ID '+vocabId+' wirklich l\u00f6schen?\nDieser Schritt kann nicht r\u00fcckg\u00e4ngig gemacht werden.')) return;
   try {
-    if(currentUser && currentUser.id){
-      await sbApi('progress?user_id=eq.'+currentUser.id+'&vocabulary_id=eq.'+vocabId, 'DELETE');
-    }
+    await sbApi('progress?vocabulary_id=eq.'+vocabId, 'DELETE');
+    await sbApi('review_log?vocabulary_id=eq.'+vocabId, 'DELETE');
+    await sbApi('vocabulary_review?vocabulary_id=eq.'+vocabId, 'DELETE');
     await sbApi('vocabulary?id=eq.'+vocabId, 'DELETE');
     const idx = ALL_VOCAB.findIndex(v => v.id === vocabId);
     if(idx !== -1) ALL_VOCAB.splice(idx, 1);
