@@ -3804,6 +3804,7 @@ async function deleteVocabSheet(){
   if(!confirm('Vokabel wirklich löschen?')) return;
   try {
     await sbApi('progress?vocabulary_id=eq.'+vocabId, 'DELETE');
+    await sbApi('vocabulary_review?vocabulary_id=eq.'+vocabId, 'DELETE');
     await sbApi('vocabulary?id=eq.'+vocabId, 'DELETE');
     const idx = ALL_VOCAB.findIndex(v => v.id == vocabId);
     if(idx >= 0){ delete vocabIdMap[ALL_VOCAB[idx].tr]; ALL_VOCAB.splice(idx, 1); }
@@ -6086,7 +6087,7 @@ window.addEventListener('unhandledrejection', (e) => {
 </div>
 
 <!-- Vocab Edit Bottom Sheet -->
-<div id="vocab-edit-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--surface2);border-top:2px solid var(--gold);padding:1rem;box-shadow:0 -4px 24px rgba(0,0,0,.5)">
+<div id="vocab-edit-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--surface2);border-top:2px solid var(--gold);padding:1rem;box-shadow:0 -4px 14px rgba(0,0,0,.5);will-change:transform;transform:translateZ(0)">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem">
     <span style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold)">Vokabel bearbeiten</span>
     <button onclick="closeVocabEdit()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:.2rem .5rem">✕</button>
@@ -6125,7 +6126,7 @@ window.addEventListener('unhandledrejection', (e) => {
     </div>
   </div>
 </div>
-<div id="vocab-edit-overlay" onclick="closeVocabEdit()" style="display:none;position:fixed;inset:0;z-index:199;background:rgba(0,0,0,.4)"></div>
+<div id="vocab-edit-overlay" onclick="closeVocabEdit()" style="display:none;position:fixed;inset:0;z-index:199;background:rgba(0,0,0,.4);will-change:opacity;transform:translateZ(0)"></div>
 
 <!-- Bulk Reassign Bar -->
 <div id="vl-bulk-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:180;background:var(--surface2);border-top:2px solid var(--gold);padding:.7rem 1rem;gap:.5rem;align-items:center;flex-wrap:wrap;box-shadow:0 -4px 20px rgba(0,0,0,.5)">
