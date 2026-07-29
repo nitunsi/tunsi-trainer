@@ -3412,6 +3412,9 @@ let vocabAudioFilter = 'all'; // 'all' | 'with' | 'without'
 let vocabSinceDays = null; // z.B. 7 = "nur status_updated_at innerhalb der letzten 7 Tage"
 const selectedVocabIds = new Set();
 let vocabTableRenderedIds = []; // IDs der aktuell in #vocab-table gerenderten Zeilen (fuer schnellen Select-All-Abgleich ohne DOM-Scan)
+const VOCAB_PAGE_SIZE = 150; // Pagination: initial nur so viele Zeilen rendern statt aller ~3400 (blockierte sonst den Main Thread beim Öffnen der Liste)
+let vocabFilteredFull = []; // komplette gefilterte Liste (ungekürzt) — Basis fürs "Mehr laden"
+let vocabVisibleCount = VOCAB_PAGE_SIZE;
 
 function toggleFlagFilter(){
   showOnlyFlagged = !showOnlyFlagged;
@@ -3526,19 +3529,36 @@ function jumpToRecentApproved(days){
 }
 
 function renderVocabTable(vocab){
+  // Einstiegspunkt (von filterVocabList aufgerufen) — setzt Pagination auf die erste Seite zurück
+  vocabFilteredFull = vocab;
+  vocabVisibleCount = VOCAB_PAGE_SIZE;
+  renderVocabTableRows();
+}
+
+function loadMoreVocabRows(){
+  vocabVisibleCount += VOCAB_PAGE_SIZE;
+  renderVocabTableRows();
+}
+
+function renderVocabTableRows(){
+  const vocabFull = vocabFilteredFull;
   const el = document.getElementById('vocab-table');
   if(!el) return;
   const SRS_COLORS = ['#9b6fd4','#e05555','#e07832','#c9a84c','#2a9d8f','#4cac6e','#1a7a3a'];
   const SRS_LABELS = ['L0','L1','L2','L3','L4','L5','L6'];
 
-  if(!vocab.length){
+  if(!vocabFull.length){
     el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem">Keine Vokabeln gefunden</div>';
     vocabTableRenderedIds = [];
     return;
   }
+  const vocab = vocabFull.slice(0, vocabVisibleCount);
   vocabTableRenderedIds = vocab.map(v => v.id);
 
-  let h = '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem">'+vocab.length+' Vokabeln</div>';
+  const countLabel = vocab.length < vocabFull.length
+    ? ('Zeige '+vocab.length+' von '+vocabFull.length+' Vokabeln')
+    : (vocabFull.length+' Vokabeln');
+  let h = '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem">'+countLabel+'</div>';
   h += '<table style="width:100%;border-collapse:collapse;font-size:.75rem">';
   h += '<thead><tr style="color:var(--muted);font-size:.62rem;text-transform:uppercase;letter-spacing:.05em">';
   h += '<th style="padding:.3rem .3rem;border-bottom:1px solid var(--border)"><input type="checkbox" id="vl-check-all" onchange="toggleSelectAll(this)" style="cursor:pointer"></th>';
@@ -3567,7 +3587,7 @@ function renderVocabTable(vocab){
     const editId = 'vedit-'+i;
     const vIdx = ALL_VOCAB.indexOf(v);
 
-    h += '<tr id="'+rowId+'" style="border-bottom:1px solid rgba(58,50,40,.4)">';
+    h += '<tr id="'+rowId+'" style="border-bottom:1px solid rgba(58,50,40,.4);content-visibility:auto;contain-intrinsic-size:auto 32px">';
     const flagMark = flaggedVocab.has(v.tr) ? ' 🚩' : '';
     const isChecked = selectedVocabIds.has(v.id);
     h += '<td style="padding:.3rem .3rem"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)" style="cursor:pointer"'+(isChecked?' checked':'')+'/></td>';
@@ -3600,6 +3620,12 @@ function renderVocabTable(vocab){
   });
 
   h += '</tbody></table>';
+  if(vocab.length < vocabFull.length){
+    h += '<div style="text-align:center;margin-top:.8rem">'
+      + '<button onclick="loadMoreVocabRows()" style="padding:.5rem 1.2rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;font-size:.78rem;font-family:\'IBM Plex Mono\',monospace;cursor:pointer">'
+      + '⬇ Mehr laden (' + (vocabFull.length - vocab.length) + ' weitere)'
+      + '</button></div>';
+  }
   el.innerHTML = h;
   updateBulkBar();
 }
