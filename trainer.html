@@ -2032,6 +2032,20 @@ if(window.visualViewport){
 }
 
 let ALL_VOCAB=[];
+let _vocabTopicOptionsCache = null; // {len, html} — nur neu bauen wenn sich ALL_VOCAB.length ändert
+let _vocabLsOptionsCache = null;    // {len, html}
+function getVocabTopicOptionsHTML(){
+  if(_vocabTopicOptionsCache && _vocabTopicOptionsCache.len === ALL_VOCAB.length) return _vocabTopicOptionsCache.html;
+  const html = [...new Set(ALL_VOCAB.map(v=>v.tp||'–'))].sort().map(t=>`<option value="${t}">${t}</option>`).join('');
+  _vocabTopicOptionsCache = {len: ALL_VOCAB.length, html};
+  return html;
+}
+function getVocabLsOptionsHTML(){
+  if(_vocabLsOptionsCache && _vocabLsOptionsCache.len === ALL_VOCAB.length) return _vocabLsOptionsCache.html;
+  const html = Object.keys(LESSON_NUM_TO_ID).sort((a,b)=>a-b).map(n=>`<option value="L${n}">L${n}${LESSON_TITLES['L'+n]?' · '+LESSON_TITLES['L'+n]:''}</option>`).join('');
+  _vocabLsOptionsCache = {len: ALL_VOCAB.length, html};
+  return html;
+}
 // STATE
 let cMode='stats',cLesson='all',cIdx=0,exList=[];
 let _dueQueue=[];
@@ -3362,12 +3376,12 @@ function showVocabList(){
       <select id="vl-topic-filter" onchange="vocabTopicFilter=this.value;filterVocabList()"
         style="flex:1;min-width:120px;padding:.4rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.8rem;font-family:'IBM Plex Mono',monospace">
         <option value="all">Alle Topics</option>
-        ${[...new Set(ALL_VOCAB.map(v=>v.tp||'–'))].sort().map(t=>`<option value="${t}">${t}</option>`).join('')}
+        ${getVocabTopicOptionsHTML()}
       </select>
       <select id="vl-ls-filter" onchange="vocabLsFilter=this.value;filterVocabList()"
         style="flex:1;min-width:100px;padding:.4rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.8rem;font-family:'IBM Plex Mono',monospace">
         <option value="all">Alle Lektionen</option>
-        ${Object.keys(LESSON_NUM_TO_ID).sort((a,b)=>a-b).map(n=>`<option value="L${n}">L${n}${LESSON_TITLES['L'+n]?' · '+LESSON_TITLES['L'+n]:''}</option>`).join('')}
+        ${getVocabLsOptionsHTML()}
       </select>
       <select id="vl-ps-filter" onchange="vocabPsFilter=this.value;filterVocabList()"
         style="flex:1;min-width:110px;padding:.4rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.8rem;font-family:'IBM Plex Mono',monospace">
@@ -3585,7 +3599,6 @@ function renderVocabTableRows(){
     const correct = p ? timeAgo(p.last_correct) : '—';
     const rowId = 'vrow-'+i;
     const editId = 'vedit-'+i;
-    const vIdx = ALL_VOCAB.indexOf(v);
 
     h += '<tr id="'+rowId+'" style="border-bottom:1px solid rgba(58,50,40,.4);content-visibility:auto;contain-intrinsic-size:auto 32px">';
     const flagMark = flaggedVocab.has(v.tr) ? ' 🚩' : '';
