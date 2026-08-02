@@ -4487,13 +4487,13 @@ function courseChunkLearnHtml(l, chunk){
 
 let _stepChunks = [];       // [{key,label,dialog,grammar_headings,items:[...]}]
 let _stepLessonId = null;
-let _stepIdx = 0;           // aktueller Chunk-Index
+let _stepView = 'picker';   // 'picker' (Chunk-Übersicht) | 'chunk' (einzelner Abschnitt)
+let _stepIdx = 0;           // aktueller Chunk-Index (nur relevant wenn _stepView==='chunk')
 let _stepPhase = 'intro';   // 'intro' | 'items' | 'chunk-summary'
 let _stepItemIdx = 0;
 let _stepRevealed = false;
 let _stepChunkC = 0, _stepChunkW = 0;
-let _stepAllDone = [];      // [{id, correct}] über alle Chunks der Lektion
-let _stepRedoOnly = false;  // true = gezielte Einzel-Chunk-Wiederholung aus der Zusammenfassung
+let _stepAllDone = [];      // [{id, correct}] über alle Chunks der Lektion, aus course_progress geladen/gespeichert
 
 function courseStartStepper(l){
   const byKey = {};
@@ -4503,17 +4503,48 @@ function courseStartStepper(l){
   });
   _stepChunks = (l.chunk_order||[]).map(c=>Object.assign({}, c, {items: byKey[c.key]||[]}));
   _stepLessonId = l.id;
+  const existing = COURSE_PROGRESS_BY_LESSON[l.id];
+  const prevDone = existing && Array.isArray(existing.exercises_done) ? existing.exercises_done : [];
+  // Altes Format (nur IDs, aus dem flachen Test-Flow vor dem Chunking) nicht übernehmen.
+  _stepAllDone = prevDone.length && typeof prevDone[0]==='object' ? prevDone.slice() : [];
+  _stepView = 'picker';
   _stepIdx = 0; _stepPhase = 'intro'; _stepItemIdx = 0; _stepRevealed = false;
-  _stepChunkC = 0; _stepChunkW = 0; _stepAllDone = []; _stepRedoOnly = false;
+  _stepChunkC = 0; _stepChunkW = 0;
+}
+
+// Speichert den aktuellen Stand nach jedem Abschnitt automatisch (still, ohne Toast) —
+// damit Fortschritt beim Verlassen/Wiederöffnen der Lektion nicht verloren geht.
+async function courseStepSaveProgress(status){
+  const l = _courseCurLesson;
+  if(!l) return false;
+  const score = _stepAllDone.filter(d=>d.correct===true).length;
+  const existing = COURSE_PROGRESS_BY_LESSON[l.id];
+  const payload = { status: status, exercises_done: _stepAllDone, score_self: score };
+  if(status==='done') payload.completed_at = new Date().toISOString();
+  try{
+    if(existing){
+      await sbApi('course_progress?id=eq.'+existing.id, 'PATCH', payload);
+      Object.assign(existing, payload);
+    } else {
+      const res = await sbApi('course_progress?select=*', 'POST', Object.assign({user_id:currentUser.id, course_lesson_id:l.id}, payload), 'return=representation');
+      const row = Array.isArray(res) ? res[0] : res;
+      COURSE_PROGRESS_BY_LESSON[l.id] = row;
+    }
+    return true;
+  }catch(e){
+    showToast('Fehler beim Speichern: '+e.message,'err');
+    return false;
+  }
 }
 
 function renderCourseStepperTab(tc, l){
   if(_stepLessonId !== l.id) courseStartStepper(l);
 
-  if(_stepIdx >= _stepChunks.length){ renderStepLessonSummary(tc, l); return; }
+  if(_stepView==='picker'){ renderStepPicker(tc, l); return; }
   const chunk = _stepChunks[_stepIdx];
 
-  let h = '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.5rem">';
+  let h = '<button onclick="courseStepBackToPicker()" style="background:none;border:none;color:var(--muted);font-size:.7rem;cursor:pointer;padding:0;margin-bottom:.5rem">← Übersicht</button>';
+  h += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.5rem">';
   h += '<div style="font-size:.68rem;color:var(--muted)">Abschnitt '+(_stepIdx+1)+' / '+_stepChunks.length+'</div>';
   h += '<div style="font-size:.82rem;color:var(--gold2)">'+escHtml(chunk.label)+'</div>';
   h += '</div>';
@@ -4533,8 +4564,10 @@ function renderCourseStepperTab(tc, l){
     h += '<div style="font-size:1.6rem;margin-bottom:.4rem">'+(total===0?'➡️':_stepChunkW===0?'✅':'📝')+'</div>';
     if(total>0) h += '<div style="font-size:1rem;color:var(--gold2)">'+_stepChunkC+' von '+total+' richtig</div>';
     const isLast = _stepIdx+1 >= _stepChunks.length;
-    h += '<button onclick="courseStepNextChunk()" style="margin-top:1rem;padding:.6rem 1.3rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">'
-       + ((isLast || _stepRedoOnly) ? 'Zur Zusammenfassung →' : 'Nächster Abschnitt →') + '</button>';
+    h += '<div style="display:flex;gap:.5rem;justify-content:center;margin-top:1rem;flex-wrap:wrap">';
+    h += '<button onclick="courseStepBackToPicker()" style="padding:.6rem 1.1rem;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;cursor:pointer;border-radius:4px">← Übersicht</button>';
+    if(!isLast) h += '<button onclick="courseStepGotoNextChunk()" style="padding:.6rem 1.1rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">Nächster Abschnitt →</button>';
+    h += '</div>';
     h += '</div>';
     tc.innerHTML = h; return;
   }
@@ -4592,8 +4625,34 @@ function renderCourseStepperTab(tc, l){
 }
 
 function courseStepBeginItems(){
-  _stepPhase = _stepChunks[_stepIdx].items.length ? 'items' : 'chunk-summary';
+  const chunk = _stepChunks[_stepIdx];
+  // Falls dieser Chunk schon einmal gemacht wurde (Wiederholung): alte Ergebnisse
+  // verwerfen, damit die Gesamtsumme nicht doppelt zählt.
+  const ids = new Set(chunk.items.map(it=>it.id));
+  _stepAllDone = _stepAllDone.filter(d=>!ids.has(d.id));
+  _stepPhase = chunk.items.length ? 'items' : 'chunk-summary';
   _stepItemIdx = 0; _stepRevealed = false; _stepChunkC = 0; _stepChunkW = 0;
+  renderCourseLesson();
+}
+
+// Öffnet einen Chunk direkt aus der Übersicht (egal ob offen, erledigt oder mit Fehlern).
+function courseStepOpenChunk(idx){
+  _stepIdx = idx;
+  _stepView = 'chunk';
+  _stepPhase = 'intro'; _stepItemIdx = 0; _stepRevealed = false; _stepChunkC = 0; _stepChunkW = 0;
+  renderCourseLesson();
+}
+
+function courseStepBackToPicker(){
+  courseStepSaveProgress('in_progress');
+  _stepView = 'picker';
+  renderCourseLesson();
+}
+
+function courseStepGotoNextChunk(){
+  courseStepSaveProgress('in_progress');
+  _stepIdx++;
+  _stepPhase = 'intro'; _stepItemIdx = 0; _stepRevealed = false;
   renderCourseLesson();
 }
 
@@ -4609,84 +4668,46 @@ function courseStepNextItem(correct){
   }
   _stepItemIdx++;
   _stepRevealed = false;
-  if(_stepItemIdx >= chunk.items.length) _stepPhase = 'chunk-summary';
-  renderCourseLesson();
-}
-
-function courseStepNextChunk(){
-  if(_stepRedoOnly){
-    _stepRedoOnly = false;
-    _stepIdx = _stepChunks.length; // zurück zur Gesamt-Zusammenfassung
-  } else {
-    _stepIdx++;
+  if(_stepItemIdx >= chunk.items.length){
+    _stepPhase = 'chunk-summary';
+    courseStepSaveProgress('in_progress'); // still im Hintergrund, damit nichts verloren geht falls die App jetzt geschlossen wird
   }
-  _stepPhase = 'intro'; _stepItemIdx = 0; _stepRevealed = false;
   renderCourseLesson();
 }
 
-function renderStepLessonSummary(tc, l){
+// Chunk-Übersicht: Einstiegspunkt des Kurs-Tabs. Zeigt jeden Abschnitt mit Status
+// und erlaubt, direkt in einen beliebigen (auch schon erledigten) Chunk zu springen.
+function renderStepPicker(tc, l){
   const totalTallyable = _stepAllDone.filter(d=>d.correct===true || d.correct===false).length;
   const totalCorrect = _stepAllDone.filter(d=>d.correct===true).length;
-  let h = '<div style="text-align:center;padding:1.5rem 0">';
-  h += '<div style="font-size:2rem;margin-bottom:.5rem">🎉</div>';
-  if(totalTallyable>0) h += '<div style="font-size:1.1rem;color:var(--gold2)">'+totalCorrect+' von '+totalTallyable+' richtig</div>';
-  else h += '<div style="color:var(--muted);font-size:.85rem">Keine Test-Aufgaben in dieser Lektion.</div>';
-  h += '<div style="display:flex;flex-direction:column;gap:.4rem;margin-top:1rem;text-align:left;max-width:320px;margin-left:auto;margin-right:auto">';
+  let h = '';
+  if(totalTallyable>0) h += '<div style="text-align:center;font-size:.85rem;color:var(--gold2);margin-bottom:1rem">'+totalCorrect+' von '+totalTallyable+' richtig</div>';
+  h += '<div style="display:flex;flex-direction:column;gap:.5rem">';
   _stepChunks.forEach((chunk,i)=>{
     const ids = new Set(chunk.items.map(it=>it.id));
     const done = _stepAllDone.filter(d=>ids.has(d.id));
     const w = done.filter(d=>d.correct===false).length;
-    const icon = done.length===0 ? '⚪' : w===0 ? '✅' : '⚠️';
-    h += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem;padding:.35rem .5rem;background:var(--surface);border:1px solid var(--border);border-radius:4px">';
+    const icon = chunk.items.length===0 ? '📄' : done.length===0 ? '⚪' : w===0 ? '✅' : '⚠️';
+    const scoreTxt = chunk.items.length===0 ? 'nur Lesen' : done.length ? (done.length-w)+'/'+done.length+' richtig' : chunk.items.length+' Übungen';
+    h += '<button onclick="courseStepOpenChunk('+i+')" style="display:flex;justify-content:space-between;align-items:center;padding:.65rem .8rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;cursor:pointer;text-align:left;font-family:inherit;font-size:.85rem;color:var(--text)">';
     h += '<span>'+icon+' '+escHtml(chunk.label)+'</span>';
-    h += '<button onclick="courseStepRedoChunk('+i+')" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.65rem;padding:.2rem .5rem;cursor:pointer;border-radius:3px">↻ nochmal</button>';
-    h += '</div>';
+    h += '<span style="font-size:.68rem;color:var(--muted);white-space:nowrap;margin-left:.6rem">'+scoreTxt+'</span>';
+    h += '</button>';
   });
   h += '</div>';
-  h += '<button id="course-step-finish-btn" onclick="courseStepFinish()" style="margin-top:1.3rem;padding:.65rem 1.4rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.85rem;font-weight:700;cursor:pointer;border-radius:4px">✓ Lektion abschließen</button>';
-  h += '</div>';
+  h += '<button id="course-step-finish-btn" onclick="courseStepFinish()" style="width:100%;margin-top:1.2rem;padding:.65rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.85rem;font-weight:700;cursor:pointer;border-radius:4px">✓ Lektion abschließen</button>';
   tc.innerHTML = h;
 }
 
-// Wiederholt gezielt nur einen Chunk, ohne den Rest der Lektion zurückzusetzen.
-// Alte Ergebnisse dieses Chunks werden verworfen, damit die Gesamtsumme nicht doppelt zählt.
-function courseStepRedoChunk(idx){
-  const chunk = _stepChunks[idx];
-  const ids = new Set(chunk.items.map(it=>it.id));
-  _stepAllDone = _stepAllDone.filter(d=>!ids.has(d.id));
-  _stepIdx = idx;
-  _stepRedoOnly = true;
-  _stepPhase = 'intro'; _stepItemIdx = 0; _stepRevealed = false; _stepChunkC = 0; _stepChunkW = 0;
-  renderCourseLesson();
-}
-
 async function courseStepFinish(){
-  const l = _courseCurLesson;
-  if(!l) return;
-  const score = _stepAllDone.filter(d=>d.correct===true).length;
-  const existing = COURSE_PROGRESS_BY_LESSON[l.id];
-  const payload = {
-    status: 'done',
-    exercises_done: _stepAllDone,
-    score_self: score,
-    completed_at: new Date().toISOString()
-  };
   const btn = document.getElementById('course-step-finish-btn');
   if(btn){ btn.disabled = true; btn.textContent = 'Speichere…'; }
-  try{
-    if(existing){
-      await sbApi('course_progress?id=eq.'+existing.id, 'PATCH', payload);
-      Object.assign(existing, payload);
-    } else {
-      const res = await sbApi('course_progress?select=*', 'POST', Object.assign({user_id:currentUser.id, course_lesson_id:l.id}, payload), 'return=representation');
-      const row = Array.isArray(res) ? res[0] : res;
-      COURSE_PROGRESS_BY_LESSON[l.id] = row;
-    }
+  const ok = await courseStepSaveProgress('done');
+  if(ok){
     showToast('✓ Lektion abgeschlossen — gespeichert','ok');
     showCourseOverview();
-  }catch(e){
-    showToast('Fehler beim Speichern: '+e.message,'err');
-    if(btn){ btn.disabled = false; btn.textContent = '✓ Nochmal versuchen'; }
+  } else if(btn){
+    btn.disabled = false; btn.textContent = '✓ Nochmal versuchen';
   }
 }
 
