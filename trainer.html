@@ -4684,11 +4684,17 @@ function renderStepPicker(tc, l){
   if(totalTallyable>0) h += '<div style="text-align:center;font-size:.85rem;color:var(--gold2);margin-bottom:1rem">'+totalCorrect+' von '+totalTallyable+' richtig</div>';
   h += '<div style="display:flex;flex-direction:column;gap:.5rem">';
   _stepChunks.forEach((chunk,i)=>{
+    const total = chunk.items.length;
     const ids = new Set(chunk.items.map(it=>it.id));
     const done = _stepAllDone.filter(d=>ids.has(d.id));
+    const attempted = done.length;
     const w = done.filter(d=>d.correct===false).length;
-    const icon = chunk.items.length===0 ? '📄' : done.length===0 ? '⚪' : w===0 ? '✅' : '⚠️';
-    const scoreTxt = chunk.items.length===0 ? 'nur Lesen' : done.length ? (done.length-w)+'/'+done.length+' richtig' : chunk.items.length+' Übungen';
+    const correct = attempted - w;
+    let icon, scoreTxt;
+    if(total===0){ icon = '📄'; scoreTxt = 'nur Lesen'; }
+    else if(attempted===0){ icon = '⚪'; scoreTxt = total+' Übungen'; }
+    else if(attempted<total){ icon = '🟡'; scoreTxt = attempted+'/'+total+' bearbeitet'; }
+    else { icon = w===0 ? '✅' : '⚠️'; scoreTxt = correct+'/'+total+' richtig'; }
     h += '<button onclick="courseStepOpenChunk('+i+')" style="display:flex;justify-content:space-between;align-items:center;padding:.65rem .8rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;cursor:pointer;text-align:left;font-family:inherit;font-size:.85rem;color:var(--text)">';
     h += '<span>'+icon+' '+escHtml(chunk.label)+'</span>';
     h += '<span style="font-size:.68rem;color:var(--muted);white-space:nowrap;margin-left:.6rem">'+scoreTxt+'</span>';
