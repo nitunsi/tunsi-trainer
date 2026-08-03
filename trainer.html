@@ -3727,36 +3727,44 @@ function openVocabEdit(vocabId, i){
   _editSheetVocabId = vocabId;
   const v = vById(vocabId);
   if(!v) return;
-  const p = srsProgress[vocabId];
-  document.getElementById('ei-ar').value = v.ar || '';
-  document.getElementById('ei-tr').value = v.tr || '';
-  document.getElementById('ei-en').value = v.en || '';
-  document.getElementById('ei-tp').value = v.tp || '';
-  // Lektion-Dropdown dynamisch befüllen
-  const lsSel = document.getElementById('ei-ls');
-  lsSel.innerHTML = '';
-  Object.entries(LESSON_NUM_TO_ID).sort((a,b)=>a[0]-b[0]).forEach(([num, lid]) => {
-    const opt = document.createElement('option');
-    const lsStr = 'L'+num;
-    opt.value = lsStr;
-    opt.textContent = lsStr + (LESSON_TITLES[lsStr] ? ' · '+LESSON_TITLES[lsStr] : '');
-    if(lsStr === v.ls) opt.selected = true;
-    lsSel.appendChild(opt);
-  });
-  document.getElementById('ei-nr').value = p && p.next_review ? toLocalInputDE(p.next_review) : '';
-  document.getElementById('ei-lvl').value = p ? (p.level||0) : 0;
-  const isFl = flaggedVocab.has(v.tr);
-  const flagBtn = document.getElementById('sheet-flag-btn');
-  flagBtn.textContent = isFl ? '🚩' : '🏳️';
-  flagBtn.style.color = isFl ? 'var(--gold)' : 'var(--muted)';
-  flagBtn.style.borderColor = isFl ? 'var(--gold)' : 'var(--border)';
-  // Partner status
-  const psSel = document.getElementById('ei-ps');
-  if(psSel) psSel.value = v.ps || '';
-  const pcInp = document.getElementById('ei-pc');
-  if(pcInp) pcInp.value = v.pc || '';
+  // Sheet/Overlay zuerst sichtbar machen, damit der Klick sofort ein Paint bekommt (INP) —
+  // die Feldbefüllung (u.a. das Lektions-Dropdown mit ~50-90 Optionen) folgt erst im
+  // nächsten Frame, statt den Klick-Handler vorher zu blockieren.
   document.getElementById('vocab-edit-sheet').style.display = '';
   document.getElementById('vocab-edit-overlay').style.display = '';
+  requestAnimationFrame(() => {
+    if(_editSheetVocabId !== vocabId) return; // in der Zwischenzeit ein anderer Eintrag geöffnet
+    const p = srsProgress[vocabId];
+    document.getElementById('ei-ar').value = v.ar || '';
+    document.getElementById('ei-tr').value = v.tr || '';
+    document.getElementById('ei-en').value = v.en || '';
+    document.getElementById('ei-tp').value = v.tp || '';
+    // Lektion-Dropdown dynamisch befüllen — als Fragment gebaut, ein einziger Reflow statt N
+    const lsSel = document.getElementById('ei-ls');
+    const frag = document.createDocumentFragment();
+    Object.entries(LESSON_NUM_TO_ID).sort((a,b)=>a[0]-b[0]).forEach(([num, lid]) => {
+      const opt = document.createElement('option');
+      const lsStr = 'L'+num;
+      opt.value = lsStr;
+      opt.textContent = lsStr + (LESSON_TITLES[lsStr] ? ' · '+LESSON_TITLES[lsStr] : '');
+      if(lsStr === v.ls) opt.selected = true;
+      frag.appendChild(opt);
+    });
+    lsSel.innerHTML = '';
+    lsSel.appendChild(frag);
+    document.getElementById('ei-nr').value = p && p.next_review ? toLocalInputDE(p.next_review) : '';
+    document.getElementById('ei-lvl').value = p ? (p.level||0) : 0;
+    const isFl = flaggedVocab.has(v.tr);
+    const flagBtn = document.getElementById('sheet-flag-btn');
+    flagBtn.textContent = isFl ? '🚩' : '🏳️';
+    flagBtn.style.color = isFl ? 'var(--gold)' : 'var(--muted)';
+    flagBtn.style.borderColor = isFl ? 'var(--gold)' : 'var(--border)';
+    // Partner status
+    const psSel = document.getElementById('ei-ps');
+    if(psSel) psSel.value = v.ps || '';
+    const pcInp = document.getElementById('ei-pc');
+    if(pcInp) pcInp.value = v.pc || '';
+  });
 }
 
 function closeVocabEdit(){
