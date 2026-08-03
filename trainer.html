@@ -4078,7 +4078,7 @@ async function loadCourseData(force){
   if(_courseLoaded && !force) return;
   const [lessons, exercises, progress] = await Promise.all([
     sbApi('course_lessons?select=*&order=course_number.asc'),
-    sbApi('course_exercises?select=*&order=course_lesson_id.asc,position.asc'),
+    sbApi('course_exercises?select=*,vocabulary(id,arabic_script,darija,german,ninja_audio_url)&order=course_lesson_id.asc,position.asc'),
     sbApi('course_progress?user_id=eq.'+currentUser.id+'&select=*')
   ]);
   COURSE_LESSONS = lessons || [];
@@ -4581,7 +4581,7 @@ function renderCourseStepperTab(tc, l){
   const ex = chunk.items[_stepItemIdx];
   if(!ex){ _stepPhase = 'chunk-summary'; renderCourseStepperTab(tc, l); return; }
   const gradable = COURSE_GRADABLE_TYPES.includes(ex.exercise_type);
-  const label = ({translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',build_dialog:'Dialog bilden',grammar_drill:'Grammatik-Übung',grammar_card:'Merksatz',fixed_response:'Feste Antwort'})[ex.exercise_type] || ex.exercise_type;
+  const label = ({translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',build_dialog:'Dialog bilden',grammar_drill:'Grammatik-Übung',grammar_card:'Merksatz',fixed_response:'Feste Antwort',pronunciation:'🔊 Aussprache'})[ex.exercise_type] || ex.exercise_type;
 
   h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.3rem">'+label+' · '+(_stepItemIdx+1)+' / '+chunk.items.length+'</div>';
   if(ex.exercise_type==='answer_pattern'){
@@ -4592,7 +4592,15 @@ function renderCourseStepperTab(tc, l){
        + '<div>☐ Deine Antwort auf Deutsch übersetzen</div>'
        + '</div>';
   } else if(ex.instruction) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(ex.instruction)+'</div>';
-  if(ex.prompt) h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem;font-size:.95rem;margin-bottom:.8rem">'+escHtml(ex.prompt)+'</div>';
+  if(ex.prompt){
+    const vocabAudio = ex.vocabulary && ex.vocabulary.ninja_audio_url
+      ? ' <button onclick="playVocabAudio(\''+ex.vocabulary.ninja_audio_url.replace(/'/g,"\\'")+'\',event)" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.85rem;padding:.1rem .5rem;cursor:pointer;border-radius:3px;vertical-align:middle">🔊</button>'
+      : '';
+    const vocabArabic = ex.vocabulary && ex.vocabulary.arabic_script
+      ? '<div style="font-size:1.3rem;margin-top:.3rem;color:var(--gold2)">'+escHtml(ex.vocabulary.arabic_script)+'</div>'
+      : '';
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem;font-size:.95rem;margin-bottom:.8rem">'+escHtml(ex.prompt)+vocabAudio+vocabArabic+'</div>';
+  }
 
   if(!gradable){
     if(ex.exercise_type==='build_dialog'){
