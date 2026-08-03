@@ -4044,7 +4044,7 @@ let COURSE_EXERCISES_BY_LESSON = {};   // course_lesson_id -> [exercise, ...] so
 let COURSE_PROGRESS_BY_LESSON = {};    // course_lesson_id -> progress-Zeile des aktuellen Nutzers (oder undefined)
 let _courseLoaded = false;
 let _courseTest = null;                // aktiver Test-Durchlauf, siehe courseStartTest()
-const COURSE_GRADABLE_TYPES = ['translate_de_tn','fill_blank','answer_pattern','grammar_card','grammar_drill','fixed_response'];
+const COURSE_GRADABLE_TYPES = ['translate_de_tn','fill_blank','answer_pattern','grammar_card','grammar_drill','fixed_response','pronunciation'];
 
 function courseGradableCount(lessonId){
   return (COURSE_EXERCISES_BY_LESSON[lessonId]||[]).filter(e=>COURSE_GRADABLE_TYPES.includes(e.exercise_type)).length;
