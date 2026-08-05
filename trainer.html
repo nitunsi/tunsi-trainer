@@ -2814,6 +2814,7 @@ function showStats(){
     return buckets.map(b => {
       const cnt = levelCount[b.idx];
       const pctL = Math.round(cnt / maxLevelCount * 100);
+      const dueToday = dueDays[0] ? dueDays[0][b.idx] : 0;
       return `<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;font-size:.72rem;">
         <span style="min-width:90px;color:${b.color}">${b.label}</span>
         <div style="flex:1;height:8px;background:var(--border);border-radius:4px;">
@@ -2821,6 +2822,7 @@ function showStats(){
         </div>
         <span style="min-width:28px;text-align:right;color:var(--muted)">${cnt}</span>
         <span style="min-width:90px;color:var(--muted);font-size:.62rem">${b.hint}</span>
+        <span style="min-width:70px;font-size:.62rem;${dueToday > 0 ? 'color:var(--red)' : 'color:var(--muted)'}">${dueToday > 0 ? dueToday+' heute fällig' : ''}</span>
       </div>`;
     }).join('');
   })();
