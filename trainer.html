@@ -5678,6 +5678,8 @@ const TRANSLIT_RULES = [
     test: v => v.ar && /ش/.test(v.ar) && !/sh/i.test(v.tr) && !isLoanword(v) },
   { label: 'ق im Arabischen, aber weder "q" noch "g"/"k" (Dialekt-Verschiebung) in der Transliteration',
     test: v => v.ar && /ق/.test(v.ar) && !/[qgk]/i.test(v.tr) },
+  { label: 'ض im Arabischen, aber kein "dh" in der Transliteration',
+    test: v => v.ar && /ض/.test(v.ar) && !/dh/i.test(v.tr) },
   { label: 'Wortanzahl arabic_script vs. Transliteration weicht stark ab (möglicherweise fehlendes Wort)',
     test: v => {
       if(!v.ar || !v.tr || v.ar.includes('/') || v.tr.includes('/')) return false;
