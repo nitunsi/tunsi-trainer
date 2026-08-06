@@ -5653,10 +5653,10 @@ const TRANSLIT_RULES = [
     test: v => v.ar && /خ/.test(v.ar) && !/kh/i.test(v.tr) },
   { label: 'ع im Arabischen, aber kein "3" in der Transliteration',
     test: v => v.ar && /ع/.test(v.ar) && !/3/.test(v.tr) },
-  { label: 'غ im Arabischen, aber kein "gh" in der Transliteration',
-    test: v => v.ar && /غ/.test(v.ar) && !/gh/i.test(v.tr) },
+  { label: 'غ im Arabischen, aber weder "gh" noch "g" (Dialekt-Verschiebung/Lehnwort) in der Transliteration',
+    test: v => v.ar && /غ/.test(v.ar) && !/g/i.test(v.tr) },
   { label: 'ش im Arabischen, aber kein "sh" in der Transliteration',
-    test: v => v.ar && /ش/.test(v.ar) && !/sh/i.test(v.tr) },
+    test: v => v.ar && /ش/.test(v.ar) && !/sh/i.test(v.tr) && !/chauffeur|chapeau|sandwich|marche|piscine|chambre|chambriz|guichet|sacoche|sacha|match\b/i.test(v.tr) },
   { label: 'ق im Arabischen, aber weder "q" noch "g"/"k" (Dialekt-Verschiebung) in der Transliteration',
     test: v => v.ar && /ق/.test(v.ar) && !/[qgk]/i.test(v.tr) },
 ];
