@@ -2772,7 +2772,6 @@ function showStats(){
   const pct       = maxPointsAll    ? Math.round(totalPoints / maxPointsAll    * 100) : 0;
   const pctActive = maxPointsActive ? Math.round(totalPoints / maxPointsActive * 100) : 0;
   const lessonLabel = cLesson === 'all' ? 'Alle Lektionen' : cLesson;
-  const qualityCheckCount = cLesson === 'all' ? (countDupeIssues() + countTranslitIssues()) : 0;
 
   const c = document.getElementById('exercise-content');
   const levelColors = ['#555555','#9b6fd4','#e05555','#e07832','#c9a84c','#2a9d8f','#4cac6e','#1a7a3a'];
@@ -2934,20 +2933,6 @@ function showStats(){
       </div>
     </div>
 
-    ${cLesson === 'all' ? `<div style="margin-bottom:.6rem;">
-      <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:.4rem;">Prüfbereich</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
-        <div onclick="goToCheck('ninjacheck')" style="cursor:pointer;padding:.7rem;background:var(--surface);border:1px solid var(--border);text-align:center;">
-          <div id="qc-ninja-count" style="font-size:1.3rem;font-weight:700;color:var(--gold);font-family:'Playfair Display',serif;">…</div>
-          <div style="color:var(--muted);font-size:.65rem;margin-top:.2rem;">🥷 Ninja-Check</div>
-        </div>
-        <div onclick="goToCheck('dupes')" style="cursor:pointer;padding:.7rem;background:var(--surface);border:1px solid var(--border);text-align:center;">
-          <div style="font-size:1.3rem;font-weight:700;color:var(--gold);font-family:'Playfair Display',serif;">${qualityCheckCount}</div>
-          <div style="color:var(--muted);font-size:.65rem;margin-top:.2rem;">🔍 Prüfungen</div>
-        </div>
-      </div>
-    </div>` : ''}
-
     <div style="margin-bottom:.6rem;">
       <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:.4rem;">Level-Verteilung</div>
       <div style="background:var(--surface);border:1px solid var(--border);padding:.7rem;">
@@ -2971,7 +2956,6 @@ function showStats(){
   `;
   if(cLesson === 'all') loadPartnerStats();
   if(cLesson === 'all') loadActivityStats();
-  if(cLesson === 'all') loadNinjaCheckCount();
   document.getElementById('ex-type-label').textContent = '📊 Statistik';
   document.getElementById('ex-progress').textContent = '';
   document.getElementById('progress-fill').style.width = '0%';
@@ -3095,13 +3079,16 @@ async function loadPartnerStats(){
     const pendingN  = await sbApiCount('vocabulary?partner_status=eq.pending&select=id');
     const suggestedN = await sbApiCount('vocabulary?partner_status=eq.suggested&select=id');
     const commentedN = await sbApiCount('vocabulary?partner_comment=not.is.null&select=id');
+    let ninjaN = '?';
+    try { ninjaN = await sbApiCount('vocabulary_review?change_category=eq.ninja_check_pending&select=vocabulary_id'); } catch(e) {}
+    const qualityN = countDupeIssues() + countTranslitIssues();
 
     // Letzte Aktivität kompakt in die Kopfzeile neben dem Abschnittstitel
     const lastActiveEl = document.getElementById('partner-last-active');
     if(lastActiveEl){ lastActiveEl.style.color = activityColor; lastActiveEl.textContent = activityText; }
 
     el.innerHTML = warningHtml +
-      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem;text-align:center">' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.4rem;text-align:center">' +
         '<div style="padding:.4rem;background:var(--surface2);border:1px solid var(--border);">' +
           '<div style="font-size:1.1rem;font-weight:700;color:var(--gold)">' + pendingN + '</div>' +
           '<div style="font-size:.62rem;color:var(--muted)">⏳ Offen</div>' +
@@ -3125,6 +3112,14 @@ async function loadPartnerStats(){
         '<div onclick="jumpToPartnerQueue(\'commented\')" style="cursor:pointer;padding:.4rem;background:var(--surface2);border:1px solid var(--border);">' +
           '<div style="font-size:1.1rem;font-weight:700;color:var(--gold2)">' + commentedN + '</div>' +
           '<div style="font-size:.62rem;color:var(--muted)">💬 Kommentar</div>' +
+        '</div>' +
+        '<div onclick="goToCheck(\'ninjacheck\')" style="cursor:pointer;padding:.4rem;background:var(--surface2);border:1px solid var(--border);">' +
+          '<div style="font-size:1.1rem;font-weight:700;color:var(--gold)">' + ninjaN + '</div>' +
+          '<div style="font-size:.62rem;color:var(--muted)">🥷 Ninja-Check</div>' +
+        '</div>' +
+        '<div onclick="goToCheck(\'dupes\')" style="cursor:pointer;padding:.4rem;background:var(--surface2);border:1px solid var(--border);">' +
+          '<div style="font-size:1.1rem;font-weight:700;color:var(--gold)">' + qualityN + '</div>' +
+          '<div style="font-size:.62rem;color:var(--muted)">🔍 Prüfungen</div>' +
         '</div>' +
       '</div>';
   } catch(e) {
@@ -5697,16 +5692,6 @@ function countDupeIssues(){
   });
   scan(arMap,'ar'); scan(trMap,'tr'); scan(enMap,'en');
   return counted.size;
-}
-
-async function loadNinjaCheckCount(){
-  const el = document.getElementById('qc-ninja-count');
-  try{
-    const res = await sbApi('vocabulary_review?select=vocabulary_id&change_category=eq.ninja_check_pending');
-    if(el) el.textContent = (res||[]).length;
-  }catch(e){
-    if(el) el.textContent = '?';
-  }
 }
 
 function goToCheck(m){
