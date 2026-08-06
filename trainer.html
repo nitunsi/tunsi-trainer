@@ -326,7 +326,7 @@ body.hide-latin .chat-opt .latin {
     <button class="lesson-chip" onclick="setMode('addvocab',this);closeNav()">➕ Vokabel hinzufügen</button>
     <button class="lesson-chip" onclick="setMode('stats',this);closeNav()">📊 Statistik</button>
     <button class="lesson-chip" onclick="setMode('activate',this);closeNav()">⚡ Aktivierung</button>
-    <button class="lesson-chip" onclick="setMode('dupes',this);closeNav()">🔍 Duplikate</button>
+    <button class="lesson-chip" onclick="setMode('dupes',this);closeNav()">🔍 Prüfungen</button>
     <button class="lesson-chip" onclick="setMode('partnerqueue',this);closeNav()">📬 Partner-Queue</button>
     <button class="lesson-chip" onclick="setMode('partnercheck',this);closeNav()">🙋 Partner-Check</button>
     <button class="lesson-chip" onclick="setMode('ninjacheck',this);closeNav()">🥷 Ninja-Check</button>
@@ -5561,6 +5561,8 @@ async function ninjaCheckSaveComment(vocabId){
   }
 }
 
+let qcTab = 'dupes'; // Qualit\u00e4ts-Check-Tab: 'dupes' | 'translit'
+
 function showDupeCheck(){
   const area = document.getElementById('exercise-screen');
   if(area) area.style.display = 'block';
@@ -5569,8 +5571,100 @@ function showDupeCheck(){
   const ab = document.getElementById('act-batch-bar');
   if(ab) ab.style.display='none';
   const c = document.getElementById('exercise-content');
-  c.innerHTML = '<div style="padding:1rem 0;color:var(--muted);font-size:.85rem">Suche Duplikate\u2026</div>';
 
+  const tabBtn = (key,label)=>'<button onclick="qcSetTab(\''+key+'\')" style="flex:1;padding:.5rem;border-radius:6px;font-family:\'IBM Plex Mono\',monospace;font-size:.75rem;cursor:pointer;'+
+    (qcTab===key?'background:var(--gold);border:1px solid var(--gold);color:#0e0c0a;font-weight:700;':'background:transparent;border:1px solid var(--border);color:var(--muted);')+'">'+label+'</button>';
+
+  c.innerHTML = '<div style="padding:1rem;max-width:600px;margin:0 auto">'
+    + '<div style="display:flex;gap:.4rem;margin-bottom:1rem">'
+    + tabBtn('dupes','\ud83d\udd01 Duplikate') + tabBtn('translit','\ud83d\udd24 Transliteration')
+    + '</div>'
+    + '<div id="qc-tab-content"><div style="padding:1rem 0;color:var(--muted);font-size:.85rem">Pr\u00fcfe\u2026</div></div>'
+    + '</div>';
+
+  const tc = document.getElementById('qc-tab-content');
+  if(qcTab === 'translit') renderTranslitCheck(tc);
+  else renderDupeCheckList(tc);
+}
+
+function qcSetTab(key){ qcTab = key; showDupeCheck(); }
+
+// Gemeinsamer Bearbeiten-Block (Ansicht+verstecktes Edit-Formular), von Duplikat- UND Transliterations-Check genutzt
+function dupeEntryHtml(v, extraActions){
+  return '<div id="dcard-'+v.id+'" style="padding:.75rem .8rem;border-bottom:1px solid rgba(58,50,40,.5)">'
+    + '<div id="dview-'+v.id+'">'
+    + '<div style="font-family:\'Playfair Display\',serif;font-size:1.4rem;color:var(--gold2);direction:rtl;text-align:right;line-height:1.3;margin-bottom:.35rem">'+(v.ar||'\u2014')+'</div>'
+    + '<div style="font-size:.88rem;color:var(--text);margin-bottom:.2rem">'+v.tr+'</div>'
+    + '<div style="font-size:.82rem;color:var(--muted);margin-bottom:.4rem">'+v.en+'</div>'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.4rem">'
+    + '<div style="font-size:.65rem;color:var(--muted);opacity:.7">'+v.ls+' \u00b7 '+v.tp+' \u00b7 ID\u00a0'+v.id+'</div>'
+    + '<div style="display:flex;align-items:center;gap:.4rem">'
+    + (extraActions||'')
+    + '<button onclick="openDupeEdit('+v.id+')" style="padding:.25rem .55rem;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:\'IBM Plex Mono\',monospace;font-size:.7rem;cursor:pointer;border-radius:3px;white-space:nowrap">\u270f Bearbeiten</button>'
+    + '</div>'
+    + '</div>'
+    + '</div>'
+    // Edit-Block (hidden)
+    + '<div id="dedit-'+v.id+'" style="display:none;margin-top:.5rem">'
+    + '<div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Arabisch</div>'
+    + '<input id="de-ar-'+v.id+'" type="text" value="'+v.ar.replace(/"/g,'&quot;')+'" style="width:100%;direction:rtl;font-family:\'Playfair Display\',serif;font-size:1.2rem;padding:.5rem .7rem;background:var(--surface2);border:1px solid var(--border);color:var(--gold2);border-radius:4px;margin-bottom:.4rem" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>'
+    + '<div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Transliteration</div>'
+    + '<input id="de-tr-'+v.id+'" type="text" value="'+v.tr.replace(/"/g,'&quot;')+'" style="width:100%;padding:.5rem .7rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.9rem;margin-bottom:.4rem" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>'
+    + '<div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Deutsch</div>'
+    + '<input id="de-en-'+v.id+'" type="text" value="'+v.en.replace(/"/g,'&quot;')+'" style="width:100%;padding:.5rem .7rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.9rem;margin-bottom:.4rem"/>'
+    + '<div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Topic</div>'
+    + '<input id="de-tp-'+v.id+'" type="text" value="'+v.tp.replace(/"/g,'&quot;')+'" style="width:100%;padding:.5rem .7rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.9rem;margin-bottom:.4rem" autocomplete="off"/>'
+    + '<div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Lektion</div>'
+    + '<select id="de-ls-'+v.id+'" style="width:100%;padding:.5rem .7rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.9rem;margin-bottom:.6rem"></select>'
+    + '<div style="display:flex;gap:.4rem">'
+    + '<button onclick="saveDupeEdit('+v.id+')" style="flex:1;padding:.5rem;background:linear-gradient(135deg,var(--gold),#a07020);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.78rem;font-weight:700;cursor:pointer;border-radius:4px">\u2713 Speichern</button>'
+    + '<button onclick="closeDupeEdit('+v.id+')" style="padding:.5rem .8rem;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:\'IBM Plex Mono\',monospace;font-size:.78rem;cursor:pointer;border-radius:4px">Abbrechen</button>'
+    + '</div>'
+    + '<div id="de-fb-'+v.id+'" style="font-size:.75rem;text-align:center;min-height:1rem;margin-top:.3rem"></div>'
+    + '</div>'
+    + '</div>';
+}
+
+// Regeln f\u00fcr den Transliterations-Check \u2014 jede Regel liefert true bei einem Verstoss
+const TRANSLIT_RULES = [
+  { label: 'Verbotene Ziffern (2/5/9 statt Hamza weglassen / kh / q)',
+    test: v => /[259]/.test(v.tr) },
+  { label: '"ch" statt "sh"',
+    test: v => /ch/.test(v.tr) && !/chauffeur|chapeau|sandwich|marche|piscine|chambre|chambriz|guichet|sacoche|sacha|match\b/i.test(v.tr) },
+  { label: 'Gro\u00dfbuchstaben (Darija wird durchg\u00e4ngig kleingeschrieben)',
+    test: v => /[A-Z]/.test(v.tr) },
+  { label: 'Artikel nicht vor Sonnenbuchstabe verschmolzen (el-/il- statt es-/et-/ej-/...)',
+    test: v => /\b(el|il)-(th|sh|d|t|z|s|j|n|r)/.test(v.tr) },
+];
+
+function renderTranslitCheck(c){
+  const groups = TRANSLIT_RULES.map(r => ({
+    type: r.label,
+    entries: ALL_VOCAB.filter(v => v.tr && r.test(v))
+  })).filter(g => g.entries.length);
+
+  if(!groups.length){
+    c.innerHTML = '<div style="padding:2rem;text-align:center"><div style="font-size:2rem;margin-bottom:.8rem">\u2705</div><div style="color:var(--green);font-size:.9rem">Keine Transliterations-Auff\u00e4lligkeiten gefunden</div></div>';
+    return;
+  }
+
+  const total = groups.reduce((s,g)=>s+g.entries.length,0);
+  let html = '<div>'
+    + '<div style="color:var(--gold2);font-size:1rem;font-weight:700;margin-bottom:.4rem">\ud83d\udd24 Transliterations-Pr\u00fcfung</div>'
+    + '<div style="color:var(--muted);font-size:.78rem;margin-bottom:1.2rem">'+total+' Auff\u00e4lligkeit'+(total!==1?'en':'')+' in '+groups.length+' Kategorie'+(groups.length!==1?'n':'')+'</div>';
+
+  groups.forEach(g => {
+    html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;margin-bottom:1rem;overflow:hidden">'
+      + '<div style="background:var(--surface2);padding:.5rem .8rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);border-bottom:1px solid var(--border)">'+g.type+' \u00b7 '+g.entries.length+'</div>';
+    g.entries.forEach(v => { html += dupeEntryHtml(v); });
+    html += '</div>';
+  });
+
+  html += '</div>';
+  c.innerHTML = html;
+}
+
+function renderDupeCheckList(c){
   // Duplikate finden \u2014 drei Felder einzeln
   // Normalisierung: Kleinschreibung + Satzzeichen/Leerzeichen entfernen
   const groups = [];
@@ -5660,42 +5754,9 @@ function showDupeCheck(){
 
     g.entries.forEach(v => {
       const isRec = v.id === recommended.id;
-      const eid = 'de-'+v.id;
-      html += '<div id="dcard-'+v.id+'" style="padding:.75rem .8rem;border-bottom:1px solid rgba(58,50,40,.5);'+(isRec?'background:rgba(201,76,76,.06)':'')+'">'
-        // Anzeige-Block
-        + '<div id="dview-'+v.id+'">'
-        + '<div style="font-family:\'Playfair Display\',serif;font-size:1.4rem;color:var(--gold2);direction:rtl;text-align:right;line-height:1.3;margin-bottom:.35rem">'+(v.ar||'\u2014')+'</div>'
-        + '<div style="font-size:.88rem;color:var(--text);margin-bottom:.2rem">'+v.tr+'</div>'
-        + '<div style="font-size:.82rem;color:var(--muted);margin-bottom:.4rem">'+v.en+'</div>'
-        + '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.4rem">'
-        + '<div style="font-size:.65rem;color:var(--muted);opacity:.7">'+v.ls+' \u00b7 '+v.tp+' \u00b7 ID\u00a0'+v.id+'</div>'
-        + '<div style="display:flex;align-items:center;gap:.4rem">'
-        + progBadge(v)
-        + (isRec ? '<span style="font-size:.65rem;color:var(--red);opacity:.9">\u2192 empf.</span>' : '')
-        + '<button onclick="openDupeEdit('+v.id+')" style="padding:.25rem .55rem;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:\'IBM Plex Mono\',monospace;font-size:.7rem;cursor:pointer;border-radius:3px;white-space:nowrap">\u270f Bearbeiten</button>'
-        + '<button onclick="deleteDupeVocab('+v.id+','+gi+')" style="padding:.25rem .55rem;background:transparent;border:1px solid var(--red);color:var(--red);font-family:\'IBM Plex Mono\',monospace;font-size:.7rem;cursor:pointer;border-radius:3px;white-space:nowrap">\ud83d\uddd1 L\u00f6schen</button>'
-        + '</div>'
-        + '</div>'
-        + '</div>'
-        // Edit-Block (hidden)
-        + '<div id="dedit-'+v.id+'" style="display:none;margin-top:.5rem">'
-        + '<div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Arabisch</div>'
-        + '<input id="de-ar-'+v.id+'" type="text" value="'+v.ar.replace(/"/g,'&quot;')+'" style="width:100%;direction:rtl;font-family:\'Playfair Display\',serif;font-size:1.2rem;padding:.5rem .7rem;background:var(--surface2);border:1px solid var(--border);color:var(--gold2);border-radius:4px;margin-bottom:.4rem" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>'
-        + '<div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Transliteration</div>'
-        + '<input id="de-tr-'+v.id+'" type="text" value="'+v.tr.replace(/"/g,'&quot;')+'" style="width:100%;padding:.5rem .7rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.9rem;margin-bottom:.4rem" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>'
-        + '<div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Deutsch</div>'
-        + '<input id="de-en-'+v.id+'" type="text" value="'+v.en.replace(/"/g,'&quot;')+'" style="width:100%;padding:.5rem .7rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.9rem;margin-bottom:.4rem"/>'
-        + '<div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Topic</div>'
-        + '<input id="de-tp-'+v.id+'" type="text" value="'+v.tp.replace(/"/g,'&quot;')+'" style="width:100%;padding:.5rem .7rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.9rem;margin-bottom:.4rem" autocomplete="off"/>'
-        + '<div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Lektion</div>'
-        + '<select id="de-ls-'+v.id+'" style="width:100%;padding:.5rem .7rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.9rem;margin-bottom:.6rem"></select>'
-        + '<div style="display:flex;gap:.4rem">'
-        + '<button onclick="saveDupeEdit('+v.id+')" style="flex:1;padding:.5rem;background:linear-gradient(135deg,var(--gold),#a07020);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.78rem;font-weight:700;cursor:pointer;border-radius:4px">\u2713 Speichern</button>'
-        + '<button onclick="closeDupeEdit('+v.id+')" style="padding:.5rem .8rem;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:\'IBM Plex Mono\',monospace;font-size:.78rem;cursor:pointer;border-radius:4px">Abbrechen</button>'
-        + '</div>'
-        + '<div id="de-fb-'+v.id+'" style="font-size:.75rem;text-align:center;min-height:1rem;margin-top:.3rem"></div>'
-        + '</div>'
-        + '</div>';
+      const extra = progBadge(v) + (isRec ? '<span style="font-size:.65rem;color:var(--red);opacity:.9">\u2192 empf.</span>' : '')
+        + '<button onclick="deleteDupeVocab('+v.id+','+gi+')" style="padding:.25rem .55rem;background:transparent;border:1px solid var(--red);color:var(--red);font-family:\'IBM Plex Mono\',monospace;font-size:.7rem;cursor:pointer;border-radius:3px;white-space:nowrap">\ud83d\uddd1 L\u00f6schen</button>';
+      html += dupeEntryHtml(v, extra);
     });
     html += '</div>';
   });
