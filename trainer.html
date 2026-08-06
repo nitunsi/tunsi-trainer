@@ -2772,6 +2772,7 @@ function showStats(){
   const pct       = maxPointsAll    ? Math.round(totalPoints / maxPointsAll    * 100) : 0;
   const pctActive = maxPointsActive ? Math.round(totalPoints / maxPointsActive * 100) : 0;
   const lessonLabel = cLesson === 'all' ? 'Alle Lektionen' : cLesson;
+  const qualityCheckCount = cLesson === 'all' ? (countDupeIssues() + countTranslitIssues()) : 0;
 
   const c = document.getElementById('exercise-content');
   const levelColors = ['#555555','#9b6fd4','#e05555','#e07832','#c9a84c','#2a9d8f','#4cac6e','#1a7a3a'];
@@ -2933,6 +2934,20 @@ function showStats(){
       </div>
     </div>
 
+    ${cLesson === 'all' ? `<div style="margin-bottom:.6rem;">
+      <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:.4rem;">Prüfbereich</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+        <div onclick="goToCheck('ninjacheck')" style="cursor:pointer;padding:.7rem;background:var(--surface);border:1px solid var(--border);text-align:center;">
+          <div id="qc-ninja-count" style="font-size:1.3rem;font-weight:700;color:var(--gold);font-family:'Playfair Display',serif;">…</div>
+          <div style="color:var(--muted);font-size:.65rem;margin-top:.2rem;">🥷 Ninja-Check</div>
+        </div>
+        <div onclick="goToCheck('dupes')" style="cursor:pointer;padding:.7rem;background:var(--surface);border:1px solid var(--border);text-align:center;">
+          <div style="font-size:1.3rem;font-weight:700;color:var(--gold);font-family:'Playfair Display',serif;">${qualityCheckCount}</div>
+          <div style="color:var(--muted);font-size:.65rem;margin-top:.2rem;">🔍 Prüfungen</div>
+        </div>
+      </div>
+    </div>` : ''}
+
     <div style="margin-bottom:.6rem;">
       <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:.4rem;">Level-Verteilung</div>
       <div style="background:var(--surface);border:1px solid var(--border);padding:.7rem;">
@@ -2956,6 +2971,7 @@ function showStats(){
   `;
   if(cLesson === 'all') loadPartnerStats();
   if(cLesson === 'all') loadActivityStats();
+  if(cLesson === 'all') loadNinjaCheckCount();
   document.getElementById('ex-type-label').textContent = '📊 Statistik';
   document.getElementById('ex-progress').textContent = '';
   document.getElementById('progress-fill').style.width = '0%';
@@ -5649,6 +5665,56 @@ const TRANSLIT_RULES = [
   { label: 'ق im Arabischen, aber weder "q" noch "g"/"k" (Dialekt-Verschiebung) in der Transliteration',
     test: v => v.ar && /ق/.test(v.ar) && !/[qgk]/i.test(v.tr) },
 ];
+
+// Zählt betroffene Vokabeln (distinct), für die Statistik-Kachel — reine Zahl, kein Rendering
+function countTranslitIssues(){
+  const ids = new Set();
+  ALL_VOCAB.forEach(v => {
+    if(!v.tr) return;
+    if(TRANSLIT_RULES.some(r => r.test(v))) ids.add(v.id);
+  });
+  return ids.size;
+}
+
+function countDupeIssues(){
+  const seen = new Set();
+  const counted = new Set();
+  function scan(map, prefix){
+    Object.values(map).forEach(grp => {
+      if(grp.length < 2) return;
+      if(grp.every(v => v.hok)) return;
+      const key = prefix+':'+grp.map(v=>v.id).sort().join(',');
+      if(seen.has(key)) return;
+      seen.add(key);
+      grp.forEach(v => counted.add(v.id));
+    });
+  }
+  const arMap={}, trMap={}, enMap={};
+  ALL_VOCAB.forEach(v => {
+    if(v.ar){ const k=normKey(v.ar); (arMap[k]=arMap[k]||[]).push(v); }
+    if(v.tr){ const k=normKey(v.tr); (trMap[k]=trMap[k]||[]).push(v); }
+    if(v.en){ const k=normKey(v.en); (enMap[k]=enMap[k]||[]).push(v); }
+  });
+  scan(arMap,'ar'); scan(trMap,'tr'); scan(enMap,'en');
+  return counted.size;
+}
+
+async function loadNinjaCheckCount(){
+  const el = document.getElementById('qc-ninja-count');
+  try{
+    const res = await sbApi('vocabulary_review?select=vocabulary_id&change_category=eq.ninja_check_pending');
+    if(el) el.textContent = (res||[]).length;
+  }catch(e){
+    if(el) el.textContent = '?';
+  }
+}
+
+function goToCheck(m){
+  cMode = m;
+  document.querySelectorAll('.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));
+  if(m==='ninjacheck') showNinjaCheckQueue();
+  else if(m==='dupes') showDupeCheck();
+}
 
 function renderTranslitCheck(c){
   const groups = TRANSLIT_RULES.map(r => ({
