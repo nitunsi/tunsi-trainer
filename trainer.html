@@ -593,7 +593,7 @@ async function srsLoadFromSupabase(){
     _updLoadUI();
 
     const loadVocabTask = sbApiPaged(
-      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,lessons(lesson_number)&order=id.asc',
+      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,homonym_ok,lessons(lesson_number)&order=id.asc',
       1000,
       (loaded) => { _vLoaded = loaded; _updLoadUI(); }
     );
@@ -619,7 +619,7 @@ async function srsLoadFromSupabase(){
     allVocab.forEach(v => {
       const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
       const tp = v.topic || 'Allgemein';
-      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0 };
+      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok };
       ALL_VOCAB.push(entry);
       VOCAB_BY_ID[v.id] = entry;
       if(v.flagged) flaggedVocab.add(v.darija||'');
@@ -5586,6 +5586,7 @@ function showDupeCheck(){
   });
   Object.values(arMap).forEach(grp => {
     if(grp.length < 2) return;
+    if(grp.every(v => v.hok)) return; // alle als bewusster Homonym markiert — kein echtes Duplikat
     const key = 'ar:' + grp.map(v=>v.id).sort().join(',');
     if(seen.has(key)) return;
     seen.add(key);
@@ -5602,6 +5603,7 @@ function showDupeCheck(){
   });
   Object.values(trMap).forEach(grp => {
     if(grp.length < 2) return;
+    if(grp.every(v => v.hok)) return; // alle als bewusster Homonym markiert — kein echtes Duplikat
     const key = 'tr:' + grp.map(v=>v.id).sort().join(',');
     if(seen.has(key)) return;
     seen.add(key);
@@ -5618,6 +5620,7 @@ function showDupeCheck(){
   });
   Object.values(enMap).forEach(grp => {
     if(grp.length < 2) return;
+    if(grp.every(v => v.hok)) return; // alle als bewusster Homonym markiert — kein echtes Duplikat
     const key = 'en:' + grp.map(v=>v.id).sort().join(',');
     if(seen.has(key)) return;
     seen.add(key);
