@@ -5699,6 +5699,15 @@ const TRANSLIT_RULES = [
       if(/([a-z]{1,2})-\1/i.test(v.tr)) return false;
       return true;
     } },
+  { label: '"(f.)" im Deutschen, aber Transliteration endet nicht auf "-a" (unmarkiertes Femininum? siehe Ausnahmeliste)',
+    test: v => {
+      if(!/\(f\.\)/i.test(v.en)) return false;
+      if(/a$/.test(v.tr)) return false;
+      const exceptions = /^(w-)?(ukht|umm|bint|saq|yidd|3in|wdin|farmasi|kar|tunis|mistir|susa|kirsh|shams|nar|dar|bit|blad|hethi|shah)(\b|$)/i;
+      return !exceptions.test(v.tr);
+    } },
+  { label: '"und" sollte immer als "w-" geschrieben werden, nicht als eigenständiges "wa"/"u"',
+    test: v => /\b(wa|u)\b/.test(v.tr) && !/\bahla\s+wa\s+sahla\b/i.test(v.tr) },
 ];
 
 // Zählt betroffene Vokabeln (distinct), für die Statistik-Kachel — reine Zahl, kein Rendering
