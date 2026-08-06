@@ -420,6 +420,29 @@ Auslöser: "Ich habe Vokabeln markiert" / "flagged/markiert" o.ä. → `SELECT *
    - **Audio-URL immer direkt mitparsen, nicht nachträglich.** Beim ersten Scan pro Suchbegriff sofort `<audio src="...">` aus dem Treffer-Block mitextrahieren (siehe HTML-Struktur oben), nicht erst bei Bedarf nachschauen. Jeder Treffer mit exaktem arabic_script-Match liefert im selben Schritt auch die Antwort auf "gibt's dafür Audio".
    - **Audio nur bei wirklich identischer Aussprache anhängen, reines Konsonantenskelett reicht nicht.** Gleiche Konsonanten bei unterschiedlicher Vokalisierung/Gemination klingen anders und dürfen nicht als Wort-Audio übernommen werden — Beispiele: صَرْف (sarf, Nomen "Wechselgeld") vs. Ninjas صَرِّفْ (sarrif, Verb "wechseln", mit Schadda) — falsches Audio. مَكْتْبَة (maktba, kontrahiert) vs. Ninjas مَكْتَبَةْ (maktaba, voll ausgesprochen, eine Silbe mehr) — ebenfalls falsches Audio. Vor dem Setzen von `ninja_audio_url` immer gegenchecken: gleiche Silbenzahl, gleiche Gemination (siehe Lautlehre-Regel 2)? Nur dann übernehmen.
 3. Ninjas Transliteration ist ein Strukturhinweis, keine Vorlage. Nie 1:1 übernehmen (andere Konvention: z.B. ch statt sh, 9 statt q) — aber daraufhin prüfen, ob sie ein Feature zeigt, das unsere bestehende Transliteration übersieht (v.a. Gemination/Doppelkonsonanten — Ninja schreibt Doppelbuchstaben oft aus, wo unsere ältere Transliteration sie verschluckt hat). In unsere Chat-Alphabet-Konvention übertragen, siehe Pflichtregeln oben. Dieser ch/sh-Fehler ist kein Einzelfall, sondern trat in der Praxis wiederkehrend auf (auch nach vorheriger Korrektur erneut) — passiert, wenn Ninjas angezeigte Transliteration direkt kopiert statt aus der vokalisierten arabic_script neu abgeleitet wird.
+
+**Ninjas eigener Transliterations-Schlüssel (offiziell von der Website, 2026-08-06 vom Nutzer zitiert) — nützlich für `script=transliterated`-Suchen, da Ninja die Sucheingabe intern erst zu Arabisch konvertiert, bevor gesucht wird:**
+
+| Ninja | Laut | Unsere Konvention | Für Ninja-Suche umwandeln |
+|---|---|---|---|
+| 2 | أ (Hamza/Knacklaut) | meist weggelassen | – |
+| 3 | ع | 3 | gleich |
+| 5 | خ | kh | kh→5 |
+| 7 | ح | 7 | gleich |
+| 9 | ق | q | q→9 |
+| ch | ش | sh | sh→ch |
+| gh | غ | gh | gleich |
+| h | ه | (kein eigenes Zeichen) | gleich |
+| th | ث oder ذ | th | gleich |
+| a | Fatha (kurz) | a | gleich |
+| i | Kasra (kurz) | i | gleich |
+| ou | Damma (kurz) | oft u/o geschrieben | u/o→ou |
+
+Beispiel-Umwandlung für eine `script=transliterated`-Suche: unser `yukhruj` → Ninja-Suche `you5rouj`; unser `yaqli` → `ya9li`. Bei `script=english`-Suchen ist dieser Schritt nicht nötig.
+
+**Ninjas Transkriptions-Philosophie (offiziell, 2026-08-06 vom Nutzer zitiert) — wichtig, um Diskrepanzen richtig einzuordnen:** Ninja schreibt Wörter tendenziell in ihrer *vollen, theoretischen* Form, nicht kontrahiert wie in schneller Alltagsaussprache — z.B. تحمص nicht اتحمص, من الدار nicht مدار. Bei Unsicherheit orientiert sich Ninja an der Hocharabisch-Schreibung. **Das heißt: wenn Ninjas arabic_script "voller"/MSA-näher aussieht als unseres, ist das meist keine Diskrepanz, sondern nur eine andere Kontraktionsstufe — nicht automatisch als Fehler werten.** Echte Fehler sind nur eigenständige Buchstaben-Verwechslungen (falscher Konsonant an sich, nicht nur ausgeschriebene vs. kontrahierte Form desselben Konsonanten).
+
+**Präzedenzfall systematischer Audit 2026-08-06: alle 145 Uni-Wien-Vokabeln (selbst erstelltes arabic_script, da die Quelle kein Original-Arabisch liefert) per englischer Bedeutungssuche gegen Ninja gegengecheckt** (nicht nur der bisherige Konsonantenskelett-Abgleich, der nur ~1-2% Trefferquote hat). Ergebnis: 2 echte Buchstaben-Fehler gefunden und gefixt (`widnin`="Ohren" hatte د statt ذ — betraf auch den schon länger bestehenden Singular-Eintrag `wdin`/id 725, war also kein reiner Uni-Wien-Fehler; `yhaddar`="er deckt den Tisch/bereitet vor" hatte gleich zwei falsche Wurzelbuchstaben ه/د statt ح/ض UND stellte sich als verstecktes Duplikat von bereits bestehendem `y7adhar`/id 2218 heraus — mit dem üblichen Merge-Workflow zusammengelegt). Von den restigen 143 hatten ca. 45 gar keinen Ninja-Treffer (v.a. grammatische Partikel wie illi/rani/hani/yakhi, reine Lehnwörter wie imayl/kart postal, Eigennamen) — das ist normal bei Lehrbuch-spezifischem Vokabular, kein Alarmsignal. Empfehlung: diese Art Audit (Bedeutungssuche statt Skelett-Match) bei jedem größeren Batch aus einer Quelle ohne eigenes Original-Arabisch wiederholen, nicht nur einmalig.
 4. Klassifizieren:
    - arabic_script + Bedeutung von Ninja bestätigt → ggf. nur Transliteration korrigieren (Schritt 3) und/oder Audio ergänzen
    - arabic_script oder Bedeutung weicht ab → Korrektur mit Begründung vorschlagen
