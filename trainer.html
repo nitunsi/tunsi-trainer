@@ -4114,28 +4114,46 @@ async function loadCourseData(force){
 }
 
 // Schlichtes Markdown: ### Überschrift, - Bullet-Punkt, **bold**, Absätze.
-function mdLite(s){
+function mdLite(s, isDialog){
   if(!s) return '';
   const escLine = (t)=>{ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; };
   const bold = (t)=> t.replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--gold2)">$1</strong>');
+  const dialogTitleRe = /^Dialog\s*\d+\b/i;
+  const speakerRe = /^([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ .'’()0-9-]{0,28}):\s+(.+)$/;
   const lines = s.split('\n');
-  let html=''; let inList=false;
+  let html=''; let inList=false; let inDialogBox=false;
+  const closeDialogBox = ()=>{ if(inDialogBox){ html+='</div>'; inDialogBox=false; } };
   lines.forEach(line=>{
     const t = line.trim();
     if(t.startsWith('### ')){
       if(inList){ html+='</ul>'; inList=false; }
+      closeDialogBox();
       html += '<div style="font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--gold);margin:1rem 0 .35rem;font-weight:700">'+escLine(t.slice(4))+'</div>';
     } else if(t.startsWith('- ')){
+      closeDialogBox();
       if(!inList){ html+='<ul style="margin:.2rem 0 .7rem;padding-left:1.15rem">'; inList=true; }
       html += '<li style="margin-bottom:.35rem">'+bold(escLine(t.slice(2)))+'</li>';
     } else if(t===''){
       if(inList){ html+='</ul>'; inList=false; }
+      closeDialogBox();
+    } else if(isDialog && dialogTitleRe.test(t)){
+      if(inList){ html+='</ul>'; inList=false; }
+      closeDialogBox();
+      html += '<div style="font-size:.68rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold2);font-weight:700;margin:.9rem 0 .3rem">'+escLine(t)+'</div>';
     } else {
       if(inList){ html+='</ul>'; inList=false; }
-      html += '<div style="margin-bottom:.4rem">'+bold(escLine(t))+'</div>';
+      const m = isDialog ? t.match(speakerRe) : null;
+      if(m){
+        if(!inDialogBox){ html+='<div style="background:var(--surface2);border-radius:6px;padding:.5rem .65rem;margin-bottom:.5rem">'; inDialogBox=true; }
+        html += '<div style="margin-bottom:.3rem"><span style="color:var(--gold2);font-weight:700">'+escLine(m[1])+':</span> '+bold(escLine(m[2]))+'</div>';
+      } else {
+        closeDialogBox();
+        html += '<div style="margin-bottom:.4rem">'+bold(escLine(t))+'</div>';
+      }
     }
   });
   if(inList) html += '</ul>';
+  closeDialogBox();
   return html;
 }
 
@@ -4239,7 +4257,7 @@ function renderCourseLearnTab(tc, l){
   let h = '';
   if(l.dialog_text){
     h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem">Dialoge</div>';
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7;margin-bottom:1.2rem">'+mdLite(l.dialog_text)+'</div>';
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7;margin-bottom:1.2rem">'+mdLite(l.dialog_text, true)+'</div>';
   }
   if(l.grammar_notes){
     h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem">Grammatik</div>';
@@ -4495,7 +4513,7 @@ function courseChunkLearnHtml(l, chunk){
   let h = '';
   if(chunk.dialog && l.dialog_text){
     h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem">Dialog</div>';
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7;margin-bottom:1rem">'+mdLite(l.dialog_text)+'</div>';
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7;margin-bottom:1rem">'+mdLite(l.dialog_text, true)+'</div>';
   }
   let grammarMd = '';
   (chunk.grammar_headings||[]).forEach(hd=>{
