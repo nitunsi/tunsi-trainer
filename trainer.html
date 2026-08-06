@@ -5635,6 +5635,19 @@ const TRANSLIT_RULES = [
     test: v => /[A-Z]/.test(v.tr) },
   { label: 'Artikel nicht vor Sonnenbuchstabe verschmolzen (el-/il- statt es-/et-/ej-/...)',
     test: v => /\b(el|il)-(th|sh|d|t|z|s|j|n|r)/.test(v.tr) },
+  // Konsonanten-Gegencheck: arabic_script enthält den Buchstaben, aber die Transliteration nicht die passende Schreibung
+  { label: 'ح im Arabischen, aber kein "7" in der Transliteration',
+    test: v => v.ar && /ح/.test(v.ar) && !/7/.test(v.tr) },
+  { label: 'خ im Arabischen, aber kein "kh" in der Transliteration',
+    test: v => v.ar && /خ/.test(v.ar) && !/kh/i.test(v.tr) },
+  { label: 'ع im Arabischen, aber kein "3" in der Transliteration',
+    test: v => v.ar && /ع/.test(v.ar) && !/3/.test(v.tr) },
+  { label: 'غ im Arabischen, aber kein "gh" in der Transliteration',
+    test: v => v.ar && /غ/.test(v.ar) && !/gh/i.test(v.tr) },
+  { label: 'ش im Arabischen, aber kein "sh" in der Transliteration',
+    test: v => v.ar && /ش/.test(v.ar) && !/sh/i.test(v.tr) },
+  { label: 'ق im Arabischen, aber kein "q" in der Transliteration',
+    test: v => v.ar && /ق/.test(v.ar) && !/q/i.test(v.tr) },
 ];
 
 function renderTranslitCheck(c){
