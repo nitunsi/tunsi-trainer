@@ -5637,11 +5637,12 @@ function dupeEntryHtml(v, extraActions){
 }
 
 // Regeln f\u00fcr den Transliterations-Check \u2014 jede Regel liefert true bei einem Verstoss
+const isLoanword = v => /(frz\.|franz\.|ital\.|engl\.|lehnwort)/i.test(v.en||'');
 const TRANSLIT_RULES = [
   { label: 'Verbotene Ziffern (2/5/9 statt Hamza weglassen / kh / q)',
     test: v => /[259]/.test(v.tr) },
   { label: '"ch" statt "sh"',
-    test: v => /ch/.test(v.tr) && !/chauffeur|chapeau|sandwich|marche|piscine|chambre|chambriz|guichet|sacoche|sacha|match\b/i.test(v.tr) },
+    test: v => /ch/.test(v.tr) && !isLoanword(v) },
   { label: 'Gro\u00dfbuchstaben (Darija wird durchg\u00e4ngig kleingeschrieben)',
     test: v => /[A-Z]/.test(v.tr) },
   { label: 'Artikel nicht vor Sonnenbuchstabe verschmolzen (el-/il- statt es-/et-/ej-/...)',
@@ -5656,7 +5657,7 @@ const TRANSLIT_RULES = [
   { label: 'غ im Arabischen, aber weder "gh" noch "g" (Dialekt-Verschiebung/Lehnwort) in der Transliteration',
     test: v => v.ar && /غ/.test(v.ar) && !/g/i.test(v.tr) },
   { label: 'ش im Arabischen, aber kein "sh" in der Transliteration',
-    test: v => v.ar && /ش/.test(v.ar) && !/sh/i.test(v.tr) && !/chauffeur|chapeau|sandwich|marche|piscine|chambre|chambriz|guichet|sacoche|sacha|match\b/i.test(v.tr) },
+    test: v => v.ar && /ش/.test(v.ar) && !/sh/i.test(v.tr) && !isLoanword(v) },
   { label: 'ق im Arabischen, aber weder "q" noch "g"/"k" (Dialekt-Verschiebung) in der Transliteration',
     test: v => v.ar && /ق/.test(v.ar) && !/[qgk]/i.test(v.tr) },
 ];
