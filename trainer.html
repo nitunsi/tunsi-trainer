@@ -5766,6 +5766,8 @@ const TRANSLIT_RULES = [
     test: v => v.ar && /ه/.test(v.ar) && !/h/i.test(v.tr) && !isLoanword(v) },
   { label: 'س im Arabischen, aber kein "s" in der Transliteration (oft unmarkiertes Lehnwort)',
     test: v => v.ar && /س/.test(v.ar) && !/s/i.test(v.tr) && !isLoanword(v) },
+  { label: 'ظ/ذ im Arabischen, aber kein "th" in der Transliteration (seit 2026-08-07 einheitlich th, keine dh-Ausnahmen mehr)',
+    test: v => v.ar && /[ظذ]/.test(v.ar) && !/th/i.test(v.tr) && !isLoanword(v) },
   { label: 'Wortanzahl arabic_script vs. Transliteration weicht stark ab (möglicherweise fehlendes Wort)',
     test: v => {
       if(!v.ar || !v.tr || v.ar.includes('/') || v.tr.includes('/')) return false;
