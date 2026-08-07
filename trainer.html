@@ -3808,6 +3808,17 @@ function suggestTransliterationFromArabic(){
   showToast('Vorschlag eingefügt — bitte prüfen','ok');
 }
 
+// Bildschirmtastatur deckt sonst die oberen Felder ab, da das Sheet fixed positioniert ist
+// (kein normales Body-Scroll) — bei Fokus das jeweilige Feld selbst ins Sichtbare scrollen.
+document.addEventListener('DOMContentLoaded', () => {
+  const sheet = document.getElementById('vocab-edit-sheet');
+  if(!sheet) return;
+  sheet.addEventListener('focusin', (e) => {
+    if(!/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+    setTimeout(() => e.target.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
+  });
+});
+
 let _editSheetVocabId = null;
 
 function openVocabEdit(vocabId, i){
@@ -6704,7 +6715,7 @@ window.addEventListener('unhandledrejection', (e) => {
 </div>
 
 <!-- Vocab Edit Bottom Sheet -->
-<div id="vocab-edit-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--surface2);border-top:2px solid var(--gold);padding:1rem;box-shadow:0 -4px 14px rgba(0,0,0,.5);will-change:transform;transform:translateZ(0)">
+<div id="vocab-edit-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--surface2);border-top:2px solid var(--gold);padding:1rem;box-shadow:0 -4px 14px rgba(0,0,0,.5);will-change:transform;transform:translateZ(0);max-height:85vh;max-height:85dvh;overflow-y:auto;-webkit-overflow-scrolling:touch">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem">
     <span style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold)">Vokabel bearbeiten</span>
     <button onclick="closeVocabEdit()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:.2rem .5rem">✕</button>
