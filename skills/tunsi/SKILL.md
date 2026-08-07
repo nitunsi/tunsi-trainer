@@ -620,7 +620,7 @@ Uni-Wien-Material liefert nicht nur Vokabeln, sondern explizite Lautlehre-/Gramm
 4. Volle Liste (Alt → Neu, mit ID und Lektion) zeigen, erst nach Bestätigung SQL ausführen
 5. Bei unscharfen/komplexen Regeln (nicht sauber als Textmuster fassbar, z.B. Possessivsuffixe oder Verbkonjugationsmuster): Stichprobe statt Vollständigkeitsanspruch, das explizit als Einschränkung kennzeichnen
 
-**Präzedenzfall:** Artikel-Assimilation vor Sonnenbuchstaben inkl. j — 38 Bestandsfehler in der Transliteration gefunden und korrigiert (arabic_script unverändert gelassen, siehe Sonderfall-Notiz oben).
+**Präzedenzfall:** Artikel-Assimilation vor Sonnenbuchstaben inkl. j — 38 Bestandsfehler in der Transliteration gefunden und korrigiert (arabic_script unverändert gelassen, siehe Sonderfall-Notiz oben). Nachzügler 2026-08-07: `الجَنَّة`(id 776, "Paradies") war beim damaligen Sweep übersehen worden (`iljanna` statt `ej-janna`) — beim Testen des neuen ✨-Transliterations-Vorschlags im Trainer aufgefallen, korrigiert. Die Regel (ال + ج assimiliert wie ein Sonnenbuchstabe: `ej-`/verdoppelt, alle anderen Mondbuchstaben bleiben `el-`) ist jetzt auch direkt im Trainer als `AR_SUN_LETTERS`-Liste (trainer.html, Funktion `transliterateArabicWord`) eingebaut, die den Vorschlags-Button im Vokabel-Editor speist — bei künftigen Konsonanten-Sweeps lohnt sich der Blick, ob der Trainer-Code dieselbe Ausnahmeliste kennt.
 
 ## Lautlehre — Zusatzregeln für Vokalisierung & Bestandsaudits
 
