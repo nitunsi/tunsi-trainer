@@ -593,7 +593,7 @@ async function srsLoadFromSupabase(){
     _updLoadUI();
 
     const loadVocabTask = sbApiPaged(
-      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,homonym_ok,lessons(lesson_number)&order=id.asc',
+      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,homonym_ok,internal_note,lessons(lesson_number)&order=id.asc',
       1000,
       (loaded) => { _vLoaded = loaded; _updLoadUI(); }
     );
@@ -619,7 +619,7 @@ async function srsLoadFromSupabase(){
     allVocab.forEach(v => {
       const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
       const tp = v.topic || 'Allgemein';
-      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok };
+      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'' };
       ALL_VOCAB.push(entry);
       VOCAB_BY_ID[v.id] = entry;
       if(v.flagged) flaggedVocab.add(v.darija||'');
@@ -3851,6 +3851,8 @@ function openVocabEdit(vocabId, i){
     if(psSel) psSel.value = v.ps || '';
     const pcInp = document.getElementById('ei-pc');
     if(pcInp) pcInp.value = v.pc || '';
+    const ntInp = document.getElementById('ei-nt');
+    if(ntInp) ntInp.value = v.nt || '';
   });
 }
 
@@ -3879,6 +3881,7 @@ async function saveVocabEditSheet(){
   try{
     const newPs = document.getElementById('ei-ps') ? document.getElementById('ei-ps').value : null;
     const newPc = document.getElementById('ei-pc') ? document.getElementById('ei-pc').value.trim() : null;
+    const newNt = document.getElementById('ei-nt') ? document.getElementById('ei-nt').value.trim() : null;
     const vocabPatch = { arabic_script: newAr, darija: newTr, german: newEn, topic: newTp, lesson_id: lsToId(newLs) };
     const newPsNorm = newPs === '' ? null : newPs;
     if(newPs !== null && newPsNorm !== (v.ps || null)){
@@ -3886,6 +3889,7 @@ async function saveVocabEditSheet(){
       vocabPatch.status_updated_at = new Date().toISOString();
     }
     if(newPc !== null) vocabPatch.partner_comment = newPc || null;
+    if(newNt !== null) vocabPatch.internal_note = newNt || null;
     await sbApi('vocabulary?id=eq.'+vocabId, 'PATCH', vocabPatch);
     const progId = srsProgress[vocabId] ? srsProgress[vocabId].id : null;
     const patchProg = {};
@@ -3902,7 +3906,7 @@ async function saveVocabEditSheet(){
       if(newNr) srsProgress[vocabId].next_review = fromLocalInputDE(newNr);
       srsProgress[vocabId].level = newLvl;
     }
-    v.ar = newAr; v.tr = newTr; v.en = newEn; v.tp = newTp; v.ls = newLs; v.ps = newPsNorm; v.pc = newPc||null;
+    v.ar = newAr; v.tr = newTr; v.en = newEn; v.tp = newTp; v.ls = newLs; v.ps = newPsNorm; v.pc = newPc||null; v.nt = newNt||'';
     if(vocabPatch.status_updated_at) v.psu = vocabPatch.status_updated_at;
     if(newTr !== oldTr){ vocabIdMap[newTr] = vocabId; delete vocabIdMap[oldTr]; }
     closeVocabEdit();
@@ -6733,6 +6737,7 @@ window.addEventListener('unhandledrejection', (e) => {
       </select>
     </div>
     <textarea id="ei-pc" placeholder="Partner-Kommentar…" rows="2" style="width:100%;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.82rem;font-family:'IBM Plex Mono',monospace;resize:none;outline:none"></textarea>
+    <textarea id="ei-nt" placeholder="Interner Kommentar (z.B. Quelle/Sicherheit: Ninja-bestätigt, arabisch selbst erstellt …)" rows="2" style="width:100%;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:4px;font-size:.78rem;font-family:'IBM Plex Mono',monospace;resize:none;outline:none"></textarea>
     <div style="display:flex;gap:.4rem;flex-wrap:wrap">
       <button onclick="saveVocabEditSheet()" style="flex:1;background:var(--gold);border:none;color:#0e0c0a;padding:.5rem;cursor:pointer;border-radius:4px;font-weight:700;font-size:.85rem">Speichern</button>
       <button id="sheet-flag-btn" onclick="toggleFlagSheet()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:.5rem .8rem;cursor:pointer;border-radius:4px;font-size:.85rem">🏳️</button>
