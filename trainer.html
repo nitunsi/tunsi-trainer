@@ -3734,6 +3734,54 @@ async function bulkSetStatus(){
   }
 }
 
+// Arabisch → Transliteration: Buchstaben-Grundmapping + Diakritika-Auswertung.
+// Liefert nur einen Vorschlag (nutzt unsere Konvention 7/kh/3/gh/q/sh/dh/th) — Nils prüft/korrigiert vor dem Speichern.
+const AR_TRANSLIT_MAP = {
+  'ا':'a','أ':'a','إ':'a','آ':'a','ى':'a','ة':'a',
+  'ب':'b','ت':'t','ث':'th','ج':'j','ح':'7','خ':'kh',
+  'د':'d','ذ':'th','ر':'r','ز':'z','س':'s','ش':'sh',
+  'ص':'s','ض':'dh','ط':'t','ظ':'dh','ع':'3','غ':'gh',
+  'ف':'f','ق':'q','ك':'k','ل':'l','م':'m','ن':'n','ه':'h',
+  'و':'w','ي':'y','ء':"'",'ؤ':"'",'ئ':"'"
+};
+const AR_DIACRITIC_VOWEL = { 'َ':'a', 'ُ':'u', 'ِ':'i', 'ً':'an', 'ٌ':'un', 'ٍ':'in', 'ٰ':'a' };
+const AR_SHADDA = 'ّ', AR_SUKUN = 'ْ';
+
+function transliterateArabicWord(word){
+  const chars = [...word];
+  let out = '', i = 0, lastVowel = '';
+  while(i < chars.length){
+    const ch = chars[i];
+    if(!AR_TRANSLIT_MAP.hasOwnProperty(ch)){ i++; continue; }
+    let j = i+1, hasShadda = false, vowel = '', hasOwnDiacritic = false;
+    while(j < chars.length && (AR_DIACRITIC_VOWEL.hasOwnProperty(chars[j]) || chars[j]===AR_SHADDA || chars[j]===AR_SUKUN)){
+      if(chars[j] === AR_SHADDA) hasShadda = true;
+      else if(chars[j] === AR_SUKUN) { vowel = ''; hasOwnDiacritic = true; }
+      else { vowel = AR_DIACRITIC_VOWEL[chars[j]]; hasOwnDiacritic = true; }
+      j++;
+    }
+    // و/ي ohne eigenes Diakritikum direkt nach passendem Kurzvokal = Vokaldehnung, kein eigener Konsonant
+    if(!hasShadda && !hasOwnDiacritic && ((ch==='و' && lastVowel==='u') || (ch==='ي' && lastVowel==='i'))){
+      i = j; continue;
+    }
+    const base = AR_TRANSLIT_MAP[ch];
+    if(ch === 'ة'){ out += 'a'; i = j; continue; } // Ta Marbuta: immer nur ein finales "a", Diakritika ignorieren
+    out += hasShadda ? base+base+vowel : base+vowel;
+    lastVowel = vowel;
+    i = j;
+  }
+  return out;
+}
+
+function suggestTransliterationFromArabic(){
+  const arVal = document.getElementById('ei-ar').value.trim();
+  if(!arVal){ showToast('Erst Arabisch eintragen','warn'); return; }
+  const suggestion = arVal.split(/\s+/).map(transliterateArabicWord).join(' ');
+  if(!suggestion){ showToast('Kein Vorschlag möglich','warn'); return; }
+  document.getElementById('ei-tr').value = suggestion;
+  showToast('Vorschlag eingefügt — bitte prüfen','ok');
+}
+
 let _editSheetVocabId = null;
 
 function openVocabEdit(vocabId, i){
@@ -6631,7 +6679,10 @@ window.addEventListener('unhandledrejection', (e) => {
   </div>
   <div style="display:grid;gap:.4rem">
     <input id="ei-ar" placeholder="Arabisch" style="font-family:'Playfair Display',serif;direction:rtl;font-size:1rem;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--gold2);border-radius:4px" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-    <input id="ei-tr" placeholder="Transliteration" style="padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.9rem" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <div style="display:flex;gap:.4rem">
+      <input id="ei-tr" placeholder="Transliteration" style="flex:1;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.9rem" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button onclick="suggestTransliterationFromArabic()" title="Transliteration aus Arabisch vorschlagen" style="background:none;border:1px solid var(--border);color:var(--gold2);padding:.5rem .6rem;cursor:pointer;border-radius:4px;font-size:.9rem;white-space:nowrap">✨</button>
+    </div>
     <input id="ei-en" placeholder="Deutsch" style="padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.9rem" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     <div style="display:flex;gap:.4rem">
       <input id="ei-tp" placeholder="Topic" style="flex:1;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.85rem" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
