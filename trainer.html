@@ -4425,6 +4425,30 @@ function courseStartTest(){
   };
 }
 
+// grammar_drill-Lösungen sind ein Fließtext "ana nakol, enti takol, ..." (oder bei Verneinung
+// ohne Pronomen: "ma nakolsh, ma takolsh, ..."). In eine Person→Form-Liste zerlegen, damit sie
+// als zweispaltiges Raster statt Fließtext dargestellt werden kann.
+const GRAMMAR_DRILL_PERSONS = ['ana','enti','houa','heya','e7na','entouma','houma'];
+function parseGrammarDrillSolution(solution){
+  if(!solution) return null;
+  if(solution.includes(';')) return null; // andere Übungsform (z.B. "Gruppe X. ...; Pl. ..."), kein 7-Personen-Schema
+  const segments = solution.split(',').map(s => s.trim()).filter(Boolean);
+  if(segments.length !== GRAMMAR_DRILL_PERSONS.length) return null;
+  return segments.map((seg, i) => {
+    const m = seg.match(/^(ana|enti|houa|heya|e7na|entouma|houma)\s+(.+)$/i);
+    return m ? { person: m[1], form: m[2] } : { person: GRAMMAR_DRILL_PERSONS[i], form: seg };
+  });
+}
+function renderGrammarDrillGrid(rows, showForm){
+  let g = '<div style="display:grid;grid-template-columns:auto 1fr;gap:.35rem 1rem;font-size:.85rem">';
+  rows.forEach(r => {
+    g += '<div style="color:var(--muted);font-family:\'IBM Plex Mono\',monospace">'+escHtml(r.person)+'</div>';
+    g += '<div style="color:'+(showForm?'var(--gold2)':'var(--muted)')+'">'+(showForm?escHtml(r.form):'…')+'</div>';
+  });
+  g += '</div>';
+  return g;
+}
+
 function renderCourseTestTab(tc, l){
   if(!_courseTest || _courseTest.lessonId!==l.id) courseStartTest();
   const t = _courseTest;
@@ -4463,6 +4487,8 @@ function renderCourseTestTab(tc, l){
        + '</div>';
   } else if(ex.instruction) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(ex.instruction)+'</div>';
   if(ex.prompt) h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem;font-size:.95rem;margin-bottom:.8rem">'+escHtml(ex.prompt)+'</div>';
+  const drillRows = ex.exercise_type==='grammar_drill' ? parseGrammarDrillSolution(ex.solution) : null;
+  if(drillRows && !t.revealed) h += '<div style="border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem">'+renderGrammarDrillGrid(drillRows, false)+'</div>';
 
   if(!gradable){
     // pronunciation / build_dialog: keine Bewertung, aber build_dialog braucht eine konkrete Anleitung statt bloßem "Weiter"
@@ -4496,6 +4522,7 @@ function renderCourseTestTab(tc, l){
           + '</div>';
       }
     }
+    if(!solHtml && drillRows) solHtml = renderGrammarDrillGrid(drillRows, true);
     if(!solHtml) solHtml = escHtml(ex.solution||'—');
     h += '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2);margin-bottom:.8rem">'+solHtml+'</div>';
     if(ex.partner_status===null || ex.partner_status===undefined){
@@ -4729,6 +4756,8 @@ function renderCourseStepperTab(tc, l){
       : '';
     h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem;font-size:.95rem;margin-bottom:.8rem">'+escHtml(ex.prompt)+vocabAudio+vocabArabic+'</div>';
   }
+  const drillRows = ex.exercise_type==='grammar_drill' ? parseGrammarDrillSolution(ex.solution) : null;
+  if(drillRows && !_stepRevealed) h += '<div style="border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem">'+renderGrammarDrillGrid(drillRows, false)+'</div>';
 
   if(!gradable){
     if(ex.exercise_type==='build_dialog'){
@@ -4752,6 +4781,7 @@ function renderCourseStepperTab(tc, l){
         solHtml = '<div>' + row('Frage auf Deutsch', frageDe) + row('Deine Antwort (Tounsi)', antwortTn) + row('Antwort auf Deutsch', antwortDe) + '</div>';
       }
     }
+    if(!solHtml && drillRows) solHtml = renderGrammarDrillGrid(drillRows, true);
     if(!solHtml) solHtml = escHtml(ex.solution||'—');
     h += '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2);margin-bottom:.8rem">'+solHtml+'</div>';
     if(ex.partner_status===null || ex.partner_status===undefined){
