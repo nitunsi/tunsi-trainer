@@ -3746,7 +3746,8 @@ const AR_TRANSLIT_MAP = {
 };
 const AR_DIACRITIC_VOWEL = { 'َ':'a', 'ُ':'u', 'ِ':'i', 'ً':'an', 'ٌ':'un', 'ٍ':'in', 'ٰ':'a' };
 const AR_SHADDA = 'ّ', AR_SUKUN = 'ْ';
-const AR_SUN_LETTERS = ['ت','ث','د','ذ','ر','ز','س','ش','ص','ض','ط','ظ','ل','ن'];
+// MSA-Sonnenbuchstaben + ج, das im Tunesischen (und laut Bestand z.B. bei "ej-jzayir"=Algerien, "ej-jar") dialektal mitassimiliert wird
+const AR_SUN_LETTERS = ['ت','ث','د','ذ','ر','ز','س','ش','ص','ض','ط','ظ','ل','ن','ج'];
 
 // Liest die Diakritika direkt nach einem Buchstaben (Index idx+1...) und gibt {vowel, hasShadda, nextIdx} zurück.
 function consumeArDiacritics(chars, idx){
