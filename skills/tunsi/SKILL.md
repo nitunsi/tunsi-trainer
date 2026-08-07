@@ -100,7 +100,7 @@ Diese Regeln gelten für jeden neuen Eintrag. Vor dem SQL-Output immer prüfen.
 | ط | t | tawla, tbib | T (kein Großbuchstabe) |
 | ص | s | sbe7, sabbati | S (kein Großbuchstabe) |
 | ض | dh (Emphatikum, eigene Kategorie) | dhayyaq, abyadh | d oder th — siehe Entscheidung 2026-08-06 unten bei "Uni-Wien → Chat-Alphabet" |
-| ظ | th | tholl, thabt | – |
+| ظ | th | tholl, thabt | dh (Präzedenzfall id 722 `dhhar`→`thahr`, 2026-08-07 gefixt) |
 | ذ | th | thekkra | dh (bis 2026-08-06 fälschlich, siehe unten) |
 | ث | th | thletha, thmenya | – |
 
@@ -629,6 +629,8 @@ Uni-Wien-Material liefert nicht nur Vokabeln, sondern explizite Lautlehre-/Gramm
 5. Bei unscharfen/komplexen Regeln (nicht sauber als Textmuster fassbar, z.B. Possessivsuffixe oder Verbkonjugationsmuster): Stichprobe statt Vollständigkeitsanspruch, das explizit als Einschränkung kennzeichnen
 
 **Präzedenzfall:** Artikel-Assimilation vor Sonnenbuchstaben inkl. j — 38 Bestandsfehler in der Transliteration gefunden und korrigiert (arabic_script unverändert gelassen, siehe Sonderfall-Notiz oben). Nachzügler 2026-08-07: `الجَنَّة`(id 776, "Paradies") war beim damaligen Sweep übersehen worden (`iljanna` statt `ej-janna`) — beim Testen des neuen ✨-Transliterations-Vorschlags im Trainer aufgefallen, korrigiert. Die Regel (ال + ج assimiliert wie ein Sonnenbuchstabe: `ej-`/verdoppelt, alle anderen Mondbuchstaben bleiben `el-`) ist jetzt auch direkt im Trainer als `AR_SUN_LETTERS`-Liste (trainer.html, Funktion `transliterateArabicWord`) eingebaut, die den Vorschlags-Button im Vokabel-Editor speist — bei künftigen Konsonanten-Sweeps lohnt sich der Blick, ob der Trainer-Code dieselbe Ausnahmeliste kennt.
+
+**Konsistenz-Check 2026-08-07: Skill-Pflichtregeln, Trainer-`TRANSLIT_RULES` (Prüfungen-Tab) und Trainer-`AR_TRANSLIT_MAP` (✨-Vorschlag) systematisch gegeneinander abgeglichen, auf Nils' Nachfrage.** Ergebnis: ein echter Fund — `AR_TRANSLIT_MAP` hatte `ظ→dh` codiert, obwohl die Pflichtregeln-Tabelle oben eindeutig `ظ→th` vorschreiben (Zeile "ظ | th | tholl, thabt"); in trainer.html korrigiert. Beim Gegencheck direkt gegen den DB-Bestand (`arabic_script LIKE '%ظ%'`) fiel dabei zusätzlich ein alter Bestandsfehler auf: id 722 (`ظَهْر`="Rücken") war als einziger von 19 ظ-Einträgen mit `dh` statt `th` geschrieben (`dhhar`→`thahr` korrigiert, keine Kollision, keine `course_lessons`-Referenz). Alle anderen Konsonanten (ح/خ/ع/غ/ق/ط/ص/ض/ذ/ث/ش/ج) stimmten in allen drei Quellen bereits überein. Lohnt sich als wiederkehrende Praxis: nach jeder neuen App-Funktion, die eine eigene Transliterationstabelle mitbringt, einmal Zeile für Zeile gegen die Pflichtregeln-Tabelle hier gegenlesen, nicht nur auf Plausibilität prüfen.
 
 ## Lautlehre — Zusatzregeln für Vokalisierung & Bestandsaudits
 
