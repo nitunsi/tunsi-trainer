@@ -4188,7 +4188,7 @@ async function loadCourseData(force){
   if(_courseLoaded && !force) return;
   const [lessons, exercises, progress] = await Promise.all([
     sbApi('course_lessons?select=*&order=course_number.asc'),
-    sbApi('course_exercises?select=*,vocabulary(id,arabic_script,darija,german,ninja_audio_url,ninja_audio_start,ninja_audio_end)&order=course_lesson_id.asc,position.asc'),
+    sbApiPaged('course_exercises?select=*,vocabulary(id,arabic_script,darija,german,ninja_audio_url,ninja_audio_start,ninja_audio_end)&order=course_lesson_id.asc,position.asc', 1000),
     sbApi('course_progress?user_id=eq.'+currentUser.id+'&select=*')
   ]);
   COURSE_LESSONS = lessons || [];
