@@ -553,7 +553,7 @@ Quelle: Zwei Lehrskripte, "Tunesisch-Arabisch I" (7 Lektionen) und "Tunesisch-Ar
 ### Besonderheiten gegenüber anderen Quellen
 
 - Eigene wissenschaftliche Transliteration (IPA-nahe, mit Emphatika- und Langvokal-Markierung) — muss ins Chat-Alphabet konvertiert werden, wird nie 1:1 übernommen
-- Kein arabisches Original vorhanden — Arabisch wird von Claude selbst erstellt
+- Kein arabisches Original vorhanden — Arabisch wird nach Möglichkeit zuerst bei Derja Ninja gesucht, erst wenn kein Treffer vorliegt selbst erstellt (siehe unten)
 - Enthält neben Vokabeln umfangreiches Übungsmaterial für einen eigenen Kurs-Modus im Trainer (separates Feature, siehe unten)
 - Abweichender Duplikat-Umgang: "fällig setzen" statt Ausschluss — Nils lernt oft schon Grundwortschatz, der hier nochmal auftaucht
 
@@ -580,7 +580,13 @@ Quelle: Zwei Lehrskripte, "Tunesisch-Arabisch I" (7 Lektionen) und "Tunesisch-Ar
 
 **Genereller Grundsatz, nicht nur für ض: Wird eine etablierte Schreibweise/Konvention für ein Wort geändert, IMMER auch `course_lessons` durchsuchen — sowohl `grammar_notes` (Fließtext) als auch `chunk_order` (Label + `grammar_headings`), nicht nur `vocabulary`.** Zweiter Präzedenzfall 2026-08-06, direkt im Anschluss an die ض-Entscheidung gefunden: Lektion 5s Kurs-Kapitel "māḍā-b-" (akademische Diakritika-Schreibung, nie konvertiert) und Lektion 7s "famma, tamma" (Schreibweise `tamma` widersprach der längst korrekten Bestandsvokabel `thamma`/id 1213) — beide nur im `chunk_order`-Label sichtbar, nicht in `vocabulary`. Checkliste bei jeder Konvention-Änderung: 1) `vocabulary` (arabic_script/darija/german), 2) `course_lessons.grammar_notes` (Fließtext, `replace()` auf jede betroffene Wortform), 3) `course_lessons.chunk_order` (Label-Text UND `grammar_headings`-Array — technischer Zwang: `grammar_headings` muss exakt zum `###`-Überschriftstext in `grammar_notes` passen, siehe `chunk_order`-Sync-Pflicht unten).
 
-Arabisch wird direkt aus der Uni-Wien-Umschrift abgeleitet, nicht aus der bereits vereinfachten Chat-Alphabet-Form — die Emphatika-/Langvokal-Markierung der Quelle hilft bei der korrekten Vokalisierung (z.B. ṭ eindeutig ط, nicht ت).
+**Reihenfolge bei fehlendem arabic_script (2026-08-07, geändert): zuerst Derja Ninja, erst danach selbst erstellen — nicht umgekehrt.** Vorher lief es reaktiv: Arabisch selbst aus der Uni-Wien-Umschrift bilden, Fehler erst später in einem eigenen Audit-Durchgang gegen Ninja auffangen (Präzedenzfall 2026-08-06: 145 Uni-Wien-Vokabeln nachträglich per Bedeutungssuche geprüft, 2 echte Buchstaben-Fehler gefunden). Besser: den Fehler von vornherein vermeiden.
+1. Deutsche Bedeutung (bzw. die im Skript angegebene Übersetzung) zuerst gegen `derja_ninja_import` (offline) suchen, dann bei Bedarf live (`derja.ninja/search?search=...&script=english`)
+2. Treffer mit passender Bedeutung gefunden → dessen `arabic_script` übernehmen (inkl. Audio, siehe Ninja-Regeln oben), NICHT selbst aus der Uni-Wien-Umschrift ableiten — auch wenn die eigene Ableitung vermeintlich plausibel wäre
+3. Kein Treffer → wie bisher direkt aus der Uni-Wien-Umschrift ableiten (Schritt unten), dabei bleibt der Pflicht-Gegencheck (Konsonant für Konsonant, siehe unten) genauso nötig
+4. Bei einem ganzen Lektions-Batch lohnt sich Schritt 1 als eigener Sweep vor dem Einzel-Import, nicht Wort für Wort verschränkt — sonst geht der Überblick verloren, welche Wörter schon geprüft sind
+
+Nur wenn kein Ninja-Treffer vorliegt, wird Arabisch direkt aus der Uni-Wien-Umschrift abgeleitet, nicht aus der bereits vereinfachten Chat-Alphabet-Form — die Emphatika-/Langvokal-Markierung der Quelle hilft bei der korrekten Vokalisierung (z.B. ṭ eindeutig ط, nicht ت).
 
 Bei Duplikaten immer die exakte bestehende DB-Schreibweise übernehmen, nicht neu aus der Uni-Wien-Umschrift ableiten — sonst entstehen zwei leicht unterschiedliche Varianten desselben Worts im System. Erst `project_knowledge_search`, dann ggf. anpassen.
 
