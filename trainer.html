@@ -6719,7 +6719,7 @@ async function _actActivate(){
 // bis sie manuell einer echten Lektion zugeordnet werden. Nie null verwenden: mehrere Stellen im Code
 // (z.B. showAddVocab-Dropdown) erwarten v.ls immer als "L<nr>"-String, nie null.
 const TUNICO_UNSORTED_LESSON_ID = 29;
-let _tnCat='all', _tnStatus='pending', _tnOffset=0, _tnBatch=10, _tnCounts={};
+let _tnCat='all', _tnStatus='pending', _tnVerdict='all', _tnOffset=0, _tnBatch=10, _tnCounts={};
 
 async function showTunicoCandidates(){
   document.getElementById('act-screen').style.display='none';
@@ -6739,10 +6739,18 @@ async function showTunicoCandidates(){
 }
 
 async function _tnLoadCounts(){
-  const rows = await sbApi('tunico_candidates?select=cat&status=eq.pending');
+  const statusFilter = _tnStatus==='all' ? '' : '&status=eq.'+_tnStatus;
+  const verdictFilter = _tnVerdict==='all' ? '' : '&auto_verdict=eq.'+_tnVerdict;
+  const rows = await sbApi('tunico_candidates?select=cat'+statusFilter+verdictFilter);
   const counts = {all:0, verb:0, adj:0, noun:0};
   (rows||[]).forEach(r=>{ counts.all++; counts[r.cat]=(counts[r.cat]||0)+1; });
   _tnCounts = counts;
+}
+
+async function _tnRefreshCountsAndShell(){
+  await _tnLoadCounts();
+  _tnRenderShell();
+  await _tnLoadBatch(true);
 }
 
 function _tnRenderShell(){
@@ -6769,6 +6777,12 @@ function _tnRenderShell(){
           <option value="skipped"${_tnStatus==='skipped'?' selected':''}>Übersprungen</option>
           <option value="all"${_tnStatus==='all'?' selected':''}>Alle</option>
         </select>
+        <select id="tn-verdict-sel" style="padding:.35rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;font-size:.78rem">
+          <option value="all"${_tnVerdict==='all'?' selected':''}>Alle Einschätzungen</option>
+          <option value="missing"${_tnVerdict==='missing'?' selected':''}>Fehlt</option>
+          <option value="found"${_tnVerdict==='found'?' selected':''}>Vermutlich vorhanden</option>
+          <option value="risky"${_tnVerdict==='risky'?' selected':''}>Unsicher</option>
+        </select>
         <span style="font-size:.7rem;color:var(--muted);margin-left:auto">nach Korpus-Häufigkeit sortiert</span>
       </div>
       <div id="tn-list" style="display:flex;flex-direction:column;gap:.7rem"></div>
@@ -6777,7 +6791,8 @@ function _tnRenderShell(){
   document.querySelectorAll('#tn-cat-chips .tn-chip').forEach(b=>{
     b.addEventListener('click', ()=>{ _tnCat=b.dataset.cat; _tnRenderShell(); _tnLoadBatch(true); });
   });
-  document.getElementById('tn-status-sel').addEventListener('change', e=>{ _tnStatus=e.target.value; _tnLoadBatch(true); });
+  document.getElementById('tn-status-sel').addEventListener('change', e=>{ _tnStatus=e.target.value; _tnRefreshCountsAndShell(); });
+  document.getElementById('tn-verdict-sel').addEventListener('change', e=>{ _tnVerdict=e.target.value; _tnRefreshCountsAndShell(); });
 }
 
 async function _tnLoadBatch(reset){
@@ -6786,11 +6801,12 @@ async function _tnLoadBatch(reset){
   if(reset){ _tnOffset = 0; listEl.innerHTML=''; }
   const catFilter = _tnCat==='all' ? '' : '&cat=eq.'+_tnCat;
   const statusFilter = _tnStatus==='all' ? '' : '&status=eq.'+_tnStatus;
+  const verdictFilter = _tnVerdict==='all' ? '' : '&auto_verdict=eq.'+_tnVerdict;
   const wrap = document.getElementById('tn-loadmore-wrap');
   wrap.innerHTML = '<span style="font-size:.75rem;color:var(--muted)">Lade…</span>';
   let rows;
   try{
-    rows = await sbApi('tunico_candidates?select=*'+catFilter+statusFilter+'&order=frequency.desc&limit='+_tnBatch+'&offset='+_tnOffset) || [];
+    rows = await sbApi('tunico_candidates?select=*'+catFilter+statusFilter+verdictFilter+'&order=frequency.desc&limit='+_tnBatch+'&offset='+_tnOffset) || [];
   }catch(e){ wrap.innerHTML=''; showToast('Fehler: '+e.message,'err'); return; }
   _tnOffset += rows.length;
   const matchIds = [...new Set(rows.map(r=>r.matched_vocab_id).filter(Boolean))];
