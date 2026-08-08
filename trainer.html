@@ -6905,9 +6905,14 @@ function _tnRenderLinkResults(row, r){
   });
 }
 
-async function _tnSetDue(vocabId){
+// Setzt next_review NUR, wenn die Vokabel noch keine Faelligkeit hat (kein progress-Row oder next_review
+// leer) — genau wie "withProgress" in showActivate() definiert "aktiv". Eine bereits laufende Faelligkeit
+// (auch in der Vergangenheit, also ueberfaellig) wird nie ueberschrieben. Rueckgabe: true wenn neu gesetzt,
+// false wenn die Vokabel schon eine Faelligkeit hatte und unveraendert blieb.
+async function _tnSetDueIfMissing(vocabId){
   const now = new Date().toISOString();
   const p = srsProgress[vocabId];
+  if(p && p.next_review) return false; // schon aktiv, nicht anfassen
   if(p && p.id){
     await sbApi('progress?id=eq.'+p.id, 'PATCH', {next_review: now});
   } else {
@@ -6915,21 +6920,25 @@ async function _tnSetDue(vocabId){
       await sbApi('progress', 'POST', {user_id: currentUser.id, vocabulary_id: vocabId, correct_count:0, wrong_count:0, review_count:0, next_review: now});
     }catch(e){
       if(String(e.message).includes('23505')){
-        const fetched = await sbApi('progress?user_id=eq.'+currentUser.id+'&vocabulary_id=eq.'+vocabId+'&select=id');
-        if(fetched && fetched.length) await sbApi('progress?id=eq.'+fetched[0].id, 'PATCH', {next_review: now});
+        const fetched = await sbApi('progress?user_id=eq.'+currentUser.id+'&vocabulary_id=eq.'+vocabId+'&select=id,next_review');
+        if(fetched && fetched.length){
+          if(fetched[0].next_review) return false; // Race: zwischenzeitlich woanders schon faellig gesetzt
+          await sbApi('progress?id=eq.'+fetched[0].id, 'PATCH', {next_review: now});
+        }
       } else throw e;
     }
   }
   if(!srsProgress[vocabId]) srsProgress[vocabId] = {level:0, correct_count:0, review_count:0};
   srsProgress[vocabId].next_review = new Date(now);
+  return true;
 }
 
 async function _tnLink(r, row, vocabId){
   try{
     const comment = row.querySelector('.tn-comment').value.trim();
-    await _tnSetDue(vocabId);
+    const wasSet = await _tnSetDueIfMissing(vocabId);
     await sbApi('tunico_candidates?id=eq.'+r.id, 'PATCH', {status:'activated', vocabulary_id:vocabId, comment: comment||null, decided_at: new Date().toISOString()});
-    showToast('✓ Verknüpft & fällig gesetzt (#'+vocabId+')','ok');
+    showToast(wasSet ? '✓ Verknüpft & fällig gesetzt (#'+vocabId+')' : '✓ Verknüpft (#'+vocabId+') — war schon fällig, nicht verändert','ok');
     r.status='activated'; r.vocabulary_id=vocabId;
     _tnCollapseRow(row, r);
   }catch(e){ showToast('Fehler: '+e.message,'err'); }
