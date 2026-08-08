@@ -3853,11 +3853,19 @@ function openVocabEdit(vocabId, i){
     lsSel.appendChild(frag);
     document.getElementById('ei-nr').value = p && p.next_review ? toLocalInputDE(p.next_review) : '';
     document.getElementById('ei-lvl').value = p ? (p.level||0) : 0;
+    // Fuer bereits markierte Vokabeln wird der Flag-Button ausgeblendet — Entmarkieren laeuft bewusst nur
+    // noch ueber den Ninja-Check-Tab (setzt flagged=false selbst bei "Uebernehmen"/"Ignorieren"), nicht per
+    // Klick aus der Vokabelliste heraus, um versehentliches Entmarkieren zu vermeiden.
     const isFl = flaggedVocab.has(v.tr);
     const flagBtn = document.getElementById('sheet-flag-btn');
-    flagBtn.textContent = isFl ? '🚩' : '🏳️';
-    flagBtn.style.color = isFl ? 'var(--gold)' : 'var(--muted)';
-    flagBtn.style.borderColor = isFl ? 'var(--gold)' : 'var(--border)';
+    if(isFl){
+      flagBtn.style.display = 'none';
+    } else {
+      flagBtn.style.display = '';
+      flagBtn.textContent = '🏳️';
+      flagBtn.style.color = 'var(--muted)';
+      flagBtn.style.borderColor = 'var(--border)';
+    }
     // Partner status
     const psSel = document.getElementById('ei-ps');
     if(psSel) psSel.value = v.ps || '';
@@ -3946,10 +3954,12 @@ async function toggleFlagSheet(){
   await sbApi('vocabulary?id=eq.'+vocabId, 'PATCH', { flagged: !isFlagged });
   if(isFlagged) flaggedVocab.delete(v.tr);
   else flaggedVocab.add(v.tr);
+  // Button ist nur zum Markieren da, nicht zum Entmarkieren (siehe openVocabEdit) — nach dem Setzen
+  // verschwindet er, statt auf 🚩 umzuschalten.
   const flagBtn = document.getElementById('sheet-flag-btn');
-  flagBtn.textContent = !isFlagged ? '🚩' : '🏳️';
-  flagBtn.style.color = !isFlagged ? 'var(--gold)' : 'var(--muted)';
-  flagBtn.style.borderColor = !isFlagged ? 'var(--gold)' : 'var(--border)';
+  if(!isFlagged){
+    flagBtn.style.display = 'none';
+  }
   // Tabelle im Hintergrund aktualisieren ohne Sheet zu schließen
   filterVocabList();
 }
