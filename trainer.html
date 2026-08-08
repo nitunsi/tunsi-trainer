@@ -330,6 +330,7 @@ body.hide-latin .chat-opt .latin {
     <button class="lesson-chip" onclick="setMode('partnerqueue',this);closeNav()">📬 Partner-Queue</button>
     <button class="lesson-chip" onclick="setMode('partnercheck',this);closeNav()">🙋 Partner-Check</button>
     <button class="lesson-chip" onclick="setMode('ninjacheck',this);closeNav()">🥷 Ninja-Check</button>
+    <button class="lesson-chip" onclick="setMode('tunico',this);closeNav()">🗂️ TUNICO</button>
     <button class="lesson-chip" onclick="setMode('lessons',this);closeNav()">📖 Lektionen</button>
     <button class="lesson-chip" onclick="setMode('export',this);closeNav()">💾 Export</button>
   </div>
@@ -2178,7 +2179,7 @@ function filterLesson(l,el){cLesson=l;document.querySelectorAll('#lesson-chips .
 function setMode(m,el){cMode=m;document.querySelectorAll('.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));el.classList.add('active');
   // Bulk-Bar verstecken wenn nicht Vocab-Modus
   const bb=document.getElementById('vl-bulk-bar');if(bb&&m!=='vocab')bb.style.display='none';
-  if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='ninjacheck'){showNinjaCheckQueue();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}go();}
+  if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='ninjacheck'){showNinjaCheckQueue();return;}if(m==='tunico'){showTunicoCandidates();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}go();}
 function updScore(){document.getElementById('sc-correct').textContent=score.c;document.getElementById('sc-wrong').textContent=score.w;document.getElementById('sc-streak').textContent='🔥'+score.st;}
 function showFb(ok,ca){const fb=document.getElementById('feedback');if(!fb)return;fb.className='feedback show '+(ok?'correct':'wrong');fb.textContent=ok?'✓ Richtig!':'✗ Falsch.'+(ca?' Antwort: '+ca:'');}
 function showNext(){showStickyNext(nxt);}
@@ -6711,6 +6712,258 @@ async function _actActivate(){
   }
   if(bar)setTimeout(()=>{bar.style.display='none';if(fill)fill.style.width='0%';},1500);
   btn.textContent='✓ Jetzt fällig setzen';btn.disabled=_actSelected.size===0;
+}
+
+// ===== TUNICO-Kandidaten: Frequenz-Lücken-Analyse, batch-weise abarbeiten =====
+// lessons.id der Pseudo-Lektion "L90 TUNICO-Import (unsortiert)" — Ziel fuer neu angelegte Vokabeln,
+// bis sie manuell einer echten Lektion zugeordnet werden. Nie null verwenden: mehrere Stellen im Code
+// (z.B. showAddVocab-Dropdown) erwarten v.ls immer als "L<nr>"-String, nie null.
+const TUNICO_UNSORTED_LESSON_ID = 29;
+let _tnCat='all', _tnStatus='pending', _tnOffset=0, _tnBatch=10, _tnCounts={};
+
+async function showTunicoCandidates(){
+  document.getElementById('act-screen').style.display='none';
+  document.getElementById('act-screen').style.pointerEvents='none';
+  const _ab=document.getElementById('act-batch-bar'); if(_ab) _ab.style.display='none';
+  const area = document.getElementById('exercise-screen');
+  if(area) area.style.display='block';
+  const sticky = document.getElementById('sticky-next'); if(sticky) sticky.classList.remove('show');
+  document.getElementById('ex-type-label').textContent = '🗂️ TUNICO-Kandidaten';
+  document.getElementById('ex-progress').textContent = '';
+  const np = document.getElementById('nav-progress'); if(np) np.style.visibility='hidden';
+  const c = document.getElementById('exercise-content');
+  if(c) c.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Lade…</div>';
+  await _tnLoadCounts();
+  _tnRenderShell();
+  await _tnLoadBatch(true);
+}
+
+async function _tnLoadCounts(){
+  const rows = await sbApi('tunico_candidates?select=cat&status=eq.pending');
+  const counts = {all:0, verb:0, adj:0, noun:0};
+  (rows||[]).forEach(r=>{ counts.all++; counts[r.cat]=(counts[r.cat]||0)+1; });
+  _tnCounts = counts;
+}
+
+function _tnRenderShell(){
+  const c = document.getElementById('exercise-content');
+  if(!c) return;
+  const catLabels = {all:'Alle', verb:'Verben', adj:'Adjektive', noun:'Nomen'};
+  c.innerHTML = `
+    <div style="padding:.5rem 0 5rem">
+      <div style="font-size:.75rem;color:var(--muted);margin-bottom:.7rem;line-height:1.5">
+        Kandidaten aus den häufigsten Wörtern des TUNICO-Korpus, nach Häufigkeit sortiert. Pro Wort: verknüpfen falls schon vorhanden (setzt es sofort fällig), neu anlegen (geflaggt, wartet auf Ninja-Check fürs Arabische), oder überspringen.
+      </div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem" id="tn-cat-chips">
+        ${['all','verb','adj','noun'].map(cat=>{
+          const n = _tnCounts[cat]||0;
+          const active = cat===_tnCat;
+          return '<button class="tn-chip" data-cat="'+cat+'" style="padding:.4rem .8rem;border:1px solid '+(active?'var(--gold)':'var(--border)')+';border-radius:6px;background:'+(active?'rgba(201,168,76,.12)':'transparent')+';color:'+(active?'var(--gold2)':'var(--muted)')+';font-family:inherit;font-size:.78rem;cursor:pointer">'+catLabels[cat]+' <span style="opacity:.7">('+n+')</span></button>';
+        }).join('')}
+      </div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center">
+        <select id="tn-status-sel" style="padding:.35rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;font-size:.78rem">
+          <option value="pending"${_tnStatus==='pending'?' selected':''}>Offen</option>
+          <option value="added"${_tnStatus==='added'?' selected':''}>Neu angelegt</option>
+          <option value="activated"${_tnStatus==='activated'?' selected':''}>Verknüpft</option>
+          <option value="skipped"${_tnStatus==='skipped'?' selected':''}>Übersprungen</option>
+          <option value="all"${_tnStatus==='all'?' selected':''}>Alle</option>
+        </select>
+        <span style="font-size:.7rem;color:var(--muted);margin-left:auto">nach Korpus-Häufigkeit sortiert</span>
+      </div>
+      <div id="tn-list" style="display:flex;flex-direction:column;gap:.7rem"></div>
+      <div id="tn-loadmore-wrap" style="text-align:center;margin-top:1rem"></div>
+    </div>`;
+  document.querySelectorAll('#tn-cat-chips .tn-chip').forEach(b=>{
+    b.addEventListener('click', ()=>{ _tnCat=b.dataset.cat; _tnRenderShell(); _tnLoadBatch(true); });
+  });
+  document.getElementById('tn-status-sel').addEventListener('change', e=>{ _tnStatus=e.target.value; _tnLoadBatch(true); });
+}
+
+async function _tnLoadBatch(reset){
+  const listEl = document.getElementById('tn-list');
+  if(!listEl) return;
+  if(reset){ _tnOffset = 0; listEl.innerHTML=''; }
+  const catFilter = _tnCat==='all' ? '' : '&cat=eq.'+_tnCat;
+  const statusFilter = _tnStatus==='all' ? '' : '&status=eq.'+_tnStatus;
+  const wrap = document.getElementById('tn-loadmore-wrap');
+  wrap.innerHTML = '<span style="font-size:.75rem;color:var(--muted)">Lade…</span>';
+  let rows;
+  try{
+    rows = await sbApi('tunico_candidates?select=*'+catFilter+statusFilter+'&order=frequency.desc&limit='+_tnBatch+'&offset='+_tnOffset) || [];
+  }catch(e){ wrap.innerHTML=''; showToast('Fehler: '+e.message,'err'); return; }
+  _tnOffset += rows.length;
+  const matchIds = [...new Set(rows.map(r=>r.matched_vocab_id).filter(Boolean))];
+  let matchMap = {};
+  if(matchIds.length){
+    const mv = await sbApi('vocabulary?select=id,darija,german&id=in.('+matchIds.join(',')+')');
+    (mv||[]).forEach(v=>matchMap[v.id]=v);
+  }
+  rows.forEach(r=>listEl.insertAdjacentHTML('beforeend', _tnRowHtml(r, matchMap[r.matched_vocab_id])));
+  if(rows.length < _tnBatch){
+    wrap.innerHTML = (rows.length===0 && _tnOffset===0)
+      ? '<div style="padding:2rem;color:var(--muted)">Keine Einträge für diese Filter.</div>'
+      : '<div style="padding:1rem;color:var(--muted);font-size:.8rem">— Ende der Liste —</div>';
+  } else {
+    wrap.innerHTML = '<button onclick="_tnLoadBatch(false)" style="padding:.6rem 1.4rem;border:1px solid var(--gold);border-radius:6px;background:transparent;color:var(--gold2);font-family:inherit;font-size:.82rem;cursor:pointer">+'+_tnBatch+' weitere laden</button>';
+  }
+  _tnBindRowEvents(rows);
+}
+
+function _tnRowHtml(r, matchedVocab){
+  const catLabel = r.cat==='verb'?'Verb':r.cat==='adj'?'Adj':'Nomen';
+  const verdictBadge = r.auto_verdict==='found'
+    ? '<span style="color:var(--muted)">vermutlich vorhanden</span>'
+    : r.auto_verdict==='risky'
+      ? '<span style="color:var(--gold2)">unsicher, bitte prüfen</span>'
+      : '<span style="color:var(--red)">fehlt</span>';
+  const hint = matchedVocab
+    ? '<div style="font-size:.75rem;color:var(--muted);margin-top:.3rem">💡 evtl. schon da: <b style="color:var(--text)">'+escHtml(matchedVocab.darija||'')+'</b> — '+escHtml(matchedVocab.german||'')+' (#'+matchedVocab.id+')</div>'
+    : '';
+  const pending = r.status==='pending';
+  return `
+  <div class="tn-row" data-id="${r.id}" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.8rem .9rem;${pending?'':'opacity:.6'}">
+    <div style="display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap">
+      <span style="font-size:.68rem;color:var(--muted);font-family:'IBM Plex Mono',monospace">#${r.source_rank} · ${r.frequency}×</span>
+      <span style="font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">${catLabel}</span>
+      <span style="font-size:.68rem">${verdictBadge}</span>
+    </div>
+    <div style="margin-top:.35rem;display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap">
+      <span style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1rem;color:var(--gold2)">${escHtml(r.lemma_chatalpha)}</span>
+      <span style="font-size:.78rem;color:var(--muted)">${escHtml(r.lemma_orig||'')}</span>
+    </div>
+    <div style="font-size:.85rem;margin-top:.25rem">${escHtml(r.de_gloss||'—')}</div>
+    ${hint}
+    <div class="tn-status-note" style="font-size:.72rem;color:var(--green);margin-top:.3rem;display:${pending?'none':'block'}">${_tnStatusLabel(r)}</div>
+    <div class="tn-actions" style="display:${pending?'flex':'none'};gap:.4rem;margin-top:.6rem;flex-wrap:wrap">
+      <button class="tn-btn-link" style="padding:.35rem .7rem;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--gold2);font-family:inherit;font-size:.75rem;cursor:pointer">🔗 Vorhanden</button>
+      <button class="tn-btn-new" style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">➕ Neu anlegen</button>
+      <button class="tn-btn-skip" style="padding:.35rem .7rem;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--muted);font-family:inherit;font-size:.75rem;cursor:pointer">⏭ Überspringen</button>
+    </div>
+    <div class="tn-linkbox" style="display:none;margin-top:.5rem">
+      <input type="text" class="tn-link-search" placeholder="Suche nach Darija oder Deutsch…" style="width:100%;box-sizing:border-box;padding:.4rem .6rem;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:.8rem"/>
+      <div class="tn-link-results" style="display:flex;flex-direction:column;gap:.2rem;margin-top:.3rem;max-height:9rem;overflow-y:auto"></div>
+    </div>
+    <textarea class="tn-comment" placeholder="Kommentar (optional)…" style="width:100%;box-sizing:border-box;margin-top:.5rem;min-height:2.2rem;padding:.35rem .5rem;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:inherit;font-size:.75rem;font-family:inherit;resize:vertical" ${pending?'':'readonly'}>${escHtml(r.comment||'')}</textarea>
+  </div>`;
+}
+
+function _tnStatusLabel(r){
+  const label = r.status==='added'?'neu angelegt':r.status==='activated'?'verknüpft & aktiviert':r.status==='skipped'?'übersprungen':'';
+  return label ? ('✓ '+label+(r.vocabulary_id?' (#'+r.vocabulary_id+')':'')) : '';
+}
+
+function _tnBindRowEvents(rows){
+  rows.forEach(r=>{
+    const row = document.querySelector('.tn-row[data-id="'+r.id+'"]');
+    if(!row) return;
+    const linkBox = row.querySelector('.tn-linkbox');
+    const linkBtn = row.querySelector('.tn-btn-link');
+    if(linkBtn) linkBtn.addEventListener('click', ()=>{
+      const open = linkBox.style.display!=='none';
+      linkBox.style.display = open?'none':'block';
+      if(!open){
+        const search = row.querySelector('.tn-link-search');
+        if(r.matched_vocab_id && !search.value){ search.value = r.lemma_chatalpha; }
+        _tnRenderLinkResults(row, r);
+        search.focus();
+      }
+    });
+    const searchInput = row.querySelector('.tn-link-search');
+    if(searchInput) searchInput.addEventListener('input', ()=>_tnRenderLinkResults(row, r));
+    const newBtn = row.querySelector('.tn-btn-new');
+    if(newBtn) newBtn.addEventListener('click', ()=>_tnAddNew(r, row));
+    const skipBtn = row.querySelector('.tn-btn-skip');
+    if(skipBtn) skipBtn.addEventListener('click', ()=>_tnSkip(r, row));
+  });
+}
+
+function _tnRenderLinkResults(row, r){
+  const q = row.querySelector('.tn-link-search').value.trim().toLowerCase();
+  const resBox = row.querySelector('.tn-link-results');
+  if(q.length < 2){ resBox.innerHTML=''; return; }
+  const hits = ALL_VOCAB.filter(v=> (v.tr||'').toLowerCase().includes(q) || (v.en||'').toLowerCase().includes(q)).slice(0,8);
+  resBox.innerHTML = hits.map(v=>'<button class="tn-link-pick" data-vid="'+v.id+'" style="text-align:left;padding:.35rem .6rem;border:1px solid var(--border);border-radius:4px;background:var(--surface2);color:var(--text);font-family:inherit;font-size:.78rem;cursor:pointer">'+escHtml(v.tr)+' — '+escHtml(v.en)+' <span style="color:var(--muted)">#'+v.id+'</span></button>').join('') || '<div style="font-size:.75rem;color:var(--muted);padding:.3rem">Keine Treffer</div>';
+  resBox.querySelectorAll('.tn-link-pick').forEach(btn=>{
+    btn.addEventListener('click', ()=>_tnLink(r, row, parseInt(btn.dataset.vid)));
+  });
+}
+
+async function _tnSetDue(vocabId){
+  const now = new Date().toISOString();
+  const p = srsProgress[vocabId];
+  if(p && p.id){
+    await sbApi('progress?id=eq.'+p.id, 'PATCH', {next_review: now});
+  } else {
+    try{
+      await sbApi('progress', 'POST', {user_id: currentUser.id, vocabulary_id: vocabId, correct_count:0, wrong_count:0, review_count:0, next_review: now});
+    }catch(e){
+      if(String(e.message).includes('23505')){
+        const fetched = await sbApi('progress?user_id=eq.'+currentUser.id+'&vocabulary_id=eq.'+vocabId+'&select=id');
+        if(fetched && fetched.length) await sbApi('progress?id=eq.'+fetched[0].id, 'PATCH', {next_review: now});
+      } else throw e;
+    }
+  }
+  if(!srsProgress[vocabId]) srsProgress[vocabId] = {level:0, correct_count:0, review_count:0};
+  srsProgress[vocabId].next_review = new Date(now);
+}
+
+async function _tnLink(r, row, vocabId){
+  try{
+    const comment = row.querySelector('.tn-comment').value.trim();
+    await _tnSetDue(vocabId);
+    await sbApi('tunico_candidates?id=eq.'+r.id, 'PATCH', {status:'activated', vocabulary_id:vocabId, comment: comment||null, decided_at: new Date().toISOString()});
+    showToast('✓ Verknüpft & fällig gesetzt (#'+vocabId+')','ok');
+    r.status='activated'; r.vocabulary_id=vocabId;
+    _tnCollapseRow(row, r);
+  }catch(e){ showToast('Fehler: '+e.message,'err'); }
+}
+
+async function _tnAddNew(r, row){
+  try{
+    const comment = row.querySelector('.tn-comment').value.trim();
+    const topic = r.cat==='verb' ? 'Verben' : r.cat==='adj' ? 'Adjektive' : 'Allgemein';
+    const german = r.de_gloss || r.lemma_orig || r.lemma_chatalpha;
+    const note = 'TUNICO-Import: '+r.lemma_orig+' (Rang #'+r.source_rank+', '+r.frequency+'× im Korpus) — Arabisch noch per Ninja zu prüfen.';
+    const res = await sbApi('vocabulary', 'POST', {
+      darija: r.lemma_chatalpha,
+      german: german,
+      arabic_script: null,
+      lesson_id: TUNICO_UNSORTED_LESSON_ID,
+      topic: topic,
+      flagged: true,
+      internal_note: note
+    });
+    const newId = res[0].id;
+    const newEntry = {id:newId, ar:'', tr:r.lemma_chatalpha, en:german, ls:'L90', tp:topic, ps:null, pc:null, psu:null, au:null, aus:0, aue:0, hok:false, nt:note};
+    ALL_VOCAB.push(newEntry);
+    VOCAB_BY_ID[newId] = newEntry;
+    vocabIdMap[r.lemma_chatalpha] = newId;
+    flaggedVocab.add(r.lemma_chatalpha);
+    await sbApi('tunico_candidates?id=eq.'+r.id, 'PATCH', {status:'added', vocabulary_id:newId, comment: comment||null, decided_at: new Date().toISOString()});
+    showToast('✓ Neu angelegt (#'+newId+') — geflaggt für Ninja-Check','ok');
+    r.status='added'; r.vocabulary_id=newId;
+    _tnCollapseRow(row, r);
+  }catch(e){ showToast('Fehler: '+e.message,'err'); }
+}
+
+async function _tnSkip(r, row){
+  try{
+    const comment = row.querySelector('.tn-comment').value.trim();
+    await sbApi('tunico_candidates?id=eq.'+r.id, 'PATCH', {status:'skipped', comment: comment||null, decided_at: new Date().toISOString()});
+    showToast('Übersprungen','ok');
+    r.status='skipped';
+    _tnCollapseRow(row, r);
+  }catch(e){ showToast('Fehler: '+e.message,'err'); }
+}
+
+function _tnCollapseRow(row, r){
+  row.style.opacity='.6';
+  const actions = row.querySelector('.tn-actions'); if(actions) actions.style.display='none';
+  const linkBox = row.querySelector('.tn-linkbox'); if(linkBox) linkBox.style.display='none';
+  const note = row.querySelector('.tn-status-note');
+  if(note){ note.textContent=_tnStatusLabel(r); note.style.display='block'; }
+  const comment = row.querySelector('.tn-comment'); if(comment) comment.setAttribute('readonly','readonly');
 }
 
 function showToast(msg,type){
