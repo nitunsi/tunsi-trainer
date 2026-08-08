@@ -3735,6 +3735,31 @@ async function bulkSetStatus(){
   }
 }
 
+async function bulkSetFlag(){
+  const val = document.getElementById('vl-bulk-flag').value;
+  if(!val){ showToast('Bitte Flag-Aktion wählen','warn'); return; }
+  const n = selectedVocabIds.size;
+  if(!n) return;
+  const flagged = val === 'true';
+  const btn = document.getElementById('vl-bulk-flag-btn');
+  if(btn){ btn.disabled=true; btn.textContent='…'; }
+  try {
+    const ids = [...selectedVocabIds];
+    await sbApi('vocabulary?id=in.('+ids.join(',')+')', 'PATCH', { flagged });
+    ids.forEach(vid => {
+      const v = vById(vid);
+      if(v){ if(flagged) flaggedVocab.add(v.tr); else flaggedVocab.delete(v.tr); }
+    });
+    showToast('✓ '+n+' Vokabeln '+(flagged?'markiert 🚩':'entmarkiert'),'ok');
+    selectedVocabIds.clear();
+    filterVocabList();
+  } catch(e){
+    showToast('Fehler: '+e.message,'err');
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='→'; }
+  }
+}
+
 // Arabisch → Transliteration: Buchstaben-Grundmapping + Diakritika-Auswertung.
 // Liefert nur einen Vorschlag (nutzt unsere Konvention 7/kh/3/gh/q/sh/dh/th) — Nils prüft/korrigiert vor dem Speichern.
 const AR_TRANSLIT_MAP = {
@@ -3853,19 +3878,11 @@ function openVocabEdit(vocabId, i){
     lsSel.appendChild(frag);
     document.getElementById('ei-nr').value = p && p.next_review ? toLocalInputDE(p.next_review) : '';
     document.getElementById('ei-lvl').value = p ? (p.level||0) : 0;
-    // Fuer bereits markierte Vokabeln wird der Flag-Button ausgeblendet — Entmarkieren laeuft bewusst nur
-    // noch ueber den Ninja-Check-Tab (setzt flagged=false selbst bei "Uebernehmen"/"Ignorieren"), nicht per
-    // Klick aus der Vokabelliste heraus, um versehentliches Entmarkieren zu vermeiden.
     const isFl = flaggedVocab.has(v.tr);
     const flagBtn = document.getElementById('sheet-flag-btn');
-    if(isFl){
-      flagBtn.style.display = 'none';
-    } else {
-      flagBtn.style.display = '';
-      flagBtn.textContent = '🏳️';
-      flagBtn.style.color = 'var(--muted)';
-      flagBtn.style.borderColor = 'var(--border)';
-    }
+    flagBtn.textContent = isFl ? '🚩' : '🏳️';
+    flagBtn.style.color = isFl ? 'var(--gold)' : 'var(--muted)';
+    flagBtn.style.borderColor = isFl ? 'var(--gold)' : 'var(--border)';
     // Partner status
     const psSel = document.getElementById('ei-ps');
     if(psSel) psSel.value = v.ps || '';
@@ -3954,12 +3971,10 @@ async function toggleFlagSheet(){
   await sbApi('vocabulary?id=eq.'+vocabId, 'PATCH', { flagged: !isFlagged });
   if(isFlagged) flaggedVocab.delete(v.tr);
   else flaggedVocab.add(v.tr);
-  // Button ist nur zum Markieren da, nicht zum Entmarkieren (siehe openVocabEdit) — nach dem Setzen
-  // verschwindet er, statt auf 🚩 umzuschalten.
   const flagBtn = document.getElementById('sheet-flag-btn');
-  if(!isFlagged){
-    flagBtn.style.display = 'none';
-  }
+  flagBtn.textContent = !isFlagged ? '🚩' : '🏳️';
+  flagBtn.style.color = !isFlagged ? 'var(--gold)' : 'var(--muted)';
+  flagBtn.style.borderColor = !isFlagged ? 'var(--gold)' : 'var(--border)';
   // Tabelle im Hintergrund aktualisieren ohne Sheet zu schließen
   filterVocabList();
 }
@@ -7160,6 +7175,12 @@ window.addEventListener('unhandledrejection', (e) => {
     <option value="null">· kein Status</option>
   </select>
   <button id="vl-bulk-ps-btn" onclick="bulkSetStatus()" style="padding:.45rem .7rem;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px;white-space:nowrap">→</button>
+  <select id="vl-bulk-flag" style="flex:1;min-width:110px;padding:.4rem .5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.85rem;font-family:'IBM Plex Mono',monospace">
+    <option value="">Flag…</option>
+    <option value="true">🚩 markieren</option>
+    <option value="false">🏳️ entmarkieren</option>
+  </select>
+  <button id="vl-bulk-flag-btn" onclick="bulkSetFlag()" style="padding:.45rem .7rem;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px;white-space:nowrap">→</button>
   <button onclick="selectedVocabIds.clear();filterVocabList()" style="padding:.45rem .6rem;background:none;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.8rem;cursor:pointer;border-radius:4px">✕</button>
 </div>
 
