@@ -6898,10 +6898,10 @@ function _tnRowHtml(r, matchedVocab){
     : r.auto_verdict==='risky'
       ? '<span style="color:var(--gold2)">unsicher, bitte prüfen</span>'
       : '<span style="color:var(--red)">fehlt</span>';
-  const hint = matchedVocab
+  const pending = r.status==='pending';
+  const hint = (matchedVocab && pending)
     ? '<div style="font-size:.75rem;color:var(--muted);margin-top:.3rem">💡 evtl. schon da: <b style="color:var(--text)">'+escHtml(matchedVocab.darija||'')+'</b> — '+escHtml(matchedVocab.german||'')+' (#'+matchedVocab.id+')</div>'
     : '';
-  const pending = r.status==='pending';
   const inactiveLinkedMode = _tnStatus === 'linked_inactive';
   return `
   <div class="tn-row" data-id="${r.id}" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.8rem .9rem;${(pending||inactiveLinkedMode)?'':'opacity:.6'}">
