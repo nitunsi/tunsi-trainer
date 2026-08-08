@@ -6764,14 +6764,22 @@ async function showTunicoCandidates(){
 }
 
 async function _tnLoadCounts(){
-  // "linked_inactive" hat keinen direkten SQL-Filter (next_review sitzt in progress) — Kategorie-Zaehler
-  // zeigen hier naeherungsweise die Zahl aller verknuepften Kandidaten (Obermenge), nicht exakt nur die inaktiven.
-  const statusForCount = _tnStatus === 'linked_inactive' ? 'activated' : _tnStatus;
-  const statusFilter = statusForCount==='all' ? '' : '&status=eq.'+statusForCount;
   const verdictFilter = _tnVerdict==='all' ? '' : '&auto_verdict=eq.'+_tnVerdict;
-  const rows = await sbApi('tunico_candidates?select=cat'+statusFilter+verdictFilter);
   const counts = {all:0, verb:0, adj:0, noun:0};
-  (rows||[]).forEach(r=>{ counts.all++; counts[r.cat]=(counts[r.cat]||0)+1; });
+  if(_tnStatus === 'linked_inactive'){
+    // Kein direkter SQL-Filter moeglich (next_review sitzt in progress, nicht in tunico_candidates) —
+    // alle verknuepften Kandidaten laden und clientseitig gegen srsProgress zaehlen, exakt wie beim Laden der Liste.
+    const rows = await sbApi('tunico_candidates?select=cat,vocabulary_id&status=eq.activated'+verdictFilter);
+    (rows||[]).forEach(r=>{
+      if(r.vocabulary_id && !(srsProgress[r.vocabulary_id] && srsProgress[r.vocabulary_id].next_review)){
+        counts.all++; counts[r.cat]=(counts[r.cat]||0)+1;
+      }
+    });
+  } else {
+    const statusFilter = _tnStatus==='all' ? '' : '&status=eq.'+_tnStatus;
+    const rows = await sbApi('tunico_candidates?select=cat'+statusFilter+verdictFilter);
+    (rows||[]).forEach(r=>{ counts.all++; counts[r.cat]=(counts[r.cat]||0)+1; });
+  }
   _tnCounts = counts;
 }
 
