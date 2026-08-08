@@ -6764,7 +6764,10 @@ async function showTunicoCandidates(){
 }
 
 async function _tnLoadCounts(){
-  const statusFilter = _tnStatus==='all' ? '' : '&status=eq.'+_tnStatus;
+  // "linked_inactive" hat keinen direkten SQL-Filter (next_review sitzt in progress) — Kategorie-Zaehler
+  // zeigen hier naeherungsweise die Zahl aller verknuepften Kandidaten (Obermenge), nicht exakt nur die inaktiven.
+  const statusForCount = _tnStatus === 'linked_inactive' ? 'activated' : _tnStatus;
+  const statusFilter = statusForCount==='all' ? '' : '&status=eq.'+statusForCount;
   const verdictFilter = _tnVerdict==='all' ? '' : '&auto_verdict=eq.'+_tnVerdict;
   const rows = await sbApi('tunico_candidates?select=cat'+statusFilter+verdictFilter);
   const counts = {all:0, verb:0, adj:0, noun:0};
@@ -6799,6 +6802,7 @@ function _tnRenderShell(){
           <option value="pending"${_tnStatus==='pending'?' selected':''}>Offen</option>
           <option value="added"${_tnStatus==='added'?' selected':''}>Neu angelegt</option>
           <option value="activated"${_tnStatus==='activated'?' selected':''}>Verknüpft</option>
+          <option value="linked_inactive"${_tnStatus==='linked_inactive'?' selected':''}>Verknüpft, aber inaktiv</option>
           <option value="skipped"${_tnStatus==='skipped'?' selected':''}>Übersprungen</option>
           <option value="all"${_tnStatus==='all'?' selected':''}>Alle</option>
         </select>
@@ -6820,20 +6824,47 @@ function _tnRenderShell(){
   document.getElementById('tn-verdict-sel').addEventListener('change', e=>{ _tnVerdict=e.target.value; _tnRefreshCountsAndShell(); });
 }
 
+// "Verknüpft, aber inaktiv": kein direkter SQL-Filter moeglich (next_review sitzt in progress, nicht in
+// tunico_candidates) — stattdessen client-seitig gegen srsProgress filtern. Scannt in Roh-Seiten durch
+// alle status=activated-Kandidaten und sammelt die inaktiven in einem Puffer, damit "weitere laden" auch
+// bei duennen Trefferquoten nicht Eintraege verliert oder doppelt scannt.
+let _tnRawOffset = 0, _tnInactiveBuffer = [], _tnRawExhausted = false;
+
+async function _tnLoadInactiveLinked(catFilter, verdictFilter){
+  const RAW_CHUNK = 200;
+  while(_tnInactiveBuffer.length < _tnBatch && !_tnRawExhausted){
+    const chunk = await sbApi('tunico_candidates?select=*&status=eq.activated'+catFilter+verdictFilter+'&order=frequency.desc&limit='+RAW_CHUNK+'&offset='+_tnRawOffset) || [];
+    _tnRawOffset += chunk.length;
+    if(chunk.length < RAW_CHUNK) _tnRawExhausted = true;
+    if(!chunk.length) break;
+    const inactive = chunk.filter(r => r.vocabulary_id && !(srsProgress[r.vocabulary_id] && srsProgress[r.vocabulary_id].next_review));
+    _tnInactiveBuffer.push(...inactive);
+  }
+  const take = _tnInactiveBuffer.splice(0, _tnBatch);
+  const exhausted = _tnRawExhausted && _tnInactiveBuffer.length === 0;
+  return {rows: take, exhausted};
+}
+
 async function _tnLoadBatch(reset){
   const listEl = document.getElementById('tn-list');
   if(!listEl) return;
-  if(reset){ _tnOffset = 0; listEl.innerHTML=''; }
+  if(reset){ _tnOffset = 0; _tnRawOffset = 0; _tnInactiveBuffer = []; _tnRawExhausted = false; listEl.innerHTML=''; }
   const catFilter = _tnCat==='all' ? '' : '&cat=eq.'+_tnCat;
-  const statusFilter = _tnStatus==='all' ? '' : '&status=eq.'+_tnStatus;
   const verdictFilter = _tnVerdict==='all' ? '' : '&auto_verdict=eq.'+_tnVerdict;
   const wrap = document.getElementById('tn-loadmore-wrap');
   wrap.innerHTML = '<span style="font-size:.75rem;color:var(--muted)">Lade…</span>';
-  let rows;
+  let rows, exhausted;
   try{
-    rows = await sbApi('tunico_candidates?select=*'+catFilter+statusFilter+verdictFilter+'&order=frequency.desc&limit='+_tnBatch+'&offset='+_tnOffset) || [];
+    if(_tnStatus === 'linked_inactive'){
+      const res = await _tnLoadInactiveLinked(catFilter, verdictFilter);
+      rows = res.rows; exhausted = res.exhausted;
+    } else {
+      const statusFilter = _tnStatus==='all' ? '' : '&status=eq.'+_tnStatus;
+      rows = await sbApi('tunico_candidates?select=*'+catFilter+statusFilter+verdictFilter+'&order=frequency.desc&limit='+_tnBatch+'&offset='+_tnOffset) || [];
+      _tnOffset += rows.length;
+      exhausted = rows.length < _tnBatch;
+    }
   }catch(e){ wrap.innerHTML=''; showToast('Fehler: '+e.message,'err'); return; }
-  _tnOffset += rows.length;
   const matchIds = [...new Set(rows.map(r=>r.matched_vocab_id).filter(Boolean))];
   let matchMap = {};
   if(matchIds.length){
@@ -6841,8 +6872,9 @@ async function _tnLoadBatch(reset){
     (mv||[]).forEach(v=>matchMap[v.id]=v);
   }
   rows.forEach(r=>listEl.insertAdjacentHTML('beforeend', _tnRowHtml(r, matchMap[r.matched_vocab_id])));
-  if(rows.length < _tnBatch){
-    wrap.innerHTML = (rows.length===0 && _tnOffset===0)
+  const alreadyShown = listEl.querySelectorAll('.tn-row').length;
+  if(exhausted){
+    wrap.innerHTML = (alreadyShown===0)
       ? '<div style="padding:2rem;color:var(--muted)">Keine Einträge für diese Filter.</div>'
       : '<div style="padding:1rem;color:var(--muted);font-size:.8rem">— Ende der Liste —</div>';
   } else {
@@ -6862,8 +6894,9 @@ function _tnRowHtml(r, matchedVocab){
     ? '<div style="font-size:.75rem;color:var(--muted);margin-top:.3rem">💡 evtl. schon da: <b style="color:var(--text)">'+escHtml(matchedVocab.darija||'')+'</b> — '+escHtml(matchedVocab.german||'')+' (#'+matchedVocab.id+')</div>'
     : '';
   const pending = r.status==='pending';
+  const inactiveLinkedMode = _tnStatus === 'linked_inactive';
   return `
-  <div class="tn-row" data-id="${r.id}" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.8rem .9rem;${pending?'':'opacity:.6'}">
+  <div class="tn-row" data-id="${r.id}" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.8rem .9rem;${(pending||inactiveLinkedMode)?'':'opacity:.6'}">
     <div style="display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap">
       <span style="font-size:.68rem;color:var(--muted);font-family:'IBM Plex Mono',monospace">#${r.source_rank} · ${r.frequency}×</span>
       <span style="font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">${catLabel}</span>
@@ -6875,12 +6908,16 @@ function _tnRowHtml(r, matchedVocab){
     </div>
     <div style="font-size:.85rem;margin-top:.25rem">${escHtml(r.de_gloss||'—')}</div>
     ${hint}
-    <div class="tn-status-note" style="font-size:.72rem;color:var(--green);margin-top:.3rem;display:${pending?'none':'block'}">${_tnStatusLabel(r)}</div>
+    <div class="tn-status-note" style="font-size:.72rem;color:var(--green);margin-top:.3rem;display:${(pending||inactiveLinkedMode)?'none':'block'}">${_tnStatusLabel(r)}</div>
+    ${inactiveLinkedMode ? `
+    <div class="tn-actions" style="display:flex;gap:.4rem;margin-top:.6rem;flex-wrap:wrap">
+      <button class="tn-btn-activate-linked" style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">▶ Jetzt aktivieren</button>
+    </div>` : `
     <div class="tn-actions" style="display:${pending?'flex':'none'};gap:.4rem;margin-top:.6rem;flex-wrap:wrap">
       <button class="tn-btn-link" style="padding:.35rem .7rem;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--gold2);font-family:inherit;font-size:.75rem;cursor:pointer">🔗 Vorhanden</button>
       <button class="tn-btn-new" style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">➕ Neu anlegen</button>
       <button class="tn-btn-skip" style="padding:.35rem .7rem;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--muted);font-family:inherit;font-size:.75rem;cursor:pointer">⏭ Überspringen</button>
-    </div>
+    </div>`}
     <div class="tn-linkbox" style="display:none;margin-top:.5rem">
       <input type="text" class="tn-link-search" placeholder="Suche nach Darija oder Deutsch…" style="width:100%;box-sizing:border-box;padding:.4rem .6rem;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:.8rem"/>
       <div class="tn-link-results" style="display:flex;flex-direction:column;gap:.2rem;margin-top:.3rem;max-height:9rem;overflow-y:auto"></div>
@@ -6916,7 +6953,25 @@ function _tnBindRowEvents(rows){
     if(newBtn) newBtn.addEventListener('click', ()=>_tnAddNew(r, row));
     const skipBtn = row.querySelector('.tn-btn-skip');
     if(skipBtn) skipBtn.addEventListener('click', ()=>_tnSkip(r, row));
+    const activateLinkedBtn = row.querySelector('.tn-btn-activate-linked');
+    if(activateLinkedBtn) activateLinkedBtn.addEventListener('click', ()=>_tnActivateLinked(r, row));
   });
+}
+
+async function _tnActivateLinked(r, row){
+  const btn = row.querySelector('.tn-btn-activate-linked');
+  if(btn){ btn.disabled = true; btn.textContent = '…'; }
+  try{
+    const wasSet = await _tnSetDueIfMissing(r.vocabulary_id);
+    showToast(wasSet ? '✓ Fällig gesetzt (#'+r.vocabulary_id+')' : '✓ War schon fällig','ok');
+    row.style.opacity = '.4';
+    if(btn) btn.remove();
+    const note = row.querySelector('.tn-status-note');
+    if(note){ note.textContent = '✓ jetzt aktiv'; note.style.display = 'block'; }
+  }catch(e){
+    showToast('Fehler: '+e.message,'err');
+    if(btn){ btn.disabled = false; btn.textContent = '▶ Jetzt aktivieren'; }
+  }
 }
 
 function _tnRenderLinkResults(row, r){
