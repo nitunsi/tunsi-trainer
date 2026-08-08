@@ -6936,14 +6936,77 @@ async function _tnLink(r, row, vocabId){
 }
 
 async function _tnAddNew(r, row){
+  if(r.cat==='verb'){ await _tnOpenVerbEditor(r, row); return; }
+  const german = r.de_gloss || r.lemma_orig || r.lemma_chatalpha;
+  await _tnAddNewWithValues(r, row, r.lemma_chatalpha, german);
+}
+
+// Trainer-Konvention bei Verben: 3. Person Singular Präsens MIT y-/t-Präfix ("yfakkar"="er denkt nach"),
+// TUNICOs lemma_chatalpha ist dagegen die bloße Stammform ("khammim"). Die belegten Flexionsformen aus
+// tunico_corpus_verbs.forms_chatalpha enthalten aber meistens genau die passende y-Form — hier als
+// Vorschlag herausgesucht, aber immer editierbar, bevor gespeichert wird (Heuristik, kein Grammatik-Parser).
+function _tnGuessVerbForm(forms, lemma){
+  if(!forms || !forms.length) return null;
+  // Plural-Formen enden fast immer auf -u (ausgeschlossen), Perfekt-Formen (ich/du gelernt...) fast immer
+  // auf -t (bevorzugt ausgeschlossen, als Notloesung aber erlaubt). Bei Verbwurzeln, die selbst schon mit
+  // "t" beginnen (reflexive tfa33al-Muster), zaehlt die unveraenderte Stammform NICHT als Treffer — sonst
+  // wird die Praefix-losigkeit faelschlich als "schon richtig" durchgewunken.
+  const base = f => f && !/u$/.test(f) && f !== lemma;
+  const pick = pool => pool.length ? pool.slice().sort((a,b)=>a.length-b.length)[0] : null;
+  for(const prefix of ['y','t']){
+    const strict = forms.filter(f=>new RegExp('^'+prefix).test(f) && base(f) && !/t$/.test(f));
+    const found = pick(strict);
+    if(found) return found;
+  }
+  for(const prefix of ['y','t']){
+    const loose = forms.filter(f=>new RegExp('^'+prefix).test(f) && base(f));
+    const found = pick(loose);
+    if(found) return found;
+  }
+  return null;
+}
+
+async function _tnOpenVerbEditor(r, row){
+  let box = row.querySelector('.tn-verbeditbox');
+  if(box){ box.style.display = box.style.display==='none' ? 'block' : 'none'; return; }
+  box = document.createElement('div');
+  box.className = 'tn-verbeditbox';
+  box.style.cssText = 'margin-top:.5rem;padding:.6rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;display:flex;flex-direction:column;gap:.4rem';
+  box.innerHTML = `
+    <div style="font-size:.7rem;color:var(--muted)">Verben brauchen die 3.-Person-Form mit y-/t-Präfix, nicht die bloße Stammform — bitte prüfen/anpassen:</div>
+    <input type="text" class="tn-verb-darija" placeholder="z.B. yfakkar" style="width:100%;box-sizing:border-box;padding:.35rem .5rem;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:.82rem;font-family:'IBM Plex Mono',monospace"/>
+    <input type="text" class="tn-verb-german" placeholder="z.B. er denkt nach" style="width:100%;box-sizing:border-box;padding:.35rem .5rem;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:.82rem"/>
+    <div style="display:flex;gap:.4rem">
+      <button class="tn-verb-confirm" style="flex:1;padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">✓ Übernehmen</button>
+      <button class="tn-verb-cancel" style="padding:.35rem .7rem;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--muted);font-family:inherit;font-size:.75rem;cursor:pointer">Abbrechen</button>
+    </div>`;
+  row.querySelector('.tn-comment').insertAdjacentElement('beforebegin', box);
+  const darijaInput = box.querySelector('.tn-verb-darija');
+  const germanInput = box.querySelector('.tn-verb-german');
+  darijaInput.value = 'lädt Vorschlag…';
+  germanInput.value = r.de_gloss || r.lemma_orig || r.lemma_chatalpha;
+  try{
+    const rows = await sbApi('tunico_corpus_verbs?lemma_chatalpha=eq.'+encodeURIComponent(r.lemma_chatalpha)+'&select=forms_chatalpha&limit=1');
+    const guess = rows && rows[0] ? _tnGuessVerbForm(rows[0].forms_chatalpha, r.lemma_chatalpha) : null;
+    darijaInput.value = guess || r.lemma_chatalpha;
+  }catch(e){ darijaInput.value = r.lemma_chatalpha; }
+  box.querySelector('.tn-verb-cancel').addEventListener('click', ()=>{ box.style.display='none'; });
+  box.querySelector('.tn-verb-confirm').addEventListener('click', ()=>{
+    const darijaVal = darijaInput.value.trim() || r.lemma_chatalpha;
+    const germanVal = germanInput.value.trim() || r.de_gloss || r.lemma_chatalpha;
+    _tnAddNewWithValues(r, row, darijaVal, germanVal);
+  });
+}
+
+async function _tnAddNewWithValues(r, row, darijaVal, germanVal){
   try{
     const comment = row.querySelector('.tn-comment').value.trim();
     const topic = r.cat==='verb' ? 'Verben' : r.cat==='adj' ? 'Adjektive' : 'Allgemein';
-    const german = r.de_gloss || r.lemma_orig || r.lemma_chatalpha;
-    const note = 'TUNICO-Import: '+r.lemma_orig+' (Rang #'+r.source_rank+', '+r.frequency+'× im Korpus) — Arabisch noch per Ninja zu prüfen.';
+    const note = 'TUNICO-Import: '+r.lemma_orig+' (Rang #'+r.source_rank+', '+r.frequency+'× im Korpus) — Arabisch noch per Ninja zu prüfen.'
+      + (darijaVal!==r.lemma_chatalpha ? ' Darija von "'+r.lemma_chatalpha+'" auf 3.-Person-Form angepasst.' : '');
     const res = await sbApi('vocabulary', 'POST', {
-      darija: r.lemma_chatalpha,
-      german: german,
+      darija: darijaVal,
+      german: germanVal,
       arabic_script: null,
       lesson_id: TUNICO_UNSORTED_LESSON_ID,
       topic: topic,
@@ -6951,11 +7014,11 @@ async function _tnAddNew(r, row){
       internal_note: note
     });
     const newId = res[0].id;
-    const newEntry = {id:newId, ar:'', tr:r.lemma_chatalpha, en:german, ls:'L90', tp:topic, ps:null, pc:null, psu:null, au:null, aus:0, aue:0, hok:false, nt:note};
+    const newEntry = {id:newId, ar:'', tr:darijaVal, en:germanVal, ls:'L90', tp:topic, ps:null, pc:null, psu:null, au:null, aus:0, aue:0, hok:false, nt:note};
     ALL_VOCAB.push(newEntry);
     VOCAB_BY_ID[newId] = newEntry;
-    vocabIdMap[r.lemma_chatalpha] = newId;
-    flaggedVocab.add(r.lemma_chatalpha);
+    vocabIdMap[darijaVal] = newId;
+    flaggedVocab.add(darijaVal);
     await sbApi('tunico_candidates?id=eq.'+r.id, 'PATCH', {status:'added', vocabulary_id:newId, comment: comment||null, decided_at: new Date().toISOString()});
     showToast('✓ Neu angelegt (#'+newId+') — geflaggt für Ninja-Check','ok');
     r.status='added'; r.vocabulary_id=newId;
@@ -6977,6 +7040,7 @@ function _tnCollapseRow(row, r){
   row.style.opacity='.6';
   const actions = row.querySelector('.tn-actions'); if(actions) actions.style.display='none';
   const linkBox = row.querySelector('.tn-linkbox'); if(linkBox) linkBox.style.display='none';
+  const verbBox = row.querySelector('.tn-verbeditbox'); if(verbBox) verbBox.remove();
   const note = row.querySelector('.tn-status-note');
   if(note){ note.textContent=_tnStatusLabel(r); note.style.display='block'; }
   const comment = row.querySelector('.tn-comment'); if(comment) comment.setAttribute('readonly','readonly');
