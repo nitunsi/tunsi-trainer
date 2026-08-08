@@ -6873,13 +6873,13 @@ async function _tnLoadBatch(reset){
       exhausted = rows.length < _tnBatch;
     }
   }catch(e){ wrap.innerHTML=''; showToast('Fehler: '+e.message,'err'); return; }
-  const matchIds = [...new Set(rows.map(r=>r.matched_vocab_id).filter(Boolean))];
+  const vocabIds = [...new Set(rows.flatMap(r=>[r.matched_vocab_id, r.vocabulary_id]).filter(Boolean))];
   let matchMap = {};
-  if(matchIds.length){
-    const mv = await sbApi('vocabulary?select=id,darija,german&id=in.('+matchIds.join(',')+')');
+  if(vocabIds.length){
+    const mv = await sbApi('vocabulary?select=id,darija,german&id=in.('+vocabIds.join(',')+')');
     (mv||[]).forEach(v=>matchMap[v.id]=v);
   }
-  rows.forEach(r=>listEl.insertAdjacentHTML('beforeend', _tnRowHtml(r, matchMap[r.matched_vocab_id])));
+  rows.forEach(r=>listEl.insertAdjacentHTML('beforeend', _tnRowHtml(r, matchMap[r.matched_vocab_id], matchMap[r.vocabulary_id])));
   const alreadyShown = listEl.querySelectorAll('.tn-row').length;
   if(exhausted){
     wrap.innerHTML = (alreadyShown===0)
@@ -6891,7 +6891,7 @@ async function _tnLoadBatch(reset){
   _tnBindRowEvents(rows);
 }
 
-function _tnRowHtml(r, matchedVocab){
+function _tnRowHtml(r, matchedVocab, linkedVocab){
   const catLabel = r.cat==='verb'?'Verb':r.cat==='adj'?'Adj':'Nomen';
   const verdictBadge = r.auto_verdict==='found'
     ? '<span style="color:var(--muted)">vermutlich vorhanden</span>'
@@ -6901,6 +6901,9 @@ function _tnRowHtml(r, matchedVocab){
   const pending = r.status==='pending';
   const hint = (matchedVocab && pending)
     ? '<div style="font-size:.75rem;color:var(--muted);margin-top:.3rem">💡 evtl. schon da: <b style="color:var(--text)">'+escHtml(matchedVocab.darija||'')+'</b> — '+escHtml(matchedVocab.german||'')+' (#'+matchedVocab.id+')</div>'
+    : '';
+  const linkedInfo = (r.vocabulary_id && linkedVocab)
+    ? '<div style="font-size:.75rem;color:var(--muted);margin-top:.3rem">🔗 verknüpft mit: <b style="color:var(--text)">'+escHtml(linkedVocab.darija||'')+'</b> — '+escHtml(linkedVocab.german||'')+' (#'+linkedVocab.id+')</div>'
     : '';
   const inactiveLinkedMode = _tnStatus === 'linked_inactive';
   return `
@@ -6916,6 +6919,7 @@ function _tnRowHtml(r, matchedVocab){
     </div>
     <div style="font-size:.85rem;margin-top:.25rem">${escHtml(r.de_gloss||'—')}</div>
     ${hint}
+    ${linkedInfo}
     <div class="tn-status-note" style="font-size:.72rem;color:var(--green);margin-top:.3rem;display:${(pending||inactiveLinkedMode)?'none':'block'}">${_tnStatusLabel(r)}</div>
     ${inactiveLinkedMode ? `
     <div class="tn-actions" style="display:flex;gap:.4rem;margin-top:.6rem;flex-wrap:wrap">
