@@ -2176,10 +2176,28 @@ function updateLessonDropdown(val){
 }
 
 function filterLesson(l,el){cLesson=l;document.querySelectorAll('#lesson-chips .lesson-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');if(cMode==='vocab'){showVocabList();return;}if(cMode==='stats'){showStats();return;}if(cMode==='addvocab'){showAddVocab();return;}if(cMode==='activate'){showActivate();return;}if(cMode==='dupes'){showDupeCheck();return;}go();}
-function setMode(m,el){cMode=m;document.querySelectorAll('.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));el.classList.add('active');
+let _modeDispatchTimer = null; // Timer-Handle für den verzögerten Mode-Dispatch, siehe setMode()
+
+// setMode() macht die Chip-Markierung SOFORT synchron (billig, nur Klassenwechsel),
+// verzögert aber den eigentlichen Render-Dispatch (go()/showStats()/showDupeCheck() etc. —
+// mehrere davon laufen synchron über ALL_VOCAB, ~150-250ms, siehe DevTools-INP-Warnung auf
+// .lesson-chip) per setTimeout(...,0) auf den nächsten Makrotask. Bewusst setTimeout statt
+// requestAnimationFrame: rAF-Callbacks laufen VOR dem Paint desselben Frames (siehe
+// openVocabEdit()) und würden die active-Klasse genauso blockieren wie ein direkter Aufruf —
+// nur setTimeout gibt dem Browser eine echte Render-Gelegenheit dazwischen. clearTimeout
+// verhindert, dass ein überholter Dispatch (schneller Mehrfachklick auf verschiedene Chips)
+// noch feuert und mit dem inzwischen global überschriebenen cMode arbeitet.
+function setMode(m,el){
+  cMode=m;
+  document.querySelectorAll('.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
   // Bulk-Bar verstecken wenn nicht Vocab-Modus
   const bb=document.getElementById('vl-bulk-bar');if(bb&&m!=='vocab')bb.style.display='none';
-  if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='ninjacheck'){showNinjaCheckQueue();return;}if(m==='tunico'){showTunicoCandidates();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}go();}
+  clearTimeout(_modeDispatchTimer);
+  _modeDispatchTimer=setTimeout(()=>{
+    if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='ninjacheck'){showNinjaCheckQueue();return;}if(m==='tunico'){showTunicoCandidates();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}go();
+  },0);
+}
 function updScore(){document.getElementById('sc-correct').textContent=score.c;document.getElementById('sc-wrong').textContent=score.w;document.getElementById('sc-streak').textContent='🔥'+score.st;}
 function showFb(ok,ca){const fb=document.getElementById('feedback');if(!fb)return;fb.className='feedback show '+(ok?'correct':'wrong');fb.textContent=ok?'✓ Richtig!':'✗ Falsch.'+(ca?' Antwort: '+ca:'');}
 function showNext(){showStickyNext(nxt);}
