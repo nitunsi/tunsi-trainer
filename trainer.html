@@ -6762,6 +6762,11 @@ async function _actActivate(){
 // bis sie manuell einer echten Lektion zugeordnet werden. Nie null verwenden: mehrere Stellen im Code
 // (z.B. showAddVocab-Dropdown) erwarten v.ls immer als "L<nr>"-String, nie null.
 const TUNICO_UNSORTED_LESSON_ID = 29;
+// Verben werden in der Kandidaten-Queue in zwei Kandidaten aufgeteilt (cat 'verb_pres'/'verb_past'),
+// da der Trainer fuer jedes Verb sowohl eine Praesens- (L17) als auch eine Vergangenheits-Vokabel (L18)
+// fuehrt, TUNICO aber pro Verb nur die Vergangenheitsform als lemma_chatalpha liefert.
+const TUNICO_VERB_PRESENT_LESSON_ID = 46;
+const TUNICO_VERB_PAST_LESSON_ID = 47;
 let _tnCat='all', _tnStatus='pending', _tnVerdict='all', _tnOffset=0, _tnBatch=10, _tnCounts={};
 
 async function showTunicoCandidates(){
@@ -6781,6 +6786,10 @@ async function showTunicoCandidates(){
   await _tnLoadBatch(true);
 }
 
+// Verb-Kandidaten laufen intern unter 'verb_pres'/'verb_past' (Praesens/Vergangenheit-Split),
+// zaehlen fuer den "Verben"-Chip aber weiterhin zusammen als ein Bucket.
+function _tnCatBucket(cat){ return (cat==='verb_pres'||cat==='verb_past') ? 'verb' : cat; }
+
 async function _tnLoadCounts(){
   const verdictFilter = _tnVerdict==='all' ? '' : '&auto_verdict=eq.'+_tnVerdict;
   const counts = {all:0, verb:0, adj:0, noun:0};
@@ -6790,13 +6799,13 @@ async function _tnLoadCounts(){
     const rows = await sbApi('tunico_candidates?select=cat,vocabulary_id&status=eq.activated'+verdictFilter);
     (rows||[]).forEach(r=>{
       if(r.vocabulary_id && !(srsProgress[r.vocabulary_id] && srsProgress[r.vocabulary_id].next_review)){
-        counts.all++; counts[r.cat]=(counts[r.cat]||0)+1;
+        counts.all++; const b=_tnCatBucket(r.cat); counts[b]=(counts[b]||0)+1;
       }
     });
   } else {
     const statusFilter = _tnStatus==='all' ? '' : '&status=eq.'+_tnStatus;
     const rows = await sbApi('tunico_candidates?select=cat'+statusFilter+verdictFilter);
-    (rows||[]).forEach(r=>{ counts.all++; counts[r.cat]=(counts[r.cat]||0)+1; });
+    (rows||[]).forEach(r=>{ counts.all++; const b=_tnCatBucket(r.cat); counts[b]=(counts[b]||0)+1; });
   }
   _tnCounts = counts;
 }
@@ -6875,7 +6884,7 @@ async function _tnLoadBatch(reset){
   const listEl = document.getElementById('tn-list');
   if(!listEl) return;
   if(reset){ _tnOffset = 0; _tnRawOffset = 0; _tnInactiveBuffer = []; _tnRawExhausted = false; listEl.innerHTML=''; }
-  const catFilter = _tnCat==='all' ? '' : '&cat=eq.'+_tnCat;
+  const catFilter = _tnCat==='all' ? '' : _tnCat==='verb' ? '&cat=in.(verb,verb_pres,verb_past)' : '&cat=eq.'+_tnCat;
   const verdictFilter = _tnVerdict==='all' ? '' : '&auto_verdict=eq.'+_tnVerdict;
   const wrap = document.getElementById('tn-loadmore-wrap');
   wrap.innerHTML = '<span style="font-size:.75rem;color:var(--muted)">Lade…</span>';
@@ -6910,7 +6919,7 @@ async function _tnLoadBatch(reset){
 }
 
 function _tnRowHtml(r, matchedVocab, linkedVocab){
-  const catLabel = r.cat==='verb'?'Verb':r.cat==='adj'?'Adj':'Nomen';
+  const catLabel = r.cat==='verb'?'Verb':r.cat==='verb_pres'?'Verb (Präs.)':r.cat==='verb_past'?'Verb (Vergang.)':r.cat==='adj'?'Adj':'Nomen';
   const verdictBadge = r.auto_verdict==='found'
     ? '<span style="color:var(--muted)">vermutlich vorhanden</span>'
     : r.auto_verdict==='risky'
@@ -7055,7 +7064,7 @@ async function _tnLink(r, row, vocabId){
 }
 
 async function _tnAddNew(r, row){
-  if(r.cat==='verb'){ await _tnOpenVerbEditor(r, row); return; }
+  if(r.cat==='verb'||r.cat==='verb_pres'){ await _tnOpenVerbEditor(r, row); return; }
   const german = r.de_gloss || r.lemma_orig || r.lemma_chatalpha;
   await _tnAddNewWithValues(r, row, r.lemma_chatalpha, german);
 }
@@ -7120,20 +7129,25 @@ async function _tnOpenVerbEditor(r, row){
 async function _tnAddNewWithValues(r, row, darijaVal, germanVal){
   try{
     const comment = row.querySelector('.tn-comment').value.trim();
-    const topic = r.cat==='verb' ? 'Verben' : r.cat==='adj' ? 'Adjektive' : 'Allgemein';
+    // Praesens-/Vergangenheit-Split-Kandidaten landen direkt in der richtigen Verben-Lektion (L17/L18)
+    // statt im unsortierten L90 — alle anderen Kategorien wie bisher.
+    let topic, lessonId, lsLabel;
+    if(r.cat==='verb_pres'){ topic='Verben-Konjugation'; lessonId=TUNICO_VERB_PRESENT_LESSON_ID; lsLabel='L17'; }
+    else if(r.cat==='verb_past'){ topic='Vergangenheit'; lessonId=TUNICO_VERB_PAST_LESSON_ID; lsLabel='L18'; }
+    else { topic = r.cat==='verb' ? 'Verben' : r.cat==='adj' ? 'Adjektive' : 'Allgemein'; lessonId=TUNICO_UNSORTED_LESSON_ID; lsLabel='L90'; }
     const note = 'TUNICO-Import: '+r.lemma_orig+' (Rang #'+r.source_rank+', '+r.frequency+'× im Korpus) — Arabisch noch per Ninja zu prüfen.'
       + (darijaVal!==r.lemma_chatalpha ? ' Darija von "'+r.lemma_chatalpha+'" auf 3.-Person-Form angepasst.' : '');
     const res = await sbApi('vocabulary', 'POST', {
       darija: darijaVal,
       german: germanVal,
       arabic_script: null,
-      lesson_id: TUNICO_UNSORTED_LESSON_ID,
+      lesson_id: lessonId,
       topic: topic,
       flagged: true,
       internal_note: note
     });
     const newId = res[0].id;
-    const newEntry = {id:newId, ar:'', tr:darijaVal, en:germanVal, ls:'L90', tp:topic, ps:null, pc:null, psu:null, au:null, aus:0, aue:0, hok:false, nt:note};
+    const newEntry = {id:newId, ar:'', tr:darijaVal, en:germanVal, ls:lsLabel, tp:topic, ps:null, pc:null, psu:null, au:null, aus:0, aue:0, hok:false, nt:note};
     ALL_VOCAB.push(newEntry);
     VOCAB_BY_ID[newId] = newEntry;
     vocabIdMap[darijaVal] = newId;
