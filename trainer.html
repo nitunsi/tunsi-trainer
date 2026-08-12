@@ -6947,7 +6947,7 @@ function _tnRowHtml(r, matchedVocab, linkedVocab){
     <div style="font-size:.85rem;margin-top:.25rem">${escHtml(r.de_gloss||'—')}</div>
     ${hint}
     ${linkedInfo}
-    <div class="tn-status-note" style="font-size:.72rem;color:var(--green);margin-top:.3rem;display:${(pending||inactiveLinkedMode)?'none':'block'}">${_tnStatusLabel(r)}</div>
+    <div class="tn-status-note" style="font-size:.72rem;color:var(--green);margin-top:.3rem;display:${(pending||inactiveLinkedMode)?'none':'block'}">${_tnStatusLabel(r)}${r.status==='activated' ? ' <button class="tn-btn-unlink" style="margin-left:.5rem;padding:.15rem .5rem;border:1px solid var(--red);border-radius:4px;background:transparent;color:var(--red);font-family:inherit;font-size:.68rem;cursor:pointer;vertical-align:middle">🔓 Entknüpfen</button>' : ''}</div>
     ${inactiveLinkedMode ? `
     <div class="tn-actions" style="display:flex;gap:.4rem;margin-top:.6rem;flex-wrap:wrap">
       <button class="tn-btn-activate-linked" style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">▶ Jetzt aktivieren</button>
@@ -6994,6 +6994,8 @@ function _tnBindRowEvents(rows){
     if(skipBtn) skipBtn.addEventListener('click', ()=>_tnSkip(r, row));
     const activateLinkedBtn = row.querySelector('.tn-btn-activate-linked');
     if(activateLinkedBtn) activateLinkedBtn.addEventListener('click', ()=>_tnActivateLinked(r, row));
+    const unlinkBtn = row.querySelector('.tn-btn-unlink');
+    if(unlinkBtn) unlinkBtn.addEventListener('click', ()=>_tnUnlink(r, row));
   });
 }
 
@@ -7061,6 +7063,24 @@ async function _tnLink(r, row, vocabId){
     r.status='activated'; r.vocabulary_id=vocabId;
     _tnCollapseRow(row, r);
   }catch(e){ showToast('Fehler: '+e.message,'err'); }
+}
+
+// Macht eine falsche "Verknüpfen"-Entscheidung rückgängig: Kandidat geht zurück auf pending,
+// vocabulary_id/matched_vocab_id werden geleert. Der verlinkte Vokabel-Eintrag selbst wird NICHT
+// angefasst (er kann weiterhin für einen anderen Kandidaten korrekt sein, wie im kallim/t3adda-Fall).
+async function _tnUnlink(r, row){
+  const btn = row.querySelector('.tn-btn-unlink');
+  if(btn){ btn.disabled = true; btn.textContent = '…'; }
+  try{
+    await sbApi('tunico_candidates?id=eq.'+r.id, 'PATCH', {status:'pending', vocabulary_id:null, matched_vocab_id:null, decided_at:null});
+    r.status='pending'; r.vocabulary_id=null; r.matched_vocab_id=null;
+    row.outerHTML = _tnRowHtml(r, null, null);
+    _tnBindRowEvents([r]);
+    showToast('🔓 Entknüpft — Kandidat wieder offen','ok');
+  }catch(e){
+    showToast('Fehler: '+e.message,'err');
+    if(btn){ btn.disabled=false; btn.textContent='🔓 Entknüpfen'; }
+  }
 }
 
 async function _tnAddNew(r, row){
