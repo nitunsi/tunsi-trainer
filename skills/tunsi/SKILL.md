@@ -275,6 +275,8 @@ Am 2026-08-05 live verifiziert: Ergebnis deckte sich exakt mit dem, was der UI-T
 
 Nils muss nicht mehr danach fragen: **nach jedem Vokabel-Import-Batch (INSERT/UPDATE) sowohl den Duplikat-Check als auch den Transliterations-Check selbst laufen lassen**, bevor der Batch als abgeschlossen gemeldet wird. Beide Checks existieren im Trainer als UI-Tabs ("🔍 Prüfungen" → Duplikate / Transliteration), lassen sich aber 1:1 als SQL gegen Supabase nachbauen (siehe Duplikat-SQL oben). Gefundene Treffer nicht automatisch schreiben — wie immer erst Vorschlag zeigen, Bestätigung abwarten, dann fixen.
 
+**Gilt für JEDE Importquelle, nicht nur TUNICO (2026-08-11 verallgemeinert):** zusätzlich zu Duplikat- und Transliterations-Check auch den Bedeutungsfacetten-Check gegen `tunico_import`/`tunico_corpus_*` laufen lassen — unabhängig davon ob der neue Batch aus Uni-Wien-Skripten, speaktounsi.off oder einer künftigen Quelle stammt. Volle Methodik (Facetten aus `de_gloss` zerlegen, gegen `german` abgleichen, vor dem Anhängen auf Dopplung mit einem bereits existierenden Eintrag desselben Worts prüfen) steht im Abschnitt "Neue Quelle: TUNICO" weiter unten — hier nur der Verweis, damit es bei jedem Import mitgeprüft wird, nicht nur beim TUNICO-Verknüpfen selbst.
+
 **Transliterations-Check — konsolidiertes SQL (Stand 2026-08-06, `TRANSLIT_RULES` in trainer.html):**
 
 ```sql
