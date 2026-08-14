@@ -435,6 +435,13 @@ function levenshtein(a, b){
   return dp[m][n];
 }
 
+function homonymNote(v){
+  if(!v || !v.hok) return '';
+  const sibs = ALL_VOCAB.filter(e=>e.hok && e.ar===v.ar && e.id!==v.id);
+  if(!sibs.length) return '';
+  const list = sibs.map(s=>'<br>• <b>'+s.en+'</b> <span style="color:var(--muted)">('+s.tp+' · '+s.ls+')</span>').join('');
+  return '<div style="margin-top:.5rem;padding:.35rem .6rem;background:rgba(201,166,74,.12);border:1px solid var(--gold);border-radius:4px;font-size:.72rem;color:var(--gold)">⚠️ Homonym — <b>'+v.ar+'</b> hat mehrere Bedeutungen. Diese Karte: <b>'+v.en+'</b> ('+v.tp+' · '+v.ls+')'+list+'</div>';
+}
 function checkAnswer(input, answer){
   const rawInput = input.trim().toLowerCase();
   const n = normalize(input);
@@ -2337,7 +2344,7 @@ function aMC(btn,ok,ca,con,v){
   if(fbMC){
     fbMC.className='feedback show '+(ok?'correct':'wrong');
     const darija = v ? `<span style="color:var(--muted);font-size:.8rem;display:block;margin-top:.2rem">${v.tr}</span>` : '';
-    const homNote = (v&&v.hok) ? '<div style="margin-top:.5rem;padding:.35rem .6rem;background:rgba(201,166,74,.12);border:1px solid var(--gold);border-radius:4px;font-size:.72rem;color:var(--gold)">⚠️ Homonym — gleiche Schreibung wie ein anderes Wort. Diese Bedeutung: <b>'+v.tp+' · '+v.ls+'</b></div>' : '';
+    const homNote = homonymNote(v);
     fbMC.innerHTML='<span style="font-size:1.2rem">'+(ok?'✓ ':'✗ ')+ca+'</span>'+darija+homNote;
   }
   ok?(score.c++,score.st++,score.t++):(score.w++,score.st=0,score.t++);
@@ -2461,7 +2468,7 @@ function chkFlash(){
   const solAr = '<span class="q-arabic" style="font-size:2.2rem;display:block">'+v.ar+'</span><span class="q-sub latin">'+v.tr+'</span>';
   const solDe = '<span class="q-text" style="display:block">'+v.en+'</span><span class="q-sub latin">'+v.tr+'</span>';
   const sol = dir==='ar2de' ? solDe : solAr;
-  const homNote = v.hok ? '<div style="margin-top:.5rem;padding:.35rem .6rem;background:rgba(201,166,74,.12);border:1px solid var(--gold);border-radius:4px;font-size:.72rem;color:var(--gold)">⚠️ Homonym — gleiche Schreibung wie ein anderes Wort. Diese Bedeutung: <b>'+v.tp+' · '+v.ls+'</b></div>' : '';
+  const homNote = homonymNote(v);
   if(ok){
     fb.className='feedback show correct';
     fb.innerHTML = (flashFuzzy ? '~ Fast! Richtige Schreibung:<br>' : '✓ Richtig!<br>') + sol + homNote;
