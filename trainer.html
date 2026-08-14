@@ -2337,7 +2337,8 @@ function aMC(btn,ok,ca,con,v){
   if(fbMC){
     fbMC.className='feedback show '+(ok?'correct':'wrong');
     const darija = v ? `<span style="color:var(--muted);font-size:.8rem;display:block;margin-top:.2rem">${v.tr}</span>` : '';
-    fbMC.innerHTML=(ok?'✓ ':'✗ ')+ca+darija;
+    const homNote = (v&&v.hok) ? '<div style="margin-top:.5rem;padding:.35rem .6rem;background:rgba(201,166,74,.12);border:1px solid var(--gold);border-radius:4px;font-size:.72rem;color:var(--gold)">⚠️ Homonym — gleiche Schreibung wie ein anderes Wort. Diese Bedeutung: <b>'+v.tp+' · '+v.ls+'</b></div>' : '';
+    fbMC.innerHTML='<span style="font-size:1.2rem">'+(ok?'✓ ':'✗ ')+ca+'</span>'+darija+homNote;
   }
   ok?(score.c++,score.st++,score.t++):(score.w++,score.st=0,score.t++);
   updScore();
@@ -2457,15 +2458,16 @@ function chkFlash(){
   inp.style.borderColor=ok?'var(--green)':'var(--red)';
   inp.disabled=true;
   const fb=document.getElementById('feedback');
-  const solAr = '<span style="font-family:\'Playfair Display\',serif;font-size:1.3rem;color:var(--gold2)">'+v.ar+'</span> <span style="color:var(--muted);font-size:.8rem">('+v.tr+')</span>';
-  const solDe = v.en+' <span style="color:var(--muted);font-size:.8rem">('+v.tr+')</span>';
+  const solAr = '<span class="q-arabic" style="font-size:2.2rem;display:block">'+v.ar+'</span><span class="q-sub latin">'+v.tr+'</span>';
+  const solDe = '<span class="q-text" style="display:block">'+v.en+'</span><span class="q-sub latin">'+v.tr+'</span>';
   const sol = dir==='ar2de' ? solDe : solAr;
+  const homNote = v.hok ? '<div style="margin-top:.5rem;padding:.35rem .6rem;background:rgba(201,166,74,.12);border:1px solid var(--gold);border-radius:4px;font-size:.72rem;color:var(--gold)">⚠️ Homonym — gleiche Schreibung wie ein anderes Wort. Diese Bedeutung: <b>'+v.tp+' · '+v.ls+'</b></div>' : '';
   if(ok){
     fb.className='feedback show correct';
-    fb.innerHTML = (flashFuzzy ? '~ Fast! Richtige Schreibung: '+flashFuzzy+'<br>' : '✓ Richtig! ') + sol;
+    fb.innerHTML = (flashFuzzy ? '~ Fast! Richtige Schreibung:<br>' : '✓ Richtig!<br>') + sol + homNote;
   } else {
     fb.className='feedback show wrong';
-    fb.innerHTML = '✗ ' + sol;
+    fb.innerHTML = '✗<br>' + sol + homNote;
   }
   window._lastFlashOrigProgress = srsProgress[v.id] ? JSON.parse(JSON.stringify(srsProgress[v.id])) : null;
   window._lastFlashSrsPromise = srsAnswer(v, ok).then(()=>updateLessonChips()).catch(()=>{});
