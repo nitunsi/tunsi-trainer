@@ -2345,7 +2345,7 @@ function aMC(btn,ok,ca,con,v){
     fbMC.className='feedback show '+(ok?'correct':'wrong');
     const darija = v ? `<span style="color:var(--muted);font-size:.8rem;display:block;margin-top:.2rem">${v.tr}</span>` : '';
     const homNote = homonymNote(v);
-    fbMC.innerHTML=(ok?'✓ ':'✗ ')+ca+darija+homNote;
+    fbMC.innerHTML='<span style="font-size:1.2rem">'+(ok?'✓ ':'✗ ')+ca+'</span>'+darija+homNote;
   }
   ok?(score.c++,score.st++,score.t++):(score.w++,score.st=0,score.t++);
   updScore();
@@ -2465,8 +2465,8 @@ function chkFlash(){
   inp.style.borderColor=ok?'var(--green)':'var(--red)';
   inp.disabled=true;
   const fb=document.getElementById('feedback');
-  const solAr = '<span style="font-family:\'Playfair Display\',serif;font-size:1.3rem;color:var(--gold2)">'+v.ar+'</span> <span style="color:var(--muted);font-size:.8rem">('+v.tr+')</span>';
-  const solDe = v.en+' <span style="color:var(--muted);font-size:.8rem">('+v.tr+')</span>';
+  const solAr = '<span style="font-family:\'Playfair Display\',serif;font-size:2.2rem;color:var(--gold2);display:block">'+v.ar+'</span><span style="color:var(--muted);font-size:.8rem">'+v.tr+'</span>';
+  const solDe = '<span style="font-family:\'Playfair Display\',serif;font-size:1.5rem;display:block">'+v.en+'</span><span style="color:var(--muted);font-size:.8rem">'+v.tr+'</span>';
   const sol = dir==='ar2de' ? solDe : solAr;
   const homNote = homonymNote(v);
   if(ok){
