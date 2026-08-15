@@ -444,7 +444,8 @@ function homonymNote(v){
 }
 function synonymNote(v){
   if(!v || !v.hok) return '';
-  const sibs = ALL_VOCAB.filter(e=>e.hok && e.en===v.en && e.ar!==v.ar && e.id!==v.id);
+  const vEnKey = v.en.trim().toLowerCase();
+  const sibs = ALL_VOCAB.filter(e=>e.hok && e.en.trim().toLowerCase()===vEnKey && e.ar!==v.ar && e.id!==v.id);
   if(!sibs.length) return '';
   const list = sibs.map(s=>'<br>• <b>'+s.ar+'</b> ('+s.tr+') <span style="color:var(--muted)">('+s.tp+' · '+s.ls+')</span>').join('');
   return '<div style="margin-top:.5rem;padding:.35rem .6rem;background:rgba(90,150,201,.12);border:1px solid var(--blue);border-radius:4px;font-size:.72rem;color:var(--blue)">ℹ️ Für <b>'+v.en+'</b> gibt es noch eine andere Übersetzung:'+list+'</div>';
