@@ -442,6 +442,13 @@ function homonymNote(v){
   const list = sibs.map(s=>'<br>• <b>'+s.en+'</b> <span style="color:var(--muted)">('+s.tp+' · '+s.ls+')</span>').join('');
   return '<div style="margin-top:.5rem;padding:.35rem .6rem;background:rgba(201,166,74,.12);border:1px solid var(--gold);border-radius:4px;font-size:.72rem;color:var(--gold)">⚠️ Homonym — <b>'+v.ar+'</b> hat mehrere Bedeutungen. Diese Karte: <b>'+v.en+'</b> ('+v.tp+' · '+v.ls+')'+list+'</div>';
 }
+function synonymNote(v){
+  if(!v || !v.hok) return '';
+  const sibs = ALL_VOCAB.filter(e=>e.hok && e.en===v.en && e.ar!==v.ar && e.id!==v.id);
+  if(!sibs.length) return '';
+  const list = sibs.map(s=>'<br>• <b>'+s.ar+'</b> ('+s.tr+') <span style="color:var(--muted)">('+s.tp+' · '+s.ls+')</span>').join('');
+  return '<div style="margin-top:.5rem;padding:.35rem .6rem;background:rgba(90,150,201,.12);border:1px solid var(--blue);border-radius:4px;font-size:.72rem;color:var(--blue)">ℹ️ Für <b>'+v.en+'</b> gibt es noch eine andere Übersetzung:'+list+'</div>';
+}
 function checkAnswer(input, answer){
   const rawInput = input.trim().toLowerCase();
   const n = normalize(input);
@@ -2344,7 +2351,7 @@ function aMC(btn,ok,ca,con,v){
   if(fbMC){
     fbMC.className='feedback show '+(ok?'correct':'wrong');
     const darija = v ? `<span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">${v.tr}</span>` : '';
-    const homNote = homonymNote(v);
+    const homNote = homonymNote(v)+synonymNote(v);
     fbMC.innerHTML='<span style="font-size:1.2rem">'+(ok?'✓ ':'✗ ')+ca+'</span>'+darija+homNote;
   }
   ok?(score.c++,score.st++,score.t++):(score.w++,score.st=0,score.t++);
@@ -2468,7 +2475,7 @@ function chkFlash(){
   const solAr = '<span style="font-family:\'Playfair Display\',serif;font-size:2.2rem;color:var(--gold2);display:block">'+v.ar+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+v.tr+'</span>';
   const solDe = '<span style="font-family:\'Playfair Display\',serif;font-size:1.5rem;display:block">'+v.en+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+v.tr+'</span>';
   const sol = dir==='ar2de' ? solDe : solAr;
-  const homNote = homonymNote(v);
+  const homNote = homonymNote(v)+synonymNote(v);
   if(ok){
     fb.className='feedback show correct';
     fb.innerHTML = (flashFuzzy ? '~ Fast! Richtige Schreibung: '+flashFuzzy+'<br>' : '✓ Richtig! ') + sol + homNote;
