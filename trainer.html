@@ -3131,6 +3131,12 @@ async function loadPartnerStats(){
     const lastActiveEl = document.getElementById('partner-last-active');
     if(lastActiveEl){ lastActiveEl.style.color = activityColor; lastActiveEl.textContent = activityText; }
 
+    // Kein Zähler > 0, nur die Warnung greift → Kachel-Raster (nur Nullen) unterdrücken, nur Warnung zeigen
+    if(!anyOtherNonzero){
+      el.innerHTML = warningHtml;
+      return;
+    }
+
     el.innerHTML = warningHtml +
       '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.4rem;text-align:center">' +
         '<div style="padding:.4rem;background:var(--surface2);border:1px solid var(--border);">' +
