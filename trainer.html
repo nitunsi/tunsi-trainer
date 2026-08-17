@@ -3118,10 +3118,10 @@ async function loadPartnerStats(){
     try { ninjaN = await sbApiCount('vocabulary_review?change_category=eq.ninja_check_pending&select=vocabulary_id'); } catch(e) {}
     const qualityN = countDupeIssues() + countTranslitIssues();
 
-    // Block nur zeigen, wenn mind. einer der Werte (außer "Offen") > 0 ist
+    // Block nur zeigen, wenn mind. einer der Werte (außer "Offen") > 0 ist ODER die Warnung greift
     const anyOtherNonzero = [approvedRecentN, suggestedN, rejectedN, unknownN, commentedN, qualityN, (typeof ninjaN === 'number' ? ninjaN : 0)].some(n => n > 0);
     const block = document.getElementById('partner-stats-block');
-    if(!anyOtherNonzero){
+    if(!anyOtherNonzero && !warningHtml){
       if(block) block.style.display = 'none';
       return;
     }
