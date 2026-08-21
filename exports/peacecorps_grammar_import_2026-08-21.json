@@ -1,0 +1,170 @@
+[
+ {
+  "id": 1,
+  "topic": "Wörterbuch-Format (Referenz, keine Sprachgrammatik)",
+  "page_end": 10,
+  "raw_text": "Einleitung erklärt Aufbau des Wörterbuchs (3 Teile: Lexicon/Grammatik, English-Tunisian, Tunisian-English) und das Eintragsformat: Häufigkeitsskala 1-5, Wortart-Symbole (n./v./adj./adv./prep./pron.), f./m./pl./sg./coll./f.w.u.(Lehnwort). Enthält Beispieleinträge, die bei der A-Z-Auswertung gegengeprüft werden sollten, sobald der jeweilige Buchstabe erreicht ist: PAINT(v, S.7), PAY(v, S.9), FLAG(n, \"3alam/3alamma:t\"), CURTAIN(\"rideau/riduwwa:t\", frz. Lehnwort), PERSONAL(adj, \"shaxSi:/shaxSiyya\"), QUICKLY(adv, \"fi:sa3 fi:sa3\" oder \"bizzarba\"), PEACEFUL(zwei Synonympaare: \"ha:di:/ha:lya/ha:di:n\" und \"ra:yidh/ra:ydha/ra:ydhi:n\"), HAVE(\"3and + p.e.\"), HAVE TO(\"yilzim + p.e.\"). Erwähnt außerdem Beispiel PARTY auf Buchseite 280 (mehrdeutiger Eintrag mit nummerierten Bedeutungen) — beim Erreichen von P prüfen.",
+  "page_start": 1,
+  "imported_at": "2026-08-15T20:28:43.070404+00:00"
+ },
+ {
+  "id": 2,
+  "topic": "Lautlehre — Sonderlaute (ḥ, ʕ/3, q)",
+  "page_end": 14,
+  "raw_text": "Ḥ (ح) unterscheidet sich von h (ه, oft stimmhaft): Ḥ entsteht durch Verengung des Rachens, hinterer Zungenrücken nach unten gedrückt (wie mit einem Löffel), Kehlkopf gleichzeitig angehoben.\n3/ʕ (ع): glottaler Laut, nahe am stark betonten englischen \"a\" wie in \"3awful\" oder \"3absolutely\".\nq (ق): velarer, gehauchter Laut — der am weitesten hinten im Mund gebildete k-Laut.",
+  "page_start": 14,
+  "imported_at": "2026-08-15T20:28:43.070404+00:00"
+ },
+ {
+  "id": 3,
+  "topic": "Lautlehre — Vokalzeichen und Vokallängung",
+  "page_end": 15,
+  "raw_text": "4 Vokalzeichen (keine eigenen Buchstaben), über/unter dem Konsonanten gesetzt:\n1) fatḥa (—) über dem Konsonanten → Laut (a)/(ā), wie in \"get\"/\"met\" bzw. \"bar\". Bsp.: bāb, bābā:.\n2) kasra (_) unter dem Konsonanten → Laut (i), wie in \"beat\". Bsp.: bi:t.\n3) ḍamma (ُ) über dem Konsonanten → Laut (u), wie in \"food\". Bsp.: fu:t.\n4) sukūn (ْ) über dem Konsonanten → stummer Konsonant ohne Vokal (\"mute sound\"). Bsp.: ka3k, das stumme k klingt wie im engl. \"rock\".\nDie 3 Kurzvokale a/i/u sind kurze Vokale, können aber gelängt werden: a→a: (durch Anhängen von א), i→i: (durch Anhängen von يـ), u→u: (durch Anhängen von وـ). Bsp.: bi→bi:, bu→bu:.",
+  "page_start": 14,
+  "imported_at": "2026-08-15T20:28:43.070404+00:00"
+ },
+ {
+  "id": 4,
+  "topic": "Lautlehre — Shadda (Gemination)",
+  "page_end": 15,
+  "raw_text": "Shadda (ّ) über einem Konsonanten zeigt an, dass dieser verdoppelt wird. Beispiel: xraj (\"er ging raus\") vs. xarrij (\"er ließ raus / exportierte\") — reiner Bedeutungsunterschied durch Gemination.",
+  "page_start": 15,
+  "imported_at": "2026-08-15T20:28:43.070404+00:00"
+ },
+ {
+  "id": 5,
+  "topic": "Personalpronomen",
+  "page_end": 15,
+  "raw_text": "Singular: āna (ich), inti (du), huwwa (er), hiyya (sie).\nPlural: āḥna (wir), intūma (ihr), huma (sie).\nAnmerkung im Original: Personalpronomen werden im Tunesischen meist weggelassen, da die konjugierte Verbform die Person bereits anzeigt.",
+  "page_start": 15,
+  "imported_at": "2026-08-15T20:28:43.070404+00:00"
+ },
+ {
+  "id": 6,
+  "topic": "Artikel (bestimmt/unbestimmt, Sonnen-/Mondbuchstaben)",
+  "page_end": 17,
+  "raw_text": "Unbestimmter Artikel entfällt im Tunesischen komplett (ktāb = sowohl \"ein Buch\" als auch \"Buch\").\nBestimmter Artikel hat 2 Formen je nach Anlautkonsonant des Nomens:\n- Mondbuchstabe (z.B. b): il- wird direkt vorangestellt. Bsp.: bāb (eine Tür) → ilbāb (die Tür).\n- Sonnenbuchstabe (z.B. d): Anlautkonsonant wird verdoppelt, davor kommt ein i. Bsp.: dār (ein Haus) → iddār (das Haus).\nSonnenbuchstaben (mit Zungenspitze artikuliert): l, z, r, sh, n, j, s, S, dh, th, ḏ(this-th), d, T, t.\nMondbuchstaben (der Rest): a(Hamza), y, w, h, x, Ḥ, gh, 3, k, q, f, m, b, g, p, v.",
+  "page_start": 16,
+  "imported_at": "2026-08-15T20:28:43.070404+00:00"
+ },
+ {
+  "id": 7,
+  "topic": "Possessivadjektive",
+  "page_end": 18,
+  "raw_text": "Endungen richten sich nach dem Wortende des Bezugsworts (drei Spalten: feminine Wörter auf -a / Wörter mit Langvokal-Ende / Wörter mit sukūn-Ende):\nmein: -ti:/-yā:/-i:  ·  dein: -tik/-k/-ik  ·  sein: -tu:/-h/-u:  ·  ihr(f): -ithā:/-hā:/-hā:  ·  unser: -itnā:/-nā:/-nā:  ·  euer: -itkum/-kum/-kum  ·  ihr(Pl): -ithum/-hum/-hum.\nBeispiele: munga:litha: (ihre Uhr), kursiyya: (mein Stuhl), ktā:bu: (sein Buch), karra:sithum (ihr Heft).",
+  "page_start": 18,
+  "imported_at": "2026-08-15T20:28:43.070404+00:00"
+ },
+ {
+  "id": 8,
+  "topic": "Possessivpronomen",
+  "page_end": 19,
+  "raw_text": "Stamm: mtā:3. mtā:3i: (meins), mtā:3ik (deins), mtā:3u: (seins), mtā:3ha: (ihrs), mtā:3na: (unsers), mtā:3kum (eures), mtā:3hum (ihrs/Pl.).\nBeispiel: iTTa:wla ha:dhi: mtā:3i: (\"Dieser Tisch ist meiner\").",
+  "page_start": 19,
+  "imported_at": "2026-08-15T20:28:43.070404+00:00"
+ },
+ {
+  "id": 9,
+  "topic": "Demonstrativpronomen",
+  "page_end": 20,
+  "raw_text": "hā:dhā: (dieser, m.), hā:dhi: (diese, f.), hā:dhu:mā:/hā:dhum (diese, Pl.), hā:dhā:kā: (jener, m.), hā:dhi:kā: (jene, f.), hā:dhu:kum (jene, Pl.).\nBeispiele: hā:dhā: qlam (\"Das ist ein Stift\"), il-kursi: hā:dhā: mkassir (\"Dieser Stuhl ist kaputt\"), hā:dhi: Ta:wla (\"Das ist ein Tisch\"), il-ktā:b hā:dhā:kā: mtā:3i: (\"Jenes Buch ist meins\"), hā:dhi:kā: sfā:rit amēri:kya: (\"Das ist die amerikanische Botschaft\"). Tabelle unvollständig auf S.20, ggf. Fortsetzung auf Folgeseite prüfen.",
+  "page_start": 20,
+  "imported_at": "2026-08-15T20:28:43.070404+00:00"
+ },
+ {
+  "id": 10,
+  "topic": "Zahlen (Numeral + Nomen)",
+  "page_end": 21,
+  "raw_text": "1) Die Zahl \"eins\" wird normalerweise nicht mit dem gezählten Objekt verwendet, außer man will \"nur ein einziges\" betonen: kta:b (ein Buch) vs. kta:b wa:Hid (ein einziges Buch).\n2) Für \"zwei\" wird entweder der Dual des Nomens verwendet, oder zu:z + Plural.\n3) Von 3-10: Zahl + Plural des Nomens. Bsp.: xamsa ktub (fünf Bücher).\n4) Von 11-19: Zahl + n-Laut + Nomen im Singular. Bsp.: sba3Ta:sh-n-kta:b (17 Bücher).\n5) Von 20-99: Zahl + Nomen im Singular. Bsp.: thma:ni:n di:na:r (80 Dinar).\n6) Für 100 (mya:t): das t wird ausgesprochen, wenn 100 mit einem Nomen steht. Bsp.: mya:t du:la:r (100 Dollar).\n7) Für 1000 (alf): Zahl + Nomen im Singular. Bsp.: alf mi:tru: (1000 Meter).",
+  "page_start": 21,
+  "imported_at": "2026-08-15T20:33:35.453936+00:00"
+ },
+ {
+  "id": 11,
+  "topic": "Dual",
+  "page_end": 22,
+  "raw_text": "Zwei Bildungsweisen:\n1) zu:z + Plural des Nomens voranstellen. Bsp.: zu:z Twa:wil (2 Tische), zu:z nsa: (2 Frauen), zu:z dina:ri:n (2 Dinar), zu:z ka:si:n (2 Gläser).\n2) Dual-Endung -i:n direkt an den Singular anhängen.\nSonderfälle: Endet das (maskuline) Nomen auf einen Langvokal, wird NUR zu:z+Plural verwendet (nicht die -i:n-Endung), Bsp.: kursi: → zu:z kra:si: (2 Stühle), kwa:tru: → zu:z kwa:truwa:t (2 Rahmen).\nBei Nomen aus 3 kurzen Konsonanten mit stummem ersten Vokal werden beim Dual die ersten beiden Vokale vertauscht: Sbu3 (ein Finger) → Sub3i:n (2 Finger), SHan (ein Teller) → SaHni:n (2 Teller).",
+  "page_start": 21,
+  "imported_at": "2026-08-15T20:33:35.453936+00:00"
+ },
+ {
+  "id": 12,
+  "topic": "Komparativ und Superlativ",
+  "page_end": 24,
+  "raw_text": "A) Komparativ der Überlegenheit — Form ist bei m./f. Adjektiv gleich.\na) Adjektive aus 3 Konsonanten mit Langvokal auf dem 2.: ā/a vorangestellt, Langvokal durch Kurzvokal ersetzt, + min danach. Bsp.: mi:l (schön) → ajmil min (schöner als).\nb) Adjektive, die auf Langvokal enden: ā/a vorangestellt, Langvokal → ā:. Bsp.: 3a:li: (hoch) → a3la: min (höher als), qwi: (stark) → aqwa: min (stärker als).\nB) Komparativ der Unterlegenheit: min + Nomen + aqal (\"weniger als\"). Bsp.: hiyya aqal Tu:l min xu:ha: (\"Sie ist weniger groß als ihr Bruder\").\nC) Komparativ der Gleichheit: Nomen(2) + fard + Nomen(3) + w + Nomen(1), wobei (2) das Vergleichsmerkmal, (3) das Bezugsnomen, (1) das verglichene Nomen ist. Bsp.: fa:Tma w xu:ha: fard Tu:l (\"Fatma ist so groß wie ihr Bruder\").\nD) Superlativ: Komparativ der Überlegenheit + wa:Hid(m.)/wa:Hda(f.)/wHu:d(pl.). Bsp.: huwwa aqwa: wa:Hid (\"Er ist der Stärkste\"), il-karhba ha:dhi: aghla: wa:Hda (\"Dieses Auto ist das teuerste\").",
+  "page_start": 22,
+  "imported_at": "2026-08-15T20:33:35.453936+00:00"
+ },
+ {
+  "id": 13,
+  "topic": "Zeiten — Imperativ",
+  "page_end": 25,
+  "raw_text": "Der Imperativ ist die Basisform für den Präsensstamm.\nPlural-Bildung aus dem Singular: 1) Endet das Verb auf stummen Konsonanten (sukūn), wird das sukūn zu langem u: (ushrub→ushrbu:, \"trink\"→\"trinkt\"). 2) Endet das Verb auf Langvokal, wird nur ein stummes w angehängt (a3Ti:→a3Ti:w, \"gib\"→\"gebt\").",
+  "page_start": 25,
+  "imported_at": "2026-08-15T20:33:35.453936+00:00"
+ },
+ {
+  "id": 14,
+  "topic": "Zeiten — Präsens",
+  "page_end": 27,
+  "raw_text": "Präsens = Imperativ (Singular) als Stamm + Präfixe/Suffixe:\nāna: n- / inti: t- / huwwa y- / hiyya t- / āḥna: n-...u: / intu:ma: t-...u: / huma: y-...u:.\n1) Verben, deren Imperativ mit einem Vokal (ā/u/i) beginnt: phonetisch bleibt das Verb gleich, nur Präfixe kommen dazu (ushrub→nushrub \"ich trinke\"; imshi:→timshi: \"sie geht\"; āb3ith→yāb3ithu: \"sie schicken\").\n2) Beginnt der Imperativ NICHT mit ā/a, erhalten die Präfixe ein stummes sukūn (o): shu:f→nshu:fu: (\"wir sehen\"), bi:3→tbi:3u: (\"wir verkaufen\").",
+  "page_start": 25,
+  "imported_at": "2026-08-15T20:33:35.453936+00:00"
+ },
+ {
+  "id": 15,
+  "topic": "Zeiten — Futur",
+  "page_end": 27,
+  "raw_text": "Futur = bāsh (oder Kontraktion bish) vor das im Präsens konjugierte Verb, mit allen Personalpronomen. Bsp.: bish nimshi: l-tunis ghudwa: (\"Ich werde morgen nach Tunis gehen\").",
+  "page_start": 27,
+  "imported_at": "2026-08-15T20:33:35.453936+00:00"
+ },
+ {
+  "id": 16,
+  "topic": "Zeiten — Präteritum (6 Verbgruppen)",
+  "page_end": 31,
+  "raw_text": "Präteritum wird über die 3.Pers.Sg.m. (huwwa) als Stammform gebildet (= die Wörterbuch-Grundform). 6 Gruppen je nach Konsonanten-/Vokalstruktur:\n1. Gruppe: 3 Konsonanten, Anfang+Ende mit sukūn (dxal \"er trat ein\", wSil \"er kam an\"). Bei sie/hiyya und sie-Pl./huma: werden die ersten 2 Vokale vertauscht (dxal→daxlit \"sie trat ein\", daxlu: \"sie traten ein\").\n2. Gruppe: Verben, die auf langes fatḥa enden (msha: \"er ging\", kla: \"er aß\"). Der End-ā:-Vokal bleibt bei er/sie/sie-Pl., wird aber zu ī: bei ich/du/wir/ihr (mshi:t \"ich ging\").\n3. Gruppe: 2 Konsonanten, endend auf sukūn (HaT \"er legte\", Hal \"er öffnete\"). 2. Konsonant wird verdoppelt + langes i: bei ich/du/wir/ihr (HaTTi:t), keine Längung bei sie/sie-Pl.\n4. Gruppe: 2 Konsonanten, 1. mit Langvokal ā:, 2. mit sukūn (sha:f \"er sah\"). Ā:-Vokal bleibt bei er/sie/sie-Pl., wird kurz bei ich/du/wir/ihr (shuft \"ich sah\").\n5. Gruppe: a) 3 Konsonanten, 1. mit Langvokal ā:, letzter mit sukūn (rta:H \"er ruhte\", xTa:r \"er wählte\") — Langvokal vor dem letzten Konsonant wird kurz bei ich/du/wir/ihr, bleibt bei sie/er/sie-Pl. b) 4 Konsonanten analog (txa:Tir \"er wettete\").\n6. Gruppe: a) 4 Konsonanten (kammil \"er setzte fort\") — Stamm bleibt bei allen Personen gleich außer sie/sie-Pl. (Vokal auf 2. Konsonant wird sukūn: kammlit). b) washwish \"er flüsterte\" — analog, Kasra auf 3. Konsonant wird sukūn bei sie/sie-Pl. c) 4+ Konsonanten (xtra3 \"er erfand\", staqbil \"er empfing\", tHaddith \"er diskutierte\") — bei sie/sie-Pl. Vertauschung bzw. sukūn auf vorletztem Konsonant.",
+  "page_start": 27,
+  "imported_at": "2026-08-15T20:33:35.453936+00:00"
+ },
+ {
+  "id": 17,
+  "topic": "Konditional",
+  "page_end": 34,
+  "raw_text": "A) Präsens-Konditional (\"sollte\"): ka:rni:/ka:rik/ka:ru:/ka:rha:/ka:rna:/ka:rkum/ka:rhum + Verb im Präsens. Bsp.: ka:rni: n-imshi: liTTbi:b (\"Ich sollte zum Arzt gehen\"). Alternative Struktur mit Ḥaqq-: Ḥaqqni:/Ḥaqqik/... + Präsensverb.\nB) Vergangenheits-Konditional:\n1) \"hätte tun sollen\": gleiche Struktur wie oben, aber Verb im Präteritum statt Präsens. Bsp.: ka:rni: mshi:t bikri: (\"Ich hätte früh gehen sollen\").\n2) \"hätte tun können\": kunt/kunt/ka:n/ka:nit/kunna:/kuntu:/ka:nu: + najjim (können) im Präsens. Bsp.: kunt nnajjim uq3ud akthir (\"Ich hätte länger bleiben können\").\n3) \"hätte getan\" (Irrealis): ra:ni:/ra:k/ra:hu:/ra:hi:/ra:na:/ra:kum/ra:hum + Verb im Präteritum. Bsp.: law ka:n 3raft ra:ni: mshi:t (\"Wenn ich es gewusst hätte, wäre ich gegangen\").",
+  "page_start": 32,
+  "imported_at": "2026-08-15T20:33:35.453936+00:00"
+ },
+ {
+  "id": 18,
+  "topic": "Unregelmäßige Verben: haben, müssen, möchten, brauchen",
+  "page_end": 35,
+  "raw_text": "Vollständige Konjugationstabellen (āna/inti/huwwa/hiyya/āḥna/intu:ma/huma):\n\"haben\" (3and): 3andi:, 3andik, 3andu:, 3andha:, 3andna:, 3andkum, 3andhum.\n\"müssen/haben zu\" (yilzim): yilzimni:, yilzmik, yilzmu:, yilzimha:, yilzimna:, yilzimkum, yilzimhum.\n\"möchten\" (ma:da:bi): ma:da:biyya:, ma:da:bi:k, ma:da:bi:h, ma:da:bi:ha:, ma:da:bi:na:, ma:da:bi:kum, ma:da:bi:hum.\n\"brauchen\" (Ha:ja): Ha:jti:, Ha:jtik, Ha:jtu:, Ha:jitha:, Ha:jitna:, Ha:jitkum, Ha:jithum.",
+  "page_start": 35,
+  "imported_at": "2026-08-15T20:33:35.453936+00:00"
+ },
+ {
+  "id": 19,
+  "topic": "Verneinung",
+  "page_end": 37,
+  "raw_text": "a) Bei Präsens/Präteritum/Konditional: ma: vor das Verb, -sh oder -shi am Verbende. Bsp.: ma: nushrubsh shra:b (\"Ich trinke keinen Wein\"), ma: fhimsh iddars (\"Er verstand die Lektion nicht\"), ma: ka:rni:sh ji:t (\"Ich hätte nicht kommen sollen\").\nNB: beim Vergangenheits-Konditional (\"would have\") wird ma:...sh am Hauptverb angehängt, nicht am ra:ni:-Hilfsverb.\nb) Bei Futur und Partizip Präsens: mu:sh vorangestellt (oder seine konjugierte Form mā:ni:sh/mā:kish/mā:hu:sh/mā:hiyya:sh/mā:na:sh/mā:kumsh/mā:humsh). Bsp.: mu:sh bish n-shu:fu: (\"Ich werde ihn nicht sehen\"), mā:humsh ma:shi:n (\"Sie gehen nicht\").",
+  "page_start": 36,
+  "imported_at": "2026-08-15T20:33:35.453936+00:00"
+ },
+ {
+  "id": 20,
+  "topic": "Fragebildung: Interrogativform und Fragewörter",
+  "page_end": 39,
+  "raw_text": "Interrogativ wird gebildet durch: 1) Intonation allein, 2) Anhängen von -sh/-shi ans Verb (ta3rfu:shi? \"kennst du ihn?\").\nFragewörter:\nWHAT (vor m. Wörtern): shnuwwa. WHAT (vor f. Wörtern): shniyya. WHAT (vor Pl.): shnu:ma:. WHAT+Verb: shnuwwa oder ā:sh/sh (Kontraktion) — ā:sh wird auch vor manchen Nomen verwendet (ā:sh-ismik? \"wie heißt du?\").\nWHO: shku:n. WHICH: ā:ma:. WHEN: waqta:sh. WHY: 3la:sh. WHAT FOR: lwa:sh. WHERE: wi:n/fi:n. WHERE FROM: mni:n. WHERE TO: l-wi:n (bei Bewegungsverben). HOW: ki:fa:sh. HOW MUCH/MANY: qadda:sh min. HOW MUCH (Preis): b-qadda:sh. WHAT...IN: fa:sh. WHAT...OF: mna:sh.",
+  "page_start": 37,
+  "imported_at": "2026-08-15T20:33:35.453936+00:00"
+ },
+ {
+  "id": 21,
+  "topic": "Objektpronomen (direkt/indirekt)",
+  "page_end": 40,
+  "raw_text": "Direkte Objektpronomen — Endung hängt davon ab, ob das Verb auf Vokal oder sukūn endet:\nmich: -ni:  ·  dich: -k/-ik  ·  ihn: -h/-u:  ·  sie: -ha:  ·  uns: -na:  ·  euch: -kum  ·  sie(Pl.): -hum.\nIndirekte Objektpronomen (mit l-Präfix \"für/zu\"): li:, lik, lu:, lha:, lna:, lkum, lhum.\nBeispiele: b3athtu: lba:riH (\"Ich schickte es gestern\"), hizzli: likta:b liddar (\"Bring mir das Buch zum Haus\"), iktbilhum jwa:b (\"Schreib ihnen einen Brief\").\nNB: Die direkten Objektpronomen-Endungen können auch mit Präpositionen/Adverbien verwendet werden: m3a:h (\"mit ihm\"), taHtna: (\"unter uns\").",
+  "page_start": 40,
+  "imported_at": "2026-08-15T20:33:35.453936+00:00"
+ }
+]

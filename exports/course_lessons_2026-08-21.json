@@ -1,0 +1,1568 @@
+[
+ {
+  "id": 1,
+  "title": "Lektion 1 — Begrüßung, Artikel, Nationalitäten",
+  "skript": 1,
+  "chunk_order": [
+   {
+    "key": "begruessung",
+    "label": "Begrüßung & Grußformeln",
+    "dialog": true,
+    "grammar_headings": [
+     "Wichtige Grußformeln"
+    ]
+   },
+   {
+    "key": "nationen_uebersetzen1",
+    "label": "Nationalitäten: Übersetzen 1",
+    "dialog": false,
+    "grammar_headings": [
+     "Herkunftswörter (z.B. \"tunesisch\", \"deutsch\")",
+     "Das Adjektiv passt sich an"
+    ]
+   },
+   {
+    "key": "nationen_uebersetzen2",
+    "label": "Nationalitäten: Übersetzen 2",
+    "dialog": false,
+    "grammar_headings": [
+     "Herkunftswörter (z.B. \"tunesisch\", \"deutsch\")",
+     "Das Adjektiv passt sich an"
+    ]
+   },
+   {
+    "key": "nationen_antworten",
+    "label": "Nationalitäten: Antworten & Grammatik",
+    "dialog": false,
+    "grammar_headings": [
+     "Herkunftswörter (z.B. \"tunesisch\", \"deutsch\")",
+     "Das Adjektiv passt sich an"
+    ]
+   },
+   {
+    "key": "pronomen",
+    "label": "Pronomen & m/w",
+    "dialog": false,
+    "grammar_headings": [
+     "Männlich und weiblich",
+     "Demonstrativpronomen",
+     "Personalpronomen (Singular)"
+    ]
+   },
+   {
+    "key": "artikel_uebersetzen1",
+    "label": "Artikel: Übersetzen (Paare)",
+    "dialog": false,
+    "grammar_headings": [
+     "Der Artikel \"der/die/das\" (il-)",
+     "\"und\""
+    ]
+   },
+   {
+    "key": "artikel_uebersetzen2",
+    "label": "Artikel: Übersetzen (EIN/EINE)",
+    "dialog": false,
+    "grammar_headings": [
+     "Der Artikel \"der/die/das\" (il-)",
+     "\"und\""
+    ]
+   },
+   {
+    "key": "artikel_drill",
+    "label": "Artikel: Drill & Grammatik",
+    "dialog": false,
+    "grammar_headings": [
+     "Der Artikel \"der/die/das\" (il-)",
+     "\"und\""
+    ]
+   },
+   {
+    "key": "zahlen_ist",
+    "label": "Sätze ohne \"ist\" & Zahlen",
+    "dialog": false,
+    "grammar_headings": [
+     "Sätze ohne \"ist\" (Nominalsätze)",
+     "Zahlen 0–10"
+    ]
+   },
+   {
+    "key": "kongruenz",
+    "label": "Kongruenz von Nomen & Adjektiv",
+    "dialog": false,
+    "grammar_headings": [
+     "Kongruenz von Substantiv und Adjektiv"
+    ]
+   },
+   {
+    "key": "aussprache",
+    "label": "Ausspracheübungen (7-Laut)",
+    "dialog": false,
+    "grammar_headings": []
+   }
+  ],
+  "dialog_text": "Dialog 1:\nJalal: 3a-s-slama ya hedi.\nHedi: ysallmik.\nJalal: shnuwwa 7walik?\nHedi: lbas y3ayyshik. w-enti?\nJalal: il-7amdulla lbas.\nHedi: shnuwwa 7wal id-dar?\nJalal: lbas. ay tawwa fi lamen.\nHedi: fi lamen, b-is-slama.\n\nDialog 2:\nMaryam: ahla, Fatma.\nFatma: ahla, Maryam. shnuwwa 7walik?\nMaryam: lbas, il-7amdulla. w-enti shnuwwa 7walik?\nFatma: lbas, y3ayyshik.\nMaryam: b-is-slama ya Fatma.\nFatma: b-is-slama y3ayyshik.",
+  "course_number": 1,
+  "grammar_notes": "### Der Artikel \"der/die/das\" (il-)\n- **Eselsbrücke:** Buchstaben, bei denen die Zungenspitze VORNE im Mund arbeitet (an den Zähnen/Gaumen), lassen \"il-\" verschmelzen. Buchstaben mit Lippen oder hinten im Rachen/Mund lassen \"il-\" stehen. Sprich den ersten Laut eines Wortes laut aus, wenn du unsicher bist!\n- Es gibt nur EINE Form, egal ob männlich, weiblich oder Mehrzahl — anders als im Deutschen.\n- Vor diesen Buchstaben verschmilzt \"il-\" mit dem nächsten Laut: **d, t, th, z, s, j, sh, n, r, l**\n- Beispiel: il-tawla → **it-tawla** (der Tisch), weil \"tawla\" mit t beginnt.\n- Beispiel: il-shobbek → **ish-shobbek** (das Fenster), weil \"shobbek\" mit sh beginnt.\n- Vor allen anderen Buchstaben bleibt es einfach \"il-\": **il-ktab** (das Buch), weil k nicht in der Liste oben steht.\n\n### \"und\"\n- Wird immer als \"w-\" geschrieben.\n- Klingt vor einem Vokal wie \"w\", vor einem Konsonanten eher wie \"u\".\n\n### Männlich und weiblich\n- Die meisten weiblichen Wörter enden auf \"-a\" (Ausnahmen: omm \"Mutter\", okht \"Schwester\").\n- Männliche Wörter haben keine besondere Endung.\n- Ein Adjektiv wird weiblich, indem man einfach \"-a\" anhängt: **kbir** (groß) → **kbira** (groß, weiblich).\n\n### Herkunftswörter (z.B. \"tunesisch\", \"deutsch\")\n- Gebildet aus Land/Stadt + \"-i\" (männlich) bzw. \"-iya\" (weiblich).\n- Beispiel: **tounis** (Tunesien) → **tounsi** (tunesisch, m.) → **tounsiya** (tunesisch, f.)\n- Steht dabei ein kurzer Vokal in einer offenen Silbe direkt vor der neuen Endung, fällt er zur Aussprache-Erleichterung aus: tounis + i → **tounsi** (nicht \"tounisi\").\n\n### Demonstrativpronomen\n- **hada** \"das, dieser\" (bezogen auf ein männliches Wort) — **hadi** \"das, diese\" (bezogen auf ein weibliches Wort)\n- shnuwwa/shkoun hada? \"Was/wer ist das?\" (männlich) — shniyya/shkoun hadi? \"Was/wer ist das?\" (weiblich)\n\n### Personalpronomen (Singular)\n- **ena** \"ich\", **enti** \"du\", **houa** \"er\", **heya** \"sie\"\n\n### Kongruenz von Substantiv und Adjektiv\n- Ist ein Nomen maskulin, muss auch das dazugehörige Adjektiv maskulin sein; ist das Nomen feminin, muss auch das Adjektiv die Femininendung -a haben.\n- Ist das Nomen determiniert (z.B. durch den bestimmten Artikel), muss auch das Adjektiv, wenn es attributiv verwendet wird, den Artikel erhalten. Das Adjektiv steht immer hinter dem Nomen.\n- Beispiel: **kteb tounsi** \"ein tunesisches Buch\" → **il-kteb it-tounsi** \"das tunesische Buch\"\n\n### Das Adjektiv passt sich an\n- Männliches Wort → männliches Adjektiv. Weibliches Wort → weibliches Adjektiv.\n- Hat das Nomen einen Artikel, bekommt auch das Adjektiv einen: **il-warda t-tounsiya** = \"die tunesische Rose\".\n- Das Adjektiv steht immer NACH dem Nomen (anders als im Deutschen: \"das rote Auto\" → wörtlich \"das Auto rote\").\n\n### Sätze ohne \"ist\" (Nominalsätze)\n- Für \"Das ist ein Buch\" oder \"Sie ist hübsch\" braucht man kein eigenes Wort für \"ist\" — man reiht die Wörter einfach aneinander. Solche verblosen Sätze nennt man Nominalsätze.\n- Sie bestehen z.B. aus einem Interrogativ- oder Demonstrativpronomen und einem Nomen: shnuwwa hada? hada kursi. (\"Was ist das? Das ist ein Stuhl.\")\n- Oder aus einem Personalpronomen und einem Adjektiv/Nomen: houa tounsi/tounsiya. (\"Er/Sie ist Tunesier/in.\")\n- Oder aus einem determinierten Nomen (z.B. mit Artikel) und einem Adjektiv: il-mra mizyana. (\"Die Frau ist hübsch.\")\n\n### Zahlen 0–10\n- sfir, wa7id, tnin/zouz, tlata, arb3a, khamsa, setta, sab3a, thmenya, ts3a, 3ashra\n- \"wa7id\" (eins) sagt man nur beim Zählen oder wenn man \"EIN\" extra betonen will.\n- Ab 2 (außer beim reinen Zählen) sagt man \"zouz\" + das gezählte Wort in der Mehrzahl.\n\n### Wichtige Grußformeln\n- is-salam 3likom → w-3alikom is-salam\n- 3aslema → ysallmik\n- sba7 el khir → sbe7 el nour / sbe7 el-ward / sbe7 el-foll\n- massik bil khir → massik bil khir (gleiche Formel zurück), bislema\n- tisbe7 3ala khir → tisbe7 3ala khir / Liltek zina\n- ahla → ahla bik\n- mar7ba bik → w-bik y3ayyshik",
+  "vocab_lesson_refs": "ids:571,572,657,503,2102,847,491,492,494,622,524,254,255,257,892,568,567,469,2856,3366,616,617,877,878,493,603,602,839,252,2402,2403,1395,3627,3628,3629,3630,3631,3632,3633,3634,3635,3636,3637,3638,2099,574,794,3624,3622,3619,3620,3621,408,247,809,248,249,1416,1417,808,3643,253,3813,1407,4437,4438,4439,4440,4443,4444,3618,499,500,854,251|darija:paspor,jarida,mudir,mudira,kartaba,mifta7,wzira,la,ya,ej-jzayir,jzayri,jzayriya,el-maghrib,maghribi,maghribiya,muritanya,muritani,muritaniya,libya,libi,libiya,ahla bik,tesba7 3la khir"
+ },
+ {
+  "id": 2,
+  "title": "Lektion 2 — Verben Präsens, Vorstellung, Familie & Berufe",
+  "skript": 1,
+  "chunk_order": [
+   {
+    "key": "vorstellung",
+    "label": "Begrüßung & Vorstellung",
+    "dialog": true,
+    "grammar_headings": [
+     "Personalpronomen (\"ich, du, er...\")"
+    ]
+   },
+   {
+    "key": "verneinung_fragen1",
+    "label": "Verneinung: Fragen 1",
+    "dialog": false,
+    "grammar_headings": [
+     "\"Ich bin nicht\" / \"Du bist nicht\" usw."
+    ]
+   },
+   {
+    "key": "verneinung_fragen2",
+    "label": "Verneinung: Fragen 2 & Grammatik",
+    "dialog": false,
+    "grammar_headings": [
+     "\"Ich bin nicht\" / \"Du bist nicht\" usw."
+    ]
+   },
+   {
+    "key": "verneinung_fragen3",
+    "label": "Verneinung: Fragen 3",
+    "dialog": false,
+    "grammar_headings": [
+     "\"Ich bin nicht\" / \"Du bist nicht\" usw."
+    ]
+   },
+   {
+    "key": "possessiv_uebersetzen1",
+    "label": "Possessiv: Übersetzen 1",
+    "dialog": false,
+    "grammar_headings": [
+     "Zwei Wörter zusammenziehen (z.B. \"Fatmas Mutter\")",
+     "\"Mein/dein/sein...\" als Endung ans Wort hängen"
+    ]
+   },
+   {
+    "key": "possessiv_uebersetzen2",
+    "label": "Possessiv: Übersetzen 2 & Grammatik",
+    "dialog": false,
+    "grammar_headings": [
+     "Zwei Wörter zusammenziehen (z.B. \"Fatmas Mutter\")",
+     "\"Mein/dein/sein...\" als Endung ans Wort hängen"
+    ]
+   },
+   {
+    "key": "possessiv_genitiv",
+    "label": "Possessiv: Genitivverbindung",
+    "dialog": false,
+    "grammar_headings": [
+     "Zwei Wörter zusammenziehen (z.B. \"Fatmas Mutter\")",
+     "\"Mein/dein/sein...\" als Endung ans Wort hängen"
+    ]
+   },
+   {
+    "key": "verneinung_praesens",
+    "label": "Verneinung im Präsens (Verbformen)",
+    "dialog": false,
+    "grammar_headings": [
+     "Präsens der Verben",
+     "Verneinung im Präsens (\"nicht\")"
+    ]
+   },
+   {
+    "key": "konjugation_drill_1",
+    "label": "Verben-Drill 1",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "konjugation_drill_2",
+    "label": "Verben-Drill 2",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "possessiv_uebung",
+    "label": "Possessivsuffixe üben",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "aussprache_1",
+    "label": "Ausspracheübungen 1",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "aussprache_2",
+    "label": "Ausspracheübungen 2",
+    "dialog": false,
+    "grammar_headings": []
+   }
+  ],
+  "dialog_text": "Dialog 1:\nJalal: sba7 el khir ya Mou7sin.\nMou7sin: nharik zin. shnuwwa 7welik?\nJalal: la bes y3ayyshik. n7ib nqaddam-lik sa7bi Mark.\nMou7sin: nitsharfu bik ya Mark.\nMark: w-bik y3ayyshik.\nMou7sin: mnin enti?\nMark: ena swisri.\nMou7sin: mar7ba bik. w-ash ta3mel fi-tounis?\nMark: naqra fil-lahja t-tounsiya.\nMou7sin: win?\nMark: fi-bourgiba skoul.\nMou7sin: ya3tik es-sa77a. wallahi titkallem bil-3arbi bil-gda.\nMark: la. shwayya barka.\n\nDialog 2:\nSunya: sba7 el khir.\nMou7sin: nharik zin. shnuwwa 7welik?\nSunya: la bes y3ayyshik.\nMou7sin: ena ismi Mou7sin w-enti sh-ismik?\nSunya: ismi Sunya.\nMou7sin: enti fransawiya?\nSunya: la, ena tounsiya.\nMou7sin: nitsharfou. ena jzeyri.\nSunya: tsharrafna.",
+  "course_number": 2,
+  "grammar_notes": "### Präsens der Verben\n- Verbformen bekommen eine Vorsilbe: y- (er), t- (sie/du), n- (ich)\n- Im Plural kommt bei allen Formen zusätzlich ein -u ans Ende\n- Manche Verben verlieren dabei einen Vokal in der Mitte, das erleichtert die Aussprache: yikhdim (er arbeitet) → yikhdmu (sie arbeiten)\n- yakol und yitkallem verlieren ihren mittleren Vokal im Plural sogar ganz\n- yqarri und yaqra enden schon auf einen Vokal – da kommt das -u einfach direkt dran: yqarriw, yaqraw\n\n### Verneinung im Präsens (\"nicht\")\n- Man packt das Verb in eine Klammer: davor kommt ma-, danach -sh\n- Beispiel: yikhdim (er arbeitet) → ma yikhdimsh (er arbeitet nicht)\n- Durch das -sh am Ende verschiebt sich manchmal die Betonung im Wort\n\n### Personalpronomen (\"ich, du, er...\")\n- Einzahl: ena (ich), enti (du), houa (er), heya (sie)\n- Mehrzahl: e7na (wir), entouma (ihr), houma (sie)\n\n### \"Ich bin nicht\" / \"Du bist nicht\" usw.\n- ena manish, enti makesh, houa mahoush, heya mahish, e7na mananesh, entouma makumsh, houma mahumsh\n- Für die 3. Person (er/sie/sie-Pl.) gibt es oft auch die kurze Form \"moush\"\n\n### Zwei Wörter zusammenziehen (z.B. \"Fatmas Mutter\")\n- Man hängt die zwei Wörter einfach aneinander, das erste bekommt dabei keinen Artikel: oumm Fatma = wörtlich \"Mutter Fatma\" = Fatmas Mutter\n\n### \"Mein/dein/sein...\" als Endung ans Wort hängen\n- Nach Konsonant: -i (mein), -ik (dein), -u (sein/m.), -ha (ihr)\n- Nach langem Vokal: -ya (mein), -k (dein), -h (sein/m.), -ha (ihr)\n- Mehrzahl: -na (unser), -kum (euer), -hum (ihr, Pl.)\n- Sonderfall: \"mra\" (Frau) wird vor der Endung zu \"mart-\": marti = meine Frau\n- Sonderfall: für \"mein Vater\" sagt man nicht \"bouya\", sondern \"baba\"",
+  "vocab_lesson_refs": "ids:1072,1097,1219,1231,1389,1454,1525,1593,2194,2198,248,2571,3134,3418,3420,3646,3648,3649,3650,3651,3652,3653,3654,3655,3656,3657,3658,3659,3660,3661,3662,3663,3664,3665,3666,3667,3668,3669,3670,3671,3672,3673,3674,3675,3676,3677,3678,3679,3680,3681,3682,3683,401,403,404,472,476,506,571,572,623,671,672,677,762,765,907,944,962,989,3745,3746,3747,3748,3749,3750,3751,3752,1416,3625,853,578,4228,2328,294,2195,4447,4448,4449"
+ },
+ {
+  "id": 3,
+  "title": "Lektion 3 — Wegbeschreibung, Post & Bank",
+  "skript": 1,
+  "chunk_order": [
+   {
+    "key": "fragen_shi",
+    "label": "Ja/Nein-Fragen mit -shi",
+    "dialog": false,
+    "grammar_headings": [
+     "Fragepartikel -sh(i)",
+     "Fragewörter"
+    ]
+   },
+   {
+    "key": "mengen_plural",
+    "label": "Mengen & Plural",
+    "dialog": false,
+    "grammar_headings": [
+     "Pluralformen wichtiger Nomen",
+     "Plural des Demonstrativpronomens"
+    ]
+   },
+   {
+    "key": "wegbeschreibung",
+    "label": "Wegbeschreibung",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__",
+     "Temporaladverbien"
+    ]
+   },
+   {
+    "key": "imperativ",
+    "label": "Imperativ",
+    "dialog": false,
+    "grammar_headings": [
+     "Imperativ"
+    ]
+   },
+   {
+    "key": "dankesformeln",
+    "label": "Dankes- & Bittformeln",
+    "dialog": false,
+    "grammar_headings": [
+     "Dankes- und Bittformeln"
+    ]
+   },
+   {
+    "key": "grammatik_drills",
+    "label": "Verbformen & Possessivsuffixe üben",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "genitiv_1",
+    "label": "Genitivverbindungen 1",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "genitiv_2",
+    "label": "Genitivverbindungen 2",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "praep_fragen1",
+    "label": "Fragen mit Präpositionen 1",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "praep_fragen2",
+    "label": "Fragen mit Präpositionen 2",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "ja_nein",
+    "label": "Fragen bejahen und verneinen",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "aussprache_r",
+    "label": "Ausspracheübungen (r-Laut)",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "aussprache_gh",
+    "label": "Ausspracheübungen (gh-Laut)",
+    "dialog": false,
+    "grammar_headings": []
+   }
+  ],
+  "dialog_text": "f-ish-share3 (Auf der Straße)\n\nrajel 1: Sama7ni, y3ayyshik. Win il-bousta?\nrajel 2: El-quddem. Imshi toul w ba3d dour 3al-ymin.\n...\nrajel 1: Isma3 ya khuya. B-rabbi ta3raf-shi win il-bousta?\nrajel 3: Il-bousta el-tali.\nrajel 1: El-tali el-quddem?\nrajel 3: Isma3 b-il-gda. El-tali, wra el-monopri.\nrajel 1: Win el-monopri?\nrajel 3: Bahdha el-banka.\nrajel 1: Ana banka?\nrajel 3: Bank ej-jnoub.\nrajel 1: Barak allahu fik.\nrajel 3: Min gir mziya.\n\nmra 1: Y3ayyshik ukhti, sama7ni la7dha.\nmra 2: Tfaddal.\nmra 1: B-rabbi ta3raf-sh win jat m7attit il-kiran?\nmra 2: Ayy, na3rif. Hiyya fi share3 lundra.\nmra 1: Win ja share3 lundra?\nmra 2: Imshi el-quddem w-bahdha el-banka dour 3al-ysar. M7attit il-kiran mqabla es-sinima.\nmra 1: Hiyya qriba walla b3ida min hna?\nmra 2: Qriba barsha.\nmra 1: Barak allahu fik.\nmra 2: Min gir mziya.",
+  "course_number": 3,
+  "grammar_notes": "Präpositionen:\nfi / f- (vor Artikel) - in\nbi / b- - mithilfe, durch, mittels, versehen mit\nl- - für; zu, nach\nm3a - mit\n3la / 3a- (vor Artikel) - auf, über\nmin / m- (vor Artikel) - von, aus\nquddam - vor (lokal)\nwra - hinter\nfuq - über, auf\ntaht - unter\n(ma-)bin, ma-binat- - zwischen\nbahdha - bei, neben, in der Nähe von, zu (einer Person)\n3and - bei, zu (einer Person)\nba3d - nach\nqbal - vor (zeitlich)\n\nLokaladverbien:\nhna, houni - hier\nghadi (foul) - dort\nf-it-twil - geradeaus\ndakhel - drinnen, hinein\nel-quddam - vorne, nach vorne\nfuq - oben, hinauf\nel-wta - unten, hinunter\n3al-ymin - rechts, nach rechts\n\n### Fragepartikel -sh(i)\n- Zusätzlich zum Frageton kann die Partikel -sh(i) an Verben und bestimmte Präpositionen angehängt werden, um eine Ja/Nein-Frage zu bilden: ta3raf-shi? (weißt du?)\n- Bei \"oder\"-Fragen mit walla wird -sh(i) normalerweise NICHT angehängt: inti tounsi walla maghribi?\n- Wird durch das angehängte -sh(i) ein unbetontes i betont, wird es zu a: ya3rif (er weiß) -> ta3raf-shi? (weißt du?)\n\n### Fragewörter\n- win / fin - wo?; wohin?\n- mnin - woher?\n- waqtash / waqtah - wann?\n- 3lash / 3lah - warum?; worüber?\n- kifash / kifah - wie?\n- qaddash / qaddah - wie viel?; wie viele?; wie lange?\n- (a)shkun - wer?\n- (a)shnuwwa (m.); (a)shniyya (f.); (a)shnuma (Pl.) - was?\n- ash - was?\n- ana - welche/r, was für ein/e?\n\n### Pluralformen wichtiger Nomen\n- khu (Bruder) -> ikhwa, akhwa\n- ukht (Schwester) -> khwat (auch: Geschwister)\n- wlid/wlad (Junge, Sohn) -> wlad, ulad\n- bint/bnayya (Tochter, Mädchen) -> bnat\n- rajil (Mann) -> rjal\n- mra (Frau) -> nsa\n\n### Plural des Demonstrativpronomens\n- Singular hetha (dieser/der, m.), hethi (diese/die, f.) -> Plural hethoma (diese/die, für m., f. und Pl.)\n- hethi bnayya (das ist ein Mädchen) -> hethoma bnat (das sind Mädchen)\n\n### Imperativ\n- Der Imperativ hat die Form des Präsens Singular, aber ohne Präfixkonsonant. Der Plural wird durch Anhängen von -u gebildet.\n- Beispiele: yisma3/yasma3 -> isma3 (Sg.) / ism3u (Pl.) \"hören\"; yiktib -> iktib / iktbu \"schreiben\"; yikhdim -> ikhdim / ikhdmu \"arbeiten\"; yushrub -> ushrub / ushrbu \"trinken\"; ydur -> dur / duru \"abbiegen\"; yimshi -> imshi / imshiu \"gehen\"; ya3ti -> a3ti / a3tiu \"geben\"; ysamah -> samahni / samhu \"verzeihen\"\n- Verben, die nach dem Präfixvokal zwei Konsonanten haben, verlieren im Imperativ sowohl Präfixkonsonant als auch Präfixvokal: tfaddal -> tfaddlu \"Bitteschön\"; stanna -> stannau \"Warte ein bisschen\"\n\n### Dankes- und Bittformeln\n- y3ayyshik - \"Er lasse dich leben\" (Dank)\n- ytawwil fi-3umrik - \"Er möge dich lange leben lassen\"\n- allah yxallik - \"Gott möge dich (am Leben) lassen\"\n- bark allahu fik - \"Möge Gott dich segnen\"\n- allah yir7am buk, waldik - \"Möge Gott sich deines Vaters/deiner Eltern erbarmen\"\n- b-rabbi / bi-llahi - \"im Namen Gottes; mit Gottes Hilfe\" (Bitte)\n- b-jah rabbi - \"im Namen der Kraft Gottes\" (Bitte)\n\n### Temporaladverbien\n- ba3d - dann, danach\n- dima - immer\n- tawwa(a) - jetzt\n- il-yum - heute\n- kull yum - jeden Tag\n- sa3at - manchmal\n- ghudwa - morgen\n- il-lila - heute Abend, heute Nacht",
+  "vocab_lesson_refs": "ids:1001,1002,1014,1016,1028,1030,1033,1060,1061,1186,1215,1257,1363,1364,1393,1394,1460,1470,1751,1828,2015,2095,2246,2303,2316,2331,2344,2364,2389,2447,2643,2730,277,287,288,2956,2958,2959,3103,322,323,3402,3439,362,3675,3680,3723,3724,3725,3727,3728,3729,3730,3731,3732,3733,3734,3735,3736,3737,3738,3739,3740,3741,3742,3743,3744,383,393,437,468,473,474,477,479,483,485,527,528,531,535,537,538,544,547,550,560,563,564,566,569,570,571,572,606,610,621,660,661,662,663,665,738,761,764,896,915,919,922,923,924,468,936,942,950,980,1061,719,793,910,2069,588,589,591,1092,416,2269,2282,2042,341,2297,1799,1825,977,3766,3767,3768,3769,3770,3771,3772,3773,3774,3775,3776,3777,3778,3781,3890,3891,930,921,1806,408,2025,2026,2027"
+ },
+ {
+  "id": 5,
+  "title": "Lektion 4 — Pluralformen, Zahlen & Besitz",
+  "skript": 1,
+  "chunk_order": [
+   {
+    "key": "dialoge",
+    "label": "Dialoge",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "plural_nomen",
+    "label": "Pluralformen von Nomen",
+    "dialog": false,
+    "grammar_headings": [
+     "Pluralformen von Nomen"
+    ]
+   },
+   {
+    "key": "nisba_plural",
+    "label": "Nisbaadjektive & Nationalitäten",
+    "dialog": false,
+    "grammar_headings": [
+     "Pluralformen von Nisbaadjektiven"
+    ]
+   },
+   {
+    "key": "zahlen_luecken",
+    "label": "Zahlen: Lückentext",
+    "dialog": false,
+    "grammar_headings": [
+     "Zahlen von elf bis neunzehn",
+     "Zusammenfassung der Zahlwörter von 1-19 mit gezähltem Nomen"
+    ]
+   },
+   {
+    "key": "zahlen_einfach",
+    "label": "Zahlen: Übersetzen (Grundzahlen)",
+    "dialog": false,
+    "grammar_headings": [
+     "Zahlen von elf bis neunzehn",
+     "Zusammenfassung der Zahlwörter von 1-19 mit gezähltem Nomen"
+    ]
+   },
+   {
+    "key": "zahlen_paare",
+    "label": "Zahlen: Paare (Sg./Pl.)",
+    "dialog": false,
+    "grammar_headings": [
+     "Zahlen von elf bis neunzehn",
+     "Zusammenfassung der Zahlwörter von 1-19 mit gezähltem Nomen"
+    ]
+   },
+   {
+    "key": "praep_suffixe_drill",
+    "label": "Präpositionssuffixe: Paradigmen",
+    "dialog": false,
+    "grammar_headings": [
+     "Anfügen von Pronominalsuffixen an Präpositionen"
+    ]
+   },
+   {
+    "key": "praep_suffixe_1",
+    "label": "Präpositionssuffixe: m3a/quddam/wra/bahda",
+    "dialog": false,
+    "grammar_headings": [
+     "Anfügen von Pronominalsuffixen an Präpositionen"
+    ]
+   },
+   {
+    "key": "praep_suffixe_2",
+    "label": "Präpositionssuffixe: fi/bi/3la/bin/min",
+    "dialog": false,
+    "grammar_headings": [
+     "Anfügen von Pronominalsuffixen an Präpositionen"
+    ]
+   },
+   {
+    "key": "sand_uebersetzen",
+    "label": "3and: Übersetzen",
+    "dialog": false,
+    "grammar_headings": [
+     "Präposition ʕand \"bei, im Besitz von\""
+    ]
+   },
+   {
+    "key": "sand_negieren",
+    "label": "3and: Negieren",
+    "dialog": false,
+    "grammar_headings": [
+     "Präposition ʕand \"bei, im Besitz von\""
+    ]
+   },
+   {
+    "key": "sand_janein",
+    "label": "3and: Ja/Nein-Fragen",
+    "dialog": false,
+    "grammar_headings": [
+     "Präposition ʕand \"bei, im Besitz von\""
+    ]
+   },
+   {
+    "key": "frageworter_suffix",
+    "label": "Suffigierte Fragewörter",
+    "dialog": false,
+    "grammar_headings": [
+     "Suffigierung an Interrogativpronomen und -adverbien"
+    ]
+   },
+   {
+    "key": "wiederholung_imperativ",
+    "label": "Wiederholung: Imperativ",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "wiederholung_pronomen",
+    "label": "Wiederholung: Pronomen",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "aussprache_1",
+    "label": "Ausspracheübungen 1",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "aussprache_2",
+    "label": "Ausspracheübungen 2",
+    "dialog": false,
+    "grammar_headings": []
+   }
+  ],
+  "dialog_text": "Dialog 1\n\nKarim: winkum ya wlad? shnuwwa hwalkum?\nNabil w-Muhsin: la bas. ysayyshik. ki-l-3ada.\nKarim: shbikum f-ish-share3? ijau m3aya l-id-dar.\nNabil w-Muhsin: bark allau fik.\nKarim: ayya tfaddlu. udkhlu. tushrbu qahwa walla tay?\nMuhsin: ana nushrub tay. w-inti nabil?\nNabil: ana nhibb qahwa. ysayyshik.\n\nDialog 2\n\nKarim: 3a-s-slama ya muhsin.\nMuhsin: 3a-s-slama ya karim. nqaddam-lik sahibti maryam.\nKarim: nitsharrfu. hiyya mnin?\nMuhsin: hiyya min fransa ama tikhdim fi-tounis.\nKarim: ash tikhdim?\nMuhsin: ustadha. tqarri l-français fi-lissee l-marsa.\n\nDialog 3\n\nFatma: 3andik-shi sarf khams-alaf?\nMaryam: la, ma-3andi-sh.\nFatma: mmala qaddash 3andik flus?\nMaryam: 3andi dinar barka.\nFatma: tnazzim tsallifni khamsa mya?\nMaryam: bahi. tfaddal ahaya khamsa mya.\nFatma: barak allahu fik.\nMaryam: min gir mziya.",
+  "course_number": 4,
+  "grammar_notes": "### Pluralformen von Nomen\nZwei Typen: externe Plurale (Endung angehängt) und interne Plurale (Wortveränderung).\n\nExterne Plurale mit -in (mask., v.a. Berufsbezeichnungen, Nisbaadjektive, Partizipien):\n- mudir -> mudirin\n- m3allim -> m3allimin\n- muritani -> muritaniyin\n- sudani -> sudaniyin\n- libi -> libiyin / libiya\n- dziri -> dziriyin / dziriya\n- swisri -> swisriyin\n- isbani -> isbaniyin\n- mizyan -> mizyanin\n- m3arris -> m3arrsin\n- waqif -> waqfin\naber (interner Plural bei manchen Nisbaadjektiven auf -i): tounsi -> twansa; maghrbi -> mgharba; marrouki -> mrarka / marroukiyin; masri -> msara / masriyin\n\nExterne Plurale mit -at (weibl. Personenbez., viele Feminina auf -a, auch manche mask. Fremdwörter):\n- warda -> wardat\n- kurrasa -> kurrasat / kraris\n- m3allma -> m3allmat\n- marra -> marrat\n- tounsiya -> tounsiyat\n- libiya -> libiyat\n- nimsawiya -> nimsawiyat\n- stilu -> stiluwat\n- biru -> biruwat\n- stush -> stushat\n\nInterne Plurale (durch innere Wortveränderung, kein festes Muster, jeweils mit dem Singular mitzulernen!):\n- ktab -> ktub\n- khidma -> khdim\n- qlam -> (a)qlam\n- warqa -> (a)wraq\n- dar -> dyar\n- kbir -> kbar\n- bab -> biban\n- kar -> kiran\n- shubbak -> shbabik\n- miftah -> mfatah\n- 3asfur -> 3safir\n- kursi -> krasi\n\n### Pluralformen von Nisbaadjektiven\nDie maskuline Form ist genau genommen kein Plural, sondern ein Kollektivum (Gruppenbezeichnung):\n- amriki -> amrikan (Kollektiv), amrikiya (f.), amrikiyat (f. Pl.)\n- fransawi -> fransis (Kollektiv), fransawiya (f.), fransawiyat (f. Pl.)\n- 3arbi -> 3rab (Kollektiv), 3arbiya (f.), 3arbiyat (f. Pl.)\n- almani -> alman (Kollektiv), almaniya (f.), almaniyat (f. Pl.)\nBeispiele: tlata fransis \"drei Franzosen\"; arb3a alman \"vier Deutsche\"\n\n### Zahlen von elf bis neunzehn\nIsoliert (alleinstehend, ohne folgendes Nomen):\n7dash 11, tnash 12, tlutash 13, arba3tash 14, khumstash 15, suttash 16, sba3tash 17, tmuntash 18, tsa3tash 19\n\nMit folgendem gezähltem Nomen: obligatorisches -in wird angehängt (n assimiliert sich an folgendes r/l), Nomen steht im indeterminierten Singular:\n7dash-in, tnash-in, tlutash-in, arba3tash-in, khumstash-in, suttash-in, sba3tash-in, tmuntash-in, tsa3tash-in\nBeispiele: tnash-in zwab \"zwölf Briefe\"; 7dash-ir rajil \"elf Männer\"; tlutash-il libi \"dreizehn Libyer\"\n\n### Zusammenfassung der Zahlwörter von 1-19 mit gezähltem Nomen\nZahlwörter 2-10: Nomen folgt im Plural. Zahlwörter ab 11: Nomen folgt im Singular.\n1: tounsi (wahid), rajil (wahid), mra (wahda), kurrasa (wahda)\n2: zuz twansa, zuz rjal, zuz nsa, zuz kurrasat / kraris\n3-10: twansa, rjal, nsa, kurrasat / kraris\n11-19: -in tounsi, -ir rajil, -in mra, -in kurrasa\n\n### Anfügen von Pronominalsuffixen an Präpositionen\nNach Konsonant: -i/-ik/-u/-ha (Sg.), -na/-kum/-hum (Pl.)\nNach Vokal: -ya/-k/-h/-ha (Sg.), -na/-kum/-hum (Pl.)\n\nquddam \"vor\": quddami, quddamik, quddamu, quddamha; quddamna, quddamkum, quddamhum\nmin \"von\": minni, minnik, minnu, minha; minna, minkum, minhum (n verdoppelt sich vor vokalischem Suffix; vor Artikel lautet min \"m-\": nukhruj m-id-dar)\n(ma-)bin \"zwischen\": (ma-)bini, (ma-)binik, (ma-)binu, (ma-)binha; vor Pluralsuffixen nur (ma-)binat-: (ma-)binatna. Mit Singularsuffixen muss bin wiederholt werden: (ma-)bini w-binik = (ma-)binatna\nqbal \"vor (temp.)\": qabli, qablik, qablu; b-janb / 3la-janb \"neben\": b-jambi, b-jambik, b-jambu, bi-znabha; bi-znabna, bi-znabkum, bi-znabhum\nNach dem Vokal a: m3a \"mit\": m3aya, m3ak, m3ah, m3aha; m3ana, m3akum, m3ahum. Ebenso wra \"hinter\" und bahdha \"neben\": wraya/wrak/wrah/wraha; bahdaya/bahdak/bahdah/bahdaha\n\n### Präposition ʕand \"bei, im Besitz von\"\nDrückt mit Pronominalsuffixen das deutsche \"haben\" aus:\n3andi \"ich habe\", 3andik, 3andu, 3andha; 3andna/3anna, 3andkum, 3andhum\nNegiert: ma-3andi-sh \"ich habe nicht/kein(e)\", ma-3andik-sh, ma-3andu-sh, ma-3andha-sh; ma-3andna-sh, ma-3andkum-sh, ma-3andhum-sh\nBeispiel: ma-3andi-sh flus \"ich habe kein Geld\"\nIn der Frage wird nur -shi suffigiert: 3andik-shi sarf? \"Hast du Kleingeld?\"\n\n### Suffigierung an Interrogativpronomen und -adverbien\nwin \"wo\", (a)shbi- \"was ist mit...; was habe ich, hast du...; warum\", shkun \"wer\" können mit Pronominalsuffixen versehen werden:\nwin: wini, winik, winu, winha/wini; wina, winkum, winhum\n(a)shbi-: shbiya/shbini, shbik, shbih, shbiha; shbina, shbikum, shbihum\nshkun: shkuni, shkunik, shkunu/shkun-(h)uwwa, shkuni/shkun-(h)iyya; shkunna, shkunkum, shkunhum\nBeispiele: winkum tawwa? \"wo seid ihr jetzt?\"; winik ya khuya \"wo bist du, mein Lieber?\"; shbikum waqfin huni? \"warum steht ihr hier?\"; shkunik inti \"wer bist du?\"",
+  "vocab_lesson_refs": "ids:3811,3812,3813,389,3815,3816,3817,3818,3820,3821,3822,3823,3824,3825,3826,3827,3828,3829,3830,3831,3832,3833,3834,3835,3836,3837,3838,3839,2383,1958,3902,3903,278,295,501,659,821,975,984,1799,1917,1956,1957,2101,2107,2406,2407,2704,2709,3775,3622,3966,3967,471,260,4450,4451"
+ },
+ {
+  "id": 6,
+  "title": "Lektion 5 — Verben im Präsens, Partizipien & Wünsche",
+  "skript": 1,
+  "chunk_order": [
+   {
+    "key": "dialoge",
+    "label": "Dialoge",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "verben_gruppen_praesens",
+    "label": "Verben: Präsens & Gruppen zuordnen",
+    "dialog": false,
+    "grammar_headings": [
+     "Die regulären Verben des I. Stammes (Grundstamm) im Präsens"
+    ]
+   },
+   {
+    "key": "verben_gruppen_negation",
+    "label": "Verben: Negation",
+    "dialog": false,
+    "grammar_headings": [
+     "Die regulären Verben des I. Stammes (Grundstamm) im Präsens"
+    ]
+   },
+   {
+    "key": "verben_gruppen_partizip",
+    "label": "Verben: Partizip & Imperativ",
+    "dialog": false,
+    "grammar_headings": [
+     "Die regulären Verben des I. Stammes (Grundstamm) im Präsens"
+    ]
+   },
+   {
+    "key": "verben_gruppen_plural",
+    "label": "Verben: Plural bilden",
+    "dialog": false,
+    "grammar_headings": [
+     "Die regulären Verben des I. Stammes (Grundstamm) im Präsens"
+    ]
+   },
+   {
+    "key": "partizip_fragen_1",
+    "label": "Aktives Partizip: Fragen 1",
+    "dialog": false,
+    "grammar_headings": [
+     "Aktives Partizip"
+    ]
+   },
+   {
+    "key": "partizip_fragen_2",
+    "label": "Aktives Partizip: Fragen 2",
+    "dialog": false,
+    "grammar_headings": [
+     "Aktives Partizip"
+    ]
+   },
+   {
+    "key": "partizip_luecken",
+    "label": "Aktives Partizip: Lückentext",
+    "dialog": false,
+    "grammar_headings": [
+     "Aktives Partizip"
+    ]
+   },
+   {
+    "key": "passives_partizip",
+    "label": "Passives Partizip & Negation",
+    "dialog": false,
+    "grammar_headings": [
+     "Passives Partizip",
+     "Negation der Partizipien"
+    ]
+   },
+   {
+    "key": "madabb",
+    "label": "madha-b- – gern möchten",
+    "dialog": false,
+    "grammar_headings": [
+     "madha-b-"
+    ]
+   },
+   {
+    "key": "zahlen_20_1",
+    "label": "Zahlen 20-1000: Teil 1",
+    "dialog": false,
+    "grammar_headings": [
+     "Die Zahlen von 20 bis 1000"
+    ]
+   },
+   {
+    "key": "zahlen_20_2",
+    "label": "Zahlen 20-1000: Teil 2",
+    "dialog": false,
+    "grammar_headings": [
+     "Die Zahlen von 20 bis 1000"
+    ]
+   },
+   {
+    "key": "feminina",
+    "label": "Unmarkierte Feminina",
+    "dialog": false,
+    "grammar_headings": [
+     "Unmarkierte Feminina"
+    ]
+   },
+   {
+    "key": "tawwa",
+    "label": "tawwa – jetzt / nahe Zukunft",
+    "dialog": false,
+    "grammar_headings": [
+     "tawwa"
+    ]
+   }
+  ],
+  "dialog_text": "Dialog 1: quddam il-qahwa\n\nKamal: ahla! ti-winik ya khuya?\nHadi: hani. shnuwwa hwalik?\nKamal: il-7amdulla, la bas. shnuwwa hwalik inti w-shnuwwa hwal il-khidma?\nHadi: wallahi la bas ysayyshik. ki-l-3ada.\nKamal: shbik waqif? tfaddal ushrub qahwa m3aya.\nHadi: bark allau fik. ama rani mazrub shwayya. inshalla marra ukhra.\nKamal: win mashi tawwa?\nHadi: mashi l-il-banka bash nijbid shwayya flus. ma-3ad-sh waqt.\nKamal: waqtash nshufik?\nHadi: wallahi ma-na3raf-sh. ghudwa inshalla. ayya b-is-slama.\nKamal: f-il-aman.\n\nDialog 2\n\nKarim: shbikum kharjin? ma-tikhdmu-sh tawwa?\nrzal: ma-nikhdmu-sh.\nKarim: ya-khi win mashin?\nrzal: mashin l-il-qahwa bash nal3bu turh karta.\nKarim: nji m3akum?\nrzal: tfaddal.\n\nDialog 3\n\nHsan: ana 3utshan, mada-biya nushrub haza. tihibb timshi l-il-qahwa m3aya?\nBashir: 3lash la? stanna njib li-flus.\nHsan: mush lazim tjib, tawwa nkhallas 3lik.\n...\nil-garçon: tfaddlu ash tushrbu?\nHsan: mada-biya 3la qahwa b-il-hlib.\nBashir: w-ana a3tini kas tay b-in-na3na3 w-m3ah kas ma. w-jib-li shisha zada b-rabbi.\nil-garçon: allah ybarik.",
+  "course_number": 5,
+  "grammar_notes": "### Die regulären Verben des I. Stammes (Grundstamm) im Präsens\nSchema yfeel. Sechs Gruppen je nach Kurzvokal von Präfix und Stamm. Bei Suffigierung von -u kommt der Stammvokal in offener Silbe zu stehen und fällt aus (Anhäufung von 3 Konsonanten wird durch Hilfsvokal aufgelöst).\n\nGruppe 1: (f3al)/yaf3al — 1. Radikal ist Laryngal (h), Pharyngal (7,3), Velar (q,kh,gh) oder emphatisch.\nyal3ab \"spielen\": yal3ab, tal3ab, tal3ab, nal3ab; Pl. yal3bu, tal3bu, tal3bu, nal3bu. akt.Part. la3ib/la3ba/la3bin. pass.Part. mal3ub/mal3uba/mal3ubin. Imperativ al3ab (Sg.)/al3bu (Pl.)\nWeitere Verben: yidrab \"schlagen\", yihdar \"anwesend sein\", yishar \"lange aufbleiben\", yihbat \"herunterkommen; aussteigen\" (auch yihbit), yihfad \"auswendig lernen, sich merken\" (auch yihfid)\n\nGruppe 2: (f3al)/yaf3il — 1. Radikal ist Pharyngal (3,7) oder Velar (q,kh,gh). Stammvokal unter Betonung oft a.\nya3rif \"wissen, kennen\": ya3rif, ta3rif, ta3rif, na3rif; Pl. ya3rfu, ta3rfu, ta3rfu, na3rfu. akt.Part. 3arif/3arfa/3arfin. pass.Part. ma3ruf/ma3rufa/ma3rufin. Imperativ a3rif (Sg.)/a3rfu (Pl.)\nWeitere Verben: yighsil \"waschen\", ya3fis (3la) \"auf etw. steigen, treten\", ya3zin \"kneten, walken; durchprügeln\", ya3tis \"niesen\"\n\nGruppe 3: (f3al)/yif3al — 3. Radikal fast immer Laryngal (h), Pharyngal (3,7) oder Velar (q,kh,gh).\nyisma3 \"hören\": yisma3, tisma3, tisma3, nisma3; Pl. yism3u, tism3u, tism3u, nism3u. akt.Part. sama3/sam3a/sam3in. pass.Part. masmu3/masmu3a/masmu3in. Imperativ isma3 (Sg.)/ism3u (Pl.)\nVor 3/7 und q/kh hat das aktive Partizip das Schema fa3al statt fa3il, z.B. razha3, najah, lasaq, salakh. Beim Laryngal h scheint das nicht der Fall zu sein: karih. Beim Velar gh nicht immer: farigh, aber sabagh.\nWeitere Verben: yidfa3 \"zahlen\", yirja3 \"zurückkehren\", yishtah \"tanzen\", yifrah \"sich freuen\", yidbah \"schlachten, schächten\", yibsat/yib3at \"schicken\", yikrah \"hassen, verabscheuen\", yifragh \"leer werden, sich leeren\", yisbagh \"färben\", yinjah \"Erfolg haben\", yimsah \"(ab)wischen\", yisraq \"stehlen\", yirham \"sich erbarmen\", yishal/yis-al \"fragen\", yilsaq \"kleben, haften (intr.)\", yislakh \"häuten, das Fell abziehen\"\nAnmerkung: bei den meisten Verben dieser Gruppe kommt neben i-a im Präsens auch a-a vor, z.B. yisma3 neben yasma3.\n\nGruppe 4: (f3al)/yuf3ul — Stammvokal meist vom Hocharabischen ererbt, oft emphatische Konsonanten.\nyushrub \"trinken\": yushrub, tushrub, tushrub, nushrub; Pl. yushrbu, tushrbu, tushrbu, nushrbu. akt.Part. sharib/sharba/sharbin. pass.Part. matlub/matluba/matlubin. Imperativ ushrub (Sg.)/ushrbu (Pl.)\nWeitere Verben: yutlub \"verlangen, erbitten\", yuftur \"zu Mittag essen; frühstücken\", yurbut \"(an)binden\", yushkur \"danken\", yudlum \"ungerecht behandeln\", yurqud \"schlafen\" — aber: yuqtil \"töten\"\n\nGruppe 5: (f3il)/yif3il — Präsens von f3il-Verben lautet yif3il.\nyiktib \"schreiben\": yiktib, tiktib, tiktib, niktib; Pl. yiktbu, tiktbu, tiktbu, niktbu. akt.Part. katib/katba/katbin. pass.Part. maktub/maktuba/maktubin. Imperativ iktib (Sg.)/iktbu (Pl.)\nWeitere Verben: yilbis \"sich ankleiden\", yihsib \"zählen, rechnen\", yihlif \"schwören\", yikdib \"lügen\"\n\nGruppe 6: (f3ul)/yuf3ul — Präsens von f3ul-Verben lautet yuf3ul, oft emphatischer Konsonant.\nyuskun \"wohnen\": yuskun, tuskun, tuskun, nuskun; Pl. yusknu, tusknu, tusknu, nusknu. akt.Part. sakin/sakna/saknin. pass.Part. maskun/maskuna/maskunin. Imperativ uskun (Sg.)/usknu (Pl.)\nWeitere Verben: yumrud \"krank sein, werden\", yudh3uf \"schwach werden, abmagern\", yuqrub \"verwandt sein\", yus3ub \"schwierig sein, werden\"\n\n### Aktives Partizip\nSchema fa3il, fem.Sg. -a, Plural -in (keine feminine Pluralform).\nBezeichnet: (1) einen andauernden Zustand ohne feste Zeitstufe: huwwa raqid \"er schläft (gerade)\"; ana waqfa \"ich (f.) stehe (gerade)\". (2) die Gegenwart/nahes Futur (v.a. bei Bewegungsverben), oft mit tawwa: win mashi tawwa? \"wohin gehst du (m.) jetzt?\". (3) ein Resultat einer abgeschlossenen Handlung (bei transitiven Verben): ana sharba \"ich (f.) habe schon getrunken (und bin nicht mehr durstig)\"; hiyya ghasla sh3arha \"sie hat ihre Haare gewaschen (und sie sind noch nass)\"\n\n### Passives Partizip\nWird vom I. Stamm des regulären (meist transitiven) Verbs mit dem Schema maf3ul gebildet. Funktioniert wie ein Adjektiv: fem. -a, Plural -in (keine feminine Pluralform).\nyidrab > madrub \"geschlagen\": l-wlid il-madrub \"der geschlagene Junge\"; saqi madruba \"mein Fuß ist verletzt\". yib3at > mab3ut \"gesendet\": ij-jwab mab3ut \"der Brief wurde geschickt\".\n\n### Negation der Partizipien\nAktive und passive Partizipien werden mit den negierten Personalpronomen verneint: ana manish sakin/sakna, inti makish waqif/waqfa, huwwa mahush raqid, hiyya mahish sakna; ahna mannash saknin, intuma makumsh khjrzin, huma mahumsh raqdin.\nBeispiele: ij-jwab mahush (mush) mab3ut \"der Brief ist nicht geschickt\"; il-katba mahish (mush) ma3rufa barsha \"die Autorin ist nicht sehr bekannt\".\n\n### madha-b-\nmadha-b- mit Pronominalsuffixen bedeutet \"ich/du usw. hätte/st gern, würde/st gern, möchte/st gern\". Vertritt in den meisten Fällen \"mögen\" und gilt als höflicher als yhibb.\nmadha-biya, madha-bik, madha-bih, madha-biha; Pl. madha-bina, madha-bikum, madha-bihum\nKann von einem Verb gefolgt werden: madha-biya nimshi l-is-sinima \"ich würde gern ins Kino gehen\"; oder von einem Nomen, dem aber 3la vorausgehen muss: madha-biha 3la qahwa \"sie hat Lust auf einen Kaffee\". In einer Frage wird stattdessen yhibb verwendet: tihibb qahwa walla tay? – madha-biya 3la qahwa \"lieber Kaffee\". Am häufigsten in den 1. Personen.\n\n### Die Zahlen von 20 bis 1000\nDas gezählte Nomen steht nach dem Zahlwort im Singular. Vor einem Nomen erhält mya ein auslautendes t und ein obligatorisches -in, das sich an folgendes r und l assimilieren kann.\n20 3ishrin, 30 tlatin, 40 arb3in, 50 khamsin, 60 sittin, 70 sab3in, 80 tmanin, 90 tis3in, 100 mya, 200 mitin, 300 tlata mya, 400 arb3a mya, 500 khamsa mya, 600 sitta mya, 700 sab3a mya, 800 tmanya mya, 900 tis3a mya, 1000 alf\n21 wahda w-3ishrin/wahid w-3ishrin, 22 tnin w-3ishrin, 23 tlata w-3ishrin ... 101 mya w-wahid, 120 mya w-3ishrin, 166 mya w-sitta w-sittin, 225 mitin w-khamsa w-3ishrin, 387 tlata mya w-sab3a w-tmanin, 517 khamsa mya w-sba3tash, 602 sitta mya w-tnin, 805 tmanya mya w-khamsa, 961 tis3a mya w-wahda w-sittin\nBeispiele mit gezähltem Wort: khamsin ktab \"50 Bücher\", myat-in bnayya/myat bnayya \"100 Mädchen\", myat-ir rajil/myat rajil \"100 Männer\", mitin w-tnin warqa \"202 Blatt Papier\", mitin w-khamsa stiluwat \"205 Stifte\", mitin w-khamsa w-3ishrin ktab \"225 Bücher\", tlata myat-in ktab \"300 Bücher\", tlata mya w-sab3a w-tmanin stilu \"387 Kugelschreiber\", sab3a myat-in wahid \"700 Personen\", alf mra \"1000 Frauen\"\n\n### Unmarkierte Feminina\nNeben den femininen Nomen auf -a gibt es einige unmarkierte Feminina, die nicht diese Endung tragen:\n- weibliche Personen: ukht \"Schwester\", umm \"Mutter\", bint \"Tochter\"\n- paarige Körperteile: saq \"Fuß\", yidd \"Hand\", 3in \"Auge\", wdin \"Ohr\"\n- manche Fremdwörter: farmasi \"Apotheke\", kar \"Autobus\"\n- Städte- und Ländernamen: tunis \"Tunesien, Tunis\", mistir \"Monastir\", susa \"Sousse\"\n- andere: kirsh \"Bauch\", shams \"Sonne\", nar \"Feuer\", dar \"Haus\", bit \"Zimmer\", blad \"Ort\"\nBeispiele: li-blad ij-jdida \"der neue Ort\"; tunis kbira \"Tunesien ist groß\"; mistir mizyana \"Monastir ist schön\"; susa mush kbira barsha \"Sousse ist nicht sehr groß\"; saqi madruba \"mein Fuß ist verletzt\"; binti mizyana \"meine Tochter ist hübsch\"\n\n### tawwa\ntawwa als Adverb bedeutet \"jetzt\", z.B. ma-tikhdmu-sh tawwa? \"arbeitet ihr jetzt nicht?\". Steht tawwa vor einem Verb im Präsens, drückt es die nahe Zukunft bzw. eine Absicht aus, z.B. tawwa nkhallas 3lik \"ich werde, ich möchte dich einladen\"; tawwa nshufu \"wir werden sehen\".",
+  "vocab_lesson_refs": "ids:3942,2236,976,1980,2552,3961,1218,380,1501,3952,3953,981,725,3965,3593,983,3646,3959,1195,310,438,530,721,726,777,1020,1210,2240,3403,3446,3769,3841,3842,3844,3845,3850,3851,3853,3854,3855,3856,3857,3846,3847,3849,3963,2365,309,2757,314,3848,3949,3956,3843,408,4452"
+ },
+ {
+  "id": 7,
+  "title": "Lektion 6 — Familie, Sprachen, Heiraten",
+  "skript": 1,
+  "chunk_order": [
+   {
+    "key": "dialoge_1",
+    "label": "Dialoge & Texte 1",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "dialoge_2",
+    "label": "Dialoge & Texte 2",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "verba_infirmae_konjug",
+    "label": "Verba mediae infirmae: Konjugieren",
+    "dialog": false,
+    "grammar_headings": [
+     "Verba mediae infirmae im Präsens (konkave Verben)"
+    ]
+   },
+   {
+    "key": "verba_infirmae_negation",
+    "label": "Verba mediae infirmae: Negation",
+    "dialog": false,
+    "grammar_headings": [
+     "Verba mediae infirmae im Präsens (konkave Verben)"
+    ]
+   },
+   {
+    "key": "verba_infirmae_partizip",
+    "label": "Verba mediae infirmae: Partizip",
+    "dialog": false,
+    "grammar_headings": [
+     "Verba mediae infirmae im Präsens (konkave Verben)"
+    ]
+   },
+   {
+    "key": "geminierte_konjug",
+    "label": "Geminierte Verben: Konjugieren",
+    "dialog": false,
+    "grammar_headings": [
+     "Geminierte Verben im Präsens"
+    ]
+   },
+   {
+    "key": "geminierte_negation",
+    "label": "Geminierte Verben: Negation",
+    "dialog": false,
+    "grammar_headings": [
+     "Geminierte Verben im Präsens"
+    ]
+   },
+   {
+    "key": "geminierte_partizip",
+    "label": "Geminierte Verben: Partizip",
+    "dialog": false,
+    "grammar_headings": [
+     "Geminierte Verben im Präsens"
+    ]
+   },
+   {
+    "key": "qaid_fragen1",
+    "label": "qa3id: Fragen 1",
+    "dialog": false,
+    "grammar_headings": [
+     "qa3id — Verlaufsform"
+    ]
+   },
+   {
+    "key": "qaid_negieren",
+    "label": "qa3id: Negieren",
+    "dialog": false,
+    "grammar_headings": [
+     "qa3id — Verlaufsform"
+    ]
+   },
+   {
+    "key": "qaid_fragen2",
+    "label": "qa3id: Fragen 2",
+    "dialog": false,
+    "grammar_headings": [
+     "qa3id — Verlaufsform"
+    ]
+   },
+   {
+    "key": "modalverben_fragen1",
+    "label": "Modalverben: Fragen 1",
+    "dialog": false,
+    "grammar_headings": [
+     "Modalverben — 1. Teil (y7ibb, ynajjim)"
+    ]
+   },
+   {
+    "key": "modalverben_fragen2",
+    "label": "Modalverben: Fragen 2",
+    "dialog": false,
+    "grammar_headings": [
+     "Modalverben — 1. Teil (y7ibb, ynajjim)"
+    ]
+   },
+   {
+    "key": "modalverben_negieren",
+    "label": "Modalverben: Negieren",
+    "dialog": false,
+    "grammar_headings": [
+     "Modalverben — 1. Teil (y7ibb, ynajjim)"
+    ]
+   },
+   {
+    "key": "demonstrativ",
+    "label": "Demonstrativpronomen",
+    "dialog": false,
+    "grammar_headings": [
+     "Demonstrativpronomen"
+    ]
+   },
+   {
+    "key": "kongruenz_gegenteil",
+    "label": "Kongruenz: Gegenteil & Plural",
+    "dialog": false,
+    "grammar_headings": [
+     "Kongruenz von Adjektiv und Substantiv"
+    ]
+   },
+   {
+    "key": "kongruenz_nominalsatz",
+    "label": "Kongruenz: Nominalsätze",
+    "dialog": false,
+    "grammar_headings": [
+     "Kongruenz von Adjektiv und Substantiv"
+    ]
+   },
+   {
+    "key": "kongruenz_luecken",
+    "label": "Kongruenz: Lückentext & Plural",
+    "dialog": false,
+    "grammar_headings": [
+     "Kongruenz von Adjektiv und Substantiv"
+    ]
+   },
+   {
+    "key": "barsha_shwayya",
+    "label": "barsha – shwayya",
+    "dialog": false,
+    "grammar_headings": [
+     "barsha – shwayya"
+    ]
+   },
+   {
+    "key": "wiederholung_plural1",
+    "label": "Wiederholung: Plural bilden",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "wiederholung_uebersetzen1",
+    "label": "Wiederholung: Übersetzen (Adjektive)",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "wiederholung_uebersetzen2",
+    "label": "Wiederholung: Übersetzen (Imperativ)",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "wiederholung_plural2",
+    "label": "Wiederholung: Plural & Bild",
+    "dialog": false,
+    "grammar_headings": []
+   }
+  ],
+  "dialog_text": "Dialog 1\nNabil w-Marya yikhdmu f-italya. huma fi-tunis tawwa. Nabil yitkallim m3a ummu.\numm Nabil: mar7ba b-wildi la-3ziz. mar7ba bik.\nNabil: ysallmik ya-mmi. shnuwwa hwalik? shnuwwa hwal khwati?\numm Nabil: la bas il-7amdulla. y3ayyshik, wildi. shkun li-mra hadi?\nNabil: hadi marti Marya.\numm Nabil: nitsharrfu. hiyya fransawiya?\nNabil: la, hiyya talyaniya, ama titkallim b-il-3arbi.\numm Nabil: mar7ba bik ya Marya fi-tunis!\nMarya: y3ayyshik.\numm Nabil: inti titkallim il-lahja t-tunsiya b-il-gda.\nMarya: la, shwayya barka.\numm Nabil: shbikum waqfin? tfaddlu uq3du. ash tushrbu?\nNabil: ana n7ibb qahwa b-rabbi ya-mmi.\nMarya: w-ana kif kif. y3ayyshik.\n\nDialog 2\nMuhammid: sba7 il-khir ya Muhsin.\nMuhsin: sba7 il-khir ya Muhammid. shnuwwa hwalik?\nMuhammid: wallahi la bas, y3ayyshik. inti ta3raf-shi marti?\nMuhsin: inti m3arris w-ma-tqul-sh?\nMuhammid: ayy m3arris. hadi marti Nadya. w-inti m3arris zada?\nMuhsin: la, ya khuya. ana 3azib. ma-n7ibb-sh yimshi n3arris.\n\nText 1\nhadi tunsi. 3umru khamsa w-3ishrin sna. tawwa qa3id yaqra f-il-almaniya fi-susa w-ba3d y7ibb yikhdim ousteth l-il-lugha l-almaniya fi-bladu. sa7bu Muhammid qa3id yaqra f-il-fransawiya. y7ibb yzid yuq3ud tlata snin fi-tunis w-ba3d y7ibb yimshi y3ish fi-fransa bash yikhdim gadi. hadi ma-y7ibb-sh yimshi l-il-kharij 3la khatir huwwa m3arris w-3andu bnayya zghira.\n\nText 2\nit-twansa yushrbu barsha tay w-barsha qahwa. fi-tunis it-tay qwi barsha w-fih barsha sukkur. l-urubbiyin yushrbu t-tay zada, ama tayhum khfif w-ma-y7uttu-sh fih barsha sukkur w-yushrbu zada t-tay il-barid b-it-talj. f-ingiltra y7uttu la-7lib f-it-tay ama fi-tunis ma-y7uttu-sh la-7lib f-it-tay, y7uttu fih in-na3na3. f-almanya barsha nas yushrbu qahwa qwiya s-sba7 w-ma-y7uttu-sh fiha la 7lib w-la sukkur. w-barsha nas yushrbu l-qahwa b-il-7lib ama blash sukkur walla b-shwayya sukkur. ama t-twansa ma-y7ibbu-sh il-qahwa l-murra, y7ibbu qahwithum 7louwa barsha.",
+  "course_number": 6,
+  "grammar_notes": "### Verba mediae infirmae im Präsens (konkave Verben)\nJe nachdem ob der 2. Radikal y oder w ist, ist der Langvokal im Präsens i oder u (seltener a).\nyshuf \"sehen\": yshuf, tshuf, tshuf, nshuf; Pl. yshufu, tshufu, tshufu, nshufu. akt.Part. shayf/shayfa/shayfin. Imperativ shuf/shufu.\nyfiq \"aufwachen\": yfiq, tfiq, tfiq, nfiq; Pl. yfiqu, tfiqu, tfiqu, nfiqu. akt.Part. fayq/fayqa/fayqin. Imperativ fiq/fiqu.\nybat \"übernachten\": ybat, tbat, tbat, nbat; Pl. ybatu, tbatu, tbatu, nbatu. akt.Part. bayt/bayta/baytin. Imperativ bat/batu.\nEin passives Partizip wird nur zu sehr wenigen Verben gebildet, z.B. mabyu3 \"verkauft\".\nWeitere Verben: yqum \"aufstehen\", ykun \"sein, existieren\", yzur \"besuchen\", yju3 \"Hunger haben\", ymut \"sterben\", y3um \"schwimmen\", ybus \"küssen\", ydum \"(an)dauern\", yfut \"vorbeigehen, vorbeifahren; versäumen\", yban \"erscheinen, sichtbar werden\", yshikh \"sich amüsieren\", y3ish \"leben\", ybi3 \"verkaufen\", yzid \"zunehmen, mehr werden; weitermachen; noch\", yghib \"abwesend sein\", ysib \"gar werden, gar sein\", yti7 \"fallen; geraten an\", ytir \"fliegen\", ykhaf \"sich fürchten, Angst haben\"\n\n### Geminierte Verben im Präsens\nDer Stammvokal im Präsens ist fast immer i oder u, selten a. u kommt vorwiegend mit emphatischen Konsonanten und Velaren vor, die restlichen Verben haben i.\ny7ibb \"mögen, wollen\": y7ibb, t7ibb, t7ibb, n7ibb; Pl. y7ibbu, t7ibbu, t7ibbu, n7ibbu. akt.Part. 7abib(7abb)/7abba/7abbin. pass.Part. ma7bub/ma7buba/ma7bubin. Imperativ 7ibb/7ibbu.\ny7utt \"legen, stellen, setzen\": y7utt, t7utt, t7utt, n7utt; Pl. y7uttu, t7uttu, t7uttu, n7uttu. akt.Part. 7att(7atit)/7atta/7attin. pass.Part. ma7tut/ma7tuta/ma7tutin. Imperativ 7utt/7uttu.\ny3adhdh \"beißen\": y3adhdh, t3adhdh, t3adhdh, n3adhdh; Pl. y3adhdhu, t3adhdhu, t3adhdhu, n3adhdhu. akt.Part. 3adhdh(3adhid)/3adhdha/3adhdhin. pass.Part. ma3dhud/ma3dhuda/ma3dhudin. Imperativ 3adhdh/3adhdhu.\nWeitere Verben: y7iss \"spüren, fühlen\", ymiss \"berühren\", yhizz \"(auf)heben, nehmen\", ysibb \"beleidigen, beschimpfen\", y3idd \"zählen\", yshidd \"halten, fassen\", y7ill \"öffnen, aufmachen\", ymidd \"(zu)reichen, übergeben\", yfidd (min) \"genug haben von etw.; die Nase voll haben\", yku77 \"husten\", yghushsh \"täuschen, mogeln\", yrudd \"zurückgeben; sich übergeben\", yquss \"(zer)schneiden\", yduqq \"klopfen\", ysubb \"ausgießen; regnen\", ydurr \"schaden, schädigen\", (yghazz \"knabbern\")\n\n### qa3id — Verlaufsform\nqa3id (f. qa3da, Pl. qa3din) als aktives Partizip von yuq3ud bedeutet \"bleibend, sitzend\". Vor einem Verb im Präsens bezeichnet es eine gerade stattfindende durative Handlung in der Gegenwart: \"dabei sein (etwas zu tun); zur Zeit; gerade\". (Bei Bewegungsverben und Verben, die einen Zustand ausdrücken, wird stattdessen das aktive Partizip verwendet.) Wenn das Verb, das qa3id folgt, ein Objekt hat, wird dies mit fi- eingeleitet.\nqa3id nistanna fi-Muhammid. \"Ich warte gerade auf Muhammid.\"\nqa3da nushrub fi-kas tay. \"Ich trinke gerade ein Glas Tee.\"\nWeitere Beispiele: qa3din nuftru. — qa3din yitkallmu f-it-talifoun. — qa3da tas3in f-il-khubz? — f-ash qa3da ta3mil tawwa?\nDie Verneinung erfolgt durch das negierte Personalpronomen:\nmahush qa3id yaqra f-il-3arbi. \"Er ist nicht dabei, Arabisch zu lernen.\"\nmakumsh qa3din taqrau fi-ktab. \"Ihr seid nicht dabei, ein Buch zu lesen.\"\nmahumsh qa3din yushrbu fi-tay. \"Sie sind nicht dabei, Tee zu trinken.\"\n\n### Modalverben — 1. Teil (y7ibb, ynajjim)\nDas Verb, das im Deutschen nach dem Hilfsverb im Infinitiv steht, folgt ihm hier direkt und steht in derselben Person wie dieses.\ny7ibb \"wollen, mögen\": ana n7ibb na7bat, inti t7ibb ta7bat, huwwa y7ibb ya7bat, hiyya t7ibb ta7bat; Pl. a7na n7ibbu na7btu, intuma t7ibbu ta7btu, huma y7ibbu ya7btu.\nynajjim \"können\" drückt eine Möglichkeit aus: li-mtar tnajjim tsubb il-yum \"es kann sein, dass es heute regnet\"; tnajjim tal3ab tennis il-yum \"du kannst heute Tennis spielen\"; aber nicht eine Fähigkeit, die das Beherrschen von etwas beinhaltet. Unter dem Akzent lautet der zweite Stammvokal meist a.\nana nnajjim nishri, inti tnajjim tishri, huwwa ynajjim yishri, hiyya tnajjim tishri; Pl. a7na nnajjmu nishriu, intuma tnajjmu tishriu, huma ynajjmu yishriu.\nDie Negierung erfolgt durch die Verneinung des Hilfsverbs:\nma-n7ibb-sh na7bat \"Ich will nicht aussteigen.\" ma-y7ibbu-sh yushrbu qahwa \"Sie wollen keinen Kaffee trinken.\" ma-n7ibb-sh nqum bikri \"Ich möchte nicht früh aufstehen.\" il-mu3allma ma-tnajjam-sh tikhdim il-yum \"Die Lehrerin kann heute nicht arbeiten.\" ma-nnajjam-sh nji l-lila \"Ich kann heute Abend nicht kommen.\"\naber: tnajjim ma-tikhdim-sh il-yum \"Es kann sein, dass sie heute nicht arbeitet.\" nnajjim ma-nji-sh il-lila \"Es kann sein, dass ich heute Abend nicht komme.\" tnajjim li-mtar ma-tsubb-sh il-yum \"Es kann gut sein, dass es heute nicht regnet.\"\nDas Verb, das nach einem Modalverb für \"sein\" verwendet wird, ist yibda oder ykun: waqtash t7ibb tkun f-il-matar? \"Wann willst du am Flughafen sein?\" y7ibbu yibdau f-il-m7atta bikri. \"Sie wollen früh an der Haltestelle sein.\"\nIn einem Satz mit y7ibb kann es auch sein, dass die beiden Verben nicht in derselben Person stehen: n7ibb ummi timshi m3aya l-is-suq. \"Ich möchte, dass meine Mutter mit mir auf den Markt geht.\" t7ibb nukhrju m-id-dar? \"Willst du, dass wir aus dem Haus gehen?\" ma-n7ibb-sh ummi timshi l-is-suq. \"Ich will nicht, dass meine Mutter auf den Markt geht.\" y7ibb martu tuq3ud f-id-dar. \"Er will, dass seine Frau zuhause bleibt.\"\n\n### Demonstrativpronomen\nDas Demonstrativpronomen kann dem Substantiv vor- oder/und nachgestellt werden, wobei dafür verschiedene Formen verwendet werden. Die zirkumfigierte Form ist bezüglich ihrer hinweisenden Kraft die stärkste. Die Kurzform hat eher pejorative Bedeutung. Bei attributiver Verwendung erhält das Nomen den Artikel.\n\nNah (\"dieser/diese/dieses\"), Singular / Plural:\nhada hanut, (h)adaya hanut \"Das ist ein Geschäft.\" / (h)aduma hwanit\nha-l-mat3am \"dieses Restaurant\" / ha-l-mtasim\nit-tunsi hada, it-tunsi (h)adaya \"dieser Tunesier\" / it-twansa (h)aduma\nmiftahik hada \"dieser dein Schlüssel\" / mfathik (h)aduma\nha-l-biru hada, ha-l-biru (h)adaya \"dieses Büro\" / ha-l-biruwat (h)aduma\n\nFern (\"jener/jene/jenes\"):\n(h)adaka stilu \"Das (dort) ist ein Stift.\" / (h)adukum, (h)adumka stiluwat\nhak ish-shubbak \"jenes Fenster\" / hak ish-shbabik\nis-stilu (h)adaka \"jener Stift\" / is-stiluwat (h)adukum, (h)adumka\nmiftahu (h)adaka \"jener sein Schlüssel\" / mfathu (h)adukum, (h)adumka\nhak ir-rajil (h)adaka \"jener Mann\" / hak ir-rjal (h)adukum, (h)adka, (h)adumka\n\nhadi zarbiya, (h)adiya zarbiya \"Das ist ein Teppich.\" / (h)aduma zrabi\nha-l-kar \"dieser Autobus\" / ha-l-kiran\nli-m7atta hadi, li-m7atta (h)adiya \"diese Station\" / li-m7attat (h)aduma\ndarha hadi \"dieses ihr Haus\" / dyarha (h)aduma\nha-t-tufla hadi, ha-t-tufla (h)adiya \"dieses Mädchen\" / ha-l-bnat (h)aduma\n\n(h)adika karahba \"Das (dort) ist ein Auto.\" / (h)adukum, (h)adumka krahib\nhak il-qahwa \"jenes Café\" / hak la-qhawi\nli-mra (h)adika \"jene Frau\" / in-nsa (h)adukum, (h)adumka\nkarahbitha (h)adika \"jenes ihr Auto\" / krahibha (h)adukum, (h)adumka\nhak ij-jarida (h)adika \"jene Zeitung\" / hak ij-jarayid (h)adukum, (h)aduka, (h)adumka\n\nAnmerkung: Mit einem Substantiv im Plural, das keine Person bezeichnet, kann auch jeweils das Demonstrativpronomen im femininen Singular stehen, z.B. haduma kisan oder hadi kisan \"Das sind Gläser.\" Diese Variante ist aber seltener in Verwendung.\n\n### Kongruenz von Adjektiv und Substantiv\nDas Adjektiv muss mit dem Nomen im Singular in Numerus und Genus übereinstimmen (ist es attributiv, auch im Determinationsgrad). Ein Adjektiv, das sich auf ein Nomen im Plural bezieht, kann entweder im Plural (diese Variante ist am meisten verbreitet) oder im fem. Singular stehen, wenn es sich beim Nomen um eine Sache handelt, aber nur im Plural, wenn es sich um eine Person handelt. Adjektive bilden entweder einen externen Plural auf -in oder einen internen Plural (meist Schema ff3al, seltener ff3ul).\n\nrajil qwi \"ein starker Mann\" / rjal qwiyyin \"starke Männer\"\nmra qwiya \"eine starke Frau\" / nsa qwiyyin \"starke Frauen\"\nshubbak jdid \"ein neues Fenster\" / shbabik jdida, jdod \"neue Fenster\"\njarida qdima \"eine alte Zeitung\" / jarayid qdima, qdum \"alte Zeitungen\"\n\nir-rajil il-qwi \"der starke Mann\" / ir-rjal il-qwiyyin \"die starken Männer\"\nij-jarida il-qdima \"die alte Zeitung\" / ij-jarayid il-qdima, il-qdum \"die alten Z.\"\naber:\nir-rajil qwi \"der Mann ist stark\" / ir-rjal qwiyyin \"die Männer sind stark\"\nij-jarida qdima \"die Zeitung ist alt\" / ij-jarayid qdima, qdum \"die Zeitungen sind alt\"\n\nz.B. win ij-jarida il-qdima? \"Wo ist die alte Zeitung?\" fuq it-tawla li-kbira. \"Auf dem großen Tisch.\" ana tawla kbira? \"Auf welchem großen Tisch?\" illi f-il-bit is-sghira (f-il-bit iz-zghira). \"Der im kleinen Zimmer ist.\" ish-shbabik ij-jdud ghalyin, ish-shbabik ij-jdida ghalya \"Die neuen Fenster sind teuer.\"\n\nWeitere Beispiele: nas khayba, khaybin \"schlechte Leute\", bnat mizyanin \"hübsche Mädchen\", klab ji3ana, ji3anin, jwa3a \"hungrige Hunde\", twawil kbira, kbar \"große Tische\", ktub ghalya, ghalyin \"teure Bücher\"; ktubna j-jdid ghalyin; ir-rajil hada qwi vs. hada rajil qwi vs. ir-rajil il-qwi hada\n\nKongruenz mit Verben: li-klab (h)aduma y3adhdhu, li-klab hadi t3adhdh. \"Diese Hunde beißen.\" il-kiran (h)aduma yimshiu l-il-kaf, il-kiran hadi timshi l-il-kaf. \"Diese Busse fahren nach le Kef.\" li-ktub (h)aduma yti7u dima, li-ktub hadi tti7 dima. \"Diese Bücher fallen immer um.\" f-il-lil l-aswaq fisa3 tifragh, yifrghu. \"Am Abend werden die Märkte schnell leer.\"\n\n### barsha – shwayya\nbarsha vor einem indeterminierten Substantiv bedeutet \"viel\": barsha nas \"viele Leute\", barsha khidma \"viel Arbeit\", barsha ktub \"viele Bücher\".\nEinem Adjektiv wird es hingegen nachgestellt, und es bedeutet dann \"sehr\": mizyan barsha \"sehr hübsch\"; ghalya barsha \"sehr teuer\"; hwanit ghalya barsha \"sehr teure Geschäfte\", aber barsha hwanit ghalya \"viele teure Geschäfte\" oder \"viele Geschäfte sind teuer\".\nAuch nach einem Verb kann es als Adverb fungieren: n7ibbik barsha \"ich mag dich sehr\", naqra barsha \"ich lerne viel\"; ma-yikhdmu-sh barsha \"sie arbeiten nicht viel\".\nyasir kann die Funktion von barsha übernehmen, kommt aber nicht so häufig vor.\nshwayya \"wenig\" funktioniert wie barsha. Es steht nach dem Adjektiv, z.B. qdim shwayya \"ein wenig alt\", li-mra kbira shwayya \"die Frau ist relativ alt\", und nach einem Verb, z.B. ana nikhdim shwayya, mush barsha \"ich arbeite wenig, nicht viel\"; aber in Verbindung mit einem Substantiv vor diesem: shwayya nas \"wenig Leute\", shwayya khidma \"wenig Arbeit\", shwayya alman \"wenig Deutsche\".",
+  "vocab_lesson_refs": "ids:3864,3865,3419,3867,3868,3869,3870,3871,685,3873,3874,2057,3876,3877,3878,3879,3880,3881,3882,3883,376,3885,2033,3887,481,1222,654,2110,2103,914,1052,1951,2306,992,667,1012,995,2975,2874,438,1138,616,617,960,434,1024,1133,733,3390,3427,437,1137,1142,2263,2070,587,653,1087,2112,2759,2032,378,1086,1089,2031,3814,2035,1777,2119,2120,592,1091,1094,1131,1023,2121,433,1128,1132,375,2113,590,1090,1093,2714,591,1092,2030,435,1130,1134,2195,1979,1698,1123,2229,2230,2233,2237,2238,3059,3833,3968,3969,3970,3971,3972,3973,3974,3975,3976,3977,1952,3979,3980,3981,1116,3983,3984,3985,3986,3445,3988,3989,3990,3991,3992,3994,3995,2228,3997,3998,3611,1169,4001,2231,4003,3435,463,4006,4007,4008,4009,3023,4011,2883,4013,4014,4015,4016,4017,4018,4019,588,589,1088,389,961,538,537,4453,4454"
+ },
+ {
+  "id": 8,
+  "title": "Lektion 7 — Uhrzeit, Wochentage & Futur",
+  "skript": 1,
+  "chunk_order": [
+   {
+    "key": "dialoge_1",
+    "label": "Dialoge & Texte 1",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "dialoge_2",
+    "label": "Dialoge & Texte 2",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "dialoge_3",
+    "label": "Dialoge & Texte 3",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "uhrzeit",
+    "label": "Die Uhrzeit",
+    "dialog": false,
+    "grammar_headings": [
+     "Die Uhrzeit / il-waqt"
+    ]
+   },
+   {
+    "key": "wann",
+    "label": "waqtash? – wann?",
+    "dialog": false,
+    "grammar_headings": [
+     "waqtash? \"wann?\""
+    ]
+   },
+   {
+    "key": "sna_3am_yum_nhar",
+    "label": "sna / 3am / yum / nhar",
+    "dialog": false,
+    "grammar_headings": [
+     "Verwendung von sna/3am und yum/nhar"
+    ]
+   },
+   {
+    "key": "hada_jayy",
+    "label": "hada/hadi – ij-jayy/ij-jayya",
+    "dialog": false,
+    "grammar_headings": [
+     "hada/hadi – ij-jayy/ij-jayya"
+    ]
+   },
+   {
+    "key": "min_hatta",
+    "label": "min ... hatta l-",
+    "dialog": false,
+    "grammar_headings": [
+     "Die Präpositionen min und hatta l-"
+    ]
+   },
+   {
+    "key": "futur_luecken",
+    "label": "Futur: Lückentext",
+    "dialog": false,
+    "grammar_headings": [
+     "Futur"
+    ]
+   },
+   {
+    "key": "futur_fragen1",
+    "label": "Futur: Fragen 1",
+    "dialog": false,
+    "grammar_headings": [
+     "Futur"
+    ]
+   },
+   {
+    "key": "futur_fragen2",
+    "label": "Futur: Fragen 2",
+    "dialog": false,
+    "grammar_headings": [
+     "Futur"
+    ]
+   },
+   {
+    "key": "verba_tertiae_luecken",
+    "label": "Verba tertiae infirmae: Lückentext",
+    "dialog": false,
+    "grammar_headings": [
+     "Verba tertiae infirmae im Präsens (defektive Verben)"
+    ]
+   },
+   {
+    "key": "verba_tertiae_konjug",
+    "label": "Verba tertiae infirmae: Konjugieren",
+    "dialog": false,
+    "grammar_headings": [
+     "Verba tertiae infirmae im Präsens (defektive Verben)"
+    ]
+   },
+   {
+    "key": "verba_tertiae_negation",
+    "label": "Verba tertiae infirmae: Negation",
+    "dialog": false,
+    "grammar_headings": [
+     "Verba tertiae infirmae im Präsens (defektive Verben)"
+    ]
+   },
+   {
+    "key": "verba_tertiae_partizip",
+    "label": "Verba tertiae infirmae: Partizip",
+    "dialog": false,
+    "grammar_headings": [
+     "Verba tertiae infirmae im Präsens (defektive Verben)"
+    ]
+   },
+   {
+    "key": "yji",
+    "label": "Das Verb yji \"kommen\"",
+    "dialog": false,
+    "grammar_headings": [
+     "Das unregelmäßige Verb yji \"kommen\""
+    ]
+   },
+   {
+    "key": "famma_tamma",
+    "label": "famma, thamma – es gibt",
+    "dialog": false,
+    "grammar_headings": [
+     "famma, thamma"
+    ]
+   },
+   {
+    "key": "wiederholung_fragen",
+    "label": "Wiederholung: Fragen bilden",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "wiederholung_uebersetzen",
+    "label": "Wiederholung: Übersetzen",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "wiederholung_bild",
+    "label": "Wiederholung: Uhrzeit-Bild",
+    "dialog": false,
+    "grammar_headings": []
+   }
+  ],
+  "dialog_text": "Dialog 1: f-il-busta\nrazil 1: tfaddal, f-ash nnajjim ns3awnik?\nrazil 2: 3andi jwab msugir w-n7ibb nkhallas warqit il-ma.\nrazil 1: 3ammir il-warqa hadi w-hat ij-jwab. l-adrisa kamla?\nrazil 2: ayy, kamla.\nrazil 1: dinar w-mitin ... win warqit il-ma?\nrazil 2: sama7ni ... nsitha f-id-dar ... tawwa nirja3 la-3shiya. waqtash thillu?\nrazil 1: il-busta ma7lula min ma-tlata 7atta l-il-khamsa.\nrazil 2: bark allahu fik.\nrazil 1: tfaddal fi-kull waqt.\n\nDialog 2\nSlim: win mashi?\nWalid: mashi l-il-busta bash nishri timbri w-jwab.\nSlim: stanna, nimshiu m3a b3adna.\nWalid: 3lash? ash bash ta3mil f-il-busta?\nSlim: bash nib3at jwab w-nishri kart postal.\nWalid: la, ma-famma-sh kartat postal f-il-busta.\nSlim: mmala mnin nnajjim nishri kart postal?\nWalid: famma 3and la-qlaybi walla ahbat il-wust li-blad.\n\nDialog 3: Muhammid ykallim fi-Fatma f-it-talifoun\nMuhammid: sa-s-slama! f-ash qa3da ta3mil tawwa?\nFatma: qa3da naqra fi-ktab.\nMuhammid: w-hadi qa3id yaqra zada?\nFatma: la, hadi qa3id yiktib fi-jwab.\nMuhammid: ash bash ta3mlu il-lila?\nFatma: bash nuq3du f-id-dar ki-l-3ada.\nMuhammid: 3lash ma-tji3u-sh titfarjau ba7daya?\nFatma: fikra hayla. waqtash ysa3dik?\nMuhammid: ijau m3a s-sab3a w-nuss.\n\nText 1\nMuhammid w-Muhsin s7ab. yusknu m3a b3adhum fi-dar qriba l-il-biru. f-is-sa3da Muhammid yqum bikri m3a s-sitta w-nuss, yushrub qahwtu w-yaqra drusu w-ba3d yimshi l-il-biru. Muhsin ma-yqum-sh qbal it-tmanya gir rbu3. yusil dima mmakhkhar l-il-biru. f-il-lil f-is-sa3da Muhammid w-Muhsin yimshiu yit3ashshau fi-wust li-blad walla yistad3au s7abhum sa-l-3sha. ba3d la-3sha yimshiu l-il-qahwa walla yuq3du f-id-dar w-yitfarrjou f-it-talfza.\n\nText 2\nnhar is-sibt la-3shiya w-nhar l-ahad ma-nikhdim-sh. f-is-sa3da nuq3ud f-id-dar niktib imaylat w-messajat l-as7abi w-nabqa m3a ummi fi-almanya ama is-sibt hada bash nimshi ntull 3la sa7bi salah illi yuskun fi-jirba. yilzimni nakhuth it-tayyara 3la khatir il-kar tuq3ud 3ashra swaya3 f-eth-thniya w-ana yilzimni nirja3 l-tunis nhar l-itnin f-is-sba7.",
+  "course_number": 7,
+  "grammar_notes": "### Die Uhrzeit / il-waqt\nDie Uhrzeit wird mit den Kardinalzahlen von drei bis elf, die den bestimmten Artikel erhalten, ausgedrückt. tnash für \"zwölf\" ist unüblich, stattdessen verwendet man für \"zwölf\" zu Mittag nuss in-nhar oder l-uwl, für \"Mitternacht\" nuss il-lil.\nUm die Zeit zwischen den ganzen Stunden genauer zu definieren, werden draz \"fünf Minuten\", rbu3 \"Viertel\" und nuss \"halb\" verwendet. Mit zwei-, dreimal usw. draz können 10, 20 usw. Minuten ausgedrückt werden. Die Pluralform draz kann weggelassen werden.\nUm die Zeit zwischen der ganzen Stunde und den nächsten 35 Minuten auszudrücken, wird w- \"und\" verwendet.\nUm die Zeit zwischen der halben Stunde (ab 35 Minuten) und der nächsten vollen Stunde auszudrücken, wird gir \"außer\" verwendet.\nmadi wird für \"ein Uhr\" bis \"drei Uhr\" verwendet, ist aber nur vor \"ein Uhr\" verpflichtend (madi sa3a).\n\nqaddash il-waqt? shnuwwa l-waqt 3andik? \"Wie spät ist es?\"\ntawwa... \"Jetzt...\"\nnuss in-nhar, (l-uwl, l-ul) \"Zwölf Uhr (am Tag).\"\nnuss il-lil \"24 Uhr\"\nmadi sa3a (qadd qadd) \"Es ist (genau) ein Uhr.\"\nmadi sa3tin, is-sa3tin \"Es ist zwei Uhr.\"\nmadi sa3a w-draz \"Es ist fünf nach eins.\"\nmadi tlata w-darzin, it-tlata w-darzin \"Es ist zehn nach drei.\"\nnuss in-nhar w-rbu3 \"Es ist Viertel nach zwölf.\"\nit-tmanya w-arb3a (draz) \"Es ist zwanzig nach acht.\"\nl-arb3a w-khamsa (draz) \"Es ist 25 Minuten nach vier.\"\nla-hdash w-nuss \"Es ist halb zwölf.\"\nis-sab3a w-sab3a (draz) \"Es ist fünf nach halb acht.\"\nit-tmanya gir arb3a (draz) \"Es ist zwanzig vor acht.\"\nil-3ashra gir rbu3 \"Es ist Viertel vor zehn.\"\nis-sitta gir darzin \"Es ist zehn vor sechs.\"\nit-tis3a gir draz \"Es ist fünf vor neun.\"\n\n\"Kurz nach\" wird mit kharij ausgedrückt, \"kurz vor\" mit ma-7arrar-sh.\nis-sab3a kharij \"Es ist kurz nach sieben.\" (is-sab3a w-dqiqtin \"Es ist 7:02\" dagegen ist eher unüblich).\nis-sab3a w-draz kharij \"Es ist kurz nach fünf nach sieben.\"\nis-sab3a w-khamsa kharij \"Es ist kurz vor halb acht.\"\nis-sab3a ma-7arrar-sh \"Es ist kurz vor sieben.\"\nis-sab3a gir draz ma-7arrar-sh \"Es ist nicht ganz fünf vor sieben.\"\nis-sab3a gir darzin ma-7arrar-sh \"Es ist nicht ganz zehn vor sieben.\"\n\nUm zu unterscheiden, ob es sich um eine Zeitangabe für den Tag oder für die Nacht handelt, kann mta3 la-3shiya, mta3 il-lil, mta3 is-sbah und mta3 il-qayla verwendet werden:\nis-sitta mta3 la-3shiya \"sechs Uhr abends\"\nis-sab3a mta3 la-3shiya \"sieben Uhr abends\"\nit-tmanya mta3 il-lil \"acht Uhr abends\"\nil-3ashra mta3 il-lil \"zehn Uhr nachts\"\nit-tmanya mta3 is-sbah \"acht Uhr morgens\"\nla-hdash mta3 is-sbah \"elf Uhr vormittags\"\nis-sa3tin mta3 il-qayla \"zwei Uhr mittags\"\n\n### waqtash? \"wann?\"\nUhrzeit: Kardinalzahl steht (außer nach madi) mit Artikel.\nwaqtash tqum? fi-ana / m3a-na waqt tqum? \"Wann / um wieviel Uhr stehst du auf?\"\nnqum is-sitta \"Ich stehe um sechs auf.\" nqum madi sa3a \"Ich stehe um ein Uhr auf.\"\nwaqtash tikhdim? \"Wann arbeitest du?\"\nnikhdim is-sa3tin, nikhdim madi sa3tin. \"Ich arbeite um zwei Uhr.\"\n\nWochentag: fi-ana nhar ma-taqra-sh? waqtash ma-taqra-sh? \"An welchem Tag / wann hast du keinen Unterricht?\" nhar l-ahad ma-naqra-sh. \"Am Sonntag habe ich keinen Unterricht.\"\n\nMonat: waqtash / fi-ana shar tibda l-qraya? \"Wann / in welchem Monat beginnt die Schule?\" l-qraya tibda fi-sibtambir. \"Die Schule beginnt im September.\"\n\nDatumsangaben: waqtash 3id miladik? \"Wann ist dein Geburtstag?\" 3id miladi (nhar) wahda w-3ishrin jwan. \"Mein Geburtstag ist am 21. Juni.\"\n\n### Verwendung von sna/3am und yum/nhar\nsna/snin: nach Zahlen: 3umri tlata snin \"ich bin drei Jahre alt\"; 3umri 3ishrin sna \"ich bin 20 Jahre alt\"; 3andi khamsa snin fi-tunis \"ich bin seit fünf Jahren in Tunesien\". Adverb: is-sna \"heuer, dieses Jahr\".\n\n3am/3wam: alleinstehend (ohne vorangehendes Zahlwort): nuss 3am \"ein halbes Jahr\"; 3am w-nuss \"anderthalb Jahre\"; 3amin \"zwei Jahre\"; wildi 3umru 3am \"mein Sohn ist ein Jahr alt\"; ukhti 3andha 3amin taqra f-il-lahja t-tunsiya \"meine Schwester lernt seit zwei Jahren Tunesisch\"; la-3wam ij-jayya \"die kommenden Jahre\"; il-3am ij-jayy \"das nächste Jahr\". Vor Jahreszahlen: 3am alfin w-tlata \"2003\".\n\nyum/ayyam, ayyamat: nach Zahlen: 3ishrin yum \"20 Tage\"; khams ayyam \"fünf Tage\". Adverbien: kull yum \"jeden Tag\"; il-yum \"heute\". Wenn ein Plural verlangt wird: l-ayyamat ij-jayya \"die kommenden Tage\".\n\nnhar: alleinstehend (ohne vorangehendes Zahlwort): nuq3ud nhar / nharin barka fi-tunis \"ich bleibe nur einen Tag / zwei Tage in Tunis\". Vor Wochentagen und Datumsangaben: nhar la-khmis \"Donnerstag\"; nhar sitta fivri \"am sechsten Februar\". Zur Bezeichnung der lichten Hälfte des Tages: f-in-nhar \"am Tag\" – f-il-lil \"in der Nacht\". nharat bedeutet \"einige Tage\".\n\n### hada/hadi – ij-jayy/ij-jayya\nDient zum Ausdruck von \"diese/r/s\" und \"nächste/r/s\".\nbash nahbat f-il-m7atta hadi. \"Ich steige bei dieser Station aus.\"\nbash nahbat f-il-m7atta ij-jayya. \"Bei der nächsten Station steige ich aus.\"\nbash nakhuth il-kar hada. \"Ich nehme diesen Bus.\"\nbash nakhuth il-kar ij-jayy. \"Ich nehme den nächsten Bus.\"\nish-shar hada qa3da fi-tunis. \"Ich bleibe diesen Monat in Tunesien.\"\nbash nuq3ud fi-tunis ish-shar ij-jayy. \"Ich verbringe den nächsten Monat in Tunesien.\"\n\n### Die Präpositionen min und hatta l-\nmin ... hatta l- bedeutet \"von ... bis\" und kann sowohl lokal als auch temporal verwendet werden:\nil-busta ma7lula m-it-tlata (min ma-tlata) hatta l-il-khamsa. \"Die Post ist von 3 bis 5 Uhr geöffnet.\"\nil-banka msakkra min nuss in-nhar hatta l-is-sa3tin (hatta l-madi sa3tin). \"Die Bank ist von 12 Uhr bis 2 Uhr geschlossen.\"\nnikhdim m-is-sab3a hatta l-ill-uwl w-nuss. \"Ich arbeite von 7 bis halb eins.\"\nnaqra m-it-tmanya w-rbu3 hatta l-il-3ashra w-rbu3. \"Er hat von Viertel nach 8 bis Viertel nach 10 Unterricht.\"\nnimshi min dari hatta l-il-fak 3la saqayya. \"Ich gehe von zu Hause bis zur Uni zu Fuß.\"\n\n### Futur\nDas Futur wird im Tunesischen durch die Partikel bash ausgedrückt, die dem Verb direkt vorangestellt wird.\nash bash ta3mil ghudwa? \"Was wirst du morgen machen?\"\nash bash ta3mil nhar l-ahad ij-jayy? \"Was machst du am kommenden Sonntag?\"\nash bash ta3mil ish-shar ij-jayy? \"Was wirst du im nächsten Monat machen?\"\nwin bash timshi l-3am ij-jayy? \"Wohin fährst du im nächsten Jahr?\"\nwin bash timshi jim3a ij-jayya? \"Wohin wirst du kommende Woche fahren?\"\n\nUm das Futur zu verneinen, wird der Partikel bash das negierte Personalpronomen vorangestellt.\nbash tuq3ud f-id-dar? \"Wirst du zu Hause bleiben?\"\nla, manish bash nuq3ud. \"Nein, das werde ich nicht.\"\nmaksh bash tshum f-il-pisin. \"Du wirst nicht im Schwimmbad schwimmen.\"\nmanash bash nashru il-lila. \"Wir werden heute Nacht nicht lange aufbleiben.\"\nmahumsh bash yitfarrju f-il-mats. \"Sie werden sich das Match nicht anschauen.\"\n\n### Verba tertiae infirmae im Präsens (defektive Verben)\nMan unterscheidet bei den Verba tertiae infirmae im Präsens zwischen Verben auf -a und solchen auf -i. Der Präfixvokal ist ein i, aber vor Velaren (q, kh, gh), Pharyngalen (7, 3) und dem Laryngal (h) ein a.\n\nyikri \"mieten\": yikri, tikri, tikri, nikri; Pl. yikriu, tikriu, tikriu, nikriu.\nya7ki \"erzählen\": ya7ki, ta7ki, ta7ki, na7ki; Pl. ya7kiu, ta7kiu, ta7kiu, na7kiu.\nakt.Part. kari/karya/karyin. 7aki/7akya/7akyin. pass.Part. mikri/mikriya/mikriyin. Imperativ ikri (Sg.) / ikriu (Pl.); a7ki (Sg.) / a7kiu (Pl.).\n\nyilqa \"finden\": yilqa, tilqa, tilqa, nilqa; Pl. yilqau, tilqau, tilqau, nilqau.\nyaqra \"lernen, lesen\": yaqra, taqra, taqra, naqra; Pl. yaqrau, taqrau, taqrau, naqrau.\nakt.Part. laqi/laqya/laqyin. qari/qarya/qaryin. pass.Part. minsi/minsiya/minsiyin. Imperativ ilqa (Sg.) / ilqau (Pl.); aqra (Sg.) / aqrau (Pl.).\n\nWeitere Verben: yijri \"laufen\", yinsa \"vergessen\", yishwi \"grillen\", yibqa \"bleiben\", yibki \"weinen\", yijra \"geschehen\", yibni \"bauen\", yaghla \"teuer sein\", yaqli (PP muqli) \"(in einer Pfanne) braten, frittieren\", yaqdi (PP maqdi) \"einkaufen; Besorgungen machen, etw. erledigen\"\n\n### Das unregelmäßige Verb yji \"kommen\"\nEs wird wie ein Verbum tertiae infirmae konjugiert:\nyji, tji, tji, nji; Pl. yjiu, tjiu, tjiu, njiu.\nakt.Partizip jayy f. jayya Pl. jayyin.\nImperativ ija (Sg.) / ijau (Pl.).\n\n### famma, thamma\nfamma und thamma bedeuten \"es gibt\".\nDie Negation dazu lautet ma-famma-sh bzw. ma-thamma-sh.\nfamma-shi jarayid f-il-qahwa? \"Gibt es im Kaffeehaus Zeitungen?\"\nfamma-sh khubz? \"Ist Brot da?\" la, ma-famma-sh khubz. \"Nein, es gibt kein Brot.\"\nthamma-shi hadha ukhra? \"Gibt es etwas anderes?\"\nthamma-sh qahwa b-il-7lib? \"Gibt es Kaffee mit Milch?\"",
+  "vocab_lesson_refs": "ids:636,2155,3654,608,3102,1045,275,691,692,688,271,3584,3740,406,2353,276,694,914,984,3734,518,1705,3264,686,997,4020,2218,1734,4023,4024,4025,4026,2611,4028,4029,4030,2205,4032,4033,4034,4035,4036,4037,4038,4039,4040,4041,4042,4043,3421,4045,4046,687,689,690,693,695,696,697,520,274,519,4057,2356,2357,410,4061,2355,4063,4064,4065,4066,1981,4068,4069,4070,4071,3739,4073,4074,4075,4076,1266,4078,4079,4080,4081,4082,4083,4084,4085,4086,4087,4088,4089,637,4091,4092,4093,1026,4095,4096,4097,974,4099,4100,4101,3210,1259,4104,517,1027,409,273,4455"
+ },
+ {
+  "id": 9,
+  "title": "Lektion 8 — Beim Gemüsehändler, qaddash, brauchen",
+  "skript": 2,
+  "chunk_order": [
+   {
+    "key": "dialoge_1",
+    "label": "Dialoge 1: Beim Gemüsehändler",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "dialoge_2",
+    "label": "Dialoge 2: Arbeit & Urlaub",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "dialoge_3",
+    "label": "Dialoge 3: Verabredung",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "qaddash",
+    "label": "qaddash – wieviel?",
+    "dialog": false,
+    "grammar_headings": [
+     "qaddash – \"wieviel?\""
+    ]
+   },
+   {
+    "key": "primae_infirmae",
+    "label": "Verben primae infirmae (Präsens)",
+    "dialog": false,
+    "grammar_headings": [
+     "Konjugation der Verben primae infirmae (wörtl. \"schwach im ersten [Wurzelbuchstaben]\": der erste von drei Wurzelbuchstaben, dem sog. Radikal, ist w oder y) im Präsens"
+    ]
+   },
+   {
+    "key": "yakul_yaxudh",
+    "label": "yakul und yakhuth",
+    "dialog": false,
+    "grammar_headings": [
+     "Die Verben yakul und yakhuth im Präsens"
+    ]
+   },
+   {
+    "key": "nomen_unitatis",
+    "label": "Nomen unitatis & Kollektivnomen",
+    "dialog": false,
+    "grammar_headings": [
+     "Nomen unitatis (Einzelstück-Form, z.B. \"ein Apfel\") und Kollektivnomen (Sammelform, z.B. \"Äpfel [als Sorte]\")"
+    ]
+   },
+   {
+    "key": "possessivsuffixe",
+    "label": "Possessivsuffixe an Nomen",
+    "dialog": false,
+    "grammar_headings": [
+     "Anfügen von Possessivsuffixen an Nomen"
+    ]
+   },
+   {
+    "key": "genitivverbindung",
+    "label": "Die Genitivverbindung",
+    "dialog": false,
+    "grammar_headings": [
+     "Die Genitivverbindung"
+    ]
+   },
+   {
+    "key": "brauchen",
+    "label": "Das Pseudoverb \"brauchen\"",
+    "dialog": false,
+    "grammar_headings": [
+     "Das Pseudoverb (eine Konstruktion, die man wie ein Verb übersetzt, die aber grammatisch aus einem Substantiv + Possessivsuffix besteht) \"brauchen\" (7aja + Possessivsuffix)"
+    ]
+   },
+   {
+    "key": "wiederholung_1",
+    "label": "Wiederholung: Übersetzen 1",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "wiederholung_2",
+    "label": "Wiederholung: Übersetzen 2",
+    "dialog": false,
+    "grammar_headings": []
+   }
+  ],
+  "dialog_text": "Dialog 1: 3and il-khaddar (beim Gemüsehändler)\nil-khaddar: swina, swina, 7luwa w-bnina! tfaddal khuya duq!\nrazil: la, bark allahu fik. ma-n7ibb-sh la-swina.\nil-khaddar: mmala duq it-tuffah!\nrazil: la, 3andi anwa3 il-ghalla l-kull fi-d-dar. ama 3andik-shi sfinnarya?\nil-khaddar: insam, 3andna. qaddash hashtik? zuz kilu yizzik?\nrazil: la, la, kilu yizzini... samahni, is-sfinnarya hadhi qdima!\nil-khaddar: hathaka illi 3anna.\nrazil: mmala mush lazim is-sfinnarya. bash nakhuth shwayya batata.\nil-khaddar: il-batata hayla! qaddash nhutt-lik?\nrazil: uzin-li zuz kilu y3ayyshik.\n\nDialog 2\nMuhsin: ti-winik ya khuya? 3andi barsha ma-shuftik-sh.\nNabil: hani kif il-3ada. m-il-khidma l-id-dar w-m-id-dar l-il-khidma.\nMuhsin: hatta fi-shhar ut tikhdim?\nNabil: wallahi 3andi barsha khidma m3a l-mudir.\nMuhsin: yizzi ya razil! fi-ha-s-skhana tikhdmu? ma-3andik-sh kunji?\nNabil: ij-jim3a j-jayya insha'llah bash nukhruj fi-kunji. bash nakhu shhar.\nMuhsin: win bash t3addi sh-shhar hadha?\nNabil: bash nuq3ud m3a l-3ayla fi-jirba jim3a w-ba3d ma-na3raf-sh.\nMuhsin: idha bahdana l-il-hammamat! tawwa nbaddlu j-jaww b-il-gdha. ana w-khuya jamal 3anna dar 3a-sh-shatt.\nNabil: qaddash bash tuq3du f-il-hammamat?\nMuhsin: shhar w-nuss. hatta l-khumstash sibtambir.\nNabil: mmala tawwa nji bahdakum.\nMuhsin: marhba bik fi-kull waqt.\n\nDialog 3\nFatma: ash 3amla ghudwa?\nMaryam: ma-3andi hatt shayy.\nFatma: thibb-shi nimshiu l-il-kaf ntullu 3la sayilti?\nMaryam: nimshiu fi-karhbatik?\nFatma: la, yilzimna nakhuth il-kar 3la khatir karhbati mkassra.\nMaryam: mmala t3adda-li ghudwa m3a madhi sa3a!\nFatma: tawwa nji bikri.",
+  "course_number": 8,
+  "grammar_notes": "### qaddash – \"wieviel?\"\nqaddash 3umrik? – 3umri 3ishrin sna. \"Wie alt bist du? – Ich bin 20 Jahre alt.\"\nqaddash 3andik flus fi-l-banka? – ma-3andi-sh barsha. \"Wieviel Geld hast du auf der Bank? – Nicht viel.\"\nqaddash sumu bi-llahi? – tlatin dinar. \"Was kostet das bei Gott? – 30 Dinar.\"\n\n**qaddash-in / qaddash min \"wie viele?\"**: danach folgt das Substantiv im Singular.\nqaddash-in ktab bash tishri? / qaddash min ktab bash tishri? – bash nishri khamsa ktub. \"Wie viele Bücher wirst du kaufen? – Ich kaufe fünf Bücher.\"\nqaddash thibb min kilu batata? – nhibb zuz kilu. \"Wie viele Kilo Kartoffeln möchtest du? – Ich möchte zwei Kilo.\"\n\n**qaddash** allein = \"wie lange?\": qaddash bash tuq3ud fi-tunis? \"Wie lange wirst du in Tunesien bleiben?\"\n\n**qaddash 3and-/l-** = \"seit wann? wie lange schon?\": qaddash 3andik fi-tunis? – 3andi 3am. lina shahr. \"Wie lange bist du schon in Tunesien? – Seit einem Jahr / seit einem Monat.\"\n\n**l- \"zu; für\"** mit Pronominalsuffixen (gehören): liya/layya, lik, lih, liha; lina, likum, lihum. hadha liya w-hadha lik. \"Das gehört mir und das dir.\"\n\n**b-qaddash?** \"(um) wieviel?\", \"wie viel kostet das?\" – das Substantiv muss determiniert sein.\nb-qaddash it-timbri? – b-mitin (millim). \"Was kostet die Briefmarke? – 200 Millimes.\"\nb-qaddash kilu is-swina? – il-kilu b-arb3a mya. \"Was kostet ein Kilo Pflaumen? – Das Kilo für 400 Millimes.\"\n\n### Konjugation der Verben primae infirmae (wörtl. \"schwach im ersten [Wurzelbuchstaben]\": der erste von drei Wurzelbuchstaben, dem sog. Radikal, ist w oder y) im Präsens\nVerba primae infirmae (assimilierte Verben, erster Wurzelbuchstabe/Radikal w) haben im Präsens meist ein langes u in der ersten Silbe. Einige wenige Verben (z.B. yaqif \"stehen\") bilden das Präsens nach Analogie zu yakul/yakhuth mit langem a.\n\nyaqif \"stehen\" – yaqif, taqif, taqif, naqif; Pl. yaqfu, taqfu, naqfu\nyusil \"ankommen\" – yusil, tusil, tusil, nusil; Pl. yuslu, tuslu, nuslu\nyuja3 \"schmerzen\" – yuja3, tuja3, tuja3, nuja3; Pl. yuj3u, tuj3u, nuj3u\n\nWeitere Verben: yuzin \"(ab)wiegen\", yulid \"gebären\", yu3id \"versprechen\", yusif \"beschreiben\".\nMit erstem Radikal y ist nur yibis \"trocken werden\" verbreitet (nur im Perfekt gebräuchlich); aktives Partizip yabis, f. yabsa, Pl. yabsin \"trocken\".\n\n### Die Verben yakul und yakhuth im Präsens\nDem Langvokal in der ersten Silbe liegt ein Hamza (der Knacklaut ʼ, wie im deutschen \"Ver'ein\") als erster Radikal zugrunde. Der Imperativ wird wie bei den Verben mediae infirmae (Verben, deren zweiter Wurzelbuchstabe schwach ist, w oder y) gebildet. Von yakhuth sind im Singular, beim Imperativ und beim Partizip auch verkürzte Formen (yakhu, takhu, nakhu, khu) in Gebrauch. Ein passives Partizip existiert nicht.\n\nyakhuth/yakhu, takhuth/takhu, nakhuth/nakhu; Pl. yakhthu, takhthu, nakhthu — \"nehmen\"\nyakul, takul, nakul; Pl. yaklu, taklu, naklu — \"essen\"\nImperativ: kul/kulu; khuth (khu) / khuthu (khudu)\nAnmerkung: daneben existieren auch die Formen yakhid und yakil.\n\n### Nomen unitatis (Einzelstück-Form, z.B. \"ein Apfel\") und Kollektivnomen (Sammelform, z.B. \"Äpfel [als Sorte]\")\nZu vielen Obst- und Gemüsesorten, Baum-, Pflanzen- und Tiernamen existiert ein Kollektivnomen (die Sorte insgesamt) und ein dazugehöriges Nomen unitatis (ein Stück/Exemplar davon), gebildet durch Anfügen der Femininendung -a an das Kollektivnomen:\nsjar \"Bäume\" – sajra \"ein Baum\"; nkhal \"Palmen\" – nakhla \"eine Palme\"; tuffa7 \"Äpfel\" – tuffa7a \"ein Apfel\"; zitun \"Oliven\" – zituna \"eine Olive\"; 7ut \"Fisch(e)\" – 7uta \"ein Fisch\".\n\nWo kein Nomen unitatis gebräuchlich ist, wird dem Kollektivnomen ka3ba \"Stück\" oder ein anderes Zählwort (z.B. ras \"Kopf, Stück\") vorangestellt: ka3ba biskwit \"ein Keks\", ras bruklu \"ein Stück Blumenkohl\".\nFür abgezählte Stücke wird zum Nomen unitatis ein externer Plural auf -at gebildet (kein Dual): tlata ka3bat burdhgan \"drei Orangen\", sab3a tuffa7at \"sieben Äpfel\" (aber ka3bat tuffa7 \"ein paar Äpfel\").\n\n### Anfügen von Possessivsuffixen an Nomen\nSg.: nach Konsonant -i/-ik/-u/-ha; nach Vokal -ya/-k/-h/-ha; bei stat.-constr. (status constructus, der gebundenen Form eines Nomens vor einem folgenden Genitiv-Bestimmungswort, siehe unten) -(i)t: -ti/-tik/-tu/-itha.\nPl.: -na/-kum/-hum (nach Konsonant und Vokal gleich); bei -(i)t: -itna/-itkum/-ithum.\nBeispiele: umm \"Mutter\" → ummi, ummik, ummu, ummha; dar \"Haus\" → dari, darik, darhum; rajil \"Mann\" → rajli, rajlik, rajilha; kursi \"Stuhl\" → kursiya, kursih; khubza (stat.constr. khubzt-) → khubzti, khubztu, khubzitna.\nAusnahmen: mra \"Frau\" → marti; baba \"Vater\" → statt buya; wlid \"Sohn\" → wildi, wildha (vor vok. und kons. gleich).\nBei Substantiven mit externem Plural auf -in (z.B. mu3allmin \"Lehrer\") werden keine Suffixe angehängt, stattdessen die analytische Konstruktion mit mta3 verwendet: il-mu3allmin mta3 wildi \"die Lehrer meines Sohnes\".\n\n### Die Genitivverbindung\nZwei (oder mehr) Substantive werden aneinandergereiht; das erste Wort (nomen regens, das \"regierende\" Bezugswort) erhält nie den Artikel. Bei fem. Nomen auf -a wird diese im status constructus (der gebundenen Form vor dem folgenden Genitiv-Wort, z.B. \"Auto des Bruders\" statt eines eigenen Wortes für \"von\") zu -t (vor vokalisch anlautendem Folgewort/Suffix) bzw. -it (vor konsonantisch anlautendem): bab id-dar \"die Tür des Hauses\", makilt ummi \"das Essen meiner Mutter\".\nIst das zweite Wort bereits determiniert, darf es keinen Artikel mehr erhalten: hatha sa7ib khuya \"das ist der Freund meines Bruders\".\nBei mehrgliedrigen Genitivverbindungen stehen auch mittlere Substantive im status constructus: karhbat wild ukhti \"das Auto meines Neffen\".\nAttribute zum zweiten Glied stehen direkt danach; soll das ERSTE Glied ein Attribut erhalten, tritt dieses hinter das gesamte zweite Glied: karhbat khuya la-qdima mkassra \"das alte Auto meines Bruders ist kaputt\".\nAlternative zur Genitivverbindung: die analytische Bildung mit mta3 (ktab sami / li-ktab mta3 sami).\nFrage nach dem Besitzer (\"wessen\"): dar shkun? \"wessen Haus?\"\n\n### Das Pseudoverb (eine Konstruktion, die man wie ein Verb übersetzt, die aber grammatisch aus einem Substantiv + Possessivsuffix besteht) \"brauchen\" (7aja + Possessivsuffix)\n\"brauchen\" wird durch das Substantiv 7aja (\"Sache; Bedürfnis, Not\") mit Possessivsuffixen ausgedrückt (lang a meist gekürzt, j vor t stimmlos): 7ashti, 7ashtik, 7ashtu, 7ashtha; Pl. 7ashtna, 7ashtkum, 7ashthum. Es folgt die Präposition b-.\n7ashtik-shi b-7aja? \"Brauchst du etwas?\" – la, ma-7ashti-sh bik. \"Nein, ich brauche dich nicht.\"\n7ashti b-karhba jdida. \"Ich brauche ein neues Auto.\"\nFrage \"was brauchst du?\" auch ohne b-: (b-)ash 7ashtik? bzw. (b-)shnuwwa 7ashtik?; \"wieviel brauchst du?\": (b-)qaddash 7ashtik (aber 7ashtik b-qaddash? ist falsch).",
+  "vocab_lesson_refs": "ids:305,306,308,311,312,326,327,328,329,330,331,332,334,335,337,339,340,341,342,343,344,345,346,347,348,350,352,353,354,355,356,363,369,372,385,482,531,534,571,627,651,719,756,972,982,1005,1571,1574,2088,2127,2129,2141,2150,2339,2436,2520,2587,2741,2743,3062,3103,3117,3373,3537,3539,3610,3619,3620,3664,4020,4079,4112,4164,4183,4184,4186,4187,4188,4189,4306,4307,366,4309,4310,4311,4312,4313,4314,521,4316,732,4318,324,4320,4321,4417,4418,4419,4378"
+ },
+ {
+  "id": 10,
+  "title": "Lektion 9 — Beim Lebensmittelhändler, Verpackungseinheiten, Dual",
+  "skript": 2,
+  "chunk_order": [
+   {
+    "key": "dialoge_1",
+    "label": "Dialoge 1-2: Beim Lebensmittelhändler",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "dialoge_2",
+    "label": "Dialoge 3 & Text: Frühstück & Kochen",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "verpackung",
+    "label": "Verpackungs- & Gewichtseinheiten",
+    "dialog": false,
+    "grammar_headings": [
+     "Verpackungs- und Gewichtseinheiten"
+    ]
+   },
+   {
+    "key": "pronominalsuffixe_verben",
+    "label": "Pronominalsuffixe an Verben",
+    "dialog": false,
+    "grammar_headings": [
+     "Anfügen von Pronominalsuffixen an Verben"
+    ]
+   },
+   {
+    "key": "allein",
+    "label": "\"allein\" (wahd-)",
+    "dialog": false,
+    "grammar_headings": [
+     "\"allein\" (wahd- + Suffix)"
+    ]
+   },
+   {
+    "key": "dual",
+    "label": "Der Dual",
+    "dialog": false,
+    "grammar_headings": [
+     "Der Dual"
+    ]
+   },
+   {
+    "key": "muessen",
+    "label": "Modalverb \"müssen\"",
+    "dialog": false,
+    "grammar_headings": [
+     "Das Modalverb \"müssen, nötig haben; sollen\""
+    ]
+   },
+   {
+    "key": "zahlen_1000",
+    "label": "Zahlen ab 1000",
+    "dialog": false,
+    "grammar_headings": [
+     "Zahlen ab 1000"
+    ]
+   },
+   {
+    "key": "mta3",
+    "label": "Genitivexponent mta3",
+    "dialog": false,
+    "grammar_headings": [
+     "Der Genitivexponent (ein eigenständiges Wort, das die Zugehörigkeit/den Besitz ausdrückt, ähnlich dem deutschen \"von\") mta3 zum Ausdruck eines Besitzes"
+    ]
+   },
+   {
+    "key": "verbot",
+    "label": "Verbot",
+    "dialog": false,
+    "grammar_headings": [
+     "Verbot"
+    ]
+   },
+   {
+    "key": "wiederholung",
+    "label": "Wiederholung & Übersetzung",
+    "dialog": false
+   }
+  ],
+  "dialog_text": "Dialog 1: 3and il-3attar\nrazil 1: ya 7ajj saggadni y3ayyshik, rani majrub shwayya.\nil-3attar: samahni ma-nnajjam-sh. stanna d-dur mta3ik. shkun qbal?\nrazil 2: ana. a3tini hukka hrisa w-baku sukkur w-dabbuza zit w-nuss rtal zbin w-tlata hyar 3dam w-zuz bagat y3ayyshik.\nil-3attar: shnuww akhar?\nrazil 2: aka-haw. qaddash na3tik?\nil-3attar: a3tini alfin w-mya.\nrazil 2: tfaddal ahaya khams-alaf.\nil-3attar: la, ma-3andi-sh sarf.\n\nDialog 2\nil-3attar: tfaddal ukhti, ash hashtik?\nmra: b-rabbi uzin-li kilu farina w-rtal sukkur.\nil-3attar: shnuwwa akhar?\nmra: 3andik-shi yagurt?\nil-3attar: ma-nbi3-sh il-yagurt. shuf il-hanut illi bi-jnabna.\nmra: bahi. mmala a3tini zuz hakuwat biskwit w-hartin 3dam.\nil-3attar: aka-haw, ukhti.\nmra: zidni khubztin skhunin. qaddash yitla3 la-hsab?\nil-3attar: la-hsab tlat-alaf w-mitin.\nmra: tfaddal flusik. b-is-slama.\n\nDialog 3: ftur ish-shbah\nil-bu: shbah il-khir. rqatt b-il-gda?\nwildu: rqatt b-il-gda ama tawwa ana 3ushan barsha.\nil-bu: ash qawlik fi-kas tay?\nwildu: la, ma-nhibb-sh tay. famma-sh haja ukhra?\nil-bu: famma qahwa w-hlib w-3asir burdgan.\nwildu: a3tini qahwa b-il-hlib.\nil-bu: thibbha hluwa barsha walla naqsa sukkur?\nwildu: tawwa nhutt is-sukkur wahdi.\nil-bu: 3anna khubz skhun w-zibda w-ma3jun zada.\nwildu: la, il-hamdulla, manish ji3an.\n\nText 1\ntayyib 3ijja fi-d-dar:\nishri shwayya tmatim ma3juna w-hrisa w-shwayya tum w-karwiya w-zit w-hara 3dam.\nqalli t-tmatim w-la-hrisa w-it-tum fi-shwayya zit. ba3d zid shwayya ma w-ba3d faqqas la-3dam.\ntnajjim ta3mil il-3ijja b-il-mirgaz zada.",
+  "course_number": 9,
+  "grammar_notes": "### Verpackungs- und Gewichtseinheiten\nAppositionen bei indeterminierter Verbindung; bei determinierter Verbindung Genitivverbindung (das zweite Wort erhält den Artikel, das erste steht im status constructus, der gebundenen Form eines Nomens vor einem folgenden Genitiv-Bestimmungswort): dabbuza hlib – dabbuzt la-hlib \"eine Flasche Milch – die Flasche Milch\".\n\n**haku – hakuwat**: haku umu \"eine Packung Waschpulver\", zuz hakuwat biskwit \"zwei Packungen Kekse\".\n**hukka – hkuk**: hukka tunn \"eine Dose Thunfisch\", tlata hkuk hrisa \"drei Dosen Harissa\".\n**dabbuza – dbabiz**: dabbuzt ish-shrab ghalya fi-tunis \"eine Flasche Alkohol ist teuer in Tunesien\".\n**shkara – shkayr**: shkara smid \"ein Sack Grieß\".\n**rabta – rbati**: zuz rbati ma3dnus oder rabtin ma3dnus \"zwei Bündel Petersilie\".\n**kilu**: kein Plural. kilu sukkur \"ein Kilo Zucker\", 3ashra kilu sfinnarya \"10 Kilo Karotten\".\n**rtal – (a)rtal** (\"halbes Kilo\"): rtal tmatim \"ein halbes Kilo Tomaten\", nuss rtal filfil harr \"ein Viertel Kilo Peperoni\".\n**gram**: kein Plural. khamsin gram filfil akhal \"50 Gramm schwarzer Pfeffer\".\n**itra – itrat**: itra hlib \"ein Liter Milch\", nuss itra zit \"ein halber Liter Öl\".\n**hara – hyar, hartin** (Dual): hara 3dam \"vier Eier\", hartin 3dam \"acht Eier\".\n\n### Anfügen von Pronominalsuffixen an Verben\nAußer in der 1. P. Sg. (-ni) gelten dieselben Regeln wie bei den Possessivsuffixen.\nNach Konsonant: -ni/-ik/-u/-ha; Pl. -na/-kum/-hum. Nach Langvokal: -ni/-k/-h/-ha; Pl. -na/-kum/-hum.\nNach Geminate (verdoppeltem mittleren Wurzelbuchstaben)/Zweifachkonsonanz (yhibb) und Langvokal-Konsonant (yzur) keine Änderung: yhibbni, yhibbik, yhibbu, yhibbha; yzurni, yzurik, yzuru, yzurha.\nNach unbetontem Kurzvokal-Konsonant (yifhim, ykallim): bei yifhim fällt der Vokal der offenen Silbe aus (yifhim+u > yifhmu, anaptyktischer Vokal (ein eingeschobener Hilfsvokal zur leichteren Aussprache) wo nötig: yifhimu/yif'hmu). Bei ykallim fällt das kurze i vor vokalischem Suffix aus; bei konsonantischem Suffix verschiebt sich die Betonung auf den 2. Stammvokal (meist a): ykallim > ykallamha.\nNach Vokal (z.B. yqarri): der auslautende Vokal wird vor Suffixen gelängt und betont: yqarrini, yqarrik, yqarrih, yqarriha; Pl. yqarrina, yqarrikum, yqarrihum.\nBei Pluralendungen defektiver Verben (Verben mit schwachem letzten Wurzelbuchstaben, siehe Lektion 12; yji: yjiu \"sie kommen\") kann entweder der erste oder zweite Vokal betont werden, oder ein Gleitlaut eingefügt werden: yjiuni, yjiuni, yjiyuni.\n\n### \"allein\" (wahd- + Suffix)\nwahdi, wahdik, wahdu, wahdha; Pl. wahhadna, wahhadkum, wahhadhum.\nbash timshi wahdik? – la, manish bash nimshi wahdi. \"Gehst du allein? – Nein, ich gehe nicht allein.\"\n\n### Der Dual\nWird durch Anfügen von -in an den Sg. gebildet (bei Fem. an den status constructus). In Tunis nicht mehr frei bildbar — im Normalfall wird zuz \"zwei\" + Plural verwendet (zuz dyar \"zwei Häuser\"). Nur bei bestimmten Zeit-/Maßangaben, Währungseinheiten und Zahlen ist (nur) der Dual üblich: sam/samin \"zwei Jahre\", nhar/nharin \"zwei Tage\", dqiqa/dqiqtin \"zwei Minuten\", sasa/sastin \"zwei Stunden\", dinar/dinarin \"zwei Dinar\", alf/alfin \"zweitausend\", mya/mitin \"zweihundert\".\n**Pseudodual** (ein Wort mit Dual-Endung, das aber eigentlich Plural bedeutet) bei paarigen Körperteilen (immer feminin): 3in/3inin \"Augen\", yidd/idin \"Hände\", saq/saqin \"Füße\", wdin/widnin \"Ohren\". Andere Körperteile (shiffa \"Lippe\", rukba \"Knie\") haben nur normale Pluralformen. Auch waldin \"Eltern\" ist ein Pseudodual.\nPseudoduale kongruieren wie Pluralformen (widnin kbar \"große Ohren\"); echte Duale verlangen den Plural (khubztin skhunin). Bei Suffigierung verlieren Pseudoduale ihr auslautendes -n (3inayya, 3inik); echte Duale werden nicht suffigiert.\n\n### Das Modalverb \"müssen, nötig haben; sollen\"\nyilzim und lazim werden mit Pronominalsuffixen versehen, das Hauptverb folgt im Präsens: yilzimni/lazimni nimshi \"ich muss gehen\".\nNegation: mush lazim (3la) / ma-lazim...-sh \"nicht nötig sein, nicht müssen\"; ma-yilzim...-sh \"nicht dürfen\".\nl-awlad iz-zghar ma-yilzimhum-sh yashru barsha \"Kleine Kinder dürfen nicht lange aufbleiben.\"\n\n### Zahlen ab 1000\n1000 alf, 2000 alfin, 3000 tlat-alaf, 4000 arb3-alaf, 5000 khams-alaf, 6000 sitt-alaf, 7000 sab3-alaf, 8000 tmany-alaf, 9000 tis3-alaf, 10 000 3ashr-alaf, 11 000 hdash-in alf, 12 000 tnash-in alf, 20 000 3ishrin alf, 100 000 myat alf, 1 000 000 malyun, 2 000 000 zuz mlayin. Das gezählte Wort folgt im Singular.\n\n### Der Genitivexponent (ein eigenständiges Wort, das die Zugehörigkeit/den Besitz ausdrückt, ähnlich dem deutschen \"von\") mta3 zum Ausdruck eines Besitzes\nil-bab mta3 il-bit = bab il-bit \"die Tür des Zimmers\". mta3 kann auch Possessivsuffixe ersetzen: karhbatik = il-karhba mta3ik. Nicht verwendet bei Verwandtschaftsbezeichnungen oder Körperteilen (hmat ahmid, nicht la-hmat mta3 ahmid).\nmta3i \"mein\", mta3ik \"dein\", mta3u \"sein\", mta3ha \"ihr\"; Pl. mta3na, mta3kum, mta3hum (f.). \"wessen\" mit Genitivexponent: mta3 shkun.\n\n### Verbot\nWird gebildet, indem die 2. P. Sg. oder Pl. des Präsens verneint wird: ma-tinsa-sh il-khubz! \"Vergiss das Brot nicht!\" ma-ttayybu-sh kuksi! \"Kocht keinen Kuskus!\"",
+  "vocab_lesson_refs": "ids:315,316,319,321,357,358,359,360,364,366,367,368,386,396,594,628,631,637,640,731,736,972,1071,1479,2188,2421,2434,2549,2582,2679,3116,3307,3308,3351,3545,3569,4139,4190,4191,4192,4193,4194,4195,4196,4197,4198,4199,4200,4201,4202,4203,4204,4205,4206,4322,4323,4324,4325,317,313,4328,4329,1637,4331,4332,4333,318,4335,2131,4420,4382,4381,543,4379"
+ },
+ {
+  "id": 11,
+  "title": "Lektion 10 — Wetter & Jahreszeiten, Perfekt (I./II. Stamm)",
+  "skript": 2,
+  "chunk_order": [
+   {
+    "key": "dialoge_1",
+    "label": "Dialoge 1-2: Hitze & Wetter",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "dialoge_2",
+    "label": "Text: Thomas lernt Arabisch",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "nebensaetze",
+    "label": "Nebensätze",
+    "dialog": false,
+    "grammar_headings": [
+     "Nebensätze"
+    ]
+   },
+   {
+    "key": "ma_kan",
+    "label": "ma-...kan – nur; erst",
+    "dialog": false,
+    "grammar_headings": [
+     "ma-...kan \"nur; erst\""
+    ]
+   },
+   {
+    "key": "kull",
+    "label": "kull",
+    "dialog": false,
+    "grammar_headings": [
+     "kull"
+    ]
+   },
+   {
+    "key": "perfekt_konjug1",
+    "label": "Perfekt I.Stamm: Konjugieren 1",
+    "dialog": false,
+    "grammar_headings": [
+     "Das Perfekt der regulären Verben des I. Stammes (der Grundform des Verbs; weitere \"Stämme\" wie II., III. usw. sind daraus abgeleitete Verbformen mit eigener, oft vorhersagbarer Bedeutungsverschiebung, z.B. intensiv, kausativ, reflexiv)"
+    ]
+   },
+   {
+    "key": "perfekt_konjug2",
+    "label": "Perfekt I.Stamm: Konjugieren 2",
+    "dialog": false,
+    "grammar_headings": [
+     "Das Perfekt der regulären Verben des I. Stammes (der Grundform des Verbs; weitere \"Stämme\" wie II., III. usw. sind daraus abgeleitete Verbformen mit eigener, oft vorhersagbarer Bedeutungsverschiebung, z.B. intensiv, kausativ, reflexiv)"
+    ]
+   },
+   {
+    "key": "perfekt_uebersetzen",
+    "label": "Perfekt I.Stamm: Übersetzen & Negation",
+    "dialog": false,
+    "grammar_headings": [
+     "Das Perfekt der regulären Verben des I. Stammes (der Grundform des Verbs; weitere \"Stämme\" wie II., III. usw. sind daraus abgeleitete Verbformen mit eigener, oft vorhersagbarer Bedeutungsverschiebung, z.B. intensiv, kausativ, reflexiv)"
+    ]
+   },
+   {
+    "key": "perfekt_primae",
+    "label": "Perfekt der Verba primae infirmae",
+    "dialog": false,
+    "grammar_headings": [
+     "Das Perfekt der Verba primae infirmae (Verben, deren erster Wurzelbuchstabe/Radikal schwach ist, w oder y; auch \"assimilierte Verben\" genannt)"
+    ]
+   },
+   {
+    "key": "ii_stamm",
+    "label": "Der II. Stamm des regulären Verbs",
+    "dialog": false,
+    "grammar_headings": [
+     "Der II. Stamm des regulären Verbs (eine vom Grundstamm abgeleitete Verbform, meist mit verdoppeltem 2. Wurzelbuchstaben und intensiver oder kausativer Bedeutung, \"machen, dass...\")"
+    ]
+   },
+   {
+    "key": "objektsuffixe",
+    "label": "Direkte Objektsuffixe (Ergänzung)",
+    "dialog": false,
+    "grammar_headings": [
+     "Ergänzung zu den direkten Objektsuffixen"
+    ]
+   },
+   {
+    "key": "uebungen_luecken",
+    "label": "Übungen: Lückentext",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "uebungen_zuordnung",
+    "label": "Übungen: Jahreszeiten-Zuordnung",
+    "dialog": false,
+    "grammar_headings": []
+   },
+   {
+    "key": "uebungen_richtigfalsch",
+    "label": "Übungen: Richtig/Falsch",
+    "dialog": false,
+    "grammar_headings": []
+   }
+  ],
+  "dialog_text": "Dialog 1: malla skhana!\nMuhsin: malla skhana ha-l-ayyamat! ish-shams tahraq w-id-dinya nar. faddina!\nKarim: wallahi bash nmutu m-is-skhana. in-nhar il-kull w-ahna nsumu f-il-sraq!\nMuhsin: nqul-lik il-haqq, it-taqs ma-ysa3id-sh b-il-kull sa-l-khidma. tawwa waqt bhar w-summan! 3lash ma-tzi-sh bahdana l-il-marsa?\nKarim: 3la khatir il-kunji mta3i ma-yibda kan nhar khumstash jwilya. nkammil ha-l-mudda hadhi w-ba3d bash nimshi l-susa.\nMuhsin: qaddash bash tuq3ud ghadi?\nKarim: shhar taqrib.\nMuhsin: bash timshi wahdik?\nKarim: la, manish bash nimshi wahdi. bash nhizz il-3ayla l-kull.\nMuhsin: 3andik il-haqq! is-skhana tuqtil hna. hatta f-il-lil id-dinya ghatta. ma-famma-sh nisma b-il-kull!\n\nDialog 2\nA: fi-ana fasl ahna tawwa?\nB: fi-fasl is-sif.\nA: shnuma shur is-sif?\nB: jwa w-jwilya w-ut.\nA: shnuwwa awwil shhar f-is-sif?\nB: jwa.\nA: qaddash il-yum f-ish-shhar?\nB: il-yum arb3a w-3ishrin jwa.\nA: kifash it-taqs il-yum?\nB: id-dinya skhuna ama famma shwayya shab.\n\nA: kifash it-taqs il-yum?\nB: id-dinya skhuna barsha.\nA: ash ta3mil waqt-illi tuskhun 3lik id-dinya?\nB: nimshi nbahhar.\nA: shnuwwa l-fasl illi yji ba3d is-sif?\nB: la-khrif.\nA: shnuma shur la-khrif?\nB: sibtambir w-uktobir w-nuvambir.\nA: kifash ykun it-taqs f-il-khrif?\nB: f-il-khrif id-dinya msahhba w-wraq ish-shjar ytihu.\n\nA: waqtash yirj3u it-tlamdha l-il-maktib?\nB: yirj3u fi-shhar sibtambir.\nA: ana nhar yhillu li-mkatib?\nB: la-qraya tibda nhar khumstash sibtambir.\n\nA: shnuma shur fasl ish-shta?\nB: disambir w-janfi w-fivri.\nA: id-dinya skhuna f-ish-shta?\nB: la, id-dinya tibrid f-ish-shta w-li-mtar tsubb.\nA: win tibrid id-dinya barsha?\nB: matalan fi-sin drahim w-janduba w-baza w-il-kaf.\nA: in-nas ya3mlu-shi ski fi-tunis?\nB: la, 3la khatir ma-famma-sh talj.\nA: is-sma safya f-ish-shta?\nB: la, id-dinya dima mghayyma w-famma barsha r3ad w-braq w-rih.\n\nA: shnuwwa l-fasl illi ynawwar fih in-nawwar?\nB: ir-rbi3.\nA: shnuma shur ir-rbi3?\nB: mars w-avril w-may.\nA: shnuwwa awwil shhar f-ir-rbi3?\nB: awwil shhar f-ir-rbi3 huwwa mars.\nA: shnuwwa l-yum?\nB: il-yum l-itnin sitta w-3ishrin mars.\nA: shnuwwa t-taqs il-yum?\nB: id-dinya msahhba w-it-taqs ma-zal barid.\n\nA: qaddash il-yum f-ish-shhar?\nB: il-yum wahid avril.\nA: shnuwwa t-taqs il-yum?\nB: ish-shams zarqa w-id-dinya dafya.\nA: w-ba3d avril anahu shhar yji?\nB: may.\n\nA: qaddash il-yum fi-may?\nB: il-yum tlata may.\nA: kifash it-taqs il-yum?\nB: il-yum id-dinya skhuna w-is-sma safya.\n\nText 1\nThomas lih taqrib shhar w-nuss m-illi ja min almanya w-m-illi bda yaqra l-3arbi. tawwa yhibb yitkallim b-il-3arbi m3a t-twansa bash yit3allim fisa3.\nij-zim3a lli fatit khdha l-kar w-msha l-nabil bash ytull 3la sahbu sli. waqt-illi wsil id-dar ma-lqa kan ummu ghadi. farhit bih yasir w-haddrit-lu qahwa. ama hiyya titkallim il-lahza t-tunsiya b-zarba w-Thomas ma-fhimha-sh b-il-gda 3la khatir ma-zal ma-ya3raf-sh yahki l-3arbi b-il-gda.",
+  "course_number": 10,
+  "grammar_notes": "### Nebensätze\n**3la khatir...** \"weil, da\": 3la khatir ma-nhibb-sh li-bhar. \"Weil ich das Meer nicht mag.\"\n**bash** \"damit, um zu\": mashi l-il-busta bash nishri timbri w-jwab. \"Ich gehe zur Post, um eine Briefmarke und ein Kuvert zu kaufen.\"\n**ma-dam** \"solange\" (mit Possessivsuffixen): ushrub il-qahwa ma-damha skhuna. \"Trink den Kaffee, solange er heiß ist.\"\n**m-illi** \"seit, seitdem\": m-illi rja3t min tunis w-it-taqs khayb. \"Seit ich von Tunesien zurück bin, ist das Wetter schlecht.\"\n**waqt-illi / ki, kif** \"wenn, als\": ma-nhibb-sh nukhruj waqt-illi/ki tsubb li-mtar. \"Ich will nicht hinausgehen, wenn es regnet.\"\n**qbal-ma** \"bevor\": ftart qbal-ma khrajt m-id-dar. \"Ich frühstückte, bevor ich aus dem Haus ging.\"\n**ba3d-ma** \"nachdem\": ba3d-ma rrawwah l-id-dar f-il-lil nit3ashsha. \"Nachdem ich am Abend nach Hause komme, esse ich zu Abend.\"\n\n### ma-...kan \"nur; erst\"\nma-yikhdim kan is-sbah. \"Er arbeitet nur am Morgen.\"\nma-lqa kan ummu. \"Er fand nur seine Mutter vor.\"\nma-yji kan la-sshiya. \"Er kommt erst am Nachmittag.\"\n\n### kull\nMit indeterminiertem Nomen = \"jede/r/s\": kull bit \"jedes Zimmer\", kull 3am \"jedes Jahr\", kull wahid \"jeder\", kull shayy \"alles\".\nMit determiniertem Nomen (nachgestellt, \"ganz\"/\"alle\") erhält kull den Artikel oder das rückweisende Suffix, davor die Präposition l-: in-nhar il-kull / in-nhar l-kullu \"den ganzen Tag\"; in-nas il-kull, in-nas l-kullhum \"alle Leute\".\nma-...-sh b-il-kull \"überhaupt nicht\": manish bash nhaddar drusi b-il-kull. \"Ich werde meine Übungen überhaupt nicht machen.\"\nDaneben kamil \"vollständig, ganz\" (nur bei temporalen Angaben, Substantiv bleibt indeterminiert): nhar kamil \"der/den ganze(n) Tag\", 3am kamil \"ein ganzes Jahr\".\n\n### Das Perfekt der regulären Verben des I. Stammes (der Grundform des Verbs; weitere \"Stämme\" wie II., III. usw. sind daraus abgeleitete Verbformen mit eigener, oft vorhersagbarer Bedeutungsverschiebung, z.B. intensiv, kausativ, reflexiv)\n6 Gruppen je nach Präsensschema:\n**Gruppe 1** (f3al/yaf3al, z.B. l3ab/yal3ab): l3ab, l3abit, l3abt, l3abt; Pl. l3abu, l3abu, l3abtu, l3abna. Weitere: drab/yadrab \"schlagen\", hdar/yahdar \"anwesend sein\", shar/yashar \"lange aufbleiben\", hbat/yahbat \"herunterkommen\", hfad/yahfad \"auswendig lernen\".\n**Gruppe 2** (f3al/yaf3il, z.B. sraf/yasrif oder smal/yasmil): sraf, sarfit, sraft, sraft; Pl. sarfu, sarfu, sraftu, srafna. Weitere: ghsal/yaghsil \"waschen\", sfas/yasfis \"steigen/treten\", s3an/yas3in \"kneten\", stas/yastis \"niesen\".\n**Gruppe 3** (f3al/yif3al, z.B. sma3/yisma3): sma3, sma3it, sma3t, sma3t; Pl. sma3u, sma3u, sma3tu, sma3na. Weitere: dfa3/yidfa3 \"zahlen\", rja3/yirja3 \"zurückkehren\", shtah/yishtah \"tanzen\", frah/yifrah \"sich freuen\", dbah/yidbah \"schlachten\", b3at/yib3at \"schicken\", krah/yikrah \"hassen\", njah/yinjah \"Erfolg haben\", msah/yimsah \"abwischen\", sraq/yisraq \"stehlen\", tla3/yitla3 \"hinaufgehen\", shal/yishal \"fragen\", lsaq/yilsaq \"haften\", slakh/yislakh \"häuten\", sbagh/yisbagh \"färben\".\n**Gruppe 4** (f3al/yuf3ul, z.B. shrab/yushrub): shrab, sharbit, shrabt, shrabt; Pl. sharbu, sharbu, shrabtu, shrabna. Weitere: tlab/yutlub \"verlangen\", ftar/yuftur \"frühstücken\", rbat/yurbut \"binden\", shkar/yuskur \"danken\", dlam/yudlum \"ungerecht behandeln\", rqad/yurqud \"schlafen\", qtal/yuqtil \"töten\".\n**Gruppe 5** (f3il/yif3il, z.B. ktib/yiktib — durchweg i): ktib, kitbit, ktibt, ktibt; Pl. kitbu, kitbu, ktibtu, ktibna. Weitere: lbis/yilbis \"sich ankleiden\", hsib/yihsib \"zählen\", hlif/yihlif \"schwören\", kdib/yikdib \"lügen\".\n**Gruppe 6** (f3ul/yuf3ul, z.B. mrud/yumrud): mrud, murdit, mrudt, mrudt; Pl. murdu, murdu, mrudtu, mrudna. Weitere: d3uf/yud3uf \"schwach werden\", qrub/yuqrub \"verwandt sein\", s3ub/yus3ub \"schwierig sein\".\n\n### Das Perfekt der Verba primae infirmae (Verben, deren erster Wurzelbuchstabe/Radikal schwach ist, w oder y; auch \"assimilierte Verben\" genannt)\nVerhalten sich im Perfekt wie reguläre Verben: wqif, wqift, wqift; Pl. wqifu, wqiftu, wqifna. Ebenso wsil, wja3. Mit erstem Radikal y nur ybis \"trocken sein\" verbreitet.\nWeitere: wzin/yuzin \"(ab)wiegen\", wlid/yulid \"gebären\", wsid/yusid \"versprechen\", wsif/yusif \"beschreiben\".\n\n### Der II. Stamm des regulären Verbs (eine vom Grundstamm abgeleitete Verbform, meist mit verdoppeltem 2. Wurzelbuchstaben und intensiver oder kausativer Bedeutung, \"machen, dass...\")\nPerfektschema: fa33al oder fa33il; Präsensschema: yfa33al oder yfa33il. Die a-Variante bei hinteren/emphatischen Konsonanten.\nPerf.: nazzim, nazzimit, nazzamt, nazzamt; Pl. nazzmu, nazzmu, nazzamtu, nazzamna. Präs.: ynazzim, tnazzim, tnazzim, nnazzim; Pl. ynazzmu, tnazzmu, tnazzmu, nnazzmu.\nImperativ: rawwah/rawwhu, baddil/baddlu. Verbalnomen (ein vom Verb abgeleitetes Substantiv, vergleichbar mit der deutschen \"-ung\"-Form): tahdir, tabdil, tatyib.\n\n### Ergänzung zu den direkten Objektsuffixen\nTritt an f3l-Schema ein vokalisches Suffix, fällt der Kurzvokal aus: sma3+ik > *sma3ik > sma3ik. Bei qtal \"er tötete\" > qatlu \"er tötete ihn\".\nTritt an die 3.P.Sg.f.-Endung des Perfekts (-it) ein vokalisches Suffix, wird das -t- verdoppelt (Erhalt des Kurzvokals): sma3it, aber sma3ittik.\nTreffen 3 und h aufeinander, kommt es zur Assimilation: sma3ha/sma3hum > smahha/smahhum.",
+  "vocab_lesson_refs": "ids:429,450,540,607,698,699,700,701,1117,1490,1798,2040,2041,2071,2074,2250,2305,2319,2334,2336,2337,2341,2449,2605,2750,3126,3235,3371,3553,3665,4178,4207,4208,2219,4210,4211,4212,4213,4214,4215,4216,4217,4218,4219,4220,1017,558,4339,4340,4341,4342,4343,4344,4421,4422,4384,4383,4423,4386,4385"
+ },
+ {
+  "id": 12,
+  "title": "Lektion 11 — Beim Arzt, Perfekt (geminiert/defektiv), ykhalli, Dativobjekt",
+  "skript": 2,
+  "chunk_order": [
+   {
+    "key": "dialoge_1",
+    "label": "Dialoge 1-4: Bus, Arzt & Einkauf",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "dialoge_2",
+    "label": "Text: Der Brief an die Schwester",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "mazal",
+    "label": "ma-zal – noch",
+    "dialog": false,
+    "grammar_headings": [
+     "ma-zal \"noch\""
+    ]
+   },
+   {
+    "key": "maad",
+    "label": "ma-3ad-sh – nicht mehr",
+    "dialog": false,
+    "grammar_headings": [
+     "ma-3ad-sh \"nicht mehr\""
+    ]
+   },
+   {
+    "key": "perfekt_geminiert",
+    "label": "Perfekt geminierter Verben",
+    "dialog": false,
+    "grammar_headings": [
+     "Das Perfekt der geminierten Verben des I. Stammes (Verben, bei denen der 2. und 3. Wurzelbuchstabe identisch sind, z.B. h-b-b \"lieben\")"
+    ]
+   },
+   {
+    "key": "perfekt_tertiae",
+    "label": "Perfekt Verba tertiae infirmae",
+    "dialog": false,
+    "grammar_headings": [
+     "Das Perfekt der Verben tertiae infirmae (wörtl. \"schwach im dritten [Wurzelbuchstaben]\": der letzte der drei Radikale ist w oder y, daher auch \"defektive Verben\" genannt) des I. Stammes"
+    ]
+   },
+   {
+    "key": "perfekt_yaxudh",
+    "label": "Perfekt yakhuth / yakul",
+    "dialog": false,
+    "grammar_headings": [
+     "Das Perfekt der Verben yakhuth und yakul"
+    ]
+   },
+   {
+    "key": "perfekt_yzi",
+    "label": "Perfekt yji / rit",
+    "dialog": false,
+    "grammar_headings": [
+     "Das Perfekt des Verbs yji und das Verb rit"
+    ]
+   },
+   {
+    "key": "ii_stamm_schwach",
+    "label": "II. Stamm schwacher Verben",
+    "dialog": false,
+    "grammar_headings": [
+     "Der II. Stamm der schwachen Verben"
+    ]
+   },
+   {
+    "key": "ii_stamm_gem",
+    "label": "II. Stamm geminierter Verben",
+    "dialog": false,
+    "grammar_headings": [
+     "Der II. Stamm der geminierten Verben"
+    ]
+   },
+   {
+    "key": "yxalli",
+    "label": "ykhalli – lassen",
+    "dialog": false,
+    "grammar_headings": [
+     "ykhalli \"lassen\""
+    ]
+   },
+   {
+    "key": "dativobjekt",
+    "label": "Indirektes Objekt (Dativobjekt)",
+    "dialog": false,
+    "grammar_headings": [
+     "Indirektes Objekt (Dativobjekt)"
+    ]
+   },
+   {
+    "key": "uebungen_zusatz",
+    "label": "Übungen: Gegenteil & Sätze ordnen",
+    "dialog": false,
+    "grammar_headings": []
+   }
+  ],
+  "dialog_text": "Dialog 1: f-il-kar\nmra: samahni, itla3!\nrazil (a): la, manish tala3.\nmra: mmala ba3d shwayya, khallini nitla3.\nrazil (a): tfaddal atla3! ya-khi ana shaddeitik?\nrazil (b): b-ish-shwayya, b-ish-shwayya, ma-ddizz-ash!\nil-khallas: qaddim, qaddim, il-kar ma-zalit fargha l-quddam. illi yhibb yahbat yqaddim.\nrazil (b): b-ish-shwayya, ahayti saqi!!\nmra: samahni manish b-il-sani.\nrazil (b): is-smah. malla kar! kayinna fi-hukka sardina. samahni khallini nahbat.\nmra: hatta ana habta f-il-mhatta hadhi.\n\nDialog 2\nA: qassit tsakir l-il-kaf?\nB: la, habbit nquss ama lqit il-gishe msakkar.\nA: ta3raf-shi waqtash tukhruj il-kar?\nB: famma kar kharjit tawwa w-kar tukhruj il-khamsa.\nA: waqtash tusil l-il-kaf?\nB: ythhar-li tusil m3a t-tis3a.\nA: mmakhkhar yasir. yilzimna nkunu ghadi qbal it-tmanya.\nB: mmala hayya nimshiu nshufu luwaj khir.\n\nDialog 3\nA: shkun hadha?\nB: hadha sli.\nA: shbih mahush qadd ba3du l-yum?\nB: sli mridh.\nA: ash yuja3 fih?\nB: rasu yuja3 fih w-kirshu tijri.\nA: 3andu skhana?\nB: la, ma-zad-sh 3andu skhana.\nA: win mashi sli?\nB: sli mashi l-is-sbitar bash yshuf it-tbib.\nA: ash qasid ya3mil it-tbib tawwa?\nB: it-tbib qasid y3addi 3la sli. yqis-lu d-damm w-is-skhana w-yisma3 daqqat qalbu.\nA: ash qal-lu t-tbib ba3d-ma 3addih?\nB: qal-lu bash yushrub barsha ma w-yurqud barsha w-ma-zad-sh yakul il-harr.\nA: shnuwwa d-dwa illi 3tahu-lu?\nB: 3tah harabish.\nA: 3tah-shi zraraq?\nB: la, ma-3tah kan harabish sharban.\n\nDialog 4\nA: win kunt?\nB: mshit l-il-khaddar shrit-lik shwayya khudra.\nA: b-qaddash shrit is-sfinnarya?\nB: b-sab3a mya w-khamsin il-kilu.\nA: shbiha ghalya!\nB: ghalya ama jdida w-hluwa.\nA: lqit-shi krumb 3and il-khaddar?\nB: la, ma-3andu-sh krumb.\nA: mmala b-ash bash ntayyib il-kuksi?\nB: khdhit-lik batata w-qra3 w-shwayya 7ums mnaffakh.\n\nText 1: jwab\nnhar is-sibt 18 ut 2010\nukhti la-sziza,\nil-barah ana w-sahbi sli 3addina nhar hlu fi-tunis. khrajna min susa fi-kar il-khamsa mta3 is-sbah. waqt-illi wsilna l-tunis ftarna ftur is-sbah, klina flayr w-ba3d shrabna qhawi 3arbi.\nba3d 3addina s-sbah il-kull f-il-aswaq mta3 li-mdina l-3arbi. shufna hajat hayline: iz-zrabi m-il-qirwan w-la-qfusat min sidi bu sid w-ij-jbayb il-3arbi.\nhabbit nishri-lkum zarbiya mta3 il-qirwan ama ma-kan-sh fuqi barsha flus. yumkin il-marra j-jayya idha kan rja3t l-tunis tawwa nishri-lkum wahda. qulu-li shnuwwa l-lun illi thibbuh.\nmsa nuss in-nhar ftarna fi-mat3am tunsi bahda jama3 iz-zituna f-il-mdina l-3arbi. il-mat3am hadha ma-ysarbi-sh kan il-makla t-tunsiya. sli khdha hut muqli w-ana klit kuksi b-il-sallush. ftarna b-il-gda w-la-hsab ma-tla3-sh ghali b-il-kull.\nba3d sli hazzni l-qahwit mribat. shrabna tay akhdar w-qahwa 3arbi b-ma z-zahr.\nla-sshiya mmakhkhar khdhina l-kar w-rja3na l-susa.\n3addina nhar bahi, tunis mdina hluwa yasir w-madha-biya nirja3 ghadi kull marra yibda 3andi fiha waqt.\ninshalla intuma l-kull f-id-dar la bas. sallim 3la shabi l-kull w-qul-ilhum rani farhan barsha fi-tunis.\nkhuk Thomas illi yhibbik barsha",
+  "course_number": 11,
+  "grammar_notes": "### ma-zal \"noch\"\nKonjugiert wie das Perfekt der Verba mediae infirmae (Verben, deren zweiter Wurzelbuchstabe/Radikal schwach ist, w oder y; siehe unten): vor vokalischen Endungen a, vor konsonantischen i.\nma-zilt, ma-zilt, ma-zal, ma-zalit; Pl. ma-zilna, ma-ziltu, ma-zalu.\nGefolgt von nicht-negiertem Verb/Partizip/Adjektiv/Adverb = \"noch\": it-trinu ma-zal waqif. \"Der Zug steht noch.\" ma-zilt naqra. \"Ich studiere noch.\"\nGefolgt von negiertem Verb/Partizip/Adjektiv/Adverb = \"noch nicht\": ma-zal ma-ya3raf-sh yahki l-3arbi b-il-gda. \"Er kann noch nicht gut Arabisch reden.\"\n\n### ma-3ad-sh \"nicht mehr\"\nErstarrte, nicht konjugierbare Verbform. ma-3ad-sh 3andu skhana. \"Er hat kein Fieber mehr.\" ma-3ad-sh naqra f-il-fak. \"Ich studiere nicht mehr an der Uni.\"\n\n### Das Perfekt der geminierten Verben des I. Stammes (Verben, bei denen der 2. und 3. Wurzelbuchstabe identisch sind, z.B. h-b-b \"lieben\")\nDie drei Präsensgruppen (yhibb/yhutt/ysadd) gehen im Perfekt in eine Gruppe über. Stammvokal immer a; vor konsonantischer Endung wird analog zu den Verba tertiae infirmae ein i eingeschoben.\nhabb, habbit, habbit, habbit; Pl. habbu, habbu, habbitu, habbina.\nWeitere: hass/yhiss \"spüren\", mass/ymiss \"berühren\", hazz/yhizz \"(auf)heben\", sabb/ysibb \"beleidigen\", sadd/ysidd \"zählen\", shadd/yshidd \"halten, fassen\", hall/yhill \"öffnen\", madd/ymidd \"(zu)reichen\", fadd/yfidd \"genug haben von\", kahh/ykuhh \"husten\", ghass/yghuss \"täuschen\", radd/yrudd \"zurückgeben; sich übergeben\", qass/yquss \"(zer)schneiden\", daqq/yduqq \"klopfen\", sabb/ysubb \"ausgießen; regnen\", darr/ydurr \"schaden\", ghazz/yghazz \"knabbern\".\n\n### Das Perfekt der Verben tertiae infirmae (wörtl. \"schwach im dritten [Wurzelbuchstaben]\": der letzte der drei Radikale ist w oder y, daher auch \"defektive Verben\" genannt) des I. Stammes\nDie Präsensgruppen (yikri, yahki/yilqa, yaqra) gehen im Perfekt in eine Gruppe über. Vor konsonantischer Endung steht ein langes i.\nkra, krat, krit, krit; Pl. krau, krau, kritu, krina. lqa, lqat, lqit, lqit; Pl. lqau, lqau, lqitu, lqina.\nWeitere: jra/yijri \"laufen\", shwa/yishwi \"grillen\", bka/yibki \"weinen\", bna/yibni \"bauen\", qla/yaqli \"braten\", qdha/yaqdhi \"einkaufen\", nsa/yinsa \"vergessen\", bqa/yibqa \"bleiben\", jra/yijra \"geschehen\", ghla/yaghla \"teuer sein\".\n\n### Das Perfekt der Verben yakhuth und yakul\nWerden im Perfekt wie die Verba tertiae infirmae konjugiert: khdha, khdhat, khdhit, khdhit; Pl. khdhau, khdhau, khdhitu, khdhina. Ebenso kla/kalit/klit.\n\n### Das Perfekt des Verbs yji und das Verb rit\nja, jat, jit, jit; Pl. jau, jau, jitu, jina. \"sehen\" hat neben yshuf ein unregelmäßiges Verb (rit), das wie ja flektiert wird, aber nur in 1./2. Person Perfekt gebräuchlich ist: shafu \"sie sahen\" (Perfekt zu yshuf), aber rit/rina für \"ich/wir sah(en)\".\n\n### Der II. Stamm der schwachen Verben\na) Verba primae infirmae: wie reguläre II.-Stamm-Verben: wassal/ywassal \"hinbringen\", waqqaf/ywaqqaf \"anhalten\", wakkil/ywakkil \"füttern\".\nb) Verba mediae infirmae: wie reguläre II.-Stamm-Verben: rawwah/yrawwah \"heimkehren\", dawwish/ydawwish \"duschen\", hawwis/yhawwis \"spazieren gehen\", tayyib/ytayyib \"kochen\".\nc) Verba tertiae infirmae: Perfektschema fa33a, Präsensschema yfa33i.\nPerf.: khalla, khallat, khallit, khallit; Pl. khallau, khallau, khallitu, khallina. Präs.: ykhalli, tkhalli, tkhalli, nkhalli; Pl. ykhalliu, tkhalliu, tkhalliu, nkhalliu.\nImperativ: khalli/khalliu. Partizip: mkhalli f. mkhallya/mkhalliya. Verbalnomen: ta3bya, ta3dya.\nWeitere: warra/ywarri \"zeigen\", qarra/yqarri \"lehren\", 3adda/y3addi \"verbringen; untersuchen\", na77a/yna77i \"ausziehen\", qalla/yqalli \"anbraten\", 3abba/y3abbi \"füllen\".\n\n### Der II. Stamm der geminierten Verben\nIm Prinzip wie reguläre Verben, aber verkürzte Formen bei vokalischer Endung.\nPerf.: qarrar, qarrit, qarrart, qarrart; Pl. qarru, qarru, qarrartu, qarrarna. Präs.: yqarrar, tqarrar, tqarrar, nqarrar; Pl. yqarru, tqarru, tqarru, nqarru.\n\n### ykhalli \"lassen\"\nDas Hauptverb steht immer im Präsens und kann nicht negiert werden.\nsamahni khallini nahbat. \"Entschuldigung, lass mich aussteigen!\" il-mudir ma-khallani-sh nakhu kunji. \"Der Direktor ließ mich keinen Urlaub nehmen.\"\n\n### Indirektes Objekt (Dativobjekt)\nPräposition l- + Pronominalsuffix, mit dem Verb zu einer Einheit verschmelzend: -li/-lik/-lu/-ilha; Pl. -ilna/-ilkum/-ilhum.\nktibt-li, jab-li; Pl. ktibt-ilna, jab-ilna. Nach einem Konsonanten (mit anaptyktischem Vokal): yib3at-li, tiktib-li. Nach Vokal: yishri-li; Pl. shra-lna.\nBesonderheiten bei qal/yqul: qal-li, qal-lik, qal-lu, qal-lha; Pl. qal-lna, qal-lkum, qal-lhum.",
+  "vocab_lesson_refs": "ids:533,638,727,728,730,770,940,988,1010,1015,2022,2178,2350,2387,2640,2681,3024,3106,3210,4221,4222,4223,4224,4225,4226,4227,4228,4229,4230,460,4232,4233,4234,4235,4236,4237,4238,4239,4240,4241,4242,4243,4244,4245,4246,4247,4248,4249,4250,4251,4252,4253,4254,4345,478,4347,2739,4349,4350,4351,4352,4353,4354,4355,4390,4394,4387,4424,4427,4397,4396,4395,4392,4393,4391,4398,4425,4388,4389,4426"
+ },
+ {
+  "id": 13,
+  "title": "Lektion 12 — Wohnungssuche, Perfekt (mediae inf.), Relativpronomen",
+  "skript": 2,
+  "chunk_order": [
+   {
+    "key": "dialoge",
+    "label": "Dialoge & Texte",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "ordinalzahlen",
+    "label": "Ordinalzahlen",
+    "dialog": false,
+    "grammar_headings": [
+     "Ordinalzahlen"
+    ]
+   },
+   {
+    "key": "perfekt_mediae_1",
+    "label": "Perfekt mediae infirmae: Konjugieren 1",
+    "dialog": false,
+    "grammar_headings": [
+     "Das Perfekt der Verba mediae infirmae (Verben, deren zweiter Wurzelbuchstabe/Radikal schwach ist, w oder y) des I. Stammes"
+    ]
+   },
+   {
+    "key": "perfekt_mediae_2",
+    "label": "Perfekt mediae infirmae: Konjugieren 2 & Negation",
+    "dialog": false,
+    "grammar_headings": [
+     "Das Perfekt der Verba mediae infirmae (Verben, deren zweiter Wurzelbuchstabe/Radikal schwach ist, w oder y) des I. Stammes"
+    ]
+   },
+   {
+    "key": "duratives_perfekt",
+    "label": "Duratives Perfekt",
+    "dialog": false,
+    "grammar_headings": [
+     "Duratives Perfekt (eine Vergangenheitsform für andauernde oder wiederholte Handlungen, wörtl. etwa \"war am Tun\")"
+    ]
+   },
+   {
+    "key": "nominalsaetze",
+    "label": "Nominalsätze im Perfekt",
+    "dialog": false,
+    "grammar_headings": [
+     "Nominalsätze (Sätze ohne eigenes Verb, z.B. \"Ich [bin] jung\" statt \"Ich bin jung\") im Perfekt"
+    ]
+   },
+   {
+    "key": "modalverben_perfekt",
+    "label": "Modalverben im Perfekt",
+    "dialog": false,
+    "grammar_headings": [
+     "Modalverben im Perfekt"
+    ]
+   },
+   {
+    "key": "negation",
+    "label": "Ergänzungen zur Negation",
+    "dialog": false,
+    "grammar_headings": [
+     "Ergänzungen zur Negation"
+    ]
+   },
+   {
+    "key": "relativpronomen",
+    "label": "Das Relativpronomen",
+    "dialog": false,
+    "grammar_headings": [
+     "Das Relativpronomen"
+    ]
+   },
+   {
+    "key": "iii_stamm",
+    "label": "Der III. Stamm des Verbs",
+    "dialog": false,
+    "grammar_headings": [
+     "Der III. Stamm des Verbs (eine abgeleitete Verbform, oft mit Bedeutung \"etw. an/mit jdm. tun\", z.B. \"jdn. begleiten\")"
+    ]
+   },
+   {
+    "key": "vierradikalig",
+    "label": "Vierradikalige Verben",
+    "dialog": false,
+    "grammar_headings": [
+     "Vierradikalige Verben (Verben mit vier statt drei Wurzelbuchstaben/Radikalen)"
+    ]
+   },
+   {
+    "key": "uebungen_zusatz",
+    "label": "Übungen: Richtig/Falsch",
+    "dialog": false,
+    "grammar_headings": []
+   }
+  ],
+  "dialog_text": "Dialog 1: dar l-il-kra\nrazil (a): tfaddal, b-ash hashtik?\nrazil (b): nfarkis 3la dar l-il-kra.\nrazil (a): win thibbha?\nrazil (b): nhibbha qriba m-ish-shatt bash nsaddi fiha s-sif.\nrazil (a): famma wahda f-il-marsa.\nrazil (b): qaddash fiha min bit?\nrazil (a): fiha zuz byut num w-bit ftur w-sala w-kujina w-bit hanu w-twalat.\nrazil (b): b-qaddash f-ish-shhar?\nrazil (a): b-khamsa myat dinar.\nrazil (b): shbiha ghalya yasir! fiha-shi talifun?\nrazil (a): la, ma-fiha-sh.\nrazil (b): waqtash nnazzim nshufha?\nrazil (a): tnazzim tshufha tawwa kan thibb.\nrazil (b): la, tawwa ma-nnazzam-sh. yumkin-shi la-sshiya?\nrazil (a): yumkin. tfaddal waqt-illi thibb.\n\nDialog 2\nrazil (a): alu. sbah il-khir.\nrazil (b): alu. sbah il-khir. tfaddal.\nrazil (a): madha-biya nikri l-burtman mta3ik. ana shuft f-ij-jarida mta3 il-yum.\nrazil (b): il-burtman illi f-il-manar?\nrazil (a): insam. ama qul-li win ja b-id-dabt?\nrazil (b): isma3. ta3raf-shi qahwit l-aqwas f-il-manar?\nrazil (a): ayy. na3rafha.\nrazil (b): il-burtman mawjud f-il-3imara lli wraha, ismha 3imarit ir-riyadh, f-it-taq it-tani numru 6, sa-ll-imin, buq3a raygda w-ndhifa.\nrazil (a): na3rafha l-buq3a. ama qaddash talib fih?\nrazil (b): talib mitin w-sab3in dinar.\nrazil (a): ghali yasir 3la khatir huwwa (3la khatru) zghir shwayya.\nrazil (b): tnazzim tshufha qbal w-min ba3d nitfahmu f-is-sum. kan 3jbik mush mushkul.\nrazil (a): bark allahu fik. b-is-slama.\nrazil (b): f-il-aman.\n\nText 1\nfatma w-maryam lqau khidma jdida fi-tunis w-bash yibdau yikhdmu la-khrif ij-jayy, ama l-tawwa ma-zalu ma-lqawu-sh dar. il-barah khdhau jimsa kunji w-mshau l-tunis bash yfarksu 3la burtman walla dar l-il-kra. kull wahda minhum madha-biya tuskun wahhadha ama ma-yukhlsu-sh barsha w-hathaka 3lash ma-ynazzmu ykhallsu kan mitin dinar f-ish-shhar.\nfatma sam3it b-dar 3arbi l-il-kra fi-wust li-blad qalt-ilha sahibitha layla. fiha zuz byut w-kujina w-twalat w-mulaha talib mitin w-sittin dinar f-ish-shhar. ysaydhum bash yikriuha msa bsadhum ahsin.\nwaqt-illi qalit sliha l-maryam habbit yimshiu l-il-mallak w-yiktbu l-kuntratu fi-aqrab waqt, ama fatma nasithha bash yimshiu yshufuha w-yitfahmu msa l-mallak 3la sumha qbal.\n\nText 2\nnuskun fi-shirt is-sbitar. il-burtman mta3i ja quddam il-busta qadd qadd, f-it-taq l-ulani. mula d-dar yuskun l-uta w-fuqi yusknu kurray ukhrin ma-zilt ma-nasrifhum-sh. burtmani fih zuz byut kbar, bit sala w-bit ftur, w-zuz byut zghar, bit num w-bit qsad. sandi zada bit hanu w-kujina kbira. ish-shbabik il-kull yhillu sa-sh-sharis. ma-sandi-sh jarda ama bit is-sala fiha balkun kbir nuqsud fih (viranda kbira nuqsud fiha) waqt-illi t-taqs bahi. jirani nas bahin yjiu ytullu slaya nhar l-ahadd sasat, ama ana ma-zilt ma-msit-ilhum-sh b-il-kull.",
+  "course_number": 12,
+  "grammar_notes": "### Ordinalzahlen\n1. ul/awwil (f. ula), 2. tani (f. tanya), 3. talit (f. talta), 4. rabas (f. rabsa), 5. khamis (f. khamsa), 6. sadis (f. sadsa), 7. sabas (f. sabsa), 8. tamin (f. tamna), 9. tasas (f. tassa), 10. sashir (f. sashra).\nBilden entweder eine Genitivverbindung mit dem folgenden (unbestimmten) Substantiv im Singular, oder werden wie ein Adjektiv nachgestellt und attributiv verwendet: nuskun fi-awwil taq / nuskun f-it-taq l-ul. \"Ich wohne im 1. Stock.\" Für \"erste/r\" attributiv auch ulani (f. ulaniya, Pl. ulaniyin/ulanin). Vorangestellt nur awwil.\nNach \"zehn\" werden die normalen Kardinalzahlen mit Artikel verwendet, dem determinierten Nomen nachgestellt: nuskun f-it-taq il-khumstash. \"Ich wohne im 15. Stock.\"\n\n### Das Perfekt der Verba mediae infirmae (Verben, deren zweiter Wurzelbuchstabe/Radikal schwach ist, w oder y) des I. Stammes\nDie drei Präsensgruppen (yshuf/yfiq/ybat) gehen im Perfekt in zwei Gruppen über. Vor vokalischen Endungen langes a, vor konsonantischen ein Kurzvokal (u oder i). Auch ma-zal gehört in diese Gruppe.\nshaf, shafit, shuft, shuft; Pl. shafu, shafu, shuftu, shufna. faq, faqit, fiqt, fiqt; Pl. faqu, faqu, fiqtu, fiqna. bat, batit, bitt, bitt; Pl. batu, batu, bittu, bitna.\nWeitere: qam/yqum \"aufstehen\", kan/ykun \"sein\", zar/yzur \"besuchen\", ja3/yju3 \"Hunger haben\", mat/ymut \"sterben\", sam/ysum \"schwimmen\", bas/ybus \"küssen\", dam/ydum \"andauern\", fat/yfut \"vorbeigehen\", ban/yban \"erscheinen\", shakh/yshikh \"sich amüsieren\", sa3/ysi3 \"leben\", ba3/ybi3 \"verkaufen\", zad/yzid \"wachsen, zunehmen\", ghab/yghib \"abwesend sein\", tab/ytib \"gar werden\", tah/ytih \"fallen\", tar/ytir \"fliegen\", khaf/ykhaf \"sich fürchten\".\n\n### Duratives Perfekt (eine Vergangenheitsform für andauernde oder wiederholte Handlungen, wörtl. etwa \"war am Tun\")\nDrückt eine länger andauernde oder wiederholte Handlung in der Vergangenheit aus: Hilfsverb kan (immer im Perfekt) + Hauptverb im Präsens.\nkunt tuskun wahdik fi-almanya? \"Warst du allein in Deutschland wohnhaft?\" kunna naqrau f-il-fak fi-tunis qbal-ma jina l-almanya. \"Wir studierten an der Uni in Tunesien, bevor wir nach Deutschland kamen.\" ki kunt naqra kan sandi barsha waqt. \"Als ich studierte, hatte ich viel Zeit.\"\n\n### Nominalsätze (Sätze ohne eigenes Verb, z.B. \"Ich [bin] jung\" statt \"Ich bin jung\") im Perfekt\nWerden mit dem Verb kan gebildet: ana sghira, ama (ana) kunt sghira ama tawwa khbirt. \"Ich war jung, aber jetzt bin ich alt geworden.\" li-mra hadhi ustadha, aber li-mra hadhi kanit ustadha. \"Diese Frau war Professorin.\" kanu raqdin ama tawwa faqu. \"Sie schliefen, aber jetzt sind sie aufgewacht.\"\n\n### Modalverben im Perfekt\nhabb/yhibb \"wollen\" und nazzim/ynazzim \"können\" im Perfekt negiert: ma-habbit-sh nikhdim. \"Ich wollte nicht arbeiten.\" ma-nazzmu-sh yjiu. \"Sie konnten nicht kommen.\" il-musallma ma-nazzmit-sh tikhdim il-barah. \"Die Lehrerin konnte gestern nicht arbeiten.\"\nhasht-/hast- im Perfekt: kunt hashti bik. \"Ich brauchte deine Hilfe.\"\nyilzim/lazim in der Vergangenheit (kan lazimni/kunt lazim + Präsens): kan lazimni nirawwah bikri w-wakhkhart. \"Ich hätte früh nach Hause kommen sollen, habe mich aber verspätet.\"\n\n### Ergänzungen zur Negation\nma-...shayy \"nichts\"; ma-...hatta shayy/hadha \"überhaupt nichts\"; ma-...hadd \"niemand\"; ma-...hatta wahid/hadd \"überhaupt niemand\"; sumr-/smur-ma-... \"noch nie\" (sumri ma-kunt fi-tunis. \"Ich war noch nie in Tunesien.\"); ma-...(-sh) hatta marra \"kein einziges Mal, noch nie\"; ma-...(-sh) (fi-, l-, min) hatta blasa \"nirgends\".\n\n### Das Relativpronomen\nilli (nach Vokal -lli): bezieht sich auf Sachen und Personen, ist für m./f. sowie Sg./Pl. gleich. Verbindet sich mit Präpositionen (b-illi \"wodurch\", l-illi \"wofür\"). Steht nach determiniertem Bezugswort (syndetischer Relativsatz, d.h. MIT Relativpronomen illi): li-bnayya illi qasda 3la-l-kursi \"das Mädchen, das auf dem Stuhl sitzt\".\nSubstantiviert (ohne Bezugswort): illi yhibb yahbat yqaddim. \"Wer aussteigen will, soll weiter nach vorne gehen.\" illi fat mat. \"Was vorbei ist, ist vorbei.\"\nBei indeterminiertem Bezugswort kein Relativpronomen (asyndetischer Relativsatz, d.h. OHNE illi): shufna rajil nasrfuh. \"Wir sahen einen Mann, den wir kennen.\"\n\n### Der III. Stamm des Verbs (eine abgeleitete Verbform, oft mit Bedeutung \"etw. an/mit jdm. tun\", z.B. \"jdn. begleiten\")\na) Reguläres Verb: Perfektschema fa3al/fa3il, Präsensschema yfa3al/yfa3il. safir/ysafir, samah/ysamah. Beispiel: sa3id/ysa3id \"gelegen sein, passen; entgegenkommen; helfen\".\nc) Verba primae infirmae: wie reguläre III.-Stamm-Verben. wafaq/ywafaq \"einverstanden sein\".\nd) Verba mediae infirmae: wie reguläre III.-Stamm-Verben. jawib/yjawib \"antworten\", sa3wid/ysa3wid \"wiederholen\", sa3win/ysa3win \"jem. helfen\".\ne) Verba tertiae infirmae: Perfektschema fa3a, Präsensschema yfa3i. dawa/ydawi \"pflegen, behandeln\", 3ana/y3ani \"leiden\", wata/ywati \"passen, harmonieren\". Partizip: mdawi f. mdawya, Pl. mdawin/mdawyin.\n\n### Vierradikalige Verben (Verben mit vier statt drei Wurzelbuchstaben/Radikalen)\na) Reguläres Verb: wie dreiradikalige II.-Stamm-Verben, aber zwei verschiedene Konsonanten statt verdoppeltem 2. Radikal. Perfektschema fa3lil/fa3lal, Präsensschema yfa3lil/yfa3lal. Beispiel: farkis/yfarkis \"suchen\": farkis, farksit, farkast, farkast; Pl. farksu, farksu, farkastu, farkasna. Präs.: yfarkis, tfarkis, tfarkis, nfarkis; Pl. yfarksu, tfarksu, tfarksu, nfarksu. Beispiel: fadlik/yfadlik \"scherzen, Spaß machen\".\nb) Verba tertiae infirmae: Perfektschema fa3la, Präsensschema yfa3li. marka/ymarki \"ein Tor schießen\", karda/ykardi \"auf Kredit einkaufen\", sarba/ysarbi \"servieren; bedienen\".",
+  "vocab_lesson_refs": "ids:616,617,634,705,706,707,708,714,715,718,807,924,997,1000,1011,1140,1245,1432,1622,2075,2192,2276,2623,2750,2761,3291,3558,3880,4070,4255,4256,4257,4258,4259,4260,4261,4262,4263,4264,4265,4266,4267,4268,3330,4270,4271,3681,4273,4274,4275,4276,4277,4278,4279,4280,4281,4282,4283,4356,4357,4358,4359,4360,4361,4362,4405,1607,4401,4403,4399,4431,650,1225,4402,4406,4404,4429,4400"
+ },
+ {
+  "id": 14,
+  "title": "Lektion 13 — Ramadan, V./VI. Stamm, Bedingungssätze",
+  "skript": 2,
+  "chunk_order": [
+   {
+    "key": "dialoge_1",
+    "label": "Dialoge 1-4: Im Restaurant",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "dialoge_2",
+    "label": "Text: Ramadan",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "dialoge_3",
+    "label": "Redewendungen: Im Restaurant",
+    "dialog": true,
+    "grammar_headings": [
+     "__intro__"
+    ]
+   },
+   {
+    "key": "yzid",
+    "label": "Das Verb yzid",
+    "dialog": false,
+    "grammar_headings": [
+     "Das Verb yzid"
+    ]
+   },
+   {
+    "key": "mashin",
+    "label": "ma-shin-...-sh",
+    "dialog": false,
+    "grammar_headings": [
+     "ma-shin-...-sh \"keine Lust haben zu/auf etw.\""
+    ]
+   },
+   {
+    "key": "objekt_kombiniert",
+    "label": "Direktes + indirektes Objekt",
+    "dialog": false,
+    "grammar_headings": [
+     "Verbindung von direktem und indirektem Objekt"
+    ]
+   },
+   {
+    "key": "v_stamm",
+    "label": "Der V. Stamm des Verbs",
+    "dialog": false,
+    "grammar_headings": [
+     "Der V. Stamm des Verbs (eine abgeleitete Verbform)"
+    ]
+   },
+   {
+    "key": "vi_stamm",
+    "label": "Der VI. Stamm des Verbs",
+    "dialog": false,
+    "grammar_headings": [
+     "Der VI. Stamm des Verbs (eine abgeleitete Verbform)"
+    ]
+   },
+   {
+    "key": "bedingungssaetze",
+    "label": "Bedingungssätze",
+    "dialog": false,
+    "grammar_headings": [
+     "Bedingungssätze"
+    ]
+   },
+   {
+    "key": "fi_progressive",
+    "label": "f(i)- als \"progressive marker\"",
+    "dialog": false,
+    "grammar_headings": [
+     "Die Präposition f(i)- als \"progressive marker\" (ein Signalwort für eine gerade ablaufende Handlung, ähnlich der englischen \"-ing\"-Form)"
+    ]
+   },
+   {
+    "key": "uebungen_zusatz",
+    "label": "Übungen: Sätze ordnen",
+    "dialog": false,
+    "grammar_headings": []
+   }
+  ],
+  "dialog_text": "Dialog 1: f-il-mat3am\nMuhsin: ya shaf! ya shaf!\nmula l-mat3am: sa-s-slama, tfaddlu.\nMuhsin: ash 3andkum il-yum?\nmula l-mat3am: tfaddlu ahaya l-karta.\nMuhsin: a3tini sahn slata meshwiya w-tajin.\nmula l-mat3am: samahni, it-tajin wfa.\nMuhsin: mmala a3tini sahn zilbana.\nmula l-mat3am: w-inti khuya, ash thibb?\nNabil: wallahi ma-zilt ma-na3raf-sh ash bash nakhu. walla nqul-lik jib-li brika w-sahn kaftaji.\nmula l-mat3am: bahi. thibbu-shi haja ukhra?\nNabil: dabbuza ma safya w-wahda koka.\nMuhsin: zuz koka w-zidna dabbuza ma.\nmula l-mat3am: hadhir. w-shnuwwa thibbu desar?\nMuhsin: jib-ilna shwayya ghalla.\nmula l-mat3am: ayy tfaddlu. w-shahiya tayyba.\n\nDialog 2: f-il-mat3am: ba3d li-ftur\nmula l-mat3am: 3jbkum-shi li-ftur?\nSalim: hayil! ya3tik is-sahha ya 7ajj, il-makla l-kull bnina.\nmula l-mat3am: sahha w-b-ish-shfa ya sidi.\nSalim: yishfik ya 7ajj. qaddash la-hsab?\nmula l-mat3am: ash 3andkum?\nSalim: zuz slayt meshwiya w-musli djaj w-sahn kuksi b-il-lham w-dabbuza ma safya.\nmula l-mat3am: yjiu tnash-in alf w-sab3a mya.\nSalim: tfaddal.\nHammadi: la, wallahi la, il-marra hadhi khalliha sliya.\nSalim: tfaddal ya 7ajj w-rabbi y3awnik.\nmula l-mat3am: y3ayyish wildi. f-il-aman.\n\nDialog 3\nA: sa-s-slama, khuya, ma-ziltu tsarbiu ftur nuss in-nhar?\nB: nsam. tfaddal, ash thibb takul?\nA: ash ma-zal thamma, ya shaf?\nB: ma-zal sanna kull shayy.\nA: madha-biya 3la sahn hut.\nB: hadhir, w-ash thibb tushrub?\nA: 3andkum-shi ma safya walla gazuz?\nB: kull shayy mawjud sandna.\nA: mmala a3tini dabbuza ma safya w-wahda boga.\n\nDialog 4\nA: shnuwwa l-waqt?\nB: tawwa madhi sa3a.\nA: win qasda fatma?\nB: hiyya qasda f-il-mat3am.\nA: shnuwwa l-waqt tawwa?\nB: tawwa madhi sa3a w-nuss.\nA: shbiha fatma ma-fatrit-sh?\nB: ma-fatrit-sh 3la khatir qasda tistanna fi-sahbitha layla.\nA: waqtash layla wislit l-il-mat3am?\nB: wislit madhi sa3tin.\nA: shbiha jat mmakhkhar yasir?\nB: jat mmakhkhar 3la khatir ma-3arfit-sh win ja l-mat3am.\nA: ash 3amlu fatma w-layla?\nB: talbu l-karta.\nA: shniyya l-makla lli mawjuda f-il-mat3am?\nB: famma barsha hajat: brik w-shurba w-maqruna w-djaj musli w-hut muqli.\nA: ash talbit fatma?\nB: talbit brika b-it-tunn w-djaj musli w-sahn ghalla.\nA: ash sharbit ba3d li-ftur?\nB: sharbit qahwa 3arbi.\nA: ash fatrit layla?\nB: fatrit slata meshwiya w-kuksi.\nA: talbit-shi gazuz msa li-ftur?\nB: la, 3la khatir ma-sinha-sh f-il-gazuz. ama talbit dabbuza ma.\nA: khdhat-shi desar?\nB: la, ma-khdhat-sh desar 3la khatir shabsit.\nA: qaddash tla3 la-hsab?\nB: la-hsab tla3 tis3-alaf.\nA: shkun khallas li-ftur?\nB: khallsittu layla.\n\nText: rumdhan\nrumdhan mafrudh 3la-l-muslimin il-kull, ama l-murdha w-li-msafrin ma-lazimhum-sh ysumu.\nshhar rumdhan ma-yji-sh dima fi-nafs il-waqt 3la khatir is-sam il-hijri aqsar m-is-sam il-miladi, hathaka 3lash rumdhan yqaddim kull sam b-hdash-in yum. in-nas ysumu m-is-sbah l-il-lil. la yaklu w-la yushrbu w-la yitkayyfu.\nin-nas yqumu msa l-fajr qbal-ma tatlas ish-shams bash yitsahhru w-basdha ysalliu slat is-subh. w-min ba3d yirjsu yurqdu.\nfi-rumdhan in-nas ytayybu barsha hajat bnan: li-brik w-ish-shurba yilzimhum ykunu kull yum sa-t-tawla.\nwaqt shaqqan il-fatr famma nas ysalliu f-ij-jamas, w-min ba3d yshuqqu ftarhum. ba3d shaqqan il-fatr barsha nas yitfarriju f-it-talfza 3la khatir jibu musalsalat b-baramij diniya. famma rjal yhibbu yashru f-il-qhawi, ama n-nsa yuqsdu f-id-dyar walla ytullu 3la ba3dhum. ahla shahriyat rumdhan 3la khatir il-3ayilat ytullu 3la ba3dhum w-yashru l-is-sbah, khassatan iz-zlabya w-li-mkharaq.\nf-in-nhar aghlabit il-qhawi w-li-mtasim ysakkru. in-nas illi ma-ysumu-sh ma-yilzimhum-sh yitkayyfu w-yaklu f-ish-sharis 3la khatir yilzimhum yqaddru n-nas is-saymin.\nfi-akhir shhar rumdhan yibdau n-nas yhaddru l-sid iz-zghir, yasmlu l-baqlawa w-il-maqrudh w-la-grayyba w-yishriu hwayj jdud l-wladhum.",
+  "course_number": 13,
+  "grammar_notes": "### Das Verb yzid\nBedeutet \"mit etw. weitermachen; dazugeben\" und kann oft einfach mit \"noch\" übersetzt werden: nzid nakil \"ich esse noch (mehr)\".\nKann von Substantiv oder Verb gefolgt werden: zidni dabbuza ma. \"Noch eine Flasche Wasser für mich!\" ana nzid nakul \"ich esse noch weiter\"; zid kul! \"Iss noch!\"\nSätze mit yzid werden eher mit Hilfe eines Modalverbs negiert: ma-yilzimni-sh nzid nuqsud. \"Ich sollte nicht mehr bleiben.\"\n\n### ma-shin-...-sh \"keine Lust haben zu/auf etw.\"\nNegative Entsprechung zu madha-bi-. Muss immer mit Pronominalsuffixen versehen sein: ma-shini-sh, ma-shinik-sh, ma-shinu-sh, ma-shinha-sh; Pl. ma-shinna-sh, ma-shinkum-sh, ma-shinhum-sh.\nMit Verb (bash eingeleitet): ma-shinik-sh bash timshi l-is-sinima l-yum. Mit Substantiv/Suffix (b- vorausgehend): ukhti ma-shinha-sh b-ha-r-razil hadha.\n\n### Verbindung von direktem und indirektem Objekt\nDie Dativsuffixe können an eine Verbform treten, die bereits mit den Akkusativsuffixen der 3. Personen versehen ist: yjib-li li-ktab, aber yjibhu-li \"er bringt es mir\". Ist an ein Verb aber eine 1./2. Person suffigiert, kann kein indirektes Objektsuffix mehr angefügt werden — stattdessen l- + Pronominalsuffix separat: njibukum lih \"wir bringen euch (zu) ihm\".\nBeispiele: yjibhu-li \"er bringt ihn/es mir\", jibhu-lu! \"bring ihn ihm!\", 3tathu-lik \"sie gab ihn dir\".\n\n### Der V. Stamm des Verbs (eine abgeleitete Verbform)\na) Reguläre Verben: Perfektschema tfa33il/tfa33al, Präsensschema yitfa33il/yitfa33al. Reflexiv-Passiv (drückt aus, dass das Subjekt die Handlung an/für sich selbst vollzieht oder von ihr betroffen ist, z.B. \"sich unterhalten\" zum II. Stamm \"unterhalten\") zum II. Stamm.\nPerf.: tkallim, tkallmit, tkallamt, tkallamt; Pl. tkallmu, tkallmu, tkallamtu, tkallamna. Präs.: yitkallim, titkallim, titkallim, nitkallim; Pl. yitkallmu, titkallmu, titkallmu, nitkallmu.\nWeitere: tkayyif/yitkayyif \"rauchen\", tfarrij/yitfarrij \"ansehen\", t3allim/yit3allim \"lernen\", tsa77ar/yitsa77ar \"im Ramadan einen Imbiss vor Tagesanbruch einnehmen\".\nb) Geminierte Verben: tghashshish, tghashshit, tghashshasht, tghashshasht; Pl. tghashshu, tghashshu, tghashshashtu, tghashshashna. Präs.: yitghashshish, titghashshish, titghashshish, nitghashshish.\nc) Verba tertiae infirmae: Perfektschema tfa33a, Präsensschema yitfa33a.\ntsadda, tsaddat, tsaddit, tsaddit; Pl. tsaddau, tsaddau, tsadditu, tsaddina. Präs.: yitsadda, titsadda, titsadda, nitsadda.\nWeitere: twaffa/yitwaffa \"sterben\", tsashsha/yitsashsha \"zu Abend essen\".\n\n### Der VI. Stamm des Verbs (eine abgeleitete Verbform)\na) Reguläres Verb: Perfektschema tfa3il/tfa3al, Präsensschema yitfa3il/yitfa3al. Meist reziproke Bedeutung (\"einander tun\", z.B. \"sich [gegenseitig] treffen\"), kommt vor allem im Plural vor.\ntfahim, tfahmit, tfahimt, tfahimt; Pl. tfahmu, tfahmu, tfahimtu, tfahimna. Präs.: yitfahim, titfahim, titfahim, nitfahim; Pl. yitfahmu, titfahmu, titfahmu, nitfahmu.\nWeitere: tqabil/yitqabil \"einander treffen\", tsharik/yitsharik \"sich streiten\".\nb) Verba tertiae infirmae: Perfektschema tfa3a, Präsensschema yitfa3a.\ntlaqa/yitlaqa \"sich treffen\", trana/yitrana \"trainieren, sich üben\".\n\n### Bedingungssätze\n**a) Reale Bedingungssätze:** eingeleitet mit kan, idha oder idha kan.\nNebensatz (Protasis, der \"Wenn\"-Teil des Satzes): Perfekt; Nominalsatz; Präsens (bei Modalverben/Auxiliarverben). Hauptsatz (Apodosis, der \"Dann\"-Teil): tawwa + Präsens; Imperativ; Verbot; negiertes Präsens/Futur.\nidha nazzamna tawwa njiu. \"Wenn wir es schaffen, kommen wir.\" kan sabbit li-mtar il-yum tawwa nukhrju nhawwsu. \"Wenn es heute nicht regnet, gehen wir hinaus spazieren.\" (hier verneint) idha kan qra b-il-gda tawwa yinjah. \"Wenn er richtig lernt, wird er erfolgreich sein.\"\n\n**b) Irreale Bedingungssätze** (Bedingungen, die in Wirklichkeit nicht eingetreten sind oder nicht eintreten werden, vergleichbar mit dem deutschen Konjunktiv II \"wenn ich Zeit hätte...\"): Konjunktion kan, meist gefolgt vom Perfekt ja. Hauptsatz eingeleitet von ra- + suffigierte Personalpronomen (rani, rak, rahu, rahi; Pl. rana, rakum, rahum).\nIrrealis (die hypothetische, nicht wirkliche Bedingung) der Vergangenheit — Nebensatz: Perfekt/Nominalsatz; Hauptsatz: ra- + Perfekt: kan ja qra b-il-gda rahu njah. \"Wenn er richtig gelernt hätte, hätte er es geschafft.\"\nIrrealis der Gegenwart — Nebensatz: Präsens/Nominalsatz; Hauptsatz: ra- + Präsens/Perfekt: kan zit tawwa fi-tunis rani bahhar/nbahhar. \"Wenn ich jetzt in Tunesien wäre, würde ich ans Meer gehen.\"\nDie Grenzen zwischen realen und irrealen Bedingungssätzen sind mitunter fließend; auch irreale Bedingungssätze ohne ja kommen vor.\n\n### Die Präposition f(i)- als \"progressive marker\" (ein Signalwort für eine gerade ablaufende Handlung, ähnlich der englischen \"-ing\"-Form)\nWird bei transitiven Verben zur Einleitung eines direkten Objekts für gerade stattfindende, nicht abgeschlossene Handlungen verwendet: f-ash (qasda) tiktib? – (qasda) niktib f-imayl. \"Was schreibst du gerade? – Ich schreibe gerade eine E-Mail.\"\nf(i)- wird u.a. verwendet: nach tawwa; nach qasid/qasda/qasdin; nach dem Auxiliarverb bda/yibda; nach ma-zal und ma-3ad-sh; nach dem durativen Perfekt; wenn mit li-/sand- eine Zeitspanne ausgedrückt wird.\nf(i)- wird NICHT verwendet: für allgemeingültige Sachverhalte (martik tushrub la-hrabish? \"Nimmt deine Frau [grundsätzlich] Tabletten?\"); nach Modalverben wie yhibb, yilzim, ynazzim.",
+  "vocab_lesson_refs": "ids:384,398,579,586,784,1061,1218,1986,2008,2038,2045,2273,3365,3429,3475,3654,3768,4284,4285,4286,4287,4288,4289,4290,4291,4292,4293,4294,4295,4296,4297,4298,4299,4300,4301,4302,4303,4304,4305,4137,388,4365,4366,4169,3028,4369,4370,3379,4372,4373,4374,4375,4376,1048,4415,4411,4410,4414,4408,4409,4413,4433,3412,4435,4434,4432,4412"
+ }
+]
