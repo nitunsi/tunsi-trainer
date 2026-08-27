@@ -13,7 +13,7 @@ description: "bei der verbesserung meines vokabel trainers fuer tunesisch"
 | Neuer Import-Batch abgeschlossen | Duplikat-Check — Pflichtregeln (Nachkontrolle) → Prüfungen nach jedem Import → Kurs-Verknüpfung: vocab_lesson_refs |
 | PDF/Foto-Quelle auswerten | Vokabel-Analyse (neue PDFs) → Prüfprotokoll |
 | Uni-Wien-Lehrskript-Lektion | Neue Quelle: Uni-Wien-Lehrskripte → Lautlehre-Zusatzregeln → Kurs-Modus |
-| Nutzer hat Vokabeln mit 🚩 markiert | Workflow: Geflaggte Vokabeln (🚩) live gegen Derja Ninja prüfen |
+| Nutzer hat Vokabeln mit 🚩 markiert | Workflow: Geflaggte Vokabeln (🚩) gegen Derja Ninja/TUNICO/Peace Corps prüfen |
 | Frischer Batch soll automatisch geprüft werden | Workflow: Frisch importierte Batch-Vokabeln flaggen + verifizieren |
 | Code-Änderung an trainer.html | Code-Änderungen |
 | Kurs-Modus (course_lessons/course_exercises) | Kurs-Modus: course_lessons / course_exercises → Kurs-Verknüpfung: vocab_lesson_refs |
@@ -454,7 +454,7 @@ Wenn ein Eintrag aus Derja Ninja kommt (oder damit abgeglichen wird) und die Vok
 5. Neue Einträge (⚠️ fehlt) als INSERT generieren — lesson_id immer explizit prüfen und begründen
 6. Alles gesammelt im SQL-Block ausgeben — kein SQL ohne Bestätigung
 
-## Workflow: Geflaggte Vokabeln (🚩) live gegen Derja Ninja prüfen
+## Workflow: Geflaggte Vokabeln (🚩) gegen Derja Ninja/TUNICO/Peace Corps prüfen
 
 Wenn Nils im Trainer Vokabeln mit 🚩 markiert ("als fehlerhaft markieren"), ist das der Auftrag an Claude, sie zu recherchieren und Korrekturvorschläge in `vocabulary_review` einzutragen — die eigentliche Recherche läuft außerhalb der App, der Ninja-Check-Tab im Trainer ist nur für die menschliche Freigabe/Ablehnung (siehe Code-Kommentar in trainer.html bei `showNinjaCheckQueue`). Kein automatisches UPDATE direkt auf vocabulary — immer über vocabulary_review, außer der Eintrag ist zweifelsfrei bereits korrekt (siehe Schritt 6).
 
@@ -464,8 +464,24 @@ Auslöser: "Ich habe Vokabeln markiert" / "flagged/markiert" o.ä. → `SELECT *
 
 ### Ablauf pro geflaggter Vokabel
 
-1. **Offline-Dump zuerst:** gegen `derja_ninja_import` prüfen (siehe Abschnitt "Neue Datenquelle: derja_ninja_import" oben) — schnell, aber der Dump ist ein Snapshot vom 2026-07-24 und kann inzwischen unvollständig sein (v.a. bei mehrteiligen Begriffen wie "police station" oder Redewendungen).
-2. **Live-Check, wenn der Dump nichts liefert:** derja.ninja hat einen normalen serverseitig gerenderten Such-Endpunkt (live per curl verifiziert am 2026-08-01, kein JS/Browser-Rendering nötig — reines HTTP GET liefert die vollständige Ergebnisliste). Endpunkt: `GET https://derja.ninja/search?search=<begriff>&script=<english|transliterated|arabic>` — Pfad ist `/search` ohne trailing slash (`/search/` liefert 404), Parameter heißt `search` (nicht `q` oder `query`).
+**Quellenreihenfolge seit 2026-08-27 (vier Offline-Quellen statt einer, siehe jeweils eigene "Neue Datenquelle"-Abschnitte weiter unten):**
+
+0. **Batch-Vorabgleich per Skeleton-Join, für den ganzen geflaggten Batch auf einmal, bevor pro Wort einzeln recherchiert wird.** `vocabulary.translit_skeleton`/`arabic_skeleton` sind vorberechnet (Diakritika/Vokale entfernt); `derja_ninja_entries` hat dieselben zwei Spalten, `tunico_import` hat `translit_skeleton`. Ein einziger SQL-Join pro Quelle deckt oft den Großteil des Batches ab, ganz ohne Einzel-curl:
+   ```sql
+   WITH flagged AS (SELECT id, darija, arabic_script, german, translit_skeleton, arabic_skeleton FROM vocabulary WHERE flagged = true)
+   SELECT f.id, f.darija, f.german, e.arabic_script AS ninja_arabic, e.darija AS ninja_darija, e.english, e.audio_url, e.term_start, e.term_end
+   FROM flagged f JOIN derja_ninja_entries e ON e.arabic_skeleton = f.arabic_skeleton OR e.translit_skeleton = f.translit_skeleton;
+
+   WITH flagged AS (SELECT id, darija, german, translit_skeleton FROM vocabulary WHERE flagged = true)
+   SELECT f.id, f.darija, f.german, t.lemma_orig, t.lemma_chatalpha, t.pos, t.senses
+   FROM flagged f JOIN tunico_import t ON t.translit_skeleton = f.translit_skeleton;
+   ```
+   **Achtung Rauschen:** Skeleton-Matches liefern auch falsche Homonym-Treffer (z.B. `sa7fa`-Skelett `s7f` matchte im Batch vom 2026-08-27 nicht nur "Teller/Schüssel", sondern auch "Journalist(in)"/"Presse"; `7ums`-Skelett matchte auch "verächtlich behandeln"/"Enthusiasmus") — jeden Treffer inhaltlich gegenchecken, nie den ersten/einzigen Treffer blind übernehmen.
+   **`derja_ninja_entries` ist seit 2026-08-17 die primäre Ninja-Quelle** (vollständiger Sitemap-Crawl, 17.335 Einträge, sauberes `term_start`/`term_end`-Audio-Timing schon in der Tabelle — das fragile Timing-Scraping aus Schritt 2 unten ist für diese Tabelle nicht mehr nötig). Der ältere `derja_ninja_import`-Dump (GitHub-Scraper, kein Timing) bleibt als Ergänzung relevant, wenn der neue Crawl nichts liefert.
+1. **`derja_ninja_import` prüfen**, wenn der Skeleton-Join gegen `derja_ninja_entries` nichts ergab (siehe Abschnitt "Neue Datenquelle: derja_ninja_import" oben) — Snapshot vom 2026-07-24, kann inzwischen unvollständig sein (v.a. bei mehrteiligen Begriffen wie "police station" oder Redewendungen), deckt aber gelegentlich andere Wörter ab als der neue Crawl.
+1b. **`tunico_import` als Bedeutungs-Tiebreaker, nicht nur bei fehlendem Ninja-Treffer.** TUNICOs `senses` (jsonb, de/en/fr, mit `pos`) zeigt oft das volle Bedeutungsspektrum eines Wortes, während ein einzelner Ninja-Treffer nur eine Facette zeigt (Präzedenzfall `ysa3id`, siehe TUNICO-Abschnitt weiter unten) — vor jeder inhaltlichen Korrektur (nicht nur Vokalisierung) gegenchecken, bevor "falsch" attestiert wird. **Precedent 2026-08-27:** Skeleton-Join von `399`("s7en"/"Teller Sg.") und `4329`("sa7n"/"Teller") landete in `derja_ninja_entries` auf demselben `entry_uuid` (identisches Audio) UND in `tunico_import` auf demselben Lemma `ṣḥan` — zwei unabhängige Quellen bestätigten damit ein bislang unbemerktes Duplikat im Bestand (399 mit mehr Lernfortschritt behalten, Schreibung von 4329 übernommen, 4329 gelöscht, `course_lessons.vocab_lesson_refs` chirurgisch nachgezogen). Bei jedem TUNICO-Treffer für zwei verschiedene geflaggte IDs im selben Batch also aufmerken — das ist ein Duplikat-Signal, kein Zufall.
+1c. **`peacecorps_dict_import` prüfen, wenn weder Ninja noch TUNICO etwas liefern.** Kleine, unverifizierte OCR-Quelle (1977er Wörterbuch), `arabic_script` bewusst leer — Skeleton-Join lohnt sich hier kaum (zu kleine/uneinheitliche Basis), stattdessen Text-Suche über `headword ILIKE`/`forms_phonetic` gegen die deutsche Bedeutung (ins Englische übersetzt). Wertvoll v.a. für grammatische Partikel/Konstruktionen, die TUNICO/Ninja nicht als eigenes Lemma führen. **Precedent 2026-08-27:** `yilzimni`("ich muss", id 4089) hatte keinen Ninja-Treffer (schon am 2026-08-08 erfolglos geprüft), aber Peace Corps führt exakt "MUST"/"Have to (to)" mit Beispielsatz `yilzimni: naqra: likta:b ha:dha:` — zusammen mit TUNICOs `yilzim`/`lazim` (Wurzel `lzm`) eine unabhängige Doppelbestätigung, obwohl der primäre Ninja-Check leer blieb.
+2. **Live-Check gegen derja.ninja, erst wenn alle drei Offline-Quellen (0/1/1c) nichts liefern.** derja.ninja hat einen normalen serverseitig gerenderten Such-Endpunkt (live per curl verifiziert am 2026-08-01, kein JS/Browser-Rendering nötig — reines HTTP GET liefert die vollständige Ergebnisliste). Endpunkt: `GET https://derja.ninja/search?search=<begriff>&script=<english|transliterated|arabic>` — Pfad ist `/search` ohne trailing slash (`/search/` liefert 404), Parameter heißt `search` (nicht `q` oder `query`).
 
    - `script=english` für deutsche/englische Suchbegriffe (deutschen Begriff vorher ins Englische übersetzen)
    - `script=arabic` um direkt nach einer arabischen Schreibung zu suchen (z.B. wenn nur das Wort selbst, aber keine Übersetzung bekannt ist)
@@ -743,6 +759,22 @@ Zusätzliche Spalten in vocabulary: `english` (interner Abgleich-Schlüssel zu N
 ### Bestehende Quelle: Derja Ninja — Web-Nachschlagen (wenn Tabellenabgleich nicht reicht)
 
 derjaguru.com bzw. derjaninja.com als tunesische Online-Wörterbuchdatenbank — weiterhin relevant für Einzelfälle, die im derja_ninja_import-Dump nicht auftauchen, oder zur Verifikation einzelner unklarer Wörter (z.B. Sonnenbuchstaben-Fragen wie bei ج). Diese Chat-Umgebung hat keinen Web-Zugriff auf derjaninja.com (nicht auf der Domain-Allowlist) — der Nutzer muss Suchergebnisse selbst einfügen, oder Claude Code nutzen (hat i.d.R. Web-Search/-Fetch-Tools und freieren Netzwerkzugriff). Klarstellung (2026-08-01 live verifiziert): Die Seite ist vollständig serverseitig gerendert, ein reiner curl-Abruf ohne JS liefert die komplette Ergebnisliste — ein 403/leeres Ergebnis in einer anderen Session liegt an der Domain-Allowlist der jeweiligen Umgebung bzw. an falschen Parameternamen (q/query statt search), nicht an fehlendem JS-Rendering.
+
+### Neue Datenquelle: derja_ninja_entries (seit 2026-08-17, primäre Ninja-Quelle)
+
+Tabelle: `derja_ninja_entries` — vollständiger Crawl aller Einzelwort-Seiten (`/e/<uuid>`) von derja.ninja über die sitemap.xml, 17.335 Zeilen, deutlich umfangreicher als der ältere `derja_ninja_import`-Dump (12.539 Zeilen, kein Audio-Timing). Spalten u.a. `entry_uuid`, `arabic_script`, `darija` (Ninjas eigene Transliteration, nicht unsere Konvention), `english`, `audio_url`/`term_start`/`term_end` (bereits korrekt getrenntes Wort-Audio, kein manuelles JSON-Scraping wie beim Live-curl-Workflow nötig), `example_*`-Spalten fürs Beispielsatz-Audio, `pos_tag`, `translit_skeleton`/`arabic_skeleton` (vorberechnet, für Skeleton-Joins gegen `vocabulary`).
+
+**Seit 2026-08-27 die primäre Ninja-Quelle** für den 🚩-Workflow (siehe "Ablauf pro geflaggter Vokabel" oben) — vor `derja_ninja_import`, wegen größerer Abdeckung und sauberem Audio-Timing direkt in der Tabelle. `derja_ninja_import` bleibt als Ergänzungsquelle, wenn der neue Crawl nichts liefert (unterschiedliche Scraper, unterschiedliche Lücken).
+
+Da `term_start`/`term_end` schon sauber pro Wort getrennt sind (anders als beim rohen HTML-`curl`-Workflow, siehe unten), kann `ninja_audio_url`/`ninja_audio_start`/`ninja_audio_end` direkt aus dieser Tabelle übernommen werden — die Audio-Regel ("nur bei wirklich identischer Aussprache/Gemination/Silbenzahl anhängen") gilt trotzdem unverändert weiter.
+
+### Neue Datenquelle: peacecorps_dict_import (Supabase-Tabelle)
+
+Tabelle: `peacecorps_dict_import` — Offline-Import aus dem Peace Corps English-Tunisian Arabic Dictionary (1977, Ben Abdelkader/Ayed/Naouar), ERIC ED183017. 3.353 Zeilen, Rohextrakt, unverifiziert. Spalten: `headword`, `pos`, `forms_phonetic` (Array, eigene phonetische Umschrift der Quelle, z.B. `yilzim + p.e.`), `gender`, `is_loanword`, `senses` (jsonb, oft mit `note`/`example_en`/`example_ph`), `arabic_script` (bewusst leer — soll erst aus `forms_phonetic` abgeleitet werden statt aus fehlerhaftem OCR), `source_section` (english_tunisian/tunisian_english), `forms_chatalpha`/`forms_skeleton`.
+
+**Einsatz im 🚩-Workflow (siehe "Ablauf pro geflaggter Vokabel" oben):** dritte/letzte Offline-Quelle, wenn weder `derja_ninja_entries`/`derja_ninja_import` noch `tunico_import` etwas liefern. Wegen kleiner/uneinheitlicher Datenbasis lohnt sich hier eher Text-Suche über `headword ILIKE`/`forms_phonetic` (deutschen Begriff vorher ins Englische übersetzen) als ein Skeleton-Join. Besonders wertvoll bei grammatischen Partikeln/Konstruktionen (z.B. `yilzim` + Pronomen-Endungen für "müssen"), die TUNICO/Ninja nicht immer als eigenes Lemma führen, aber Peace Corps mit vollständigem Beispielsatz dokumentiert (Precedent `yilzimni`/id 4089, 2026-08-27, siehe oben).
+
+`arabic_script` ist praktisch immer NULL — vor einer Übernahme als Korrekturvorschlag muss die arabische Schreibung erst aus `forms_phonetic` selbst hergeleitet werden (wie bei den Uni-Wien-Lehrskripten, siehe eigener Abschnitt), nicht 1:1 aus einer anderen Quelle kopiert werden. Wegen OCR-Fehleranfälligkeit der Quelle: Treffer hier als schwächeren Beleg werten als TUNICO/Ninja, gut als zusätzliche Bestätigung, aber im Zweifel nicht alleiniger Beleg für eine Korrektur.
 
 ### Vollständiger Bestandsabgleich gegen derja_ninja_import
 
