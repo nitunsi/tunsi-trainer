@@ -4552,7 +4552,7 @@ function renderCourseTestTab(tc, l){
   const gradable = COURSE_GRADABLE_TYPES.includes(ex.exercise_type);
   const label = isGrammar ? '🧠 Grammatik-Check' : ({translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',build_dialog:'Dialog bilden',grammar_drill:'Grammatik-Übung',fixed_response:'Feste Antwort'})[ex.exercise_type] || ex.exercise_type;
 
-  let h = '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.3rem">'+label+' · '+cur+' / '+total+'</div>';
+  let h = '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.3rem">'+label+' · '+cur+' / '+total+courseSourceBadge(ex)+'</div>';
   if(ex.exercise_type==='answer_pattern'){
     h += '<div style="border:1px solid var(--border);border-radius:6px;padding:.6rem .8rem;margin-bottom:.8rem;font-size:.78rem;color:var(--text)">'
        + '<div style="color:var(--gold);font-weight:700;margin-bottom:.3rem">📝 Zu erledigen:</div>'
@@ -4699,6 +4699,15 @@ function parseGrammarSections(text){
   return out;
 }
 
+// Kennzeichnet, ob eine Übung wörtlich aus dem Uni-Wien-Skript stammt (source==='original')
+// oder für den Trainer ergänzt/konstruiert wurde (source==='constructed'/null).
+function courseSourceBadge(ex){
+  if(ex.source==='original'){
+    return ' <span title="Wortlaut aus dem Uni-Wien-Skript" style="font-size:.6rem;font-weight:700;color:var(--green);border:1px solid var(--green);border-radius:3px;padding:0 .3rem;vertical-align:middle;white-space:nowrap">📖 Skript</span>';
+  }
+  return ' <span title="Für den Trainer ergänzt, nicht wörtlich aus dem Skript" style="font-size:.6rem;color:var(--muted);border:1px solid var(--border);border-radius:3px;padding:0 .3rem;vertical-align:middle;white-space:nowrap">✏️ ergänzt</span>';
+}
+
 function courseChunkLearnHtml(l, chunk){
   const sections = parseGrammarSections(l.grammar_notes);
   let h = '';
@@ -4813,7 +4822,7 @@ function renderCourseStepperTab(tc, l){
   const gradable = COURSE_GRADABLE_TYPES.includes(ex.exercise_type);
   const label = ({translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',build_dialog:'Dialog bilden',grammar_drill:'Grammatik-Übung',grammar_card:'Merksatz',fixed_response:'Feste Antwort',pronunciation:'🔊 Aussprache'})[ex.exercise_type] || ex.exercise_type;
 
-  h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.3rem">'+label+' · '+(_stepItemIdx+1)+' / '+chunk.items.length+'</div>';
+  h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.3rem">'+label+' · '+(_stepItemIdx+1)+' / '+chunk.items.length+courseSourceBadge(ex)+'</div>';
   if(ex.exercise_type==='answer_pattern'){
     h += '<div style="border:1px solid var(--border);border-radius:6px;padding:.6rem .8rem;margin-bottom:.8rem;font-size:.78rem;color:var(--text)">'
        + '<div style="color:var(--gold);font-weight:700;margin-bottom:.3rem">📝 Zu erledigen:</div>'
