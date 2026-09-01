@@ -248,9 +248,6 @@ body.hide-latin .chat-opt .latin {
 }
 
 .srs-info-badge{font-size:.68rem;color:var(--muted);margin-top:.25rem;margin-bottom:.5rem;letter-spacing:.01em;line-height:1.4;}
-.srs-level-track{display:inline-block;width:26px;height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;vertical-align:middle;margin-right:.3rem;}
-.srs-level-fill{display:block;height:100%;background:var(--gold);border-radius:3px;}
-.srs-level-num{vertical-align:middle;}
 
 /* Flash-Karte: arabisches Wort bleibt oben sichtbar wenn Tastatur aufgeht */
 .flash-sticky-top{
@@ -2099,13 +2096,14 @@ function fmtDue(date){
   if(diff===1) return 'morgen';
   return 'in '+diff+'T';
 }
+const SRS_LEVEL_COLORS = ['#9b6fd4','#e05555','#e07832','#c9a84c','#2a9d8f','#4cac6e','#1a7a3a'];
+const SRS_LEVEL_LABELS = ['L0','L1','L2','L3','L4','L5','L6'];
 function srsInfoBadge(vocab){
   if(!vocab || !vocab.id) return '';
   const p = srsProgress[vocab.id] || null;
   const level = p ? (p.level||0) : 0;
   const rc = (p && p.review_count) ? p.review_count : 0;
-  const pct = Math.round(level/6*100);
-  return `<span class="srs-level-track" title="Lernstufe ${level}/6"><span class="srs-level-fill" style="width:${pct}%"></span></span><span class="srs-level-num">${level}/6</span>${rc ? ' &nbsp;·&nbsp; 🔁 '+rc : ''}`;
+  return `<span style="color:${SRS_LEVEL_COLORS[level]};font-weight:700">${SRS_LEVEL_LABELS[level]}</span>${rc ? ' &nbsp;·&nbsp; 🔁 '+rc : ''}`;
 }
 
 function sh(a){return[...a].sort(()=>Math.random()-.5);}
@@ -3608,8 +3606,8 @@ function renderVocabTableRows(){
   const vocabFull = vocabFilteredFull;
   const el = document.getElementById('vocab-table');
   if(!el) return;
-  const SRS_COLORS = ['#9b6fd4','#e05555','#e07832','#c9a84c','#2a9d8f','#4cac6e','#1a7a3a'];
-  const SRS_LABELS = ['L0','L1','L2','L3','L4','L5','L6'];
+  const SRS_COLORS = SRS_LEVEL_COLORS;
+  const SRS_LABELS = SRS_LEVEL_LABELS;
 
   if(!vocabFull.length){
     el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem">Keine Vokabeln gefunden</div>';
