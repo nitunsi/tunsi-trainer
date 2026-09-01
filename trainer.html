@@ -194,7 +194,6 @@ main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem 5rem;overflow-anchor:no
 .nav-progress-bar{height:2px;background:var(--border);border-radius:1px;}
 .nav-progress-fill{height:100%;background:var(--gold);border-radius:1px;transition:width .4s ease;}
 .nav-right{display:flex;align-items:center;gap:.7rem;flex-shrink:0;}
-.nav-score{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;}
 .nav-toggle{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.78rem;padding:.3rem .6rem;cursor:pointer;text-transform:uppercase;letter-spacing:1px;white-space:nowrap;transition:all .15s;}
 .nav-toggle.open{color:var(--gold);border-color:var(--gold);}
 .nav-panel{display:none;background:var(--bg);border-bottom:1px solid var(--border);padding:1rem;}
@@ -249,6 +248,9 @@ body.hide-latin .chat-opt .latin {
 }
 
 .srs-info-badge{font-size:.68rem;color:var(--muted);margin-top:.25rem;margin-bottom:.5rem;letter-spacing:.01em;line-height:1.4;}
+.srs-level-track{display:inline-block;width:26px;height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;vertical-align:middle;margin-right:.3rem;}
+.srs-level-fill{display:block;height:100%;background:var(--gold);border-radius:3px;}
+.srs-level-num{vertical-align:middle;}
 
 /* Flash-Karte: arabisches Wort bleibt oben sichtbar wenn Tastatur aufgeht */
 .flash-sticky-top{
@@ -305,9 +307,6 @@ body.hide-latin .chat-opt .latin {
     </div>
   </div>
   <div class="nav-right">
-    <span class="nav-score" style="color:var(--green)" id="sc-correct">0</span>
-    <span class="nav-score" style="color:var(--red)" id="sc-wrong">0</span>
-    <span class="nav-score" style="color:var(--gold)" id="sc-streak">🔥0</span>
     <button class="nav-toggle" id="nav-toggle-btn" onclick="toggleNav()">▼ Menü</button>
     <button id="sync-btn" onclick="syncFlush(true)" title="Sync-Status" style="padding:.3rem .5rem;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.6rem;cursor:pointer;display:none;">✅</button>
     <button class="logout-btn" id="dbg-btn" onclick="toggleDebug()" style="color:var(--gold);border-color:var(--gold);font-size:.6rem;padding:.3rem .5rem;">DBG</button>
@@ -2104,12 +2103,9 @@ function srsInfoBadge(vocab){
   if(!vocab || !vocab.id) return '';
   const p = srsProgress[vocab.id] || null;
   const level = p ? (p.level||0) : 0;
-  const filled = '⭐'.repeat(level);
-  const empty = '<span style="opacity:.3;font-size:.8em">☆</span>'.repeat(6-level);
-  const reviewed = (p && p.last_reviewed) ? timeAgo(p.last_reviewed) : '—';
-  const correct = (p && p.last_correct) ? timeAgo(p.last_correct) : '—';
   const rc = (p && p.review_count) ? p.review_count : 0;
-  return `<div class="srs-info-badge">${filled}${empty}${rc ? ' &nbsp;·&nbsp; 🔁 '+rc : ''}</div>`;
+  const pct = Math.round(level/6*100);
+  return `<span class="srs-level-track" title="Lernstufe ${level}/6"><span class="srs-level-fill" style="width:${pct}%"></span></span><span class="srs-level-num">${level}/6</span>${rc ? ' &nbsp;·&nbsp; 🔁 '+rc : ''}`;
 }
 
 function sh(a){return[...a].sort(()=>Math.random()-.5);}
@@ -2213,7 +2209,7 @@ function setMode(m,el){
     if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='ninjacheck'){showNinjaCheckQueue();return;}if(m==='tunico'){showTunicoCandidates();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}go();
   },0);
 }
-function updScore(){document.getElementById('sc-correct').textContent=score.c;document.getElementById('sc-wrong').textContent=score.w;document.getElementById('sc-streak').textContent='🔥'+score.st;}
+function updScore(){/* Score-Anzeige in nav-strip entfernt — score.c/w/st werden weiterhin für Ergebnis-Screen und SRS-Streak gepflegt */}
 function showFb(ok,ca){const fb=document.getElementById('feedback');if(!fb)return;fb.className='feedback show '+(ok?'correct':'wrong');fb.textContent=ok?'✓ Richtig!':'✗ Falsch.'+(ca?' Antwort: '+ca:'');}
 function showNext(){showStickyNext(nxt);}
 function go(){
@@ -2327,7 +2323,7 @@ function bSentences(){
 function rMC(ex,el){
   document.getElementById('ex-type-label').textContent=cMode==='sentences'?'💬 Sätze':'🎯 Multiple Choice';
   const v=ex.v,dir=ex.dir;
-  el.innerHTML=`<div class="lesson-badge">${v.ls} · ${v.tp}</div>${srsInfoBadge(v)}
+  el.innerHTML=`<div class="lesson-badge">${v.ls} · ${v.tp}</div><div class="srs-info-badge">${srsInfoBadge(v)}</div>
   <div class="q-card"><div class="q-label">${dir==='ar2en'?'Was bedeutet dieses Wort?':'Welches Tounsi-Wort bedeutet:'}</div>
   ${dir==='ar2en'?`<div class="q-arabic">${v.ar}</div><div class="q-sub latin">${v.tr}</div>`:`<div class="q-text">${v.en}</div>`}
   </div>
@@ -2414,7 +2410,7 @@ function rFlash(ex,el){
     <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem">
       <span class="lesson-badge" style="margin:0;min-width:0;max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(v.ls+' · '+v.tp)}">${v.ls} · ${v.tp}</span>
       ${isNew ? `<span style="flex-shrink:0;font-size:.65rem;font-weight:700;color:var(--gold);background:rgba(201,166,74,.15);border:1px solid var(--gold);padding:.1rem .45rem;border-radius:3px">🆕 Neu</span>` : ''}
-      <span style="flex:1;min-width:0;font-size:.68rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${srsInfoBadge(v)}</span>
+      <span class="srs-info-badge" style="flex:1;min-width:0;margin:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${srsInfoBadge(v)}</span>
       ${v.ps ? `<span style="flex-shrink:0;font-size:.85rem" title="Partner: ${v.ps}">${v.ps==='approved'?'✅':v.ps==='rejected'?'❌':v.ps==='unknown'?'❓':v.ps==='pending'?'⏳':v.ps==='skipped'?'⏭':'💡'}</span>` : ''}
       ${v.au ? `<button onclick="playVocabAudio('${v.au.replace(/'/g,"\\'")}',event,${v.aus||0},${v.aue||0})" title="Aussprache abspielen" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.8rem;padding:.1rem .4rem;border-radius:3px;cursor:pointer;line-height:1.4">🔊</button>` : ''}
       <span style="flex-shrink:0;font-size:.7rem;color:var(--muted)">${_prog}</span>
