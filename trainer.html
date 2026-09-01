@@ -3099,9 +3099,7 @@ async function loadPartnerStats(){
     }
 
     const diffDays = lastActive ? Math.floor((now - lastActive) / 86400000) : 999;
-    const warningHtml = diffDays >= 3
-      ? '<div style="margin-bottom:.6rem;padding:.4rem .6rem;background:rgba(201,76,76,.1);border:1px solid var(--red);font-size:.75rem;color:var(--red)">⚠️ Seit ' + diffDays + ' Tagen keine Prüfung</div>'
-      : '';
+    const isOverdue = diffDays >= 3; // Überfälligkeit wird bereits über die rot eingefärbte "Vor X Tagen"-Kopfzeile signalisiert
 
     const approvedRecentCutoff = new Date(Date.now() - 7*86400000).toISOString();
     const approvedRecentN = await sbApiCount('vocabulary?partner_status=eq.approved&status_updated_at=gte.'+approvedRecentCutoff+'&select=id');
@@ -3114,26 +3112,26 @@ async function loadPartnerStats(){
     try { ninjaN = await sbApiCount('vocabulary_review?change_category=eq.ninja_check_pending&select=vocabulary_id'); } catch(e) {}
     const qualityN = countDupeIssues() + countTranslitIssues();
 
-    // Block nur zeigen, wenn mind. einer der Werte (außer "Offen") > 0 ist ODER die Warnung greift
+    // Block nur zeigen, wenn mind. einer der Werte (außer "Offen") > 0 ist ODER die Prüfung überfällig ist
     const anyOtherNonzero = [approvedRecentN, suggestedN, rejectedN, unknownN, commentedN, qualityN, (typeof ninjaN === 'number' ? ninjaN : 0)].some(n => n > 0);
     const block = document.getElementById('partner-stats-block');
-    if(!anyOtherNonzero && !warningHtml){
+    if(!anyOtherNonzero && !isOverdue){
       if(block) block.style.display = 'none';
       return;
     }
     if(block) block.style.display = '';
 
-    // Letzte Aktivität kompakt in die Kopfzeile neben dem Abschnittstitel
+    // Letzte Aktivität kompakt in die Kopfzeile neben dem Abschnittstitel (färbt sich bei Überfälligkeit rot)
     const lastActiveEl = document.getElementById('partner-last-active');
     if(lastActiveEl){ lastActiveEl.style.color = activityColor; lastActiveEl.textContent = activityText; }
 
-    // Kein Zähler > 0, nur die Warnung greift → Kachel-Raster (nur Nullen) unterdrücken, nur Warnung zeigen
+    // Kein Zähler > 0, nur überfällig → Kachel-Raster (nur Nullen) unterdrücken, Kopfzeile reicht als Hinweis
     if(!anyOtherNonzero){
-      el.innerHTML = warningHtml;
+      el.innerHTML = '';
       return;
     }
 
-    el.innerHTML = warningHtml +
+    el.innerHTML =
       '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.4rem;text-align:center">' +
         '<div style="padding:.4rem;background:var(--surface2);border:1px solid var(--border);">' +
           '<div style="font-size:1.1rem;font-weight:700;color:var(--gold)">' + pendingN + '</div>' +
