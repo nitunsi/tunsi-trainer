@@ -189,10 +189,6 @@ main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem 5rem;overflow-anchor:no
 .nav-left{display:flex;align-items:center;gap:.8rem;min-width:0;flex:1;}
 .nav-logo{font-family:'Playfair Display',serif;font-size:1rem;font-weight:900;white-space:nowrap;}
 .nav-logo em{color:var(--gold);font-style:italic;}
-.nav-context{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;}
-.nav-context-text{font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.nav-progress-bar{height:2px;background:var(--border);border-radius:1px;}
-.nav-progress-fill{height:100%;background:var(--gold);border-radius:1px;transition:width .4s ease;}
 .nav-right{display:flex;align-items:center;gap:.7rem;flex-shrink:0;}
 .nav-toggle{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.78rem;padding:.3rem .6rem;cursor:pointer;text-transform:uppercase;letter-spacing:1px;white-space:nowrap;transition:all .15s;}
 .nav-toggle.open{color:var(--gold);border-color:var(--gold);}
@@ -298,15 +294,10 @@ body.hide-latin .chat-opt .latin {
 <div class="nav-strip" id="nav-strip">
   <div class="nav-left">
     <div class="nav-logo">Tounsi <em>Trainer</em></div>
-    <div class="nav-context">
-      <span class="nav-context-text" id="nav-context-text">🎲 Mix · Alle</span>
-      <div class="nav-progress-bar"><div class="nav-progress-fill" id="nav-progress-fill" style="width:0%"></div></div>
-    </div>
   </div>
   <div class="nav-right">
     <button class="nav-toggle" id="nav-toggle-btn" onclick="toggleNav()">▼ Menü</button>
     <button id="sync-btn" onclick="syncFlush(true)" title="Sync-Status" style="padding:.3rem .5rem;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.6rem;cursor:pointer;display:none;">✅</button>
-    <button class="logout-btn" id="dbg-btn" onclick="toggleDebug()" style="color:var(--gold);border-color:var(--gold);font-size:.6rem;padding:.3rem .5rem;">DBG</button>
   </div>
 </div>
 <!-- ── Aufklappbares Panel ── -->
@@ -339,7 +330,10 @@ body.hide-latin .chat-opt .latin {
   </div>
   <div class="nav-footer">
     <span class="nav-user" id="header-user"></span>
-    <button class="logout-btn" onclick="doLogout()">Abmelden</button>
+    <span style="display:flex;gap:.5rem">
+      <button class="logout-btn" id="dbg-btn" onclick="toggleDebug()" style="color:var(--gold);border-color:var(--gold);font-size:.7rem">DBG</button>
+      <button class="logout-btn" onclick="doLogout()">Abmelden</button>
+    </span>
   </div>
 </div>
 <main>
@@ -2275,7 +2269,6 @@ function render(){
   const ex=exList[cIdx];answered=false;
   hideStickyNext();
   hideStickyCheck();
-  updateNavContext();
   // Modus-Label im exercise-header
   const _modeLabels = {mc:'🎯 MC',mix:'🎲 Mix',match:'🔗 Matching',fill:'✏️ Lückentext',
     conj:'📐 Konjugation',order:'🔀 Wortfolge',roleplay:'🛒 Roleplay',
@@ -3294,23 +3287,6 @@ function stickyNext(){
   const _inner = document.getElementById('sticky-next-inner');
   if(_inner) _inner.innerHTML = '<button class="sticky-next-btn" id="sticky-next-btn" onclick="stickyNext()">Weiter →</button>';
   fn();
-}
-
-// ── Nav progress update ───────────────────────────────────────────────────
-function updateNavContext(){
-  const modeNames = {
-    mc:'🎯 Multiple Choice', mix:'🎲 Mix', match:'🔗 Matching',
-    fill:'✏️ Lückentext', conj:'📐 Konjugation', order:'🔀 Wortfolge',
-    roleplay:'🛒 Roleplay', grammar:'📖 Grammatik', speed:'⚡ Speed', stats:'📊 Statistik'
-  };
-  const lessonName = cLesson === 'all' ? 'Alle' : cLesson;
-  const ctx = document.getElementById('nav-context-text');
-  const total = exList.length;
-  const cur = Math.min(cIdx + 1, total);
-  if(ctx) ctx.textContent = (modeNames[cMode] || cMode) + ' · ' + lessonName + (total > 1 ? ' · ' + cur + '/' + total : '');
-  const fill = document.getElementById('nav-progress-fill');
-  const np=document.getElementById('nav-progress');if(np)np.style.visibility='visible';
-  if(fill && total > 1) fill.style.width = Math.round((cIdx / total) * 100) + '%';
 }
 
 
