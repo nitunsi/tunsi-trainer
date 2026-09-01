@@ -369,7 +369,7 @@ body.hide-latin .chat-opt .latin {
   <div class="result-sub" id="result-sub"></div>
   <div style="display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center;">
     <button class="btn primary" onclick="restartExercise()">Nochmal</button>
-    <button class="btn" onclick="closeResult();cMode='stats';document.querySelectorAll('.lesson-chip[onclick*=setMode]').forEach(b=>{b.classList.remove('active');if(b.getAttribute('onclick').includes('stats'))b.classList.add('active')});showStats();">Statistik</button>
+    <button class="btn" onclick="closeResult();hideAllStickyBars();cMode='stats';document.querySelectorAll('.lesson-chip[onclick*=setMode]').forEach(b=>{b.classList.remove('active');if(b.getAttribute('onclick').includes('stats'))b.classList.add('active')});showStats();">Statistik</button>
   </div>
 </div>
 </div>
@@ -2202,6 +2202,8 @@ function setMode(m,el){
   el.classList.add('active');
   // Bulk-Bar verstecken wenn nicht Vocab-Modus
   const bb=document.getElementById('vl-bulk-bar');if(bb&&m!=='vocab')bb.style.display='none';
+  // Sticky-Leisten aus dem vorherigen Modus (z.B. "Prüfen" aus Vokabelkarten) nie in einen anderen Modus mitschleppen
+  hideAllStickyBars();
   clearTimeout(_modeDispatchTimer);
   _modeDispatchTimer=setTimeout(()=>{
     if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='ninjacheck'){showNinjaCheckQueue();return;}if(m==='tunico'){showTunicoCandidates();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}go();
@@ -2518,6 +2520,13 @@ function hideFlashActionBar(){
   if(bar){ bar.style.display='none'; bar.innerHTML=''; }
   const sn = document.getElementById('sticky-next');
   if(sn){ sn.style.display=''; }
+}
+// Alle unteren Sticky-Leisten (Prüfen/Weiter/Flash-Aktionen) auf einmal ausblenden — bei jedem Moduswechsel nötig,
+// damit z.B. die "Prüfen"-Leiste aus dem Vokabelkarten-Modus nicht in Statistik o.ä. hängen bleibt.
+function hideAllStickyBars(){
+  hideStickyCheck();
+  hideStickyNext();
+  hideFlashActionBar();
 }
 
 // Gemeinsame Korrektur-Logik (DB-Patch + lokaler State) für richtig<->falsch.
