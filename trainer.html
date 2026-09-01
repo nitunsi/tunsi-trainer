@@ -5750,6 +5750,10 @@ async function ninjaCheckIgnore(vocabId){
 // nur zur Kenntnis nehmen, es gibt nichts zu uebernehmen oder abzulehnen.
 async function ninjaCheckAcknowledge(vocabId){
   try {
+    await sbApi('vocabulary?id=eq.' + vocabId, 'PATCH', {
+      flagged: false,
+      ninja_checked_at: new Date().toISOString()
+    });
     await sbApi('vocabulary_review?vocabulary_id=eq.' + vocabId, 'PATCH', {
       change_category: 'ninja_check_kein_vorschlag_bestaetigt',
       reviewed: true,
