@@ -647,7 +647,7 @@ Spalten: `entry_uuid`, `arabic_script`, `darija` (Ninjas eigene Transliteration 
 
 Tabelle: `english_word`, `darija_result` (vokalisiertes Arabisch), `samples` (jsonb-Array `{ar, en, audio_url}`), `source`, `imported_at`. RLS aktiv (Policy `app_access`). Zusätzliche Spalten in `vocabulary`: `english`, `ninja_id` (FK), `ninja_audio_url` (noch nicht im Trainer eingebaut).
 
-Vollständiger historischer Workflow (Exakt-Match-Scan, Kollektivnomen-Hinweis, Klassifikation, bekannte Grenzen) inkl. aller Fallgeschichten: PRECEDENTS.md → derja_ninja_import.
+Der ursprüngliche Workflow gegen diese Tabelle (zweistufige Zuordnung, Prioritäts-Batching) ist durch den `derja_ninja_entries`-Workflow oben vollständig ersetzt und hier nicht mehr dokumentiert — nur noch relevant für die eine offene Altlast (Batch vom 2026-07-24, siehe „Offene Punkte" ganz oben). Ausgewählte Lehren, die weiterhin allgemein gelten (Maß-I/II-Praxisfall, harmlose "Kein Match"-Ursachen): PRECEDENTS.md → derja_ninja_import.
 
 ### speaktounsi.off (Instagram)
 
