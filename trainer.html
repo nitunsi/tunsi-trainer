@@ -2401,7 +2401,7 @@ function rFlash(ex,el){
   const isNew = !srsProgress[v.id];
   el.innerHTML=`
     <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem">
-      <span class="lesson-badge" style="margin:0;min-width:0;max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(v.ls+' · '+v.tp)}">${v.ls} · ${v.tp}</span>
+      <span class="lesson-badge" style="margin:0;flex:0 0 48%;min-width:0;width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(v.ls+' · '+v.tp)}">${v.ls} · ${v.tp}</span>
       ${isNew ? `<span style="flex-shrink:0;font-size:.65rem;font-weight:700;color:var(--gold);background:rgba(201,166,74,.15);border:1px solid var(--gold);padding:.1rem .45rem;border-radius:3px">🆕 Neu</span>` : ''}
       <span class="srs-info-badge" style="flex:1;min-width:0;margin:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${srsInfoBadge(v)}</span>
       ${v.ps ? `<span style="flex-shrink:0;font-size:.85rem" title="Partner: ${v.ps}">${v.ps==='approved'?'✅':v.ps==='rejected'?'❌':v.ps==='unknown'?'❓':v.ps==='pending'?'⏳':v.ps==='skipped'?'⏭':'💡'}</span>` : ''}
