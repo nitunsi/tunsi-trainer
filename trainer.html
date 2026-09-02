@@ -1951,16 +1951,18 @@ function partnerSuggestCheckDupes(){
     const gVal = gEl ? gEl.value.trim() : '';
     const dKey = normKey(dVal), gKey = normKey(gVal);
     if(dKey.length < 2 && gKey.length < 2){ box.innerHTML=''; return; }
+    const isExact = v => normKey(v.darija||'')===dKey || normKey(v.german||'')===gKey;
     const hits = (_psLite||[]).filter(v=>{
       const vd = normKey(v.darija||''), vg = normKey(v.german||'');
       return (dKey.length>=2 && vd && (vd===dKey || vd.includes(dKey) || dKey.includes(vd)))
           || (gKey.length>=2 && vg && (vg===gKey || vg.includes(gKey) || gKey.includes(vg)));
-    }).slice(0,5);
+    }).sort((a,b) => (isExact(b)?1:0) - (isExact(a)?1:0));
     if(!hits.length){ box.innerHTML=''; return; }
     box.innerHTML = '<div style="padding:.6rem .7rem;background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px">'+
-      '<div style="font-size:.72rem;color:var(--gold);margin-bottom:.4rem">⚠️ Ähnliche Einträge existieren schon:</div>'+
-      hits.map(h=>'<div style="font-size:.78rem;color:var(--muted);padding:.15rem 0">'+(h.arabic_script?h.arabic_script+' · ':'')+(h.darija||'')+' — '+(h.german||'')+'</div>').join('')+
-      '</div>';
+      '<div style="font-size:.72rem;color:var(--gold);margin-bottom:.4rem">⚠️ Ähnliche Einträge existieren schon ('+hits.length+'):</div>'+
+      '<div style="max-height:220px;overflow-y:auto">'+
+      hits.map(h=>'<div style="font-size:.78rem;color:'+(isExact(h)?'var(--gold2)':'var(--muted)')+';padding:.15rem 0">'+(h.arabic_script?h.arabic_script+' · ':'')+(h.darija||'')+' — '+(h.german||'')+'</div>').join('')+
+      '</div></div>';
   }, 400);
 }
 
