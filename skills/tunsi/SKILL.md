@@ -710,6 +710,8 @@ Aus der Uni-Wien-Lautlehre (Einleitungskapitel) abgeleitete Prüfregeln, unabhä
 
 **Seit 2026-09-02 auf Nutzerwunsch abgelöst durch `derja_ninja_entries` (17.335 statt 6.327 Zeilen, vollständigerer Crawl, mit Audio-Timing) — siehe "Neue Datenquelle: derja_ninja_entries" weiter unten für die aktuelle Methodik.** `derja_ninja_import` wird für keine neue Abfrage mehr benutzt, auch nicht als Fallback. Dieser Abschnitt bleibt nur als historisches Nachschlagewerk stehen (Präzedenzfälle, Lehren aus früheren Audits sind weiterhin inhaltlich gültig), die konkreten SQL-Workflows darin aber durch die Version im `derja_ninja_entries`-Abschnitt ersetzt.
 
+**Nicht löschen — kein reines Duplikat.** Vergleich am 2026-09-02: von 6.214 unterschiedlichen `darija_result`-Konsonantenskeletten in `derja_ninja_import` finden sich 1.186 (~19%) nicht in `derja_ninja_entries`. Stichprobe davon zeigt: größtenteils mehrwortige Phrasen/Redewendungen (z.B. "wallet"→"burtmuna", "classmate"→"wild klas", "anywhere"→"fi ay blasa"), keine fehlenden Einzelwörter — `derja_ninja_import` scheint eher Übersetzungs-Suchergebnisse (auch Phrasen) gescraped zu haben, `derja_ninja_entries` ist ein sauberer Wörterbuch-Eintrags-Crawl (ein Eintrag pro `/e/<uuid>`-Seite). Unterschiedlicher Zweck, kein Ersatz — deshalb bleibt die Tabelle bestehen, auch wenn sie für neue Abfragen nicht mehr genutzt wird.
+
 Tabelle: `derja_ninja_import` — vollständiger Offline-Dump von derja.ninja (Quelle: GitHub-Scraper ArmelVidali/derja_ninja_scraper), ca. 11.500 Zeilen. Spalten: `english_word` (Suchbegriff), `darija_result` (vokalisiertes Arabisch), `samples` (jsonb-Array mit Beispielsätzen {ar, en, audio_url}), `source`, `imported_at`.
 
 RLS ist aktiv (Policy `app_access`, analog zu den anderen Tabellen — USING true/WITH CHECK true), seit 2026-07-24 eingerichtet.
@@ -813,6 +815,31 @@ Bildbasierte Übungen (z.B. "Was machen die Leute" mit Zeichnungen) werden nie u
 2. Gegen `SELECT count(*) FROM course_exercises WHERE course_lesson_id=X AND chunk_key='...'` abgleichen
 3. Bei Abweichung: fehlende Items identifizieren, nicht nur "ist wohl vollständig" annehmen
 4. Auch mehrseitige Übungen beachten — Nummerierung kann über einen Seitenumbruch weiterlaufen (Item 1 auf Seite N, Items 2–7 auf Seite N+1)
+
+### Vollständigkeitsprüfung: Vokabel-Verknüpfung pro Lektion (vocab_lesson_refs)
+
+**Nie nach `vocabulary.topic` prüfen, ob eine Vokabel zu einer Kurs-Lektion gehört — das Wort muss wirklich im Kurstext vorkommen (Nutzeranweisung, 2026-09-02).** Ein Themen-Sweep (z.B. alle `topic='Familie'`-Vokabeln gegen eine "Familie"-Lektion) erzeugt massive Fehlalarme: Bei einem ersten Testlauf lieferte der Topic-Sweep für 11 Lektionen zusammen ~280 scheinbar fehlende Vokabeln, von denen sich nach Volltext-Prüfung nur eine kleine Minderheit als echt herausstellte (z.B. Lektion "Familie, Sprachen, Heiraten": 86 Topic-Kandidaten → nur 7 kamen im Lektionstext tatsächlich vor, weil die Lektion inhaltlich vor allem Grammatik behandelt und "Familie" nur am Rand in Dialog-Beispielen auftaucht).
+
+**Richtige Methode:**
+1. Korpus pro Lektion zusammenbauen: `dialog_text` + `grammar_notes` + **alle** `course_exercises`-Felder (`instruction`, `prompt`, `solution`, `meta::text` — nicht nur `prompt`/`solution`, sonst gehen Treffer aus Drag&Drop-Wortlisten o.ä. verloren).
+2. Kandidaten (z.B. per grobem Themen-Filter vorsortiert, um die Kandidatenmenge klein zu halten) mit Wortgrenzen-Regex (`\y...\y`, NICHT `\b`, siehe Postgres-Regex-Falle oben) gegen den Korpus matchen.
+3. **Pflicht-Gegencheck pro Treffer, nicht blind übernehmen:** Fundstelle im Korpus tatsächlich lesen. Kurze/häufige Wörter sind besonders anfällig für Homograph-Kollisionen — ein Treffer beweist nur, dass die Zeichenkette vorkommt, nicht dass die gesuchte Bedeutung gemeint ist.
+4. Nur bei bestätigtem Treffer die ID (und ggf. das Wort im `darija:`-Teil, falls die Lektion einen hat) an `vocab_lesson_refs` anhängen — nie den ganzen String überschreiben, siehe `parseCourseVocabRefs()`-Formatzwang oben.
+
+**Wiederkehrende Homograph-Fallen, bereits mehrfach angetroffen (immer den tatsächlichen Fundtext lesen, nie den Wortlaut allein vertrauen):**
+
+| Zeichenkette | Falsch angenommene Bedeutung | Tatsächlich meist gemeint |
+|---|---|---|
+| `dar` | er drehte sich / er wandte sich | `dar` = Haus ("f-id-dar" = zuhause) |
+| `mit` | ich starb | deutsches Wort "mit" in Erklärungs-/Übersetzungstexten |
+| `3am` | er schwamm | `3am` = Jahr |
+| `walla` | er wurde | `walla` = oder (Konjunktion) — Bedeutung ist selbst im Vokabel-Datensatz per Klammerzusatz von der anderen abgegrenzt |
+| `kan` | er war | Bedingungspartikel "falls/wenn" (`eingeleitet mit kan, idha oder idha kan`), v.a. in Grammatik-Abschnitten zu Bedingungssätzen |
+| `sghar` | Kinder (Nomen) | Plural von `sghir` = klein (Adjektiv), z.B. in Kongruenz-Übungen "kbir/sghir → kbar/sghar" |
+
+Diese Liste ist nicht abschließend — bei jedem neuen kurzen/häufigen Kandidatentreffer denselben Verdacht anwenden.
+
+**Präzedenzfall 2026-09-02: L1–L13 systematisch mit dieser Methode durchgeprüft**, ~132 echte Verknüpfungen ergänzt (vorher großteils gar nicht oder nur zufällig verlinkt), ~15 Fehlalarme der obigen Art aussortiert. Bei L11/L13 auf Nutzerwunsch ohne `progress.next_review`-Fälligsetzung (nur Verknüpfung, kein SRS-Eingriff) — bei künftigen Lektionen im Zweifel nachfragen, ob fällig gesetzt werden soll. Nicht erneut von null anfangen, sondern bei neuen/geänderten Lektionen gezielt ergänzen.
 
 ### Wortvarianten nicht vorschnell auf Bestandswort normalisieren
 
