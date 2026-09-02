@@ -422,9 +422,7 @@ TUNICO ("A Digital Dictionary of Tunis Arabic", Uni Wien, Dallaji/Gabsi/Procház
 
 Derja Ninja (derjaguru.com/derjaninja.com) ist eine tunesische Online-Wörterbuchdatenbank mit vokalisierten arabischen Einträgen. Die arabische Schreibweise dort ist in der Regel zuverlässiger vokalisiert als bestehende Trainer-Einträge.
 
-Seit 2026-07-24 gibt es einen vollständigen Offline-Dump als Supabase-Tabelle `derja_ninja_import` — für Bestandsaudits und systematischen Abgleich ist das der bevorzugte Weg (siehe eigener Abschnitt weiter unten "Neue Datenquelle: derja_ninja_import"), statt einzelne Wörter manuell im Web nachzuschlagen oder den Nutzer um Copy-Paste zu bitten.
-
-**Seit einer späteren Session gibt es zusätzlich `derja_ninja_entries` (17.335 Zeilen) — ein vollständigerer Sitemap-Crawl derselben Seite, sollte `derja_ninja_import` (6.327 Zeilen) für neue Abfragen vorziehen** (siehe "Neue Datenquelle: derja_ninja_entries" ganz unten).
+Für Bestandsaudits und systematischen Abgleich gibt es einen vollständigen Offline-Dump als Supabase-Tabelle **`derja_ninja_entries`** (siehe eigener Abschnitt weiter unten "Neue Datenquelle: derja_ninja_entries") — das ist der bevorzugte Weg, statt einzelne Wörter manuell im Web nachzuschlagen oder den Nutzer um Copy-Paste zu bitten. **Die ältere Tabelle `derja_ninja_import` wird seit 2026-09-02 nicht mehr verwendet** (siehe Deprecation-Hinweis im entsprechenden Abschnitt).
 
 ### Regel: arabic_script aus Derja Ninja bevorzugen
 
@@ -467,7 +465,7 @@ Auslöser: "Ich habe Vokabeln markiert" / "flagged/markiert" o.ä. → `SELECT *
 
 ### Ablauf pro geflaggter Vokabel
 
-1. **Offline-Dump zuerst:** gegen `derja_ninja_import` prüfen (siehe Abschnitt "Neue Datenquelle: derja_ninja_import" oben) — schnell, aber der Dump ist ein Snapshot vom 2026-07-24 und kann inzwischen unvollständig sein (v.a. bei mehrteiligen Begriffen wie "police station" oder Redewendungen).
+1. **Offline-Dump zuerst:** gegen `derja_ninja_entries` prüfen (siehe Abschnitt "Neue Datenquelle: derja_ninja_entries" weiter unten — NICHT die veraltete `derja_ninja_import`) — schnell, aber auch dieser Dump ist ein Snapshot (2026-08-17) und kann inzwischen unvollständig sein (v.a. bei mehrteiligen Begriffen wie "police station" oder Redewendungen).
 2. **Live-Check, wenn der Dump nichts liefert:** derja.ninja hat einen normalen serverseitig gerenderten Such-Endpunkt (live per curl verifiziert am 2026-08-01, kein JS/Browser-Rendering nötig — reines HTTP GET liefert die vollständige Ergebnisliste). Endpunkt: `GET https://derja.ninja/search?search=<begriff>&script=<english|transliterated|arabic>` — Pfad ist `/search` ohne trailing slash (`/search/` liefert 404), Parameter heißt `search` (nicht `q` oder `query`).
 
    - `script=english` für deutsche/englische Suchbegriffe (deutschen Begriff vorher ins Englische übersetzen)
@@ -637,7 +635,7 @@ Quelle: Zwei Lehrskripte, "Tunesisch-Arabisch I" (7 Lektionen) und "Tunesisch-Ar
 **Genereller Grundsatz, nicht nur für ض: Wird eine etablierte Schreibweise/Konvention für ein Wort geändert, IMMER auch `course_lessons` durchsuchen — sowohl `grammar_notes` (Fließtext) als auch `chunk_order` (Label + `grammar_headings`), nicht nur `vocabulary`.** Zweiter Präzedenzfall 2026-08-06, direkt im Anschluss an die ض-Entscheidung gefunden: Lektion 5s Kurs-Kapitel "māḍā-b-" (akademische Diakritika-Schreibung, nie konvertiert) und Lektion 7s "famma, tamma" (Schreibweise `tamma` widersprach der längst korrekten Bestandsvokabel `thamma`/id 1213) — beide nur im `chunk_order`-Label sichtbar, nicht in `vocabulary`. Checkliste bei jeder Konvention-Änderung: 1) `vocabulary` (arabic_script/darija/german), 2) `course_lessons.grammar_notes` (Fließtext, `replace()` auf jede betroffene Wortform), 3) `course_lessons.chunk_order` (Label-Text UND `grammar_headings`-Array — technischer Zwang: `grammar_headings` muss exakt zum `###`-Überschriftstext in `grammar_notes` passen, siehe `chunk_order`-Sync-Pflicht unten).
 
 **Reihenfolge bei fehlendem arabic_script (2026-08-07, geändert): zuerst Derja Ninja, erst danach selbst erstellen — nicht umgekehrt.** Vorher lief es reaktiv: Arabisch selbst aus der Uni-Wien-Umschrift bilden, Fehler erst später in einem eigenen Audit-Durchgang gegen Ninja auffangen (Präzedenzfall 2026-08-06: 145 Uni-Wien-Vokabeln nachträglich per Bedeutungssuche geprüft, 2 echte Buchstaben-Fehler gefunden). Besser: den Fehler von vornherein vermeiden.
-1. Deutsche Bedeutung zuerst ins Englische übersetzen (Ninja ist ein englisches Wörterbuch, deutsche Suchbegriffe treffen oft nichts) und gegen `derja_ninja_import` (offline) suchen, dann bei Bedarf live (`derja.ninja/search?search=...&script=english`)
+1. Deutsche Bedeutung zuerst ins Englische übersetzen (Ninja ist ein englisches Wörterbuch, deutsche Suchbegriffe treffen oft nichts) und gegen `derja_ninja_entries` (offline, nicht mehr `derja_ninja_import`) suchen, dann bei Bedarf live (`derja.ninja/search?search=...&script=english`)
 2. Zusätzlich, unabhängig vom Ergebnis aus Schritt 1: über die (ins Ninja-eigene Schema konvertierte, siehe Transliterations-Schlüssel oben) Transliteration suchen (`script=transliterated`) — eine zweite, unabhängige Spur, die manchmal Treffer liefert, die die Bedeutungssuche verpasst (z.B. bei knappen/idiomatischen Übersetzungen) und umgekehrt
 3. Treffer (aus 1 oder 2) mit passender Bedeutung gefunden → dessen `arabic_script` übernehmen (inkl. Audio, siehe Ninja-Regeln oben), NICHT selbst aus der Uni-Wien-Umschrift ableiten — auch wenn die eigene Ableitung vermeintlich plausibel wäre
 4. Kein Treffer in beiden Spuren → wie bisher direkt aus der Uni-Wien-Umschrift ableiten (Schritt unten), dabei bleibt der Pflicht-Gegencheck (Konsonant für Konsonant, siehe unten) genauso nötig
@@ -708,7 +706,9 @@ Aus der Uni-Wien-Lautlehre (Einleitungskapitel) abgeleitete Prüfregeln, unabhä
 9. **Kolloquiale Vokal-Elision nur bei markiertem Sukun.** Silben werden nur dort reduziert/elidiert, wo das Arabische selbst ein Sukun auf dem vorausgehenden Konsonanten trägt (z.B. قْوِيَّة→"qwiyya"). Eine markierte Fatha/Kasra/Damma wird NICHT gestrichen, auch wenn die Aussprache subjektiv reduziert klingt (z.B. صَيْدَلِيَّة→"sidaliyya", Fatha+Sukun-Kontraktion bleibt als eigene Silbe erhalten). Präzisierung zu Regel 1 (Imala) — dort ging es um Vokalqualität, hier um Vokal-Erhalt vs. -Wegfall.
 10. **Länderadjektiv vs. Ländername** ist eine eigene Unterkategorie der Maß-I/Maß-II-Falle (Regel 5). Bei Nationalitäten/Länderadjektiven ("französisch") vs. Landesnamen ("Frankreich") reicht Konsonantenskelett-Match nicht — Wortart aus der externen Quelle genau prüfen (Präzedenzfall: ID 658).
 
-## Neue Datenquelle: derja_ninja_import (Supabase-Tabelle)
+## Neue Datenquelle: derja_ninja_import (Supabase-Tabelle) — VERALTET, NICHT MEHR VERWENDEN
+
+**Seit 2026-09-02 auf Nutzerwunsch abgelöst durch `derja_ninja_entries` (17.335 statt 6.327 Zeilen, vollständigerer Crawl, mit Audio-Timing) — siehe "Neue Datenquelle: derja_ninja_entries" weiter unten für die aktuelle Methodik.** `derja_ninja_import` wird für keine neue Abfrage mehr benutzt, auch nicht als Fallback. Dieser Abschnitt bleibt nur als historisches Nachschlagewerk stehen (Präzedenzfälle, Lehren aus früheren Audits sind weiterhin inhaltlich gültig), die konkreten SQL-Workflows darin aber durch die Version im `derja_ninja_entries`-Abschnitt ersetzt.
 
 Tabelle: `derja_ninja_import` — vollständiger Offline-Dump von derja.ninja (Quelle: GitHub-Scraper ArmelVidali/derja_ninja_scraper), ca. 11.500 Zeilen. Spalten: `english_word` (Suchbegriff), `darija_result` (vokalisiertes Arabisch), `samples` (jsonb-Array mit Beispielsätzen {ar, en, audio_url}), `source`, `imported_at`.
 
@@ -871,13 +871,25 @@ WHERE NOT EXISTS (SELECT 1 FROM progress p WHERE p.user_id = '6c6eff77-6b56-4ba9
 
 Die (darija, lesson_id)-Paare und der `WHERE course_number`-Wert oben sind nur ein Beispiel aus einem realen Import (Lektion 2, Uni Wien) — bei jedem neuen Batch durch die tatsächlich neu eingefügten/gefundenen Wörter und die passende Lektion ersetzen.
 
-## Neue Datenquelle: derja_ninja_entries (Ersatz für derja_ninja_import)
+## Neue Datenquelle: derja_ninja_entries (einzige zu verwendende Ninja-Tabelle)
 
-Tabelle `derja_ninja_entries` (17.335 Zeilen) — vollständiger Crawl aller Einzelwort-Seiten (`/e/<uuid>`) von derja.ninja über die Sitemap, 2026-08-17. Deutlich vollständiger als der ältere `derja_ninja_import`-Dump (nur 6.327 Wörter, kein Audio-Timing) und mit sauberer Struktur inkl. echtem Audio-Timing.
+Tabelle `derja_ninja_entries` (17.335 Zeilen) — vollständiger Crawl aller Einzelwort-Seiten (`/e/<uuid>`) von derja.ninja über die Sitemap, 2026-08-17. Deutlich vollständiger als der ältere `derja_ninja_import`-Dump (nur 6.327 Wörter, kein Audio-Timing, kein separates `arabic_script`) — **`derja_ninja_import` wird seit 2026-09-02 nicht mehr verwendet, weder für neue Abfragen noch als Fallback.**
 
-Spalten: `entry_uuid`, `arabic_script`, `darija`, `english`, `audio_url`, `term_start`/`term_end` (Sekunden-Offsets fürs Wort-Audio, direkt nutzbar — kein `curl`+JSON-Parsing wie beim alten Live-Scraping-Workflow mehr nötig), `example_arabic`/`example_darija`/`example_english`, `example_audio_url`, `example_term_start`/`example_term_end`, `pos_tag`, `scraped_at`, `translit_norm`/`translit_skeleton`/`arabic_skeleton` (für Vokal-Varianten-tolerante Abgleiche, siehe "Vokal-Varianten-Falle" oben).
+Spalten: `entry_uuid`, `arabic_script` (eigene Spalte, nicht wie früher aus `darija_result` herausgerechnet werden müssen), `darija` (Ninjas eigene Transliteration, andere Konvention als unsere — nie 1:1 übernehmen, siehe Pflichtregeln oben), `english`, `audio_url`, `term_start`/`term_end` (Sekunden-Offsets fürs Wort-Audio, direkt nutzbar — kein `curl`+JSON-Parsing wie beim alten Live-Scraping-Workflow mehr nötig), `example_arabic`/`example_darija`/`example_english`, `example_audio_url`, `example_term_start`/`example_term_end`, `pos_tag`, `scraped_at`, `translit_norm`/`translit_skeleton`/`arabic_skeleton` (vorab berechnete vokalfreie Skelette — Vokal-Varianten-tolerante Abgleiche brauchen dadurch keine eigene Strip-Regex mehr, siehe "Vokal-Varianten-Falle" oben).
 
-**Für alle neuen Abfragen `derja_ninja_entries` statt `derja_ninja_import` verwenden** — der alte Dump bleibt nur für bereits bestehende, darauf verweisende Dokuzeilen/Präzedenzfälle relevant. Workflow (Vokalisierungs-Nachschlagewerk, Live-Check-Fallback, Fallen bei Homographen/Buchstaben-Kollisionen) bleibt identisch zum bestehenden Derja-Ninja-Abschnitt weiter oben — nur die Quelltabelle wechselt, und `term_start`/`term_end` sind jetzt direkt in der Tabelle statt mühsam aus rohem HTML geparst werden zu müssen.
+### Workflow: Bestandsaudit gegen derja_ninja_entries (z.B. fällige unvokalisierte Vokabeln)
+
+Gleiche Methodik/Fallen wie beim historischen `derja_ninja_import`-Workflow (siehe deprecated-Abschnitt oben — die dortigen Lehren zu Maß-I/Maß-II-Falle, Kollektivnomen, semantischen Zufallstreffern etc. gelten unverändert weiter), aber auf die neuen Spalten übertragen — dadurch entfällt der Diakritika-Strip-Regex-Schritt komplett:
+
+1. **Exakt-Match-Scan:** `vocabulary.arabic_script` (unvokalisiert) direkt gegen `derja_ninja_entries.arabic_skeleton` abgleichen (`arabic_skeleton` ist bereits vokalfrei — kein eigenes `regexp_replace` mehr nötig). Für vokalisierte Bestandseinträge: eigene Vokalisierung ableiten und gegen `derja_ninja_entries.arabic_script` vergleichen (Lautlehre-Regeln 1–4 anwenden, Imala-Abweichungen ignorieren).
+2. Pro Vokabel: Anzahl distinkter `arabic_script`-Werte in `derja_ninja_entries` zählen, nicht Anzahl der `english`-Kandidaten (Kollektivnomen-Hinweis, Verb-Flexionsformen — siehe unten, unverändert gültig).
+3. Bei mehreren distinkten Vokalisierungen: Wortart/Bedeutung gegen die deutsche Übersetzung prüfen (Lautlehre-Regel 5, Maß-I/Maß-II-Falle). Nur übernehmen, wenn eindeutig zuordenbar; sonst ausschließen.
+4. **Semantische Zufallstreffer filtern:** wie beim alten Workflow — Konsonantenskelett-Kollisionen ohne inhaltlichen Bezug verwerfen, im Zweifel ausschließen statt raten.
+5. **Kollektivnomen-Hinweis:** mehrere `english`-Formen (tomato/tomatoes, introduce/introduced/introducing) zeigen oft auf dieselbe `arabic_script`-Zeile — normal, kein Fehler.
+6. Ergebnisliste mit Alt→Neu, English, Audio-Link (`audio_url`+`term_start`/`term_end`, direkt aus der Tabelle, kein Trimmen mehr nötig) zeigen, erst nach Bestätigung SQL ausführen.
+7. **Nach der Ausführung:** Stichprobe der neu vokalisierten Einträge gegen Lautlehre-Regeln 1–4 gegenprüfen (Maß-Verwechslungen, ungültige Schadda können trotz Einzeltreffer durchrutschen).
+
+**Bekannte Grenzen:** deckt nur einen Teil des Bestands ab (Exakt-Match auf Konsonantenskelett) — der Rest bleibt manueller Vokalisierungs-Workflow. "Kein Match" ist eine eigene Fehlerkategorie, kein Beweis für einen Vokabelfehler (siehe harmlose Ursachen im deprecated-Abschnitt: Genus-/Numerus-Divergenz, regionale Synonymvielfalt) — bei Unsicherheit live nachschlagen (`derja.ninja/search?search=...`, siehe Live-Check-Workflow oben).
 
 ## Neue Datenquelle: Peace Corps English-Tunisian Arabic Dictionary (1977)
 
