@@ -485,10 +485,17 @@ RETURNING id, english, darija, arabic_script, german, translit_skeleton, arabic_
 - **`german` wird von keiner Quelle geliefert** — `senses`/`de_gloss`/`example_de` sind Ausgangsmaterial, keine fertige Übersetzung.
 - **`arabic_reconstructed` (nur bei Peace Corps) ist ein Vorschlag, kein Faktum** — nur verwenden, wenn Ninja kein `arabic_script` liefert, und vor Übernahme in `<arabic_script_oder_NULL>` von Hand vokalisieren/gegenchecken (v.a. bei gesetztem `arabic_reconstruction_note`).
 
-**`external_confirmed`/`external_confirmed_source` (seit 2026-09-05) — bei jeder Neuanlage mitpflegen, nicht nur beim einmaligen Bestands-Backfill.** Steuert das 🔗-Icon im Trainer (Vokabelliste + Karteikarte, nur wenn kein Audio vorhanden — sonst ist die Bestätigung über den 🔊-Button ohnehin sichtbar) sowie den Bestätigt/nicht-bestätigt-Filter in der Vokabelliste. Regel (exakter String-Vergleich, kein Fuzzy-/Skelett-/English-Key-Match — dieselbe Regel wie beim Bestands-Backfill, um Falsch-Positive durch bloße Dialekt-Synonyme zu vermeiden):
+**`external_confirmed`/`external_confirmed_source` (seit 2026-09-05) — bei jeder Neuanlage mitpflegen, nicht nur beim einmaligen Bestands-Backfill.** Steuert das 🔗-Icon im Trainer (Vokabelliste + Karteikarte, nur wenn kein Audio vorhanden — sonst ist die Bestätigung über den 🔊-Button ohnehin sichtbar) sowie den Bestätigt/nicht-bestätigt-Filter in der Vokabelliste. Regel (exakter String-Vergleich, kein Fuzzy-/Skelett-/English-Key-Match — um Falsch-Positive durch bloße Dialekt-Synonyme zu vermeiden):
 - `external_confirmed=true, external_confirmed_source='ninja'`, wenn `derja_ninja_entries.arabic_script` (Diakritika entfernt) exakt mit dem neuen `arabic_script` übereinstimmt.
-- sonst `external_confirmed=true, external_confirmed_source='tunico'`, wenn ein `vocab_lookup`-Eintrag mit `source='tunico'` ein `chatalpha` hat, das exakt (klein geschrieben, getrimmt) dem neuen `darija` entspricht.
-- sonst dasselbe für `source='peacecorps'` → `external_confirmed_source='peacecorps'`.
+- sonst `external_confirmed=true, external_confirmed_source='tunico'`, wenn das neue `darija` (klein geschrieben, getrimmt) exakt einer dieser TUNICO-Formen entspricht — **nicht nur `vocab_lookup.chatalpha`/`chatalpha_plural`, das deckt nur `lemma_chatalpha` bzw. eine Pluralform aus `inflected` ab und übersieht die meisten Formen unten:**
+  - `tunico_import.lemma_chatalpha`
+  - `tunico_import.variants_chatalpha[]` (alternative Schreibweisen)
+  - `tunico_import.inflected[].chatalpha` (alle Flexionsformen, nicht nur die mit `ana ~ 'pl'`)
+  - `tunico_corpus_verbs.forms_chatalpha[]`, `tunico_corpus_adjectives.forms_chatalpha[]`, `tunico_corpus_nouns.forms_chatalpha[]` (belegte Korpus-Flexionsformen)
+  - `tunico_corpus_wordforms.form_chatalpha` (einzelne belegte Wortformen, größte Quelle an zusätzlichen Treffern)
+- sonst `external_confirmed=true, external_confirmed_source='peacecorps'`, wenn `darija` exakt einem beliebigen Element aus `peacecorps_dict_import.forms_chatalpha[]` entspricht — **nicht nur `forms_chatalpha[1]`**, das übersieht feminine/Imperativ/Perfekt/Colloquial-Formen, die laut `forms_roles` ebenfalls im Array stehen.
 - sonst `external_confirmed=false, external_confirmed_source=NULL`.
+
+Präzedenzfall 2026-09-05: Bestands-Audit gegen `vocab_lookup.chatalpha`/`chatalpha_plural` allein fand nur 1693/3698 Treffer; die Erweiterung auf alle oben gelisteten Rohtabellen-Spalten brachte 357 weitere (u.a. `dyar`, Plural von `dar`/Haus, das nur in Peace Corps' zweitem `forms_chatalpha`-Element steht). `vocab_lookup` bleibt für den Cross-Source-Abgleich (Rezepte 1–4 oben) unverändert nützlich, ist für `external_confirmed` aber nicht ausreichend — bei Neuanlagen direkt gegen die Rohtabellen prüfen.
 
 Rezept 4 ersetzt nicht den Pflicht-Duplikat-Check (siehe "Duplikat-Check, alle drei Felder einzeln") — vor dem `INSERT` trotzdem gegenchecken, Rezept 3 nutzen bei ganzen Batches statt Einzelwörtern.
