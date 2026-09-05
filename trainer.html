@@ -3862,6 +3862,77 @@ function suggestTransliterationFromArabic(){
   showToast('Vorschlag eingefügt — bitte prüfen','ok');
 }
 
+// Cross-Source-Abgleich (Ninja/TUNICO/Peace Corps) direkt aus der View vocab_lookup,
+// ohne Claude/Tokens — mechanischer Abruf, Bewertung der Treffer bleibt Handarbeit.
+// Siehe skills/tunsi/SKILL.md → vocab_lookup, Rezept 1.
+const VS_SOURCE_LABEL = {ninja:'Ninja', tunico:'TUNICO', peacecorps:'Peace Corps'};
+
+async function showSourceCheck(){
+  const vocabId = _editSheetVocabId;
+  const resultsEl = document.getElementById('vs-results');
+  if(!vocabId || !resultsEl){ showToast('Nur bei bestehenden Einträgen verfügbar','warn'); return; }
+  resultsEl.style.display = '';
+  resultsEl.innerHTML = '<div style="padding:.5rem;color:var(--muted);font-size:.72rem">Lade…</div>';
+  try{
+    const rows = await sbApi('vocabulary?id=eq.'+vocabId+'&select=english,translit_skeleton,arabic_skeleton');
+    const v = rows && rows[0];
+    if(!v){ resultsEl.innerHTML = '<div style="padding:.5rem;color:var(--red);font-size:.72rem">Eintrag nicht gefunden</div>'; return; }
+
+    const englishKey = v.english ? v.english.trim().toLowerCase() : null;
+    const selectCols = 'source,headword_display,source_translit,chatalpha,arabic_script,arabic_reconstructed,arabic_reconstruction_note,example_en,english_key';
+
+    let meaning = [];
+    if(englishKey){
+      meaning = await sbApi('vocab_lookup?select='+selectCols+'&english_key=eq.'+encodeURIComponent(englishKey)) || [];
+    }
+
+    const orParts = [];
+    if(v.arabic_skeleton && v.arabic_skeleton.length >= 4) orParts.push('arabic_skeleton.eq.'+encodeURIComponent(v.arabic_skeleton));
+    if(v.translit_skeleton && v.translit_skeleton.length >= 4) orParts.push('translit_skeleton.eq.'+encodeURIComponent(v.translit_skeleton));
+    let skeleton = [];
+    if(orParts.length){
+      const raw = await sbApi('vocab_lookup?select='+selectCols+'&or=('+orParts.join(',')+')') || [];
+      skeleton = raw.filter(r => r.english_key !== englishKey);
+    }
+
+    renderSourceCheckResults(englishKey, meaning, skeleton);
+  }catch(e){
+    resultsEl.innerHTML = '<div style="padding:.5rem;color:var(--red);font-size:.72rem">Fehler: '+(e.message||e)+'</div>';
+  }
+}
+
+function _vsRowHtml(r, unsicher){
+  const arabicPart = r.arabic_script
+    ? '<span style="color:var(--gold2)">'+r.arabic_script+'</span>'
+    : (r.arabic_reconstructed
+        ? '<span style="color:var(--muted)">'+r.arabic_reconstructed+' <i>(Vorschlag'+(r.arabic_reconstruction_note?', '+r.arabic_reconstruction_note:'')+')</i></span>'
+        : '<span style="color:var(--muted)">—</span>');
+  return '<div style="padding:.4rem .5rem;border-bottom:1px solid var(--border);font-size:.76rem;line-height:1.4">'
+    + '<div style="display:flex;justify-content:space-between;gap:.5rem">'
+    +   '<b style="color:var(--gold)">'+(VS_SOURCE_LABEL[r.source]||r.source)+'</b>'
+    +   (unsicher ? '<span style="color:var(--muted);font-size:.68rem">nur Lautschrift, unsicher</span>' : '')
+    + '</div>'
+    + '<div>'+arabicPart+' · '+(r.chatalpha||r.source_translit||'—')+'</div>'
+    + (r.example_en ? '<div style="color:var(--muted);font-size:.7rem;margin-top:.1rem">'+r.example_en+'</div>' : '')
+    + '</div>';
+}
+
+function renderSourceCheckResults(englishKey, meaning, skeleton){
+  const resultsEl = document.getElementById('vs-results');
+  let html = '';
+  if(!englishKey){
+    html += '<div style="padding:.4rem .5rem;color:var(--muted);font-size:.7rem">Kein Deutsch/Englisch-Gloss hinterlegt — nur Lautschrift-Treffer möglich (unsicherer als ein Bedeutungstreffer).</div>';
+  } else if(!meaning.length){
+    html += '<div style="padding:.4rem .5rem;color:var(--muted);font-size:.7rem">Kein Bedeutungstreffer in Ninja/TUNICO/Peace Corps.</div>';
+  }
+  html += meaning.map(r => _vsRowHtml(r, false)).join('');
+  html += skeleton.map(r => _vsRowHtml(r, true)).join('');
+  if(!meaning.length && !skeleton.length){
+    html += '<div style="padding:.4rem .5rem;color:var(--muted);font-size:.7rem">Keine Treffer in einer der drei Quellen.</div>';
+  }
+  resultsEl.innerHTML = html;
+}
+
 // Bildschirmtastatur deckt sonst die oberen Felder ab, da das Sheet fixed positioniert ist
 // (kein normales Body-Scroll) — bei Fokus das jeweilige Feld selbst ins Sichtbare scrollen.
 document.addEventListener('DOMContentLoaded', () => {
@@ -3879,6 +3950,8 @@ function openVocabEdit(vocabId, i){
   _editSheetVocabId = vocabId;
   const v = vById(vocabId);
   if(!v) return;
+  const vsResults = document.getElementById('vs-results');
+  if(vsResults){ vsResults.style.display = 'none'; vsResults.innerHTML = ''; }
   // Sheet/Overlay zuerst sichtbar machen, damit der Klick sofort ein Paint bekommt (INP) —
   // die Feldbefüllung (u.a. das Lektions-Dropdown mit ~50-90 Optionen) folgt erst im
   // nächsten Frame, statt den Klick-Handler vorher zu blockieren.
@@ -7253,6 +7326,8 @@ window.addEventListener('unhandledrejection', (e) => {
       <button onclick="suggestTransliterationFromArabic()" title="Transliteration aus Arabisch vorschlagen" style="background:none;border:1px solid var(--border);color:var(--gold2);padding:.5rem .6rem;cursor:pointer;border-radius:4px;font-size:.9rem;white-space:nowrap">✨</button>
     </div>
     <input id="ei-en" placeholder="Deutsch" style="padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.9rem" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <button onclick="showSourceCheck()" style="background:none;border:1px solid var(--border);color:var(--gold2);padding:.5rem;cursor:pointer;border-radius:4px;font-size:.78rem">🔍 Quellenabgleich (Ninja/TUNICO/Peace Corps)</button>
+    <div id="vs-results" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden"></div>
     <div style="display:flex;gap:.4rem">
       <input id="ei-tp" placeholder="Topic" style="flex:1;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.85rem" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
       <select id="ei-ls" style="width:7rem;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.85rem"></select>
