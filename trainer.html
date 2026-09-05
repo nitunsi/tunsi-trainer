@@ -3437,9 +3437,11 @@ function showVocabList(){
       </select>
       <select id="vl-audio-filter" onchange="vocabAudioFilter=this.value;filterVocabList()"
         style="flex:1;min-width:110px;padding:.4rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.8rem;font-family:'IBM Plex Mono',monospace">
-        <option value="all">Alle (Audio)</option>
+        <option value="all">Alle (Audio/Bestätigung)</option>
         <option value="with">🔊 mit Audio</option>
         <option value="without">· ohne Audio</option>
+        <option value="confirmed">🔗 bestätigt</option>
+        <option value="unconfirmed">nicht bestätigt</option>
       </select>
     </div>
     <div id="vocab-table"></div>
@@ -3520,10 +3522,13 @@ function filterVocabList(){
     else vocab = vocab.filter(v => v.ps === vocabPsFilter);
   }
 
-  // Audio-Filter
+  // Audio-/Bestätigungs-Filter
   if(vocabAudioFilter !== 'all'){
     if(vocabAudioFilter === 'with') vocab = vocab.filter(v => !!v.au);
-    else vocab = vocab.filter(v => !v.au);
+    else if(vocabAudioFilter === 'without') vocab = vocab.filter(v => !v.au);
+    // "bestätigt" = Audio vorhanden (impliziert Ninja-Bestätigung) ODER external_confirmed gesetzt
+    else if(vocabAudioFilter === 'confirmed') vocab = vocab.filter(v => !!v.au || !!v.xc);
+    else if(vocabAudioFilter === 'unconfirmed') vocab = vocab.filter(v => !v.au && !v.xc);
   }
 
   // "Zuletzt geändert"-Filter (z.B. von Statistik → Prüf-Aktivität aus gesprungen)
