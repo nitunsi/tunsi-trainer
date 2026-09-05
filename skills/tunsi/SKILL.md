@@ -350,6 +350,13 @@ Auslöser: "Ich habe Vokabeln markiert" → `SELECT * FROM vocabulary WHERE flag
 
 ### Ablauf pro geflaggter Vokabel
 
+0. **Interne Konsistenz-Checks zuerst — kostenlos, kein externer Request nötig, vor dem Ninja/TUNICO/Peace-Corps-Abgleich.** Deckt eine andere Fehlerklasse ab als der externe Abgleich: eine Vokabel kann extern bestätigt sein und trotzdem kaputt vokalisiert/transliteriert sein. Für den ganzen geflaggten Batch als SQL (siehe "Transliterations-Check" oben für die fertigen Regex-Queries):
+   - Vokalisierungs-Vollständigkeit (`arabic_script` komplett ohne Harakat/Sukun?)
+   - Konsonanten-Gegencheck arabic_script vs. darija (ح→7, خ→kh, ع→3, غ→gh, ش→sh, ق→q/g/k, ض→dh)
+   - Ziffern (2/5/9) oder Großbuchstaben in `darija`
+   - Wortanzahl-Abgleich arabic_script vs. darija (Hinweis auf fehlende/zusätzliche Wörter)
+   - "/" im `german`-Feld: echte Synonyme vs. Bedeutungskollision (sollte `;` sein) — Testkriterium siehe Duplikat-Check-Regeln oben
+   Funde hier vor Schritt 6 mit korrigieren, nicht getrennt von den Ninja-Funden behandeln.
 1. **Offline-Quellen zuerst, in dieser Reihenfolge — alle drei, nicht nur die erste** (Details zu jeder Tabelle: IMPORTS.md):
    1. `derja_ninja_entries` — schnell, aber ein Snapshot (2026-08-17), kann bei mehrteiligen Begriffen unvollständig sein.
    2. `tunico_import` (Englisch-Übersetzung als Suchschlüssel gegen `senses`/`de_gloss`) — liefert oft das komplette Bedeutungsspektrum eines mehrdeutigen Worts, wo ein einzelner Ninja-Treffer nur eine Facette zeigt.
