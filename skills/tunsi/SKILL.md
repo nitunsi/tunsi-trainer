@@ -734,3 +734,36 @@ ORDER BY n.english, l.source;
 ```
 
 **Bekannte Grenzen:** `english_key` ist ein einfacher `lower(trim(...))`-Vergleich, kein Fuzzy-Match — unterschiedliche Formulierungen derselben Bedeutung können Treffer verpassen (`to abolish` wird per `regexp_replace('^to\s+','')` normalisiert, deckt aber nicht jede Variante ab). Bei "kein Treffer" zusätzlich mit `english_key ILIKE '%<wort>%'` nachfassen, bevor man auf "existiert nirgends" schließt.
+
+**Helper-Funktionen `public._translit_skeleton(darija text)` / `public._arabic_skeleton(arabic_script text)`** (seit 2026-09-05): berechnen `vocabulary.translit_skeleton`/`arabic_skeleton` exakt nach dem Bestandsformat — per Reverse-Engineering aus dem Bestand hergeleitet und validiert (3.686/3.688 bzw. 3.679/3.688 exakter Match, Rest sind Legacy-/Platzhalter-Ausreißer, keine Formelfehler; Details: PRECEDENTS.md → arabic_skeleton/translit_skeleton Herleitung). Nie von Hand nachbauen — diese Funktionen benutzen, auch außerhalb von Rezept 4.
+
+**Rezept 4 — neue Vokabel anlegen, fertigen INSERT bauen:**
+```sql
+-- Schritt 1: Kandidaten aus allen 3 Quellen (wie Rezept 2a) — daraus darija/arabic_script/german von Hand auswählen
+SELECT source, headword_display, source_translit, chatalpha, chatalpha_plural, gender, pos,
+       arabic_script, example_en, example_de, example_ph, audio_url, note
+FROM public.vocab_lookup WHERE english_key = lower('<wort>') ORDER BY source;
+
+-- Schritt 2: INSERT mit automatisch berechneten Skeletten
+INSERT INTO public.vocabulary
+  (english, darija, arabic_script, german, ninja_id, ninja_audio_url, translit_skeleton, arabic_skeleton)
+VALUES (
+  '<english>',
+  '<darija>',                    -- s. Konventions-Warnungen unten
+  <arabic_script_oder_NULL>,     -- nur von Ninja übernehmen, sonst NULL lassen
+  '<german>',                    -- kein Feld liefert das automatisch, immer von Hand
+  <ninja_id_oder_NULL>,
+  <ninja_audio_url_oder_NULL>,
+  public._translit_skeleton('<darija>'),
+  public._arabic_skeleton(<arabic_script_oder_NULL>)
+)
+RETURNING id, english, darija, arabic_script, german, translit_skeleton, arabic_skeleton;
+```
+
+**Konventions-Warnungen vor dem `<darija>`-Wert (nicht automatisierbar, immer von Hand prüfen):**
+- **Ninja-`darija`/`source_translit` nie 1:1 übernehmen** — andere Transliterations-Konvention (siehe Ninja-Abschnitt). Besser: Ninjas `arabic_script` (einzige zuverlässig vokalisierte Quelle) nehmen und daraus `darija` nach Hausregeln neu transliterieren (Lautlehre-Regeln, Konsonanten-Gegencheck-SQL siehe oben).
+- **TUNICO-`chatalpha` bei Verben ist die Stammform**, nicht die trainer-übliche 3. Pers. Sg. Präsens — passende Flexionsform aus `tunico_corpus_verbs.forms_chatalpha` wählen, nie die Stammform direkt übernehmen (siehe TUNICO-Abschnitt, `_tnGuessVerbForm()`).
+- **Peace-Corps-`chatalpha` (`forms_chatalpha[1]`) ist die erste Form laut `forms_roles`** (bei Verben oft Imperativ, nicht Präsens) — bei Verben gegen `forms_roles` prüfen und ggf. die passende Form selbst zur 3.-Pers.-Präsens umbauen, nicht ungeprüft übernehmen.
+- **`german` wird von keiner Quelle geliefert** — `senses`/`de_gloss`/`example_de` sind Ausgangsmaterial, keine fertige Übersetzung.
+
+Rezept 4 ersetzt nicht den Pflicht-Duplikat-Check (siehe "Duplikat-Check, alle drei Felder einzeln") — vor dem `INSERT` trotzdem gegenchecken, Rezept 3 nutzen bei ganzen Batches statt Einzelwörtern.
