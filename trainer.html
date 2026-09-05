@@ -599,7 +599,7 @@ async function srsLoadFromSupabase(){
     _updLoadUI();
 
     const loadVocabTask = sbApiPaged(
-      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,homonym_ok,internal_note,lessons(lesson_number)&order=id.asc',
+      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,homonym_ok,internal_note,external_confirmed,external_confirmed_source,lessons(lesson_number)&order=id.asc',
       1000,
       (loaded) => { _vLoaded = loaded; _updLoadUI(); }
     );
@@ -625,7 +625,7 @@ async function srsLoadFromSupabase(){
     allVocab.forEach(v => {
       const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
       const tp = v.topic || 'Allgemein';
-      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'' };
+      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null };
       ALL_VOCAB.push(entry);
       VOCAB_BY_ID[v.id] = entry;
       if(v.flagged) flaggedVocab.add(v.darija||'');
@@ -2102,6 +2102,14 @@ function srsInfoBadge(vocab){
   return `<span style="color:${SRS_LEVEL_COLORS[level]};font-weight:700">${SRS_LEVEL_LABELS[level]}</span>${rc ? ' · 🔁 '+rc : ''}`;
 }
 
+const EXT_SOURCE_LABEL = { ninja: 'Derja Ninja', tunico: 'TUNICO', peacecorps: 'Peace Corps' };
+// Icon fürs selbe Slot wie der Audio-Button: nur wenn KEIN Audio vorhanden, aber extern (Ninja/TUNICO/Peace Corps) bestätigt.
+// Ist Audio vorhanden, ist eine Ninja-Bestätigung ohnehin impliziert — kein zusätzliches Icon nötig.
+function extConfirmIcon(v, style){
+  if(!v || v.au || !v.xc) return '';
+  const label = EXT_SOURCE_LABEL[v.xcs] || 'externe Quelle';
+  return `<span title="Extern bestätigt (${label}, keine Audio-Aufnahme)" style="${style||'color:var(--muted)'}">🔗</span>`;
+}
 function sh(a){return[...a].sort(()=>Math.random()-.5);}
 // Extrahiert die Lektionsnummer aus v.ls (Format 'L<n>'), z.B. 'L17' -> 17. -1 falls kein Match.
 function lsNum(v){ const m=/^L(\d+)/.exec(v && v.ls || ''); return m ? parseInt(m[1],10) : -1; }
@@ -2407,7 +2415,7 @@ function rFlash(ex,el){
       ${isNew ? `<span style="flex-shrink:0;font-size:.65rem;font-weight:700;color:var(--gold);background:rgba(201,166,74,.15);border:1px solid var(--gold);padding:.1rem .45rem;border-radius:3px">🆕 Neu</span>` : ''}
       <span class="srs-info-badge" style="flex:1;min-width:0;margin:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${srsInfoBadge(v)}</span>
       ${v.ps ? `<span style="flex-shrink:0;font-size:.85rem" title="Partner: ${v.ps}">${v.ps==='approved'?'✅':v.ps==='rejected'?'❌':v.ps==='unknown'?'❓':v.ps==='pending'?'⏳':v.ps==='skipped'?'⏭':'💡'}</span>` : ''}
-      ${v.au ? `<button onclick="playVocabAudio('${v.au.replace(/'/g,"\\'")}',event,${v.aus||0},${v.aue||0})" title="Aussprache abspielen" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.8rem;padding:.1rem .4rem;border-radius:3px;cursor:pointer;line-height:1.4">🔊</button>` : ''}
+      ${v.au ? `<button onclick="playVocabAudio('${v.au.replace(/'/g,"\\'")}',event,${v.aus||0},${v.aue||0})" title="Aussprache abspielen" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.8rem;padding:.1rem .4rem;border-radius:3px;cursor:pointer;line-height:1.4">🔊</button>` : extConfirmIcon(v, 'flex-shrink:0;font-size:.8rem;color:var(--muted)')}
       <span style="flex-shrink:0;font-size:.7rem;color:var(--muted)">${_prog}</span>
     </div>
     <div class="q-card" style="min-height:80px;margin-bottom:.5rem">
@@ -3429,9 +3437,11 @@ function showVocabList(){
       </select>
       <select id="vl-audio-filter" onchange="vocabAudioFilter=this.value;filterVocabList()"
         style="flex:1;min-width:110px;padding:.4rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.8rem;font-family:'IBM Plex Mono',monospace">
-        <option value="all">Alle (Audio)</option>
+        <option value="all">Alle (Audio/Bestätigung)</option>
         <option value="with">🔊 mit Audio</option>
         <option value="without">· ohne Audio</option>
+        <option value="confirmed">🔗 bestätigt</option>
+        <option value="unconfirmed">nicht bestätigt</option>
       </select>
     </div>
     <div id="vocab-table"></div>
@@ -3512,10 +3522,13 @@ function filterVocabList(){
     else vocab = vocab.filter(v => v.ps === vocabPsFilter);
   }
 
-  // Audio-Filter
+  // Audio-/Bestätigungs-Filter
   if(vocabAudioFilter !== 'all'){
     if(vocabAudioFilter === 'with') vocab = vocab.filter(v => !!v.au);
-    else vocab = vocab.filter(v => !v.au);
+    else if(vocabAudioFilter === 'without') vocab = vocab.filter(v => !v.au);
+    // "bestätigt" = Audio vorhanden (impliziert Ninja-Bestätigung) ODER external_confirmed gesetzt
+    else if(vocabAudioFilter === 'confirmed') vocab = vocab.filter(v => !!v.au || !!v.xc);
+    else if(vocabAudioFilter === 'unconfirmed') vocab = vocab.filter(v => !v.au && !v.xc);
   }
 
   // "Zuletzt geändert"-Filter (z.B. von Statistik → Prüf-Aktivität aus gesprungen)
@@ -3659,7 +3672,7 @@ function renderVocabTableRows(){
                  : ps==='suggested'?'<span title="Vorschlag" style="color:var(--blue)">💡</span>'
                  : '<span style="color:var(--border)">·</span>';
     h += '<td style="text-align:center;padding:.3rem">'+psIcon+'</td>';
-    const audioBtn = v.au ? '<button onclick="playVocabAudio(\''+v.au.replace(/'/g,"\\'")+'\',event,'+(v.aus||0)+','+(v.aue||0)+')" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.15rem .4rem;cursor:pointer;border-radius:3px">🔊</button>' : '<span style="color:var(--border)">·</span>';
+    const audioBtn = v.au ? '<button onclick="playVocabAudio(\''+v.au.replace(/'/g,"\\'")+'\',event,'+(v.aus||0)+','+(v.aue||0)+')" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.15rem .4rem;cursor:pointer;border-radius:3px">🔊</button>' : (v.xc ? extConfirmIcon(v) : '<span style="color:var(--border)">·</span>');
     h += '<td style="text-align:center;padding:.3rem">'+audioBtn+'</td>';
     h += '<td style="padding:.3rem"><button onclick="openVocabEdit('+vid+','+i+')" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.65rem;padding:.15rem .4rem;cursor:pointer;border-radius:3px">✏️</button></td>';
     h += '</tr>';

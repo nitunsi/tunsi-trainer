@@ -461,7 +461,8 @@ FROM public.vocab_lookup WHERE english_key = lower('<wort>') ORDER BY source;
 
 -- Schritt 2: INSERT mit automatisch berechneten Skeletten
 INSERT INTO public.vocabulary
-  (english, darija, arabic_script, german, ninja_id, ninja_audio_url, translit_skeleton, arabic_skeleton)
+  (english, darija, arabic_script, german, ninja_id, ninja_audio_url, translit_skeleton, arabic_skeleton,
+   external_confirmed, external_confirmed_source)
 VALUES (
   '<english>',
   '<darija>',                    -- s. Konventions-Warnungen unten
@@ -470,7 +471,9 @@ VALUES (
   <ninja_id_oder_NULL>,
   <ninja_audio_url_oder_NULL>,
   public._translit_skeleton('<darija>'),
-  public._arabic_skeleton(<arabic_script_oder_NULL>)
+  public._arabic_skeleton(<arabic_script_oder_NULL>),
+  <true_oder_false>,             -- s. external_confirmed unten
+  <'ninja'|'tunico'|'peacecorps'_oder_NULL>
 )
 RETURNING id, english, darija, arabic_script, german, translit_skeleton, arabic_skeleton;
 ```
@@ -481,5 +484,11 @@ RETURNING id, english, darija, arabic_script, german, translit_skeleton, arabic_
 - **Peace-Corps-`chatalpha` (`forms_chatalpha[1]`) ist die erste Form laut `forms_roles`** (bei Verben oft Imperativ, nicht Präsens) — bei Verben gegen `forms_roles` prüfen und ggf. die passende Form selbst zur 3.-Pers.-Präsens umbauen, nicht ungeprüft übernehmen.
 - **`german` wird von keiner Quelle geliefert** — `senses`/`de_gloss`/`example_de` sind Ausgangsmaterial, keine fertige Übersetzung.
 - **`arabic_reconstructed` (nur bei Peace Corps) ist ein Vorschlag, kein Faktum** — nur verwenden, wenn Ninja kein `arabic_script` liefert, und vor Übernahme in `<arabic_script_oder_NULL>` von Hand vokalisieren/gegenchecken (v.a. bei gesetztem `arabic_reconstruction_note`).
+
+**`external_confirmed`/`external_confirmed_source` (seit 2026-09-05) — bei jeder Neuanlage mitpflegen, nicht nur beim einmaligen Bestands-Backfill.** Steuert das 🔗-Icon im Trainer (Vokabelliste + Karteikarte, nur wenn kein Audio vorhanden — sonst ist die Bestätigung über den 🔊-Button ohnehin sichtbar) sowie den Bestätigt/nicht-bestätigt-Filter in der Vokabelliste. Regel (exakter String-Vergleich, kein Fuzzy-/Skelett-/English-Key-Match — dieselbe Regel wie beim Bestands-Backfill, um Falsch-Positive durch bloße Dialekt-Synonyme zu vermeiden):
+- `external_confirmed=true, external_confirmed_source='ninja'`, wenn `derja_ninja_entries.arabic_script` (Diakritika entfernt) exakt mit dem neuen `arabic_script` übereinstimmt.
+- sonst `external_confirmed=true, external_confirmed_source='tunico'`, wenn ein `vocab_lookup`-Eintrag mit `source='tunico'` ein `chatalpha` hat, das exakt (klein geschrieben, getrimmt) dem neuen `darija` entspricht.
+- sonst dasselbe für `source='peacecorps'` → `external_confirmed_source='peacecorps'`.
+- sonst `external_confirmed=false, external_confirmed_source=NULL`.
 
 Rezept 4 ersetzt nicht den Pflicht-Duplikat-Check (siehe "Duplikat-Check, alle drei Felder einzeln") — vor dem `INSERT` trotzdem gegenchecken, Rezept 3 nutzen bei ganzen Batches statt Einzelwörtern.
