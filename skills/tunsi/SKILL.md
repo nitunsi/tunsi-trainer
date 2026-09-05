@@ -382,6 +382,8 @@ Bei Unklarheit, welcher der beiden Workflows gemeint ist: im Zweifel nachfragen,
 
 **Nie blind über `translit_skeleton`/`arabic_skeleton` joinen — kurze Skelette (≤3 Konsonanten) kollidieren zufällig** (Präzedenzfall: PRECEDENTS.md → vocab_lookup). `english_key` ist die primäre, zuverlässige Achse; Skeleton-Treffer nur separat markiert und mit `length(...) >= 4` gefiltert.
 
+**`vocabulary.english` (seit 2026-09-05, 1.191/3.698 befüllt) ist nur ein Such-Schlüssel für den Quellenabgleich, keine geprüfte Übersetzung** — muss nicht nuanciert sein, nur treffend genug für den `english_key`-Join. Befüllt über zwei Wege: exakter `arabic_script`-Match gegen Ninja (295 Zeilen, automatisch — dasselbe Wort, `english` direkt übernommen) und Skelett-Match gegen `vocab_lookup` mit manueller Deutsch/Englisch-Plausibilitätsprüfung (585 Zeilen — Skelett-Treffer allein reicht nicht, siehe PRECEDENTS.md → vocabulary.english Backfill für die dabei gefundenen Fehlerbilder). Bei neuen Vokabeln `english` gleich mitpflegen, dann ist der Abgleich sofort ohne Nachbearbeitung nutzbar.
+
 **Rezept 1 — Trainer-Vokabel verifizieren:**
 ```sql
 WITH target AS (
