@@ -143,6 +143,14 @@ Vollständigkeitshalber archiviert — für Altdaten-Fragen zum fälligen Batch 
 
 **Positivtest Rezept 3 (Import-Batch-Check):** drei Testfälle bestätigten das erwartete Verhalten — `wool` korrekt als Duplikat erkannt (bereits ID 429 im Trainer) und von allen 3 Quellen zusätzlich bestätigt; `to abolish` korrekt kein Duplikat, aber durch Peace Corps mit passender Lautschrift (`na77i`) bestätigt; ein erfundenes Wort lieferte erwartungsgemäß in keiner Quelle einen Treffer (Negativ-Test).
 
+## Peace Corps forms_chatalpha/forms_skeleton — Nachbefüllung (2026-09-05)
+
+Ausgangslage: nur 1.241/5.070 Zeilen hatten `forms_chatalpha`/`forms_skeleton` befüllt (aus früheren Einzel-Transkriptionssitzungen), der Rest der Tabelle (importiert aus dem rohen PDF-Extrakt) nicht — und die Konvertierungsregel von `forms_phonetic` (Original-Lautschrift) zu unserem Chat-Alphabet war nirgendwo dokumentiert. Statt zu raten: Regel per Reverse-Engineering aus den 1.241 bereits korrekt konvertierten Zeilen abgeleitet (Diff zwischen `forms_phonetic` und `forms_chatalpha` Zeichen für Zeichen verglichen), dann **vor** dem Bulk-Update gegen alle 1.241 Zeilen auf 100%-exakten Match getestet — nicht auf Stichproben verlassen.
+
+Gefundene Regel (Peace-Corps-Lautschrift → Chat-Alphabet): (1) Großes `H` → `7` (vor dem Lowercasing, case-sensitive), (2) kleines `x` → `kh`, (3) danach alles lowercase (faltet großes S/T/D/Z zu klein, keine Ziffern-Ersetzung dafür), (4) `:` (Längungszeichen) komplett entfernen. SQL: `replace(lower(replace(replace(fp, 'H','7'), 'x','kh')), ':', '')`.
+
+Skeleton-Regel: lowercase Chat-Alphabet, dann `[aeiouwy\s\-\.\(\)àâäéèêëîïôöùûü]` entfernen (Vokale, Halbvokale w/y, Whitespace, Bindestrich, Punkt, Klammern, französische Akzentvokale). Erster Entwurf ohne Punkt/Klammern/Akzentvokale scheiterte an 4/1241 Testzeilen (`AGO` wegen "...", `CUTLET`/`côtelette` und `BABY`/`bébé` wegen é/ô, `BANISH`/`tarrad(milblad)` wegen Klammern) — nach Erweiterung der Zeichenklasse 1241/1241 exakter Match. Danach Bulk-Update auf alle Zeilen mit `forms_phonetic IS NOT NULL` ausgeführt: 1.241 → 5.004/5.070 (die restlichen 66 haben schlicht kein `forms_phonetic`). 20 zufällige neu konvertierte Zeilen stichprobenartig nachgeprüft, alle korrekt (inkl. Französisch-Lehnwörter und Grammatik-Platzhalter).
+
 ## Code-Änderungen — Fallgeschichte
 
 Performance-Fix `spellcheck="false"` (2026-08-05): `ei-tp` (Topic-Feld) hatte `autocomplete/autocorrect/autocapitalize/spellcheck` schon deaktiviert, die Nachbarfelder `ei-ar`/`ei-tr`/`ei-en` nicht — der gemeldete INP-Bug betraf nur `ei-ar`, aber dieselbe Fehlerklasse lauerte in allen dreien.
