@@ -28,7 +28,6 @@ Ausführliche Fallgeschichten/Bug-Berichte hinter vielen Regeln hier stehen in `
 
 Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nicht Teil der laufenden Regeln:
 
-- **Peace-Corps-Transkriptionsfehler im ID-Bereich ~1078–1245** (gefunden 2026-09-05 beim Bau der Arabisch-Rekonstruktion, siehe PRECEDENTS.md → Peace-Corps-Arabisch-Rekonstruktion): 33 Zeilen mit auffälligem Großbuchstaben `M` in `forms_phonetic`, geklumpt in diesem engen Seitenbereich — sieht nach einem Transkriptionsfehler aus einem bestimmten Seitenabschnitt aus, nicht nach einem echten Laut. Die Arabisch-Rekonstruktion filtert diese Zeilen korrekt als "nicht rekonstruierbar", aber `forms_chatalpha` für dieselben Zeilen wurde beim Punkt-3-Bulk-Update blind kleingeschrieben (`M`→`m`) und könnte dadurch **still falsch** sein, ohne dass es auffällt — noch nicht geprüft, ob das ein echtes Problem ist.
 - **Ninja-Transliteration in Trainer-Konvention** (besprochen 2026-09-05, bewusst zurückgestellt): `derja_ninja_entries.darija` ist in Ninjas eigener Konvention, nicht unserer — anders als bei TUNICO/Peace Corps gibt es dafür noch keine `chatalpha`-Spalte. Wäre nur aus dem vollvokalisierten `arabic_script` heraus zuverlässig baubar (nicht aus Ninjas `darija` selbst), mit eigenem Validierungsaufwand. Bisher kein Bedarf, seit klar ist: Original-Transliteration wird ohnehin nur im Zweifelsfall herangezogen, `chatalpha` reicht für den Regelfall.
 
 ## Grundsatz: Nie ohne Bestätigung in Supabase schreiben
@@ -706,6 +705,8 @@ FROM target t JOIN public.vocab_lookup l
   AND lower(trim(t.english)) <> l.english_key
 ORDER BY id, match_art, source;
 ```
+
+**Wertigkeit der Treffer nicht verwechseln:** ein Treffer mit `source='ninja'` und gesetztem `arabic_script` ist eine echte Bestätigung (einzige verlässlich vokalisierte Quelle). Ein `chatalpha`-Treffer von TUNICO/Peace Corps bestätigt nur die Transliteration, kein Arabisch — wertvoll, aber schwächer. Ein `arabic_reconstructed`-Wert (nur Peace Corps) ist unsere eigene Ableitung, zählt nicht als zusätzliche unabhängige Quelle (siehe PRECEDENTS.md → Peace-Corps-Arabisch-Rekonstruktion). Bei widersprüchlichen Treffern gewinnt die höherwertige Quelle, nicht die Mehrheit.
 
 **Rezept 2 — neue Vokabel nachschlagen (2a: konkretes Wort) oder Vorschlag holen (2b):**
 ```sql
