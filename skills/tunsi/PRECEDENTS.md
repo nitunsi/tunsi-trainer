@@ -143,6 +143,20 @@ Vollständigkeitshalber archiviert — für Altdaten-Fragen zum fälligen Batch 
 
 **Positivtest Rezept 3 (Import-Batch-Check):** drei Testfälle bestätigten das erwartete Verhalten — `wool` korrekt als Duplikat erkannt (bereits ID 429 im Trainer) und von allen 3 Quellen zusätzlich bestätigt; `to abolish` korrekt kein Duplikat, aber durch Peace Corps mit passender Lautschrift (`na77i`) bestätigt; ein erfundenes Wort lieferte erwartungsgemäß in keiner Quelle einen Treffer (Negativ-Test).
 
+## vocabulary.english Backfill (2026-09-05)
+
+Ausgangslage: nur 311/3.698 Zeilen hatten `english` gesetzt (nötig für den `english_key`-Join in `vocab_lookup`), der neue "🔍 Quellenabgleich"-Button im Trainer griff für den Rest nur auf den schwächeren Skelett-Fallback zurück. Statt Deutsch→Englisch zu übersetzen (Rateaufwand, mehrdeutige deutsche Wörter), `english` stattdessen aus den drei Quellen selbst geborgt — zuverlässiger, weil kein Übersetzungsschritt nötig ist, nur ein Wiedererkennen desselben Worts.
+
+**Zwei Stufen, unterschiedliche Sicherheit:**
+1. **Exakter `arabic_script`-Match gegen Ninja** (295 Zeilen): dasselbe Wort, `english` automatisch übernommen, keine Prüfung nötig.
+2. **Skelett-Match gegen `vocab_lookup`** (`length>=4`-Filter, 783 Kandidaten): Skelett-Gleichheit allein reicht nicht — jede Zeile einzeln gegen das vorhandene `german`-Gloss auf Plausibilität geprüft, nicht blind übernommen. 585/783 bestätigt, 198 verworfen.
+
+**Häufigstes Fehlerbild bei den verworfenen 198: "false friends" durch Konsonantenskelett-Kollision, semantisch klar erkennbar.** Beispiele: `sekkina`("Messer") kollidiert mit `sekkan`("Einwohner") → Skelett `skn`; `barnamij`-Nachbarwörter kollidieren über `khallas`("bezahlen"/"Kontrolleur") mit `khoulasa`("Zusammenfassung") → mehrfach aufgetreten (IDs 2183, 4238, 4255, 4399); `naqqaz`("springen") mit einem Wort für "Türklingel"; `sallem`("grüßen") mit `sillim`("Leiter"). Auch **Ninja-eigene Mehrdeutigkeit** kam vor, nicht nur Skelett-Zufall: `mabsut` kann "zufrieden" oder "wohlhabend" heißen, Ninja listet nur die zweite Bedeutung — für German "zufrieden" verworfen, obwohl dasselbe Wort. Ein Sonderfall waren leere Platzhalter-Werte (`english_key = "-"`) in TUNICO, ebenfalls verworfen statt übernommen.
+
+**Cleanup der übernommenen Werte:** roher `english_key` enthält oft mehrere kommagetrennte Bedeutungsfacetten und HTML-Entities (`&#x27;`) aus dem Scraping — vor dem Schreiben automatisch bereinigt (erste Facette vor dem Komma, Klammer-Anmerkungen entfernt, Entities dekodiert), nicht die rohe Zeichenkette übernommen.
+
+Ergebnis: `english`-Abdeckung von 311/3.698 (8%) auf 1.191/3.698 (32%) erhöht. Die verbleibenden ~2.500 Zeilen haben in keiner der drei Quellen einen Skelett- oder Arabisch-Treffer — bräuchten eine echte Übersetzung (Rateaufwand) oder bleiben ohne `english`, mit entsprechend eingeschränktem Quellenabgleich im Trainer.
+
 ## Peace-Corps-Arabisch-Rekonstruktion (2026-09-05)
 
 Ausgangsfrage des Nutzers: warum nicht aus Peace Corps' Lautschrift + unseren Regeln das Arabische herleiten? Erste Antwort war zu pessimistisch (Latein→Arabisch sei prinzipiell eine Eins-zu-viele-Zuordnung, nicht automatisierbar) — bei genauerem Hinsehen an den echten Daten stimmte das nur zur Hälfte.
