@@ -694,11 +694,11 @@ WITH target AS (
   FROM public.vocabulary WHERE id = ANY(ARRAY[/* vocabulary.id(s) */])
 )
 SELECT t.id, t.darija AS trainer_darija, t.english, 'bedeutung' AS match_art,
-       l.source, l.headword_display, l.source_translit, l.chatalpha, l.example_en
+       l.source, l.headword_display, l.source_translit, l.chatalpha, l.arabic_reconstructed, l.arabic_reconstruction_note, l.example_en
 FROM target t JOIN public.vocab_lookup l ON lower(trim(t.english)) = l.english_key
 UNION ALL
 SELECT t.id, t.darija, t.english, 'nur_lautschrift_unsicher',
-       l.source, l.headword_display, l.source_translit, l.chatalpha, l.example_en
+       l.source, l.headword_display, l.source_translit, l.chatalpha, l.arabic_reconstructed, l.arabic_reconstruction_note, l.example_en
 FROM target t JOIN public.vocab_lookup l
   ON ((t.arabic_skeleton = l.arabic_skeleton AND length(t.arabic_skeleton) >= 4)
    OR (t.translit_skeleton = l.translit_skeleton AND l.translit_skeleton IS NOT NULL AND length(t.translit_skeleton) >= 4))
@@ -709,7 +709,7 @@ ORDER BY id, match_art, source;
 **Rezept 2 — neue Vokabel nachschlagen (2a: konkretes Wort) oder Vorschlag holen (2b):**
 ```sql
 -- 2a
-SELECT source, headword_display, source_translit, chatalpha, arabic_script, gender, pos, example_en, example_ph
+SELECT source, headword_display, source_translit, chatalpha, arabic_script, arabic_reconstructed, arabic_reconstruction_note, gender, pos, example_en, example_ph
 FROM public.vocab_lookup WHERE english_key = lower('<wort>') ORDER BY source;
 SELECT id, darija, german FROM public.vocabulary WHERE lower(trim(english)) = lower('<wort>');
 
@@ -743,7 +743,7 @@ ORDER BY n.english, l.source;
 ```sql
 -- Schritt 1: Kandidaten aus allen 3 Quellen (wie Rezept 2a) — daraus darija/arabic_script/german von Hand auswählen
 SELECT source, headword_display, source_translit, chatalpha, chatalpha_plural, gender, pos,
-       arabic_script, example_en, example_de, example_ph, audio_url, note
+       arabic_script, arabic_reconstructed, arabic_reconstruction_note, example_en, example_de, example_ph, audio_url, note
 FROM public.vocab_lookup WHERE english_key = lower('<wort>') ORDER BY source;
 
 -- Schritt 2: INSERT mit automatisch berechneten Skeletten
@@ -767,5 +767,6 @@ RETURNING id, english, darija, arabic_script, german, translit_skeleton, arabic_
 - **TUNICO-`chatalpha` bei Verben ist die Stammform**, nicht die trainer-übliche 3. Pers. Sg. Präsens — passende Flexionsform aus `tunico_corpus_verbs.forms_chatalpha` wählen, nie die Stammform direkt übernehmen (siehe TUNICO-Abschnitt, `_tnGuessVerbForm()`).
 - **Peace-Corps-`chatalpha` (`forms_chatalpha[1]`) ist die erste Form laut `forms_roles`** (bei Verben oft Imperativ, nicht Präsens) — bei Verben gegen `forms_roles` prüfen und ggf. die passende Form selbst zur 3.-Pers.-Präsens umbauen, nicht ungeprüft übernehmen.
 - **`german` wird von keiner Quelle geliefert** — `senses`/`de_gloss`/`example_de` sind Ausgangsmaterial, keine fertige Übersetzung.
+- **`arabic_reconstructed` (nur bei Peace Corps) ist ein Vorschlag, kein Faktum** — nur verwenden, wenn Ninja kein `arabic_script` liefert, und vor Übernahme in `<arabic_script_oder_NULL>` von Hand vokalisieren/gegenchecken (v.a. bei gesetztem `arabic_reconstruction_note`).
 
 Rezept 4 ersetzt nicht den Pflicht-Duplikat-Check (siehe "Duplikat-Check, alle drei Felder einzeln") — vor dem `INSERT` trotzdem gegenchecken, Rezept 3 nutzen bei ganzen Batches statt Einzelwörtern.
