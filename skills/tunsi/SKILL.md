@@ -22,12 +22,14 @@ Ausführliche Fallgeschichten/Bug-Berichte hinter vielen Regeln hier stehen in `
 | Was ist von früher noch unerledigt? | Offene Punkte (direkt unten) |
 | Zusätzliche Wörterbuch-/Kursquellen nutzen | Datenquellen (ganz unten) |
 | Bulk-Import > ~1000 Zeilen | Bulk-Insert bei großen Mengen |
+| Vokabel überprüfen / neue Vokabel nachschlagen / Import-Batch gegenchecken | vocab_lookup — Cross-Source-Abgleich (ganz unten) |
 
 ## Offene Punkte
 
 Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nicht Teil der laufenden Regeln:
 
 - **Fälliger Vokalisierungs-Batch vom 2026-07-24** (119 Einträge geprüft, siehe PRECEDENTS.md → derja_ninja_import): mehrere echte Fehler gefunden, aber noch nicht korrigiert — Maß-I/Maß-II-Verwechslung bei IDs 1142/605/544/844, unvollständige Vokalisierung bei 423/531, ungültige Schadda-Platzierung bei 568/981, strukturelle Transliterations-Abweichungen bei 428/581/588/1223, vorbestehender Tippfehler bei 737. Liste liegt vor, wartet nur noch auf Freigabe zum Schreiben.
+- **`peacecorps_dict_import.forms_chatalpha`/`forms_skeleton` nur teilweise befüllt (Stand 2026-09-05):** IDs 2–1302 (1.241 Zeilen) haben es, der Rest (3.829 Zeilen) noch nicht. Vor jeder Aussage zum Stand gegenchecken (`SELECT count(*) FILTER (WHERE forms_chatalpha IS NOT NULL), count(*) FROM peacecorps_dict_import`). Bis das fertig ist, läuft der Lautschrift-Abgleich für Peace Corps in `vocab_lookup` nur bei diesen 1.241 Zeilen, sonst nur über die englische Bedeutung.
 
 ## Grundsatz: Nie ohne Bestätigung in Supabase schreiben
 
@@ -667,7 +669,7 @@ Eigene Transliteration — wird an unsere Chat-Alphabet-Konvention angepasst, ni
 
 Zwei Supabase-Tabellen, Rohextrakt aus dem "Peace Corps English-Tunisian Arabic Dictionary" (Ben Abdelkader/Ayed/Naouar, 1977, ERIC ED183017) — ältere, sehr umfangreiche lexikografische Quelle, unabhängig von TUNICO/Uni-Wien/Derja-Ninja.
 
-- **`peacecorps_dict_import`** (4.094 Zeilen): `headword` (englisches Stichwort), `freq`, `pos`, `forms_phonetic` (Array, Original-Lautschrift), `forms_chatalpha` (Array, automatisch über die Lautschrift-Legende aus `peacecorps_grammar_import` umgewandelt), `forms_skeleton` (Array, vokalfrei für Duplikat-Abgleich), `gender`, `is_loanword`, `senses` (jsonb), `arabic_script` (**bewusst leer** — nicht aus dem fehleranfälligen OCR übernommen, bei Bedarf separat vokalisieren), `source_section`, `source_page`, `raw_text`, `is_synonym_set`. Stand 2026-09-02 verifiziert: Buchstaben A–W importiert (nur u/v/x/y/z noch Lücken) — vor jeder Aussage zum Import-Stand aktuell gegenchecken (`SELECT left(lower(headword),1), count(*) FROM peacecorps_dict_import GROUP BY 1`), nicht auf alte Notizen verlassen.
+- **`peacecorps_dict_import`** (5.070 Zeilen, Stand 2026-09-05 — **komplett A–Z importiert**, kompletter Englisch→Tunesisch-Teil bis Seite 497; der umgekehrte Tunesisch→Englisch-Teil danach ist bewusst nicht importiert): `headword` (englisches Stichwort), `freq` (1–5, Häufigkeitsrang aus dem Original, keine Homonym-Nummer), `pos`, `forms_phonetic` (Array, Original-Lautschrift, Reihenfolge wie im Original: Sg./Pl., m./f./Pl., Imperativ/Perfekt), `forms_roles` (Array parallel zu `forms_phonetic`: `sg`/`pl`/`m`/`f`/`imperativ`/`perfekt`/`coll`/`"unklar"`, nicht befüllt bei `is_synonym_set=true`), `forms_chatalpha`/`forms_skeleton` (Arrays, **nur IDs 2–1302 befüllt**, siehe Offene Punkte oben), `gender` (aus `pos` abgeleitet wo eindeutig), `is_loanword`, `is_synonym_set` (true = `forms_phonetic` sind echte unabhängige Synonyme, keine grammatischen Varianten), `needs_review` (unsichere Transkription — `false` heißt nicht "geprüft&sicher", nur "keine bekannte Auffälligkeit"), `senses` (jsonb, inkl. Beispielsätzen/Untersinnen), `arabic_script` (**bewusst leer**, nicht aus dem fehleranfälligen OCR übernommen), `source_section`, `source_page`, `raw_text` (in der ganzen Tabelle 0% befüllt, kein Qualitätsproblem). Vor jeder Aussage zum Stand aktuell gegenchecken (`SELECT count(*), max(source_page) FROM peacecorps_dict_import`), nicht auf alte Notizen verlassen.
 - **`peacecorps_grammar_import`** (21 Zeilen): `topic`, `page_start`, `page_end`, `raw_text`. Lautschrift-Legende (Sonderlaute Ḥ/ʕ/q, Vokalzeichen+Längung, Shadda) plus Grammatik-Kapitel (Personalpronomen, Artikel, Possessiv, Zahlen, Dual, Komparativ, Zeiten, Konditional, unregelmäßige Verben, Verneinung, Fragebildung, Objektpronomen). Rohmaterial für künftige `course_exercises`, noch nicht umgesetzt.
 
 **Nutzen für den Ninja-Check-Workflow:** dritte Offline-Quelle im 🚩-Workflow (siehe "Ablauf pro geflaggter Vokabel" → Schritt 1) — nach `derja_ninja_entries` und `tunico_import` durchsuchen, v.a. bei älterem/ungewöhnlichem Lehrbuchvokabular.
@@ -677,3 +679,59 @@ Zwei Supabase-Tabellen, Rohextrakt aus dem "Peace Corps English-Tunisian Arabic 
 Tabelle `uniwien_source_pages` (270 Zeilen) — wörtliche Seiten-Transkription der Uni-Wien-Lehrskripte, eine Zeile pro PDF-Seite, per Claude Vision erfasst (Bild gelesen, nicht OCR). Spalten: `book`, `pdf_page`, `printed_page`, `lesson_number`, `section`, `content`, `has_nontext_content` (Flag für Seiten mit Bildern/Tabellen, von der Text-Transkription nicht vollständig erfasst), `transcribed_by`, `transcribed_at`.
 
 **Das ist die Rohdaten-Ebene, von der `course_lessons.grammar_notes`/`dialog_text` und `course_exercises` abgeleitet wurden** — getrennt gehalten, damit sich Vollständigkeits-Audits gegen den tatsächlichen Quelltext prüfen lassen, nicht nur gegen die bereits verarbeitete Zusammenfassung. **Für Kurs-Vollständigkeits-Audits (siehe "Pflichtschritt: Item-Zählung") die belastbarste Quelle** — `content` (nach `lesson_number`/`pdf_page` gruppiert) gegen die tatsächlich in `course_exercises` vorhandenen Items abgleichen, statt sich nur auf `grammar_notes`/`dialog_text` zu verlassen. `has_nontext_content=true` markiert Seiten mit möglicherweise unvollständiger Transkription — dort vor einer "vollständig geprüft"-Aussage die Originalquelle nochmal gegenprüfen.
+
+## vocab_lookup — Cross-Source-Abgleich (seit 2026-09-05)
+
+**`vocab_lookup`** ist eine View (kein Materialized/keine Kopie — liest live aus `derja_ninja_entries`/`tunico_import`/`peacecorps_dict_import`, ändert nichts an den Rohtabellen) mit einheitlichen Spalten für alle drei: `source`, `source_id`, `english_key` (lowercased, primäre Suchachse), `headword_display`, `source_translit` (Lautschrift der Quelle in DEREN eigener Konvention, nicht unser Chat-Alphabet), `chatalpha` (unsere Konvention — bei TUNICO immer befüllt, bei Peace Corps nur IDs 2–1302), `chatalpha_plural`, `gender`, `pos`, `arabic_script` (nur Ninja zuverlässig), `translit_skeleton`/`arabic_skeleton`, `example_en`/`example_de`/`example_ph`, `audio_url`, `note`. Eine Zeile pro Sinn/Beispiel, nicht pro Lemma — ein mehrdeutiges Lemma erzeugt mehrere Zeilen mit demselben `source_id`.
+
+**Nie blind über `translit_skeleton`/`arabic_skeleton` joinen — kurze Skelette (≤3 Konsonanten) kollidieren zufällig** (Präzedenzfall: PRECEDENTS.md → vocab_lookup). `english_key` ist die primäre, zuverlässige Achse; Skeleton-Treffer nur separat markiert und mit `length(...) >= 4` gefiltert.
+
+**Rezept 1 — Trainer-Vokabel verifizieren:**
+```sql
+WITH target AS (
+  SELECT id, darija, arabic_script, english, translit_skeleton, arabic_skeleton
+  FROM public.vocabulary WHERE id = ANY(ARRAY[/* vocabulary.id(s) */])
+)
+SELECT t.id, t.darija AS trainer_darija, t.english, 'bedeutung' AS match_art,
+       l.source, l.headword_display, l.source_translit, l.chatalpha, l.example_en
+FROM target t JOIN public.vocab_lookup l ON lower(trim(t.english)) = l.english_key
+UNION ALL
+SELECT t.id, t.darija, t.english, 'nur_lautschrift_unsicher',
+       l.source, l.headword_display, l.source_translit, l.chatalpha, l.example_en
+FROM target t JOIN public.vocab_lookup l
+  ON ((t.arabic_skeleton = l.arabic_skeleton AND length(t.arabic_skeleton) >= 4)
+   OR (t.translit_skeleton = l.translit_skeleton AND l.translit_skeleton IS NOT NULL AND length(t.translit_skeleton) >= 4))
+  AND lower(trim(t.english)) <> l.english_key
+ORDER BY id, match_art, source;
+```
+
+**Rezept 2 — neue Vokabel nachschlagen (2a: konkretes Wort) oder Vorschlag holen (2b):**
+```sql
+-- 2a
+SELECT source, headword_display, source_translit, chatalpha, arabic_script, gender, pos, example_en, example_ph
+FROM public.vocab_lookup WHERE english_key = lower('<wort>') ORDER BY source;
+SELECT id, darija, german FROM public.vocabulary WHERE lower(trim(english)) = lower('<wort>');
+
+-- 2b: kombiniert beide frequenzsortierten Kandidatenlisten
+SELECT 'tunico' AS quelle, cat, frequency, lemma_chatalpha, de_gloss
+FROM public.tunico_candidates WHERE status='pending' AND auto_verdict='missing' ORDER BY frequency DESC LIMIT 10;
+SELECT 'peacecorps' AS quelle, pos, freq AS prioritaet, chatalpha, headword AS gloss
+FROM public.peacecorps_candidates WHERE status='pending' AND auto_verdict='missing' AND freq=5 ORDER BY headword LIMIT 10;
+```
+`peacecorps_candidates` (gleiches Schema wie `tunico_candidates`): aus `peacecorps_dict_import` gespeist, `auto_verdict` per einfachem `english`-Abgleich gegen `vocabulary` vorbelegt — feinere Heuristik (e/i-Fold etc., siehe TUNICO-Abschnitt oben) bisher nicht übernommen.
+
+**Rezept 3 — Import-Batch gegenchecken (Duplikate + Plausibilität vor dem Schreiben):**
+```sql
+WITH batch(english, darija, arabic_script) AS (
+  VALUES ('<english1>','<darija1>','<arabic1>')
+),
+norm AS (SELECT *, lower(trim(regexp_replace(english, '^to\s+', ''))) AS key FROM batch)
+SELECT n.english, n.darija, v.id AS bereits_im_trainer, v.darija AS trainer_darija,
+  l.source, l.chatalpha AS quelle_chatalpha, l.source_translit AS quelle_translit, l.example_en
+FROM norm n
+LEFT JOIN public.vocabulary v ON lower(trim(v.english)) = n.key
+LEFT JOIN public.vocab_lookup l ON l.english_key = n.key
+ORDER BY n.english, l.source;
+```
+
+**Bekannte Grenzen:** `english_key` ist ein einfacher `lower(trim(...))`-Vergleich, kein Fuzzy-Match — unterschiedliche Formulierungen derselben Bedeutung können Treffer verpassen (`to abolish` wird per `regexp_replace('^to\s+','')` normalisiert, deckt aber nicht jede Variante ab). Bei "kein Treffer" zusätzlich mit `english_key ILIKE '%<wort>%'` nachfassen, bevor man auf "existiert nirgends" schließt.

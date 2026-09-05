@@ -137,6 +137,12 @@ Vollständigkeitshalber archiviert — für Altdaten-Fragen zum fälligen Batch 
 
 **"Kein Match" — Stichprobe:** von 10 gegen die Live-Seite getesteten alltäglichen Wörtern fehlten 3 komplett im Offline-Dump (Institut/مَعْهِدْ, Bär/دُبّْ, Koch/طَبَّاخْ) — hoher Anteil, bevor "kein Treffer" als Vokabelfehler gewertet wird, immer live nachschlagen.
 
+## vocab_lookup — Fallgeschichten
+
+**Skeleton-Join zu unscharf, erster Testlauf (2026-09-05):** Erster Entwurf von Rezept 1 jointe `vocabulary.arabic_skeleton`/`translit_skeleton` direkt gegen `vocab_lookup` ohne Filter. Bei `souf`="Wolle" (Skeleton `sf`) kamen darüber 20+ komplett unpassende Ninja-Treffer zurück (`safi`="sauber", `sifa`="Beschreibung", `wasif`="beschrieben", `yousif`="Josef" — alle zufällig ebenfalls Skeleton `sf`, weil Vokale weg sind). Gleiche Falle wie beim bestehenden Ninja-Bestandsaudit-Workflow, hier nur nochmal am Cross-Source-View bestätigt. Fix: `english_key`-Match als primäre Achse, Skeleton-Treffer nur noch separat markiert und auf `length(...) >= 4` beschränkt — bei den drei Testwörtern (`wool`/`close`/`strong`, alle Skelette ≤3) blieb die Zusatzsektion danach korrekt leer, keine Störtreffer mehr.
+
+**Positivtest Rezept 3 (Import-Batch-Check):** drei Testfälle bestätigten das erwartete Verhalten — `wool` korrekt als Duplikat erkannt (bereits ID 429 im Trainer) und von allen 3 Quellen zusätzlich bestätigt; `to abolish` korrekt kein Duplikat, aber durch Peace Corps mit passender Lautschrift (`na77i`) bestätigt; ein erfundenes Wort lieferte erwartungsgemäß in keiner Quelle einen Treffer (Negativ-Test).
+
 ## Code-Änderungen — Fallgeschichte
 
 Performance-Fix `spellcheck="false"` (2026-08-05): `ei-tp` (Topic-Feld) hatte `autocomplete/autocorrect/autocapitalize/spellcheck` schon deaktiviert, die Nachbarfelder `ei-ar`/`ei-tr`/`ei-en` nicht — der gemeldete INP-Bug betraf nur `ei-ar`, aber dieselbe Fehlerklasse lauerte in allen dreien.
