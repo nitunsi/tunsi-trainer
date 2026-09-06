@@ -3707,7 +3707,8 @@ function renderVocabTableRows(){
     h += '<td style="padding:.3rem .3rem"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)" style="cursor:pointer"'+(isChecked?' checked':'')+'/></td>';
     h += '<td style="padding:.3rem;color:var(--muted);font-size:.65rem">'+v.ls+flagMark+'</td>';
     h += '<td style="text-align:right;padding:.3rem;font-family:\'Playfair Display\',serif;font-size:1rem;color:var(--gold2);direction:rtl">'+v.ar+'</td>';
-    h += '<td style="padding:.3rem;color:var(--muted);font-size:.7rem">'+v.tr+'</td>';
+    const rotMark = v.cr ? ' <span title="Wechselt beim Lernen zwischen mehreren Personen/Zeiten" style="cursor:help">🔀</span>' : '';
+    h += '<td style="padding:.3rem;color:var(--muted);font-size:.7rem">'+v.tr+rotMark+'</td>';
     h += '<td style="padding:.3rem">'+v.en+'</td>';
     h += '<td style="text-align:center;padding:.3rem"><span style="color:'+color+';font-weight:700;font-size:.7rem">'+SRS_LABELS[level]+'</span></td>';
     const due = p && p.next_review ? fmtDue(p.next_review) : '—';
