@@ -258,6 +258,10 @@ In beiden Fällen: wie genau (welches Topic, Suffix abschneiden oder ersetzen) n
 
 **Bestandspflege (Stand 2026-09-06): nur ergänzen, nicht kürzen.** Verben mit mehr als 3 vorhandenen Zeilen (volle/teilweise Personal-Paradigmen aus früheren Sessions) werden NICHT gekürzt/gelöscht — das wird auf einen späteren, gezielten Vokabel-Check verschoben. Bei diesem künftigen Check: pro Verb auf die 3 Ziel-Slots konsolidieren (Präsens+Vergangenheit+eine Person behalten, Rest als Kandidat für Löschung markieren, nicht automatisch löschen — erst zeigen, dann auf Bestätigung warten wie immer). Bis dahin: überzählige Zeilen einfach so stehen lassen.
 
+**Aber: `tunico_verb_id`+`conjugation` trotzdem an ALLEN vorhandenen Zeilen eines Verbs setzen, nicht nur an den 3 Ziel-Slots.** Auch überzählige/nicht ins 3er-Schema passende Zeilen (z.B. Imperativ-Varianten, weitere Personen aus alten Batches) bekommen die Verknüpfung + volle Tabelle, damit der 🔠-Button überall verfügbar ist. Eine falsche Zuordnung richtet dabei keinen Schaden an — sie fällt beim Lernen auf und wird dann korrigiert (SRS-Progress bleibt unberührt, nur Anzeige-Zusatzdaten).
+
+**Fehlerquelle bei Form-II/III-Verben (Gemination): unvokalisiertes `arabic_script` kollidiert leicht mit der Form-I-Wurzel.** Präzedenzfall 2026-09-06: `nwassal` („ich bringe hin", Form II von وصل) wurde zunächst unvokalisiert als نوصل eingetragen — identisch mit der bereits bestehenden Form-I-Zeile `nousil`/„ich komme an" (id 1278), vom Duplikat-Check sofort erkannt. Bei Form-II/III-Verben mit Gemination immer die Schadda setzen (نْوَصَّل, nicht نوصل), am bestehenden Präsens-Geschwister (hier `ywassal`→يْوَصَّل) orientieren — nicht komplett unvokalisiert lassen, wenn das Muster durch eine Geschwisterform schon bekannt ist.
+
 **Bei jeder Neuanlage/jedem Vokabel-Check ab jetzt:** wenn ein neues oder geprüftes Wort ein Verb ist, prüfen ob es zu einem der `tunico_corpus_verbs`-Einträge gehört (Konsonantenskelett-Match gegen `forms_chatalpha[]`) und nach obigem 3-Zeilen-Modell behandeln, nicht als isolierte Einzelform anlegen.
 
 ## Datenqualitäts-Checks (SQL)
