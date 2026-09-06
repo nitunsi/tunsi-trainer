@@ -599,7 +599,7 @@ async function srsLoadFromSupabase(){
     _updLoadUI();
 
     const loadVocabTask = sbApiPaged(
-      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,homonym_ok,internal_note,external_confirmed,external_confirmed_source,lessons(lesson_number)&order=id.asc',
+      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,lessons(lesson_number)&order=id.asc',
       1000,
       (loaded) => { _vLoaded = loaded; _updLoadUI(); }
     );
@@ -625,7 +625,7 @@ async function srsLoadFromSupabase(){
     allVocab.forEach(v => {
       const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
       const tp = v.topic || 'Allgemein';
-      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null };
+      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null };
       ALL_VOCAB.push(entry);
       VOCAB_BY_ID[v.id] = entry;
       if(v.flagged) flaggedVocab.add(v.darija||'');
@@ -2110,6 +2110,31 @@ function extConfirmIcon(v, style){
   const label = EXT_SOURCE_LABEL[v.xcs] || 'externe Quelle';
   return `<span title="Extern bestätigt (${label}, keine Audio-Aufnahme)" style="${style||'color:var(--muted)'}">🔗</span>`;
 }
+const CONJ_PERSON_ROWS = [['ich','1sg'],['du','2sg'],['er','3sg_m'],['sie','3sg_f'],['wir','1pl'],['ihr','2pl'],['sie (Pl.)','3pl']];
+// Baut die Konjugationstabelle (Präsens links, Vergangenheit rechts, Imperativ drunter) aus vocabulary.conjugation.
+function renderConjugationTable(cj){
+  if(!cj) return '';
+  const pr = cj.present||{}, pa = cj.past||{}, im = cj.imperative||{};
+  let h = '<table style="width:100%;border-collapse:collapse;font-size:.8rem">';
+  h += '<thead><tr style="color:var(--muted);font-size:.62rem;text-transform:uppercase;letter-spacing:.05em">';
+  h += '<th style="text-align:left;padding:.2rem .4rem"></th><th style="text-align:left;padding:.2rem .4rem">Präsens</th><th style="text-align:left;padding:.2rem .4rem">Vergangenheit</th></tr></thead><tbody>';
+  CONJ_PERSON_ROWS.forEach(([label,key])=>{
+    h += '<tr style="border-top:1px solid rgba(255,255,255,.06)">';
+    h += '<td style="padding:.2rem .4rem;color:var(--muted)">'+label+'</td>';
+    h += '<td style="padding:.2rem .4rem;font-family:\'IBM Plex Mono\',monospace">'+(pr[key]||'–')+'</td>';
+    h += '<td style="padding:.2rem .4rem;font-family:\'IBM Plex Mono\',monospace">'+(pa[key]||'–')+'</td>';
+    h += '</tr>';
+  });
+  h += '</tbody></table>';
+  if(im.sg || im.pl){
+    h += '<div style="margin-top:.5rem;padding-top:.4rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted)">Imperativ: <span style="color:var(--text);font-family:\'IBM Plex Mono\',monospace">'+(im.sg||'–')+'</span> (sg.) · <span style="color:var(--text);font-family:\'IBM Plex Mono\',monospace">'+(im.pl||'–')+'</span> (pl.)</div>';
+  }
+  return h;
+}
+function toggleConjTable(){
+  const el = document.getElementById('conj-table-box');
+  if(el) el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
 function sh(a){return[...a].sort(()=>Math.random()-.5);}
 // Extrahiert die Lektionsnummer aus v.ls (Format 'L<n>'), z.B. 'L17' -> 17. -1 falls kein Match.
 function lsNum(v){ const m=/^L(\d+)/.exec(v && v.ls || ''); return m ? parseInt(m[1],10) : -1; }
@@ -2416,6 +2441,7 @@ function rFlash(ex,el){
       <span class="srs-info-badge" style="flex:1;min-width:0;margin:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${srsInfoBadge(v)}</span>
       ${v.ps ? `<span style="flex-shrink:0;font-size:.85rem" title="Partner: ${v.ps}">${v.ps==='approved'?'✅':v.ps==='rejected'?'❌':v.ps==='unknown'?'❓':v.ps==='pending'?'⏳':v.ps==='skipped'?'⏭':'💡'}</span>` : ''}
       ${v.au ? `<button onclick="playVocabAudio('${v.au.replace(/'/g,"\\'")}',event,${v.aus||0},${v.aue||0})" title="Aussprache abspielen" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.8rem;padding:.1rem .4rem;border-radius:3px;cursor:pointer;line-height:1.4">🔊</button>` : extConfirmIcon(v, 'flex-shrink:0;font-size:.8rem;color:var(--muted)')}
+      ${v.cj ? `<button onclick="toggleConjTable()" title="Konjugationstabelle anzeigen" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.8rem;padding:.1rem .4rem;border-radius:3px;cursor:pointer;line-height:1.4">🔠</button>` : ''}
       <span style="flex-shrink:0;font-size:.7rem;color:var(--muted)">${_prog}</span>
     </div>
     <div class="q-card" style="min-height:80px;margin-bottom:.5rem">
@@ -2425,6 +2451,7 @@ function rFlash(ex,el){
       }
     </div>
     <div class="q-hint" id="flash-hint" style="margin-bottom:.6rem">${isAr2De?v.en+' — '+v.tr:v.ar+' ('+v.tr+')'}</div>
+    ${v.cj ? `<div id="conj-table-box" style="display:none;margin-bottom:.6rem;padding:.5rem .6rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px">${renderConjugationTable(v.cj)}</div>` : ''}
     <input id="flash-input" type="text"
       style="width:100%;box-sizing:border-box;padding:.85rem 1rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:16px;border-radius:6px;font-family:'IBM Plex Mono',monospace;margin-bottom:4rem;display:block"
       placeholder="${isAr2De?'Deutsch eingeben...':'Arabisch oder Transliteration...'}"
