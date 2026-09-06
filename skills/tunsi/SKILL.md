@@ -230,6 +230,31 @@ In beiden Fällen: wie genau (welches Topic, Suffix abschneiden oder ersetzen) n
 - **Wiederkehrender Fehlerfall: Imperativ+Vergangenheit-Bündelung** (nicht nur Imperativ+Präsens) — da beide bei manchen Verbmustern gleich geschrieben werden, aufgeteilte Zeilen mit `homonym_ok=true` markieren. Details/Fälle: PRECEDENTS.md → Verben.
 - **Verwandter Fehlerfall: `darija` transliteriert als MSA-Imperativ-Präfix (a-/i-/o-), obwohl `arabic_script` bereits korrekt die 3.-Person-Vergangenheit zeigt.** `darija` aus dem korrekten `arabic_script` neu transliterieren, nicht das arabic_script antasten. Bei jedem Präsens/Vergangenheit-Paar lohnt der Blick, ob `darija` wirklich zur (oft zuverlässigeren) Vokalisierung in `arabic_script` passt. Details: PRECEDENTS.md → Verben.
 
+### Verb-Konjugationsmodell (seit 2026-09-06): 3-Zeilen-Ziel + `conjugation`-Tabelle
+
+**Ziel pro Verb: genau 3 eigene `vocabulary`-Zeilen** (je mit eigener `progress`-Zeile, ganz normal in der SRS-Queue) — **Präsens-Grundform** (3. Pers. Sg.), **Vergangenheit-Grundform** (3. Pers. Sg.), und **eine weitere Person**, einmalig ausgewürfelt (Gewichtung: `ich`/`wir` häufiger als die übrigen Personen). Grund: volle Personal-Paradigmen (ich/du/er/sie/wir/ihr/sie für jede Zeit) als je eigene Zeilen anzulegen bläht die Queue auf — Nils will eine Queue/ein Progress-System, keine pro Form.
+
+**Zusätzlich, an allen Zeilen desselben Verbs:**
+- `vocabulary.tunico_verb_id` → `tunico_corpus_verbs.id` (Verknüpfung zum Korpus-Verb)
+- `vocabulary.conjugation` (jsonb) — die **komplette** Konjugationstabelle in Hausschreibung, Struktur:
+  ```json
+  {"present":{"1sg":"nqul","2sg":"tqul","3sg_m":"yqul","3sg_f":"tqul","1pl":"nqulu","2pl":"tqulu","3pl":"yqulu"},
+   "past":{"1sg":"qolt","2sg":"qolt","3sg_m":"qal","3sg_f":"qalet","1pl":"qolna","2pl":"qoltu","3pl":"qalu"},
+   "imperative":{"sg":"qol","pl":"qolu"}}
+  ```
+  Wird im Trainer über den 🔠-Button in der Karteikarte als Referenztabelle eingeblendet (Präsens links, Vergangenheit rechts, Imperativ darunter) — reine Anzeige, keine eigene Abfrage/kein eigener Progress. Funktion: `renderConjugationTable()` in trainer.html.
+
+**Herkunft der Formen: `tunico_corpus_verbs.forms_chatalpha[]`** (belegte Korpus-Flexionsformen), aber **nie 1:1 übernehmen** — TUNICOs automatische chatalpha-Konvertierung nutzt teils andere Vokale als unsere Hausregeln (Imala e/o vs. deren u/i, z.B. `y7ibb` vs. unser `y7eb`, `yakul` vs. `yakol`), und die Konvertierung ist **nicht einheitlich pro Vokal** — bei manchen Verben bleibt der TUNICO-Vokal korrekt (`qal`/`yqul` behalten `u`/`a`), bei anderen nicht. Vor jeder Übernahme:
+1. Gegen bereits verifizierte Geschwisterformen desselben Verbs im eigenen Bestand abgleichen (auch über Alt-Topics wie `(Lxx)`/`–` hinweg suchen, s.u.).
+2. Bei Unsicherheit Derja Ninja als Tiebreaker, sonst als Rückfrage markieren.
+3. Rohformen-Varianten im Korpus (Tippfehler/Dialektvarianten wie `qatt`/`qult`/`qutt` nebeneinander) nicht blind übernehmen, plausibelste Form wählen.
+
+**Pflicht-Suchschritt vor jeder Verb-Ergänzung: bestehende Zeilen desselben Verbs auch unter Alt-Topics finden.** Eine Suche nur mit `topic IN ('Verben-Konjugation','Vergangenheit','Verben')` übersieht Zeilen mit Legacy-Topics wie `(L14)`, `(L18)` oder `NULL` — Präzedenzfall 2026-09-06: `yakol`/`er isst` hatte `topic=" (L14)"` und wurde dadurch komplett übersehen, obwohl das Verb (`kla`/essen) sonst als "nur 1 Zeile vorhanden" durchgegangen wäre. Immer den **ganzen** Bestand per Konsonantenskelett gegenchecken (auch über Gemination/Vokal-Abweichungen hinweg, s.o.), nicht nur die Standard-Verb-Topics.
+
+**Bestandspflege (Stand 2026-09-06): nur ergänzen, nicht kürzen.** Verben mit mehr als 3 vorhandenen Zeilen (volle/teilweise Personal-Paradigmen aus früheren Sessions) werden NICHT gekürzt/gelöscht — das wird auf einen späteren, gezielten Vokabel-Check verschoben. Bei diesem künftigen Check: pro Verb auf die 3 Ziel-Slots konsolidieren (Präsens+Vergangenheit+eine Person behalten, Rest als Kandidat für Löschung markieren, nicht automatisch löschen — erst zeigen, dann auf Bestätigung warten wie immer). Bis dahin: überzählige Zeilen einfach so stehen lassen.
+
+**Bei jeder Neuanlage/jedem Vokabel-Check ab jetzt:** wenn ein neues oder geprüftes Wort ein Verb ist, prüfen ob es zu einem der `tunico_corpus_verbs`-Einträge gehört (Konsonantenskelett-Match gegen `forms_chatalpha[]`) und nach obigem 3-Zeilen-Modell behandeln, nicht als isolierte Einzelform anlegen.
+
 ## Datenqualitäts-Checks (SQL)
 
 Nicht nur nach einem frischen Import relevant — dieselben Checks eignen sich für jede Stichprobe/jeden Verdacht gegen den Bestand.
