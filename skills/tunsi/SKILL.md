@@ -230,6 +230,40 @@ In beiden Fällen: wie genau (welches Topic, Suffix abschneiden oder ersetzen) n
 - **Wiederkehrender Fehlerfall: Imperativ+Vergangenheit-Bündelung** (nicht nur Imperativ+Präsens) — da beide bei manchen Verbmustern gleich geschrieben werden, aufgeteilte Zeilen mit `homonym_ok=true` markieren. Details/Fälle: PRECEDENTS.md → Verben.
 - **Verwandter Fehlerfall: `darija` transliteriert als MSA-Imperativ-Präfix (a-/i-/o-), obwohl `arabic_script` bereits korrekt die 3.-Person-Vergangenheit zeigt.** `darija` aus dem korrekten `arabic_script` neu transliterieren, nicht das arabic_script antasten. Bei jedem Präsens/Vergangenheit-Paar lohnt der Blick, ob `darija` wirklich zur (oft zuverlässigeren) Vokalisierung in `arabic_script` passt. Details: PRECEDENTS.md → Verben.
 
+### Verb-Konjugationsmodell (seit 2026-09-06): 3-Zeilen-Ziel + `conjugation`-Tabelle
+
+**Ziel pro Verb: genau 3 eigene `vocabulary`-Zeilen** (je mit eigener `progress`-Zeile, ganz normal in der SRS-Queue) — **Präsens-Grundform** (3. Pers. Sg.), **Vergangenheit-Grundform** (3. Pers. Sg.), und **eine dritte, rotierende Zeile**. Grund: volle Personal-Paradigmen (ich/du/er/sie/wir/ihr/sie für jede Zeit) als je eigene Zeilen anzulegen bläht die Queue auf — Nils will eine Queue/ein Progress-System, keine pro Form.
+
+**Die dritte Zeile ist nicht fix, sondern rotiert bei jeder Abfrage:** `vocabulary.conj_rotate=true` markiert sie. Die App zieht bei jeder Kartenerstellung (`bFlash()` in trainer.html) neu zufällig eine Personal-/Zeitform aus `conjugation` (Gewichtung: `ich`/`wir` 3× häufiger als die übrigen Personen; die beiden Fix-Formen Präsens/Vergangenheit-3.-Pers.-Sg. sind von der Auswahl ausgeschlossen) und ersetzt Frage+Antwort nur für diese eine Abfrage — Progress bleibt durchgehend an derselben `vocabulary_id`/`progress`-Zeile. Die Zeile selbst behält trotzdem einen eigenen `darija`/`german`-Wert (z.B. die ich-Form) für nicht-Karteikarten-Kontexte (Vokabelliste etc.). Rotierende Karten laufen **immer Deutsch→Tounsi** (kein Arabic-Script pro Einzelform nötig — wäre nochmal deutlich mehr Aufwand pro Verb).
+
+**Zusätzlich, an allen Zeilen desselben Verbs:**
+- `vocabulary.tunico_verb_id` → `tunico_corpus_verbs.id` (Verknüpfung zum Korpus-Verb)
+- `vocabulary.conjugation` (jsonb) — die **komplette** Konjugationstabelle in Hausschreibung, jede Zelle als `{darija, german}` (volle deutsche Übersetzung pro Person+Zeit nötig, da die Rotation einen passenden Prompt braucht — mechanisches Ableiten aus der 3.-Pers.-Form scheitert an unregelmäßigen deutschen Verben wie "aß"/"ging"/"sah"). Struktur:
+  ```json
+  {"present":{"1sg":{"darija":"nqul","german":"ich sage"},"2sg":{"darija":"tqul","german":"du sagst"},
+              "3sg_m":{"darija":"yqul","german":"er sagt"},"3sg_f":{"darija":"tqul","german":"sie sagt"},
+              "1pl":{"darija":"nqulu","german":"wir sagen"},"2pl":{"darija":"tqulu","german":"ihr sagt"},
+              "3pl":{"darija":"yqulu","german":"sie sagen"}},
+   "past":{"1sg":{"darija":"qolt","german":"ich sagte"}, ... },
+   "imperative":{"sg":{"darija":"qol","german":"sag!"},"pl":{"darija":"qolu","german":"sagt!"}}}
+  ```
+  Wird im Trainer über den 🔠-Button in der Karteikarte als Referenztabelle eingeblendet (Präsens links, Vergangenheit rechts, Imperativ darunter) — reine Anzeige, keine eigene Abfrage/kein eigener Progress. Funktionen: `renderConjugationTable()`, `pickRandomConjSlot()` in trainer.html.
+
+**Herkunft der Formen: `tunico_corpus_verbs.forms_chatalpha[]`** (belegte Korpus-Flexionsformen), aber **nie 1:1 übernehmen** — TUNICOs automatische chatalpha-Konvertierung nutzt teils andere Vokale als unsere Hausregeln (Imala e/o vs. deren u/i, z.B. `y7ibb` vs. unser `y7eb`, `yakul` vs. `yakol`), und die Konvertierung ist **nicht einheitlich pro Vokal** — bei manchen Verben bleibt der TUNICO-Vokal korrekt (`qal`/`yqul` behalten `u`/`a`), bei anderen nicht. Vor jeder Übernahme:
+1. Gegen bereits verifizierte Geschwisterformen desselben Verbs im eigenen Bestand abgleichen (auch über Alt-Topics wie `(Lxx)`/`–` hinweg suchen, s.u.).
+2. Bei Unsicherheit Derja Ninja als Tiebreaker, sonst als Rückfrage markieren.
+3. Rohformen-Varianten im Korpus (Tippfehler/Dialektvarianten wie `qatt`/`qult`/`qutt` nebeneinander) nicht blind übernehmen, plausibelste Form wählen.
+
+**Pflicht-Suchschritt vor jeder Verb-Ergänzung: bestehende Zeilen desselben Verbs auch unter Alt-Topics finden.** Eine Suche nur mit `topic IN ('Verben-Konjugation','Vergangenheit','Verben')` übersieht Zeilen mit Legacy-Topics wie `(L14)`, `(L18)` oder `NULL` — Präzedenzfall 2026-09-06: `yakol`/`er isst` hatte `topic=" (L14)"` und wurde dadurch komplett übersehen, obwohl das Verb (`kla`/essen) sonst als "nur 1 Zeile vorhanden" durchgegangen wäre. Immer den **ganzen** Bestand per Konsonantenskelett gegenchecken (auch über Gemination/Vokal-Abweichungen hinweg, s.o.), nicht nur die Standard-Verb-Topics.
+
+**Bestandspflege (Stand 2026-09-06): nur ergänzen, nicht kürzen.** Verben mit mehr als 3 vorhandenen Zeilen (volle/teilweise Personal-Paradigmen aus früheren Sessions) werden NICHT gekürzt/gelöscht — das wird auf einen späteren, gezielten Vokabel-Check verschoben. Bei diesem künftigen Check: pro Verb auf die 3 Ziel-Slots konsolidieren (Präsens+Vergangenheit+eine Person behalten, Rest als Kandidat für Löschung markieren, nicht automatisch löschen — erst zeigen, dann auf Bestätigung warten wie immer). Bis dahin: überzählige Zeilen einfach so stehen lassen.
+
+**Aber: `tunico_verb_id`+`conjugation` trotzdem an ALLEN vorhandenen Zeilen eines Verbs setzen, nicht nur an den 3 Ziel-Slots.** Auch überzählige/nicht ins 3er-Schema passende Zeilen (z.B. Imperativ-Varianten, weitere Personen aus alten Batches) bekommen die Verknüpfung + volle Tabelle, damit der 🔠-Button überall verfügbar ist. Eine falsche Zuordnung richtet dabei keinen Schaden an — sie fällt beim Lernen auf und wird dann korrigiert (SRS-Progress bleibt unberührt, nur Anzeige-Zusatzdaten).
+
+**Fehlerquelle bei Form-II/III-Verben (Gemination): unvokalisiertes `arabic_script` kollidiert leicht mit der Form-I-Wurzel.** Präzedenzfall 2026-09-06: `nwassal` („ich bringe hin", Form II von وصل) wurde zunächst unvokalisiert als نوصل eingetragen — identisch mit der bereits bestehenden Form-I-Zeile `nousil`/„ich komme an" (id 1278), vom Duplikat-Check sofort erkannt. Bei Form-II/III-Verben mit Gemination immer die Schadda setzen (نْوَصَّل, nicht نوصل), am bestehenden Präsens-Geschwister (hier `ywassal`→يْوَصَّل) orientieren — nicht komplett unvokalisiert lassen, wenn das Muster durch eine Geschwisterform schon bekannt ist.
+
+**Bei jeder Neuanlage/jedem Vokabel-Check ab jetzt:** wenn ein neues oder geprüftes Wort ein Verb ist, prüfen ob es zu einem der `tunico_corpus_verbs`-Einträge gehört (Konsonantenskelett-Match gegen `forms_chatalpha[]`) und nach obigem 3-Zeilen-Modell behandeln, nicht als isolierte Einzelform anlegen.
+
 ## Datenqualitäts-Checks (SQL)
 
 Nicht nur nach einem frischen Import relevant — dieselben Checks eignen sich für jede Stichprobe/jeden Verdacht gegen den Bestand.
@@ -485,10 +519,21 @@ RETURNING id, english, darija, arabic_script, german, translit_skeleton, arabic_
 - **`german` wird von keiner Quelle geliefert** — `senses`/`de_gloss`/`example_de` sind Ausgangsmaterial, keine fertige Übersetzung.
 - **`arabic_reconstructed` (nur bei Peace Corps) ist ein Vorschlag, kein Faktum** — nur verwenden, wenn Ninja kein `arabic_script` liefert, und vor Übernahme in `<arabic_script_oder_NULL>` von Hand vokalisieren/gegenchecken (v.a. bei gesetztem `arabic_reconstruction_note`).
 
-**`external_confirmed`/`external_confirmed_source` (seit 2026-09-05) — bei jeder Neuanlage mitpflegen, nicht nur beim einmaligen Bestands-Backfill.** Steuert das 🔗-Icon im Trainer (Vokabelliste + Karteikarte, nur wenn kein Audio vorhanden — sonst ist die Bestätigung über den 🔊-Button ohnehin sichtbar) sowie den Bestätigt/nicht-bestätigt-Filter in der Vokabelliste. Regel (exakter String-Vergleich, kein Fuzzy-/Skelett-/English-Key-Match — dieselbe Regel wie beim Bestands-Backfill, um Falsch-Positive durch bloße Dialekt-Synonyme zu vermeiden):
+**`external_confirmed`/`external_confirmed_source` (seit 2026-09-05) — bei jeder Neuanlage mitpflegen, nicht nur beim einmaligen Bestands-Backfill.** Steuert das 🔗-Icon im Trainer (Vokabelliste + Karteikarte, nur wenn kein Audio vorhanden — sonst ist die Bestätigung über den 🔊-Button ohnehin sichtbar) sowie den Bestätigt/nicht-bestätigt-Filter in der Vokabelliste. Regel:
 - `external_confirmed=true, external_confirmed_source='ninja'`, wenn `derja_ninja_entries.arabic_script` (Diakritika entfernt) exakt mit dem neuen `arabic_script` übereinstimmt.
-- sonst `external_confirmed=true, external_confirmed_source='tunico'`, wenn ein `vocab_lookup`-Eintrag mit `source='tunico'` ein `chatalpha` hat, das exakt (klein geschrieben, getrimmt) dem neuen `darija` entspricht.
-- sonst dasselbe für `source='peacecorps'` → `external_confirmed_source='peacecorps'`.
+- sonst `external_confirmed=true, external_confirmed_source='tunico'`, wenn das neue `darija` (klein geschrieben, getrimmt) **exakt** einer dieser TUNICO-Formen entspricht — **nicht nur `vocab_lookup.chatalpha`/`chatalpha_plural`, das deckt nur `lemma_chatalpha` bzw. eine Pluralform aus `inflected` ab und übersieht die meisten Formen unten:**
+  - `tunico_import.lemma_chatalpha`
+  - `tunico_import.variants_chatalpha[]` (alternative Schreibweisen)
+  - `tunico_import.inflected[].chatalpha` (alle Flexionsformen, nicht nur die mit `ana ~ 'pl'`)
+  - `tunico_corpus_verbs.forms_chatalpha[]`, `tunico_corpus_adjectives.forms_chatalpha[]`, `tunico_corpus_nouns.forms_chatalpha[]` (belegte Korpus-Flexionsformen)
+  - `tunico_corpus_wordforms.form_chatalpha` (einzelne belegte Wortformen, größte Quelle an zusätzlichen Treffern)
+- sonst dasselbe für `source='peacecorps'`, wenn `darija` exakt einem beliebigen Element aus `peacecorps_dict_import.forms_chatalpha[]` entspricht — **nicht nur `forms_chatalpha[1]`**, das übersieht feminine/Imperativ/Perfekt/Colloquial-Formen, die laut `forms_roles` ebenfalls im Array stehen.
+- **Zusätzlich, wenn kein exakter String-Match greift:** `public._translit_skeleton(darija)` (Länge ≥ 4, sonst zu kollisionsanfällig) gegen `_translit_skeleton()` jeder Form aus denselben lexem-gebundenen Arrays vergleichen (`tunico_import.lemma_chatalpha`/`variants_chatalpha[]`/`inflected[].chatalpha`, `tunico_corpus_verbs/_adjectives/_nouns.forms_chatalpha[]`, `peacecorps_dict_import.forms_chatalpha[]`) — **NICHT** gegen `tunico_corpus_wordforms` (das ist eine korpusweite Flachliste ohne Lexem-Bindung, dort bleibt nur exakter String-Match sicher). Grund: TUNICOs automatische `chatalpha`-Konvertierung nutzt andere Vokale als unsere Imala-Regeln (z.B. `ytayyib` vs. unser `ytayyeb`, `yakul` vs. `yakol`) — ohne Skelett-Vergleich verfehlt der exakte String-Vergleich echte Treffer aus denselben Quellen. Sicher nur, weil jedes dieser Arrays garantiert zu einem einzigen Lexem gehört (kein Cross-Wort-Kollisionsrisiko wie bei einer globalen Skelett-Suche über den ganzen Bestand).
 - sonst `external_confirmed=false, external_confirmed_source=NULL`.
+
+Präzedenzfälle 2026-09-05/06:
+- Bestands-Audit gegen `vocab_lookup.chatalpha`/`chatalpha_plural` allein fand nur 1693/3698 Treffer; Erweiterung auf alle Rohtabellen-Spalten (exakter Match) brachte 357 weitere (u.a. `dyar`, Plural von `dar`/Haus, nur in Peace Corps' zweitem `forms_chatalpha`-Element). `vocab_lookup` bleibt für den Cross-Source-Abgleich (Rezepte 1–4 oben) nützlich, ist für `external_confirmed` aber nicht ausreichend.
+- Skelett-Vergleich (s.o.) brachte nochmal 251 weitere — Stichprobe von 25 Zufallstreffern manuell geprüft, alle korrekt (z.B. `yqaddem`↔`yqaddmu`, `kilmet`↔`kilmat`, `ysallem`↔`sallmu`).
+- **Bekannte Grenze, bisher ungelöst:** Präsens-Verben (`y-`/`yi-`-Präfix) und personenflektierte Vergangenheitsformen (`qolt`=ich sagte, `mit`=ich starb) bleiben oft unbestätigt, obwohl die Grundform (`qal`, `mat`) bestätigt ist — Wörterbücher zitieren fast nur Imperativ/3.-Pers.-Vergangenheit, keine vollen Paradigmen. Eine Ableitung „Personalform bestätigt, wenn Grundform bestätigt" wäre möglich (Personal-Präfix/-Suffix abstreifen, dann Konsonantenskelett gegen bereits bestätigte Einträge derselben `lesson_id` vergleichen — Eingrenzung auf `lesson_id` nötig, um Kollisionen bei kurzen Wurzeln zu vermeiden), ist aber noch nicht umgesetzt.
 
 Rezept 4 ersetzt nicht den Pflicht-Duplikat-Check (siehe "Duplikat-Check, alle drei Felder einzeln") — vor dem `INSERT` trotzdem gegenchecken, Rezept 3 nutzen bei ganzen Batches statt Einzelwörtern.
