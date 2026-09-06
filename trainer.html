@@ -2136,6 +2136,17 @@ function toggleConjTable(){
   const el = document.getElementById('conj-table-box');
   if(el) el.style.display = el.style.display==='none' ? 'block' : 'none';
 }
+// Öffnet die Konjugationstabelle als Modal, z.B. per Klick auf das 🔀-Icon in der Vokabelliste.
+function showConjModal(vocabId){
+  const v = VOCAB_BY_ID[vocabId];
+  if(!v || !v.cj) return;
+  document.getElementById('conj-modal-title').textContent = (v.ar||v.tr||'') + (v.tr ? ' · '+v.tr : '');
+  document.getElementById('conj-modal-body').innerHTML = renderConjugationTable(v.cj);
+  document.getElementById('conj-modal').style.display = 'block';
+}
+function closeConjModal(){
+  document.getElementById('conj-modal').style.display = 'none';
+}
 // Für conj_rotate-Vokabeln: bei jeder neuen Karte zufällig eine Person/Zeit ziehen (ich/wir stärker
 // gewichtet), die zwei fest angelegten Formen (Präsens/Vergangenheit 3.m.Sg.) bleiben ausgeschlossen.
 const CONJ_ROTATE_SLOTS = [
@@ -3707,7 +3718,7 @@ function renderVocabTableRows(){
     h += '<td style="padding:.3rem .3rem"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)" style="cursor:pointer"'+(isChecked?' checked':'')+'/></td>';
     h += '<td style="padding:.3rem;color:var(--muted);font-size:.65rem">'+v.ls+flagMark+'</td>';
     h += '<td style="text-align:right;padding:.3rem;font-family:\'Playfair Display\',serif;font-size:1rem;color:var(--gold2);direction:rtl">'+v.ar+'</td>';
-    const rotMark = v.cr ? ' <span title="Wechselt beim Lernen zwischen mehreren Personen/Zeiten" style="cursor:help">🔀</span>' : '';
+    const rotMark = v.cr ? ' <button onclick="showConjModal('+v.id+')" title="Konjugationstabelle anzeigen — wechselt beim Lernen zwischen mehreren Personen/Zeiten" style="background:none;border:none;color:inherit;cursor:pointer;padding:0;font-size:1em;vertical-align:middle">🔀</button>' : '';
     h += '<td style="padding:.3rem;color:var(--muted);font-size:.7rem">'+v.tr+rotMark+'</td>';
     h += '<td style="padding:.3rem">'+v.en+'</td>';
     h += '<td style="text-align:center;padding:.3rem"><span style="color:'+color+';font-weight:700;font-size:.7rem">'+SRS_LABELS[level]+'</span></td>';
@@ -7379,6 +7390,17 @@ window.addEventListener('unhandledrejection', (e) => {
     <button onclick="document.getElementById('debug-panel').style.display='none'" style="background:none;border:none;color:#c94c4c;cursor:pointer;font-size:.8rem;">✕</button>
   </div>
   <div id="debug-log"></div>
+</div>
+
+<!-- Konjugationstabelle Modal -->
+<div id="conj-modal" style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.6)" onclick="if(event.target===this)closeConjModal()">
+  <div style="position:absolute;bottom:0;left:0;right:0;background:var(--surface2);border-top:2px solid var(--gold);padding:1rem;box-shadow:0 -4px 14px rgba(0,0,0,.5);max-height:80vh;max-height:80dvh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem">
+      <span id="conj-modal-title" style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold)">Konjugation</span>
+      <button onclick="closeConjModal()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:.2rem .5rem">✕</button>
+    </div>
+    <div id="conj-modal-body"></div>
+  </div>
 </div>
 
 <!-- Vocab Edit Bottom Sheet -->
