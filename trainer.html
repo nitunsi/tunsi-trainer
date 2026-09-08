@@ -4672,8 +4672,11 @@ function rCourseEx(ex, el){
   const p = COURSE_EX_PROGRESS[exercise.id];
   const isNew = !p || !p.review_count;
   const prog = (document.getElementById('ex-progress')||{}).textContent||'';
-  let h = '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem;flex-wrap:wrap">';
-  h += '<span class="lesson-badge" style="margin:0" title="'+escHtml((lesson?('L'+lesson.course_number):'')+' · '+label)+'">'+(lesson?('L'+lesson.course_number):'')+' · '+label+'</span>';
+  // Ganze Karte deutlich blau eingefärbt (statt Gold wie bei Vokabeln) — im Mix auf einen
+  // Blick erkennbar, ob gerade eine Vokabel- oder eine Kurs-Karte dran ist.
+  let h = '<div style="background:rgba(76,122,201,.10);border:1px solid var(--blue);border-radius:10px;padding:1rem;margin-bottom:1.2rem">';
+  h += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem;flex-wrap:wrap">';
+  h += '<span style="flex-shrink:0;font-size:.65rem;font-weight:700;letter-spacing:.3px;color:#fff;background:var(--blue);padding:.15rem .55rem;border-radius:3px" title="'+escHtml((lesson?('L'+lesson.course_number):'')+' · '+label)+'">🎓 '+(lesson?('L'+lesson.course_number):'')+' · '+label+'</span>';
   if(isNew) h += '<span style="flex-shrink:0;font-size:.65rem;font-weight:700;color:var(--gold);background:rgba(201,166,74,.15);border:1px solid var(--gold);padding:.1rem .45rem;border-radius:3px">🆕 Neu</span>';
   h += '<span style="flex:1"></span>';
   h += courseGrammarButtonHtml(exercise);
@@ -4682,15 +4685,16 @@ function rCourseEx(ex, el){
   if(exercise.instruction) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(exercise.instruction)+'</div>';
   if(exercise.prompt){
     const vocabAudio = exercise.vocabulary && exercise.vocabulary.ninja_audio_url
-      ? ' <button onclick="playVocabAudio(\''+exercise.vocabulary.ninja_audio_url.replace(/'/g,"\\'")+'\',event,'+(exercise.vocabulary.ninja_audio_start||0)+','+(exercise.vocabulary.ninja_audio_end||0)+')" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.85rem;padding:.1rem .5rem;cursor:pointer;border-radius:3px;vertical-align:middle">🔊</button>'
+      ? ' <button onclick="playVocabAudio(\''+exercise.vocabulary.ninja_audio_url.replace(/'/g,"\\'")+'\',event,'+(exercise.vocabulary.ninja_audio_start||0)+','+(exercise.vocabulary.ninja_audio_end||0)+')" title="Aussprache abspielen" style="background:none;border:1px solid var(--blue);color:var(--blue);font-size:.85rem;padding:.1rem .5rem;cursor:pointer;border-radius:3px;vertical-align:middle">🔊</button>'
       : '';
-    h += '<div class="q-card" style="min-height:80px;margin-bottom:.6rem">'+escHtml(exercise.prompt)+vocabAudio+'</div>';
+    h += '<div style="min-height:60px;margin-bottom:.6rem;font-size:.95rem;line-height:1.5">'+escHtml(exercise.prompt)+vocabAudio+'</div>';
   }
   const drillRows = exercise.exercise_type==='grammar_drill' ? parseGrammarDrillSolution(exercise.solution) : null;
 
   if(COURSE_SELF_GRADE_TYPES.includes(exercise.exercise_type)){
-    if(drillRows) h += '<div style="border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem">'+renderGrammarDrillGrid(drillRows,false)+'</div>';
+    if(drillRows) h += '<div style="border:1px solid var(--blue);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem">'+renderGrammarDrillGrid(drillRows,false)+'</div>';
     h += '<div id="course-solution-box"></div><div id="course-grade-box" style="margin-top:.6rem"></div>';
+    h += '</div>'; // Ende Karten-Wrapper
     el.innerHTML = h;
     const inner = document.getElementById('sticky-check-inner');
     if(inner){
@@ -4698,8 +4702,9 @@ function rCourseEx(ex, el){
       document.getElementById('sticky-check').style.display='block';
     }
   } else {
-    h += '<input id="course-input" type="text" style="width:100%;box-sizing:border-box;padding:.85rem 1rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:16px;border-radius:6px;font-family:\'IBM Plex Mono\',monospace;margin-bottom:1rem" placeholder="Antwort eingeben..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key===\'Enter\')chkCourseEx()" />';
+    h += '<input id="course-input" type="text" style="width:100%;box-sizing:border-box;padding:.85rem 1rem;background:var(--surface2);border:1px solid var(--blue);color:var(--text);font-size:16px;border-radius:6px;font-family:\'IBM Plex Mono\',monospace;margin-bottom:1rem" placeholder="Antwort eingeben..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key===\'Enter\')chkCourseEx()" />';
     h += '<div class="feedback" id="feedback"></div>';
+    h += '</div>'; // Ende Karten-Wrapper
     el.innerHTML = h;
     const inner = document.getElementById('sticky-check-inner');
     if(inner){
