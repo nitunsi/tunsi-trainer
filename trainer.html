@@ -2813,6 +2813,11 @@ function showStats(){
   document.getElementById('act-screen').style.display='none';document.getElementById('act-screen').style.pointerEvents='none';var _ab=document.getElementById('act-batch-bar');if(_ab)_ab.style.display='none';
   const _area = document.getElementById('exercise-screen');
   if(_area) _area.style.display = 'block';
+  // Kurs-Daten evtl. noch nicht geladen (z.B. wenn Statistik der erste Screen nach Login ist) —
+  // im Hintergrund nachladen und Statistik einmal neu rendern, sobald sie da sind.
+  if(!_courseLoaded){
+    loadCourseData().then(()=>{ if(cMode==='stats') showStats(); }).catch(()=>{});
+  }
   // Gefilterte Vokabeln basierend auf gewählter Lektion
   const vocabBase = cLesson === 'all' ? ALL_VOCAB : gv();
 
@@ -2865,6 +2870,31 @@ function showStats(){
     }
   });
 
+  // Kurs-Übungen (nur freigeschaltete, d.h. mit course_exercise_progress-Zeile) zählen in
+  // dieselben Level-/Fälligkeits-Grafiken mit rein — courseLevelCount/courseDueDays merken
+  // sich zusätzlich, wie viel davon aus dem Kurs kommt, für die 🎓-Markierung beim Rendern.
+  // Nur in der "Alle Lektionen"-Ansicht, da course_lessons nicht 1:1 auf cLesson (Vokabel-
+  // Lektionen) abbildbar ist.
+  const courseLevelCount = [0,0,0,0,0,0,0,0];
+  const courseDueDays = Array.from({length:forecastWindow}, () => 0);
+  if(cLesson === 'all'){
+    Object.values(COURSE_EX_PROGRESS).forEach(p=>{
+      const lvl = Math.min(p.correct_count||0, 6);
+      const bucketIdx = lvl===0 ? 1 : Math.min(lvl+1, 7);
+      courseLevelCount[bucketIdx]++;
+      levelCount[bucketIdx]++;
+      if(p.next_review){
+        const nr = courseParseTs(p.next_review); nr.setHours(0,0,0,0);
+        const diff = Math.round((nr - today) / 86400000);
+        const dayIdx = diff < 0 ? 0 : diff < forecastWindow ? diff : -1;
+        if(dayIdx >= 0){
+          dueDays[dayIdx][bucketIdx]++;
+          courseDueDays[dayIdx]++;
+        }
+      }
+    });
+  }
+
   const totalVocab = vocabBase.length;
   const notStarted = levelCount[0];
   const activeSRS = totalVocab - notStarted;
@@ -2898,9 +2928,10 @@ function showStats(){
       const sh = Math.round(cnt / maxDay * 100);
       return `<div style="width:100%;height:${sh}%;min-height:3px;background:${levelColors[li]};"></div>`;
     }).reverse().join('');
+    const courseTotal = courseDueDays[i] || 0;
     return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.25rem">
-      <span style="font-size:.75rem;font-weight:700;color:${labelColor}">${total||''}</span>
-      <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden">
+      <span style="font-size:.75rem;font-weight:700;color:${labelColor}">${total||''}${courseTotal ? `<span style="color:var(--blue);font-size:.55rem" title="davon aus dem Kurs"> 🎓${courseTotal}</span>` : ''}</span>
+      <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden${courseTotal ? ';border:1px solid var(--blue)' : ''}">
         ${total ? segments : ''}
       </div>
       <span style="font-size:.6rem;color:var(--muted);text-align:center">${name}</span>
@@ -2922,6 +2953,7 @@ function showStats(){
     const maxLevelCount = Math.max(...buckets.map(b => levelCount[b.idx]), 1);
     return buckets.map(b => {
       const cnt = levelCount[b.idx];
+      const courseCnt = courseLevelCount[b.idx];
       const pctL = Math.round(cnt / maxLevelCount * 100);
       const dueToday = dueDays[0] ? dueDays[0][b.idx] : 0;
       return `<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;font-size:.72rem;">
@@ -2929,7 +2961,7 @@ function showStats(){
         <div style="flex:1;height:8px;background:var(--border);border-radius:4px;">
           <div style="height:100%;width:${pctL}%;background:${b.color};border-radius:4px;"></div>
         </div>
-        <span style="min-width:28px;text-align:right;color:var(--muted)">${cnt}</span>
+        <span style="min-width:40px;text-align:right;color:var(--muted)">${cnt}${courseCnt ? `<span style="color:var(--blue)" title="davon aus dem Kurs"> 🎓${courseCnt}</span>` : ''}</span>
         <span style="min-width:68px;color:var(--muted);font-size:.62rem">${b.hint}</span>
         <span style="min-width:24px;text-align:right;font-size:.72rem;${dueToday > 0 ? 'color:var(--red)' : 'color:var(--muted)'}">${dueToday || ''}</span>
       </div>`;
@@ -3079,31 +3111,35 @@ async function loadActivityStats(){
     const since = new Date(today); since.setDate(since.getDate() - (activityWindow - 1));
     const rows = await sbApiPaged(
       'review_log?user_id=eq.'+currentUser.id+
-      '&select=vocabulary_id,correct,created_at'+
+      '&select=vocabulary_id,correct,mode,created_at'+
       '&created_at=gte.'+since.toISOString()+
       '&order=created_at.asc',
       1000
     );
 
-    // Pro Tag (Europe/Berlin-Kalendertag) aggregieren
-    const days = {}; // { 'YYYY-MM-DD': {attempts, correct, vocabSet:Set} }
+    // Pro Tag (Europe/Berlin-Kalendertag) aggregieren — Kurs-Antworten (mode='course')
+    // zählen mit in attempts/correct rein, courseAttempts merkt sich zusätzlich nur,
+    // wie viel davon aus dem Kurs kommt (für die 🎓-Markierung beim Rendern).
+    const days = {}; // { 'YYYY-MM-DD': {attempts, correct, vocabSet:Set, courseAttempts} }
     (rows||[]).forEach(r=>{
       const key = new Date(r.created_at).toLocaleDateString('en-CA', { timeZone: 'Europe/Berlin' });
-      if(!days[key]) days[key] = { attempts:0, correct:0, vocabSet:new Set() };
+      if(!days[key]) days[key] = { attempts:0, correct:0, vocabSet:new Set(), courseAttempts:0 };
       days[key].attempts++;
       if(r.correct) days[key].correct++;
       if(r.vocabulary_id != null) days[key].vocabSet.add(r.vocabulary_id);
+      if(r.mode === 'course') days[key].courseAttempts++;
     });
 
     const dayList = Array.from({length:activityWindow}, (_,i)=>{
       const d = new Date(today); d.setDate(d.getDate() - (activityWindow - 1 - i));
       const key = d.toLocaleDateString('en-CA', { timeZone: 'Europe/Berlin' });
-      const entry = days[key] || { attempts:0, correct:0, vocabSet:new Set() };
-      return { d, attempts: entry.attempts, correct: entry.correct, vocabCount: entry.vocabSet.size };
+      const entry = days[key] || { attempts:0, correct:0, vocabSet:new Set(), courseAttempts:0 };
+      return { d, attempts: entry.attempts, correct: entry.correct, vocabCount: entry.vocabSet.size, courseAttempts: entry.courseAttempts };
     });
 
     const totalAttempts = dayList.reduce((s,x)=>s+x.attempts,0);
     const totalCorrect = dayList.reduce((s,x)=>s+x.correct,0);
+    const totalCourseAttempts = dayList.reduce((s,x)=>s+x.courseAttempts,0);
     const totalVocabSet = new Set();
     (rows||[]).forEach(r=>{ if(r.vocabulary_id!=null) totalVocabSet.add(r.vocabulary_id); });
     const pctCorrectAll = totalAttempts ? Math.round(totalCorrect/totalAttempts*100) : 0;
@@ -3123,8 +3159,8 @@ async function loadActivityStats(){
       const pctDay = x.attempts ? Math.round(x.correct / x.attempts * 100) : null;
       const pctColor = pctDay === null ? 'var(--border)' : pctDay >= 80 ? 'var(--green)' : pctDay >= 50 ? 'var(--gold)' : 'var(--red)';
       return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.15rem">
-        <span style="font-size:.75rem;font-weight:700;color:${labelColor}">${x.attempts||''}</span>
-        <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;position:relative">
+        <span style="font-size:.75rem;font-weight:700;color:${labelColor}">${x.attempts||''}${x.courseAttempts ? `<span style="color:var(--blue);font-size:.55rem" title="davon aus dem Kurs"> 🎓${x.courseAttempts}</span>` : ''}</span>
+        <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;position:relative${x.courseAttempts ? ';border:1px solid var(--blue)' : ''}">
           ${avgAttempts > 0 ? `<div style="position:absolute;left:0;right:0;bottom:${avgLinePct}%;border-top:1px dashed var(--gold);opacity:.7;z-index:2;"></div>` : ''}
           ${x.attempts ? `<div style="width:100%;height:${Math.round(h*hWrong/100)}%;min-height:${wrong?'3px':'0'};background:var(--red);"></div><div style="width:100%;height:${Math.round(h*hCorrect/100)}%;min-height:${x.correct?'3px':'0'};background:var(--green);"></div>` : ''}
         </div>
@@ -3136,8 +3172,8 @@ async function loadActivityStats(){
     el.innerHTML = totalAttempts === 0
       ? `<div style="color:var(--muted)">Noch keine Daten in diesem Zeitraum.</div>`
       : `<div style="display:flex;gap:.4rem;align-items:flex-end;height:100px;margin-bottom:.5rem">${bars}</div>
-         <div style="border-top:1px solid var(--border);padding-top:.4rem;font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between;">
-           <span>${totalAttempts} Versuche · <span style="color:var(--green)">${pctCorrectAll}% richtig</span></span>
+         <div style="border-top:1px solid var(--border);padding-top:.4rem;font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:.3rem">
+           <span>${totalAttempts} Versuche · <span style="color:var(--green)">${pctCorrectAll}% richtig</span>${totalCourseAttempts ? ` · <span style="color:var(--blue)">davon ${totalCourseAttempts} 🎓 Kurs</span>` : ''}</span>
            <span>${totalVocabSet.size} Vokabeln geübt</span>
          </div>`;
   } catch(e){
@@ -4558,6 +4594,19 @@ async function courseExAnswer(exercise, correct){
   }
   // Nach jeder Antwort prüfen, ob der aktuelle Chunk jetzt gemeistert ist → nächsten freischalten.
   courseEnsureFrontierUnlocked().catch(()=>{});
+  logCourseReview(correct).catch(()=>{});
+}
+
+// Wie logReview(), aber für Kurs-Übungen — landet in derselben review_log-Tabelle
+// (vocabulary_id: null, mode: 'course'), damit "Lernaktivität" in showStats() beides
+// zusammen zählt. Bewusst ohne Offline-Queue-Anbindung (reine Statistik, kein Kernstand).
+async function logCourseReview(correct){
+  if(!currentUser) return;
+  try{
+    await sbApi('review_log', 'POST', { user_id: currentUser.id, vocabulary_id: null, correct, mode: 'course', created_at: new Date().toISOString() });
+  }catch(e){
+    dbg('Kurs review_log FEHLER: '+e.message, 'warn');
+  }
 }
 
 // ── Kurs-SRS Session-Engine: "Nur Kurs" & "Mix" ─────────────────────────────
