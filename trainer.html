@@ -2807,6 +2807,17 @@ function showRes(){
   document.getElementById('result-screen').classList.add('show');
 }
 
+// Kleiner "davon N aus dem Kurs"-Marker für die Statistik-Grafiken — bewusst OHNE Emoji:
+// Ein Glyph wie 🎓 in einem sehr kleinen font-size (z.B. .55rem) wird von manchen mobilen
+// Browsern beim Farb-Emoji-Rendering nicht mitverkleinert und reißt dann die ganze Zeile/
+// Spalte auseinander (Präzedenzfall: Statistik-Balken verschoben, 2026-09-08). Ein per CSS
+// gezeichneter Punkt fester Pixelgröße hat dieses Problem nicht.
+function courseBadge(n){
+  if(!n) return '';
+  return '<span style="display:inline-flex;align-items:center;gap:2px;margin-left:3px;color:var(--blue);vertical-align:middle" title="davon aus dem Kurs">'
+    + '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0"></span>' + n + '</span>';
+}
+
 let forecastWindow = 7; // Anzahl Tage im Fälligkeits-Forecast
 let activityWindow = 7; // Anzahl Tage in der Lernaktivität-Statistik
 function showStats(){
@@ -2930,8 +2941,8 @@ function showStats(){
     }).reverse().join('');
     const courseTotal = courseDueDays[i] || 0;
     return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.25rem">
-      <span style="font-size:.75rem;font-weight:700;color:${labelColor}">${total||''}${courseTotal ? `<span style="color:var(--blue);font-size:.55rem" title="davon aus dem Kurs"> 🎓${courseTotal}</span>` : ''}</span>
-      <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden${courseTotal ? ';border:1px solid var(--blue)' : ''}">
+      <span style="font-size:.75rem;font-weight:700;color:${labelColor}">${total||''}${courseBadge(courseTotal)}</span>
+      <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden${courseTotal ? ';outline:1px solid var(--blue);outline-offset:-1px' : ''}">
         ${total ? segments : ''}
       </div>
       <span style="font-size:.6rem;color:var(--muted);text-align:center">${name}</span>
@@ -2961,7 +2972,7 @@ function showStats(){
         <div style="flex:1;height:8px;background:var(--border);border-radius:4px;">
           <div style="height:100%;width:${pctL}%;background:${b.color};border-radius:4px;"></div>
         </div>
-        <span style="min-width:40px;text-align:right;color:var(--muted)">${cnt}${courseCnt ? `<span style="color:var(--blue)" title="davon aus dem Kurs"> 🎓${courseCnt}</span>` : ''}</span>
+        <span style="min-width:40px;text-align:right;color:var(--muted)">${cnt}${courseBadge(courseCnt)}</span>
         <span style="min-width:68px;color:var(--muted);font-size:.62rem">${b.hint}</span>
         <span style="min-width:24px;text-align:right;font-size:.72rem;${dueToday > 0 ? 'color:var(--red)' : 'color:var(--muted)'}">${dueToday || ''}</span>
       </div>`;
@@ -3159,8 +3170,8 @@ async function loadActivityStats(){
       const pctDay = x.attempts ? Math.round(x.correct / x.attempts * 100) : null;
       const pctColor = pctDay === null ? 'var(--border)' : pctDay >= 80 ? 'var(--green)' : pctDay >= 50 ? 'var(--gold)' : 'var(--red)';
       return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.15rem">
-        <span style="font-size:.75rem;font-weight:700;color:${labelColor}">${x.attempts||''}${x.courseAttempts ? `<span style="color:var(--blue);font-size:.55rem" title="davon aus dem Kurs"> 🎓${x.courseAttempts}</span>` : ''}</span>
-        <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;position:relative${x.courseAttempts ? ';border:1px solid var(--blue)' : ''}">
+        <span style="font-size:.75rem;font-weight:700;color:${labelColor}">${x.attempts||''}${courseBadge(x.courseAttempts)}</span>
+        <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;position:relative${x.courseAttempts ? ';outline:1px solid var(--blue);outline-offset:-1px' : ''}">
           ${avgAttempts > 0 ? `<div style="position:absolute;left:0;right:0;bottom:${avgLinePct}%;border-top:1px dashed var(--gold);opacity:.7;z-index:2;"></div>` : ''}
           ${x.attempts ? `<div style="width:100%;height:${Math.round(h*hWrong/100)}%;min-height:${wrong?'3px':'0'};background:var(--red);"></div><div style="width:100%;height:${Math.round(h*hCorrect/100)}%;min-height:${x.correct?'3px':'0'};background:var(--green);"></div>` : ''}
         </div>
