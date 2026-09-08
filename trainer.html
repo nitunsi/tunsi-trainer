@@ -4514,7 +4514,7 @@ function courseChunkUnlocked(srsItems){
 function courseChunkMastered(srsItems){
   if(!srsItems.length) return true;
   if(!courseChunkUnlocked(srsItems)) return false;
-  const mastered = srsItems.filter(e=>(COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
+  const mastered = srsItems.filter(e=>(COURSE_EX_PROGRESS[e.id].correct_count||0) >= 3).length;
   return mastered / srsItems.length >= 0.9;
 }
 
@@ -4543,6 +4543,18 @@ async function courseUnlockChunk(ch){
   }catch(e){
     dbg('Fehler beim Freischalten von Chunk '+ch.chunkKey+': '+e.message, 'err');
   }
+}
+
+// Manuelles Freischalten eines beliebigen (noch gesperrten) Chunks aus der Lese-Ansicht,
+// unabhängig von courseEnsureFrontierUnlocked()/der automatischen Ein-Chunk-Reihenfolge —
+// z.B. um vorzuspringen, statt auf die reguläre Freischaltung zu warten.
+async function courseManualUnlockChunk(lessonId, chunkKey){
+  const l = COURSE_LESSONS.find(x=>x.id===lessonId);
+  if(!l) return;
+  const srsItems = (COURSE_EXERCISES_BY_LESSON[l.id]||[]).filter(e=>e.chunk_key===chunkKey && COURSE_SRS_TYPES.includes(e.exercise_type));
+  if(!srsItems.length) return;
+  await courseUnlockChunk({chunkKey, srsItems});
+  renderCourseLesson();
 }
 
 // Schreibt das Ergebnis einer Kurs-Übung — 1:1 dieselbe Stufen-Logik wie srsAnswer()
@@ -5306,6 +5318,9 @@ function renderCourseBrowseTab(tc, l){
     if(open){
       h += '<div style="padding:0 .8rem .8rem">';
       h += courseChunkLearnHtml(l, c);
+      if(srsItems.length && !unlocked){
+        h += '<button onclick="courseManualUnlockChunk('+l.id+',\''+eq(c.key)+'\')" style="width:100%;margin-top:.4rem;padding:.55rem;background:var(--blue);border:none;color:#fff;font-family:\'IBM Plex Mono\',monospace;font-size:.78rem;font-weight:700;cursor:pointer;border-radius:4px">🔓 Diesen Abschnitt jetzt freischalten</button>';
+      }
       if(srsItems.length){
         h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin:.6rem 0 .3rem">Übungen</div>';
         h += '<div style="display:flex;flex-wrap:wrap;gap:.4rem">';
