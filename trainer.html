@@ -4726,13 +4726,13 @@ async function courseCorrectAnswer(exercise, toOk, orig){
     const nextReview = nextReviewDE(SRS_DAYS[newLevel], newLevel>=3 ? srsJitter(newLevel) : 0);
     const origWrongCount = orig ? (orig.wrong_count||0) : Math.max(0,(p.wrong_count||1)-1);
     patch = { correct_count: newLevel, wrong_count: origWrongCount, next_review: nextReview.toISOString(), last_correct: new Date().toISOString() };
-    Object.assign(p, patch, {next_review: nextReview});
+    Object.assign(p, patch);
   } else {
     const origWrongCount = orig ? (orig.wrong_count||0) : (p.wrong_count||0);
     const nextReview = new Date();
     const origLastCorrectISO = orig && orig.last_correct ? new Date(orig.last_correct).toISOString() : null;
     patch = { correct_count: 0, wrong_count: origWrongCount+1, next_review: nextReview.toISOString(), last_correct: origLastCorrectISO };
-    Object.assign(p, patch, {next_review: nextReview});
+    Object.assign(p, patch);
   }
   if(p.id){
     try{ await sbApi('course_exercise_progress?id=eq.'+p.id, 'PATCH', patch); }
