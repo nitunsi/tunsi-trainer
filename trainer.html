@@ -2038,9 +2038,12 @@ if(window.visualViewport){
     // Sticky bars über Tastatur schieben
     const bars = [document.getElementById('sticky-check'), document.getElementById('sticky-next')];
     bars.forEach(b=>{ if(b) b.style.bottom = keyboardHeight + 'px'; });
-    // Header nur bei Flash ausblenden
+    // Header bei Tastatur ausblenden — bei allen Modi mit Texteingabe (Vokabelkarten,
+    // Kurs-Wdh., Mix), sonst bleibt bei Kurs-Karten zu wenig Platz für das Eingabefeld
+    // zwischen Header und hochgeschobener Prüfen-Leiste (Präzedenzfall 2026-09-08).
     const nav = document.getElementById('nav-strip');
-    if(nav) nav.style.display = (keyboardOpen && cMode === 'flash') ? 'none' : '';
+    const _hideNavModes = ['flash','coursesrs','mix'];
+    if(nav) nav.style.display = (keyboardOpen && _hideNavModes.includes(cMode)) ? 'none' : '';
   };
   window.visualViewport.addEventListener('resize', fixSticky);
   window.visualViewport.addEventListener('scroll', fixSticky);
@@ -2341,10 +2344,12 @@ function render(){
     grammar:'📖 Grammatik',speed:'⚡ Speed',flash:'🃏 Karten',coursesrs:'🔁 Kurs-Wdh.'};
   const _lbl = document.getElementById('ex-type-label');
   if(_lbl) _lbl.textContent = _modeLabels[cMode] || cMode;
-  // exercise-header bei Flash ausblenden
+  // exercise-header bei Flash/Kurs-Wdh./Mix ausblenden — Lektion/Typ/Zähler stehen dort
+  // ohnehin schon in der Karte selbst (srsInfoBadge bzw. rCourseEx-Badge-Zeile), und der
+  // Platz wird bei geöffneter Tastatur dringend gebraucht (Präzedenzfall 2026-09-08).
   const _exHeader = document.querySelector('.exercise-header');
   const _progBar = document.querySelector('.progress-bar');
-  if(cMode==='flash'){
+  if(cMode==='flash' || cMode==='coursesrs' || cMode==='mix'){
     if(_exHeader) _exHeader.style.display='none';
     if(_progBar) _progBar.style.display='none';
   } else {
