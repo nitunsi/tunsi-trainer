@@ -307,6 +307,8 @@ body.hide-latin .chat-opt .latin {
     <button class="lesson-chip" onclick="setMode('mc',this);closeNav()">🎯 Multiple Choice</button>
     <button class="lesson-chip" onclick="setMode('sentences',this);closeNav()">💬 Sätze</button>
     <button class="lesson-chip" onclick="setMode('flash',this);closeNav()">🃏 Vokabelkarten</button>
+    <button class="lesson-chip" onclick="setMode('coursesrs',this);closeNav()">🔁 Kurs-Wdh.</button>
+    <button class="lesson-chip" onclick="setMode('mix',this);closeNav()">🎲 Mix</button>
     <button class="lesson-chip" onclick="setMode('course',this);closeNav()">🎓 Kurs</button>
     <button class="lesson-chip" onclick="setMode('pairs',this);closeNav()">🔗 Antwort-Paare</button>
     <button class="lesson-chip" onclick="setMode('vocab',this);closeNav()">📚 Vokabeln</button>
@@ -2264,7 +2266,7 @@ function setMode(m,el){
   hideAllStickyBars();
   clearTimeout(_modeDispatchTimer);
   _modeDispatchTimer=setTimeout(()=>{
-    if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='ninjacheck'){showNinjaCheckQueue();return;}if(m==='tunico'){showTunicoCandidates();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}go();
+    if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='ninjacheck'){showNinjaCheckQueue();return;}if(m==='tunico'){showTunicoCandidates();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}if(m==='coursesrs'){goCourseSrs();return;}if(m==='mix'){goMix();return;}go();
   },0);
 }
 function updScore(){/* Score-Anzeige in nav-strip entfernt — score.c/w/st werden weiterhin für Ergebnis-Screen und SRS-Streak gepflegt */}
@@ -2336,7 +2338,7 @@ function render(){
   // Modus-Label im exercise-header
   const _modeLabels = {mc:'🎯 MC',mix:'🎲 Mix',match:'🔗 Matching',fill:'✏️ Lückentext',
     conj:'📐 Konjugation',order:'🔀 Wortfolge',roleplay:'🛒 Roleplay',
-    grammar:'📖 Grammatik',speed:'⚡ Speed',flash:'🃏 Karten'};
+    grammar:'📖 Grammatik',speed:'⚡ Speed',flash:'🃏 Karten',coursesrs:'🔁 Kurs-Wdh.'};
   const _lbl = document.getElementById('ex-type-label');
   if(_lbl) _lbl.textContent = _modeLabels[cMode] || cMode;
   // exercise-header bei Flash ausblenden
@@ -2360,6 +2362,7 @@ function render(){
   const c=document.getElementById('exercise-content');c.innerHTML='';
   if(ex.type==='mc')rMC(ex,c);
   else if(ex.type==='flash')rFlash(ex,c);
+  else if(ex.type==='course')rCourseEx(ex,c);
 }
 function makeMCItem(v){
   const dir=Math.random()>.5?'ar2en':'en2ar';
@@ -4357,16 +4360,22 @@ async function saveNewLesson(){
 // Datenmodell: course_lessons (1 Zeile/Lektion), course_exercises (Teilaufgaben),
 // course_progress (Fortschritt pro Nutzer/Lektion). Schreibt NICHT in progress/SRS.
 
-let COURSE_LESSONS = [];               // [{id, course_number, skript, title, dialog_text, grammar_notes, vocab_lesson_refs}]
+let COURSE_LESSONS = [];               // [{id, course_number, skript, title, dialog_text, grammar_notes, vocab_lesson_refs, chunk_order}]
 let COURSE_EXERCISES_BY_LESSON = {};   // course_lesson_id -> [exercise, ...] sortiert nach position
+let COURSE_EX_BY_ID = {};              // exercise_id -> exercise
 let COURSE_PROGRESS_BY_LESSON = {};    // course_lesson_id -> progress-Zeile des aktuellen Nutzers (oder undefined)
 let _courseLoaded = false;
 let _courseTest = null;                // aktiver Test-Durchlauf, siehe courseStartTest()
 const COURSE_GRADABLE_TYPES = ['translate_de_tn','fill_blank','answer_pattern','grammar_card','grammar_drill','fixed_response','pronunciation'];
 
-function courseGradableCount(lessonId){
-  return (COURSE_EXERCISES_BY_LESSON[lessonId]||[]).filter(e=>COURSE_GRADABLE_TYPES.includes(e.exercise_type)).length;
-}
+// Kurs-SRS (course_exercise_progress): Untermenge der gradable Typen, die per Wiederholung
+// abgefragt wird. pronunciation läuft weiter über das Vokabel-SRS (vocabulary_id-Kopplung),
+// grammar_card ist reine Merkkarte (nur über den Grammatik-Button erreichbar), build_dialog
+// hat keine feste Lösung — beide bleiben ohne course_exercise_progress-Zeile.
+const COURSE_SRS_TYPES = ['translate_de_tn','fill_blank','answer_pattern','grammar_drill','fixed_response'];
+const COURSE_SELF_GRADE_TYPES = ['answer_pattern','grammar_drill','fixed_response']; // Lösung zeigen + selbst bewerten statt Textprüfung
+let COURSE_EX_PROGRESS = {};           // exercise_id -> {id, correct_count, wrong_count, review_count, next_review, last_reviewed, last_correct}
+let _courseExProgressLoaded = false;
 
 // Befüllt das Lektion-Dropdown zusätzlich mit einer "🎓 Kurs"-Gruppe, damit man
 // manuell nach einer Kurs-Lektion filtern kann (analog zur normalen Lektion).
@@ -4401,13 +4410,365 @@ async function loadCourseData(force){
   ]);
   COURSE_LESSONS = lessons || [];
   COURSE_EXERCISES_BY_LESSON = {};
+  COURSE_EX_BY_ID = {};
   (exercises||[]).forEach(e=>{
     if(!COURSE_EXERCISES_BY_LESSON[e.course_lesson_id]) COURSE_EXERCISES_BY_LESSON[e.course_lesson_id]=[];
     COURSE_EXERCISES_BY_LESSON[e.course_lesson_id].push(e);
+    COURSE_EX_BY_ID[e.id] = e;
   });
   COURSE_PROGRESS_BY_LESSON = {};
   (progress||[]).forEach(p=>{ COURSE_PROGRESS_BY_LESSON[p.course_lesson_id]=p; });
   _courseLoaded = true;
+  await loadCourseExProgress(force);
+  await courseEnsureFrontierUnlocked();
+}
+
+// ── Kurs-SRS: eigene Wiederholung pro Übung (course_exercise_progress) ─────
+// Gleiche Stufen-Logik wie beim Vokabel-SRS (SRS_DAYS/srsJitter), aber komplett
+// getrennte Tabelle/Zustand — rührt progress/srsProgress nirgends an.
+
+async function loadCourseExProgress(force){
+  if(_courseExProgressLoaded && !force) return;
+  const rows = await sbApiPaged(
+    'course_exercise_progress?user_id=eq.'+currentUser.id+'&select=id,exercise_id,correct_count,wrong_count,review_count,next_review,last_reviewed,last_correct&order=id.asc',
+    1000
+  );
+  COURSE_EX_PROGRESS = {};
+  (rows||[]).forEach(p=>{ COURSE_EX_PROGRESS[p.exercise_id] = p; });
+  _courseExProgressLoaded = true;
+}
+
+// Timestamp aus Supabase ("timestamp without time zone" wie bei progress.next_review)
+// konsistent als UTC interpretieren — exakt dieselbe Regel wie in srsLoadFromSupabase().
+function courseParseTs(s){
+  if(!s) return null;
+  if(s.endsWith('Z')) return new Date(s);
+  if(s.includes('+') || s.match(/[0-9]-[0-9]{2}:[0-9]{2}$/)) return new Date(s);
+  return new Date(s + 'Z');
+}
+
+function courseExIsDue(exerciseId){
+  const p = COURSE_EX_PROGRESS[exerciseId];
+  if(!p) return false; // ohne Progress-Zeile = noch nicht freigeschaltet
+  if(!p.next_review) return true;
+  return new Date() >= courseParseTs(p.next_review);
+}
+
+// Zerlegt alle Lektionen anhand ihrer chunk_order in eine global geordnete Chunk-Liste
+// (Lektion nach course_number, darin Chunk-Reihenfolge wie hinterlegt). srsItems enthält
+// nur die per COURSE_SRS_TYPES abfragbaren Übungen dieses Chunks.
+function courseFlattenChunks(){
+  const out = [];
+  COURSE_LESSONS.forEach(l=>{
+    (l.chunk_order||[]).forEach(c=>{
+      const all = (COURSE_EXERCISES_BY_LESSON[l.id]||[]).filter(e=>e.chunk_key===c.key);
+      const srsItems = all.filter(e=>COURSE_SRS_TYPES.includes(e.exercise_type));
+      out.push({lessonId:l.id, lesson:l, chunkKey:c.key, chunkLabel:c.label, allItems:all, srsItems});
+    });
+  });
+  return out;
+}
+
+// Ein Chunk ohne SRS-Items (nur build_dialog/grammar_card/pronunciation) gilt automatisch
+// als freigeschaltet & gemeistert — er hat nichts, was den Fortschritt blockieren könnte.
+function courseChunkUnlocked(srsItems){
+  if(!srsItems.length) return true;
+  return srsItems.every(e=>!!COURSE_EX_PROGRESS[e.id]);
+}
+function courseChunkMastered(srsItems){
+  if(!srsItems.length) return true;
+  if(!courseChunkUnlocked(srsItems)) return false;
+  const mastered = srsItems.filter(e=>(COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
+  return mastered / srsItems.length >= 0.9;
+}
+
+// Schaltet höchstens EINEN weiteren Chunk frei (der nächste nach dem letzten gemeisterten) —
+// nie mehrere auf einmal. Bootstrap (noch nichts freigeschaltet) unlockt automatisch Chunk 1.
+async function courseEnsureFrontierUnlocked(){
+  const chunks = courseFlattenChunks();
+  let prevMastered = true;
+  for(const ch of chunks){
+    if(courseChunkUnlocked(ch.srsItems)){
+      prevMastered = courseChunkMastered(ch.srsItems);
+      continue;
+    }
+    if(prevMastered && ch.srsItems.length) await courseUnlockChunk(ch);
+    break;
+  }
+}
+
+async function courseUnlockChunk(ch){
+  const now = new Date().toISOString();
+  const rows = ch.srsItems.map(e=>({user_id:currentUser.id, exercise_id:e.id, correct_count:0, wrong_count:0, review_count:0, next_review: now}));
+  try{
+    const res = await sbApi('course_exercise_progress?on_conflict=user_id,exercise_id', 'POST', rows, 'resolution=merge-duplicates,return=representation');
+    (res||[]).forEach(r=>{ COURSE_EX_PROGRESS[r.exercise_id] = r; });
+    dbg('Kurs-Chunk freigeschaltet: '+ch.chunkKey+' ('+ch.srsItems.length+' Übungen)', 'ok');
+  }catch(e){
+    dbg('Fehler beim Freischalten von Chunk '+ch.chunkKey+': '+e.message, 'err');
+  }
+}
+
+// Schreibt das Ergebnis einer Kurs-Übung — 1:1 dieselbe Stufen-Logik wie srsAnswer()
+// (SRS_DAYS, srsJitter, falsch=sofort zurück auf Level 0), nur gegen course_exercise_progress.
+async function courseExAnswer(exercise, correct){
+  const exId = exercise.id;
+  const existing = COURSE_EX_PROGRESS[exId];
+  const levelBefore = existing ? (existing.correct_count||0) : 0;
+  let level = levelBefore;
+  if(correct){
+    const wasDue = !existing || !existing.next_review || new Date() >= courseParseTs(existing.next_review);
+    if(wasDue) level = Math.min(level + 1, 6);
+  } else {
+    level = 0;
+  }
+  let nextReview;
+  if(!correct){
+    nextReview = new Date();
+  } else {
+    const wasDueForNext = !existing || !existing.next_review || new Date() >= courseParseTs(existing.next_review);
+    nextReview = wasDueForNext ? nextReviewDE(SRS_DAYS[level], level>=3?srsJitter(level):0) : courseParseTs(existing.next_review);
+  }
+  const newReviewCount = (existing ? (existing.review_count||0) : 0) + 1;
+  const newWrongCount = (existing ? (existing.wrong_count||0) : 0) + (correct?0:1);
+  const data = {
+    user_id: currentUser.id,
+    exercise_id: exId,
+    correct_count: level,
+    wrong_count: newWrongCount,
+    review_count: newReviewCount,
+    next_review: nextReview.toISOString(),
+    last_reviewed: new Date().toISOString(),
+    last_correct: correct ? new Date().toISOString() : (existing ? existing.last_correct : null),
+  };
+  COURSE_EX_PROGRESS[exId] = Object.assign({id: existing?existing.id:null}, data);
+  try{
+    if(existing && existing.id){
+      await sbApi('course_exercise_progress?id=eq.'+existing.id, 'PATCH', {
+        correct_count: data.correct_count, wrong_count: data.wrong_count, review_count: data.review_count,
+        next_review: data.next_review, last_reviewed: data.last_reviewed, last_correct: data.last_correct
+      });
+    } else {
+      const res = await sbApi('course_exercise_progress?on_conflict=user_id,exercise_id', 'POST', data, 'resolution=merge-duplicates,return=representation');
+      const row = res && res[0] ? res[0] : null;
+      if(row && row.id) COURSE_EX_PROGRESS[exId].id = row.id;
+    }
+  }catch(e){
+    dbg('FEHLER beim Speichern von course_exercise_progress ('+exId+'): '+e.message, 'err');
+  }
+  // Nach jeder Antwort prüfen, ob der aktuelle Chunk jetzt gemeistert ist → nächsten freischalten.
+  courseEnsureFrontierUnlocked().catch(()=>{});
+}
+
+// ── Kurs-SRS Session-Engine: "Nur Kurs" & "Mix" ─────────────────────────────
+// Erweitert den bestehenden Übungsmotor (exList/cIdx/render()/nxt()/showRes()) rein additiv
+// um einen dritten Item-Typ 'course', neben den vorhandenen 'mc'/'flash'. bFlash/rFlash/
+// chkFlash (Vokabelkarten) bleiben unverändert — Mix nutzt für die Vokabel-Slots exakt
+// denselben Item-Typ 'flash', nur mit fester Anzahl statt bFlash()'s slice(0,10).
+
+function courseDueExercises(){
+  const chunks = courseFlattenChunks();
+  const due = [];
+  chunks.forEach(ch=>{ ch.srsItems.forEach(e=>{ if(courseExIsDue(e.id)) due.push(e); }); });
+  return due;
+}
+
+function bCourseSrs(){
+  return sh(courseDueExercises()).map(e=>({type:'course', exercise:e}));
+}
+
+// Fest 8 Vokabeln : 2 Kurs-Übungen; sind weniger als 2 Kurs-Übungen fällig, wird mit
+// Vokabeln aufgefüllt (Verhältnis vorerst fest, siehe Absprache).
+function bMix(){
+  const dueVocab = sh(_dueQueue.length ? _dueQueue : buildSrsQueue(gv()));
+  const dueCourse = sh(courseDueExercises());
+  const courseItems = dueCourse.slice(0,2).map(e=>({type:'course', exercise:e}));
+  const vocabNeeded = 10 - courseItems.length;
+  const vocabItems = dueVocab.slice(0,vocabNeeded).map(v=>{
+    const lvl = srsGetLevel(v);
+    const dir = lvl>=3 ? 'de2ar' : (Math.random()>.5?'ar2de':'de2ar');
+    return {type:'flash', v, dir};
+  });
+  return sh([...courseItems, ...vocabItems]);
+}
+
+function showCourseNothingDue(){
+  const area = document.getElementById('exercise-screen'); if(area) area.style.display='block';
+  const sticky = document.getElementById('sticky-next'); if(sticky) sticky.style.display='none';
+  const c = document.getElementById('exercise-content');
+  if(c) c.innerHTML = '<div style="text-align:center;padding:3rem 1rem">'
+    + '<div style="font-size:3rem;margin-bottom:1rem">🎓</div>'
+    + '<div style="color:var(--gold2);font-size:1.2rem;font-weight:700;margin-bottom:.5rem">Nichts fällig</div>'
+    + '<div style="color:var(--muted);font-size:.85rem;line-height:1.6">Aktuell keine Kurs-Übungen zur Wiederholung fällig.</div>'
+    + '</div>';
+  document.getElementById('ex-type-label').textContent = '✓ Fertig';
+  document.getElementById('ex-progress').textContent = '';
+}
+
+// Gemeinsames Screen-Setup wie go() (act-screen ausblenden, Score/Result zurücksetzen).
+function _courseSessionSetup(label){
+  document.getElementById('act-screen').style.display='none';document.getElementById('act-screen').style.pointerEvents='none';var _ab=document.getElementById('act-batch-bar');if(_ab)_ab.style.display='none';
+  document.getElementById('exercise-screen').style.display='block';
+  document.getElementById('ex-type-label').textContent=label;
+  document.getElementById('ex-progress').textContent='';
+  const c = document.getElementById('exercise-content');
+  if(c) c.innerHTML = '<div style="padding:1.5rem 1rem;color:var(--muted);font-size:.85rem">Lade…</div>';
+  score={c:0,w:0,t:0,st:0};updScore();
+  _sessionLog=[]; _roundDone=0;
+  document.getElementById('result-screen').classList.remove('show');
+  return c;
+}
+
+async function goCourseSrs(){
+  const c = _courseSessionSetup('🔁 Kurs-Wdh.');
+  try{ await loadCourseData(); }
+  catch(e){ if(c) c.innerHTML='<div style="padding:1.5rem 1rem;color:var(--red)">Fehler: '+e.message+'</div>'; return; }
+  exList = bCourseSrs();
+  cIdx = 0;
+  if(!exList.length){ showCourseNothingDue(); return; }
+  render();
+}
+
+async function goMix(){
+  const c = _courseSessionSetup('🎲 Mix');
+  try{ await loadCourseData(); }
+  catch(e){ if(c) c.innerHTML='<div style="padding:1.5rem 1rem;color:var(--red)">Fehler: '+e.message+'</div>'; return; }
+  _dueQueue = buildSrsQueue(gv());
+  exList = bMix();
+  cIdx = 0;
+  if(!exList.length){ showCourseNothingDue(); return; }
+  render();
+}
+
+const COURSE_TYPE_LABELS = {translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',grammar_drill:'Grammatik-Übung',fixed_response:'Feste Antwort'};
+
+function courseGrammarButtonHtml(exercise){
+  if(!exercise.chunk_key) return '';
+  return '<button onclick="showGrammarModal('+exercise.id+')" title="Grammatik zu diesem Abschnitt anzeigen" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.15rem .5rem;border-radius:3px;cursor:pointer">🧠 Grammatik</button>';
+}
+
+function courseExSolutionHtml(exercise){
+  let solHtml = null;
+  if(exercise.exercise_type==='answer_pattern'){
+    const m = (exercise.solution||'').match(/^(.*?)\s*\(([^—]+)—\s*(.*)\)\s*$/);
+    if(m){
+      const antwortTn=m[1].trim(), frageDe=m[2].trim(), antwortDe=m[3].trim();
+      const row=(label,val)=>'<div style="margin-bottom:.5rem"><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.15rem">'+label+'</div><div>'+escHtml(val)+'</div></div>';
+      solHtml = '<div>'+row('Frage auf Deutsch',frageDe)+row('Deine Antwort (Tounsi)',antwortTn)+row('Antwort auf Deutsch',antwortDe)+'</div>';
+    }
+  }
+  if(!solHtml){
+    const drillRows = exercise.exercise_type==='grammar_drill' ? parseGrammarDrillSolution(exercise.solution) : null;
+    solHtml = drillRows ? renderGrammarDrillGrid(drillRows,true) : escHtml(exercise.solution||'—');
+  }
+  return solHtml;
+}
+
+function rCourseEx(ex, el){
+  answered = false;
+  const exercise = ex.exercise;
+  const lesson = COURSE_LESSONS.find(l=>l.id===exercise.course_lesson_id);
+  const label = COURSE_TYPE_LABELS[exercise.exercise_type] || exercise.exercise_type;
+  const p = COURSE_EX_PROGRESS[exercise.id];
+  const isNew = !p || !p.review_count;
+  const prog = (document.getElementById('ex-progress')||{}).textContent||'';
+  let h = '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem;flex-wrap:wrap">';
+  h += '<span class="lesson-badge" style="margin:0" title="'+escHtml((lesson?('L'+lesson.course_number):'')+' · '+label)+'">'+(lesson?('L'+lesson.course_number):'')+' · '+label+'</span>';
+  if(isNew) h += '<span style="flex-shrink:0;font-size:.65rem;font-weight:700;color:var(--gold);background:rgba(201,166,74,.15);border:1px solid var(--gold);padding:.1rem .45rem;border-radius:3px">🆕 Neu</span>';
+  h += '<span style="flex:1"></span>';
+  h += courseGrammarButtonHtml(exercise);
+  h += '<span style="flex-shrink:0;font-size:.7rem;color:var(--muted)">'+prog+'</span>';
+  h += '</div>';
+  if(exercise.instruction) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(exercise.instruction)+'</div>';
+  if(exercise.prompt){
+    const vocabAudio = exercise.vocabulary && exercise.vocabulary.ninja_audio_url
+      ? ' <button onclick="playVocabAudio(\''+exercise.vocabulary.ninja_audio_url.replace(/'/g,"\\'")+'\',event,'+(exercise.vocabulary.ninja_audio_start||0)+','+(exercise.vocabulary.ninja_audio_end||0)+')" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.85rem;padding:.1rem .5rem;cursor:pointer;border-radius:3px;vertical-align:middle">🔊</button>'
+      : '';
+    h += '<div class="q-card" style="min-height:80px;margin-bottom:.6rem">'+escHtml(exercise.prompt)+vocabAudio+'</div>';
+  }
+  const drillRows = exercise.exercise_type==='grammar_drill' ? parseGrammarDrillSolution(exercise.solution) : null;
+
+  if(COURSE_SELF_GRADE_TYPES.includes(exercise.exercise_type)){
+    if(drillRows) h += '<div style="border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem">'+renderGrammarDrillGrid(drillRows,false)+'</div>';
+    h += '<div id="course-solution-box"></div><div id="course-grade-box" style="margin-top:.6rem"></div>';
+    el.innerHTML = h;
+    const inner = document.getElementById('sticky-check-inner');
+    if(inner){
+      inner.innerHTML = '<button class="sticky-check-btn" onclick="courseSrsReveal()">Lösung zeigen</button>';
+      document.getElementById('sticky-check').style.display='block';
+    }
+  } else {
+    h += '<input id="course-input" type="text" style="width:100%;box-sizing:border-box;padding:.85rem 1rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:16px;border-radius:6px;font-family:\'IBM Plex Mono\',monospace;margin-bottom:1rem" placeholder="Antwort eingeben..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key===\'Enter\')chkCourseEx()" />';
+    h += '<div class="feedback" id="feedback"></div>';
+    el.innerHTML = h;
+    const inner = document.getElementById('sticky-check-inner');
+    if(inner){
+      inner.innerHTML = '<button class="sticky-check-btn" onclick="hideStickyCheck();chkCourseEx()">Prüfen</button>';
+      document.getElementById('sticky-check').style.display='block';
+    }
+    setTimeout(()=>{ const inp=document.getElementById('course-input'); if(inp) inp.focus({preventScroll:true}); }, 80);
+  }
+}
+
+function courseSrsReveal(){
+  if(answered) return;
+  const exercise = exList[cIdx].exercise;
+  const box = document.getElementById('course-solution-box');
+  if(!box) return;
+  box.innerHTML = '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2)">'+courseExSolutionHtml(exercise)+'</div>';
+  const gb = document.getElementById('course-grade-box');
+  if(gb) gb.innerHTML = '<div style="display:flex;gap:.5rem">'
+    + '<button onclick="chkCourseEx(true)" style="flex:1;padding:.6rem;background:rgba(90,168,90,.15);border:1px solid var(--green);color:var(--green);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">✔️ Wusste ich</button>'
+    + '<button onclick="chkCourseEx(false)" style="flex:1;padding:.6rem;background:rgba(201,76,76,.12);border:1px solid var(--red);color:var(--red);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">✖️ Wusste ich nicht</button>'
+    + '</div>';
+  hideStickyCheck();
+}
+
+function chkCourseEx(selfCorrect){
+  if(answered) return; answered = true;
+  hideStickyCheck();
+  const exercise = exList[cIdx].exercise;
+  let ok;
+  if(COURSE_SELF_GRADE_TYPES.includes(exercise.exercise_type)){
+    ok = !!selfCorrect;
+    const gb = document.getElementById('course-grade-box');
+    if(gb) gb.innerHTML = '<div style="text-align:center;padding:.4rem;color:'+(ok?'var(--green)':'var(--red)')+';font-size:.85rem">'+(ok?'✔️ Wusste ich':'✖️ Wusste ich nicht')+'</div>';
+  } else {
+    const inp = document.getElementById('course-input');
+    const val = inp ? inp.value.trim() : '';
+    const r = checkAnswer(val, exercise.solution||'');
+    ok = r.ok;
+    if(inp){ inp.style.borderColor = ok?'var(--green)':'var(--red)'; inp.disabled = true; }
+    const fb = document.getElementById('feedback');
+    if(fb){
+      fb.className = 'feedback show '+(ok?'correct':'wrong');
+      fb.innerHTML = (ok?'✓ Richtig! ':'✗ ') + '<span style="color:var(--gold2)">'+escHtml(exercise.solution||'')+'</span>';
+    }
+  }
+  courseExAnswer(exercise, ok).catch(()=>{});
+  ok?(score.c++,score.st++,score.t++):(score.w++,score.st=0,score.t++);
+  updScore();
+  showNext();
+}
+
+// ── Grammatik-Modal: on-demand Nachschlagen zum aktuellen Chunk einer Kurs-Übung ──
+function courseGrammarModalContent(exercise){
+  const lesson = COURSE_LESSONS.find(l=>l.id===exercise.course_lesson_id);
+  if(!lesson) return {title:'', html:'<div style="color:var(--muted);font-size:.85rem">Keine Lektion gefunden.</div>'};
+  const chunk = (lesson.chunk_order||[]).find(c=>c.key===exercise.chunk_key);
+  if(!chunk) return {title:'L'+lesson.course_number, html:'<div style="color:var(--muted);font-size:.85rem">Kein Abschnitt zugeordnet.</div>'};
+  return {title:'L'+lesson.course_number+' · '+chunk.label, html: courseChunkLearnHtml(lesson, chunk)};
+}
+function showGrammarModal(exerciseId){
+  const exercise = COURSE_EX_BY_ID[exerciseId];
+  if(!exercise) return;
+  const {title, html} = courseGrammarModalContent(exercise);
+  document.getElementById('grammar-modal-title').textContent = title;
+  document.getElementById('grammar-modal-body').innerHTML = html;
+  document.getElementById('grammar-modal').style.display = 'block';
+}
+function closeGrammarModal(){
+  document.getElementById('grammar-modal').style.display = 'none';
 }
 
 // Schlichtes Markdown: ### Überschrift, - Bullet-Punkt, **bold**, Absätze.
@@ -4482,26 +4843,23 @@ function renderCourseOverview(){
     c.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted)">Noch keine Kurs-Lektionen angelegt.</div>';
     return;
   }
+  const chunks = courseFlattenChunks();
   let h = '<div style="padding:1rem;max-width:600px;margin:0 auto">';
   h += '<div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:1rem">Uni-Wien-Kurs</div>';
   h += '<div style="display:flex;flex-direction:column;gap:.5rem">';
-  COURSE_LESSONS.forEach((l,i)=>{
-    const prog = COURSE_PROGRESS_BY_LESSON[l.id];
-    const status = prog ? prog.status : 'open';
-    const prevDone = i===0 || (COURSE_PROGRESS_BY_LESSON[COURSE_LESSONS[i-1].id] && COURSE_PROGRESS_BY_LESSON[COURSE_LESSONS[i-1].id].status==='done');
-    const locked = !prevDone && status!=='done' && status!=='in_progress';
-    const icon = status==='done' ? '✅' : status==='in_progress' ? '▶️' : locked ? '🔒' : '▶️';
-    const scoreTxt = (status==='done' && prog.score_self!=null) ? ' · zuletzt '+prog.score_self+' von '+courseGradableCount(l.id)+' richtig' : '';
+  COURSE_LESSONS.forEach(l=>{
+    const lessonChunks = chunks.filter(ch=>ch.lessonId===l.id);
+    const totalItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.length,0);
+    const unlockedItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]).length,0);
+    const masteredItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]&&(COURSE_EX_PROGRESS[e.id].correct_count||0)>=4).length,0);
+    const icon = totalItems===0 ? '📄' : masteredItems>=totalItems ? '✅' : unlockedItems>0 ? '🟡' : '🔒';
+    const statusTxt = totalItems===0 ? 'nur Lesen' : masteredItems>=totalItems ? 'abgeschlossen' : unlockedItems>0 ? masteredItems+'/'+totalItems+' Übungen gemeistert' : 'noch nicht erreicht';
     h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;display:flex;justify-content:space-between;align-items:center;gap:.6rem">';
     h += '<div style="flex:1;min-width:0">';
     h += '<div style="font-size:.9rem;color:var(--text)">'+icon+' L'+l.course_number+' <span style="color:var(--gold2)">'+escHtml(l.title||'')+'</span></div>';
-    h += '<div style="font-size:.68rem;color:var(--muted);margin-top:.15rem">'+(status==='done'?'abgeschlossen':status==='in_progress'?'in Bearbeitung':'offen')+scoreTxt+'</div>';
+    h += '<div style="font-size:.68rem;color:var(--muted);margin-top:.15rem">'+statusTxt+'</div>';
     h += '</div>';
-    if(locked){
-      h += '<button onclick="showCourseLesson('+l.id+')" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.68rem;padding:.3rem .55rem;cursor:pointer;border-radius:3px;white-space:nowrap">trotzdem öffnen</button>';
-    } else {
-      h += '<button onclick="showCourseLesson('+l.id+')" style="padding:.35rem .7rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.75rem;font-weight:700;cursor:pointer;border-radius:4px;white-space:nowrap">Öffnen</button>';
-    }
+    h += '<button onclick="showCourseLesson('+l.id+')" style="padding:.35rem .7rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.75rem;font-weight:700;cursor:pointer;border-radius:4px;white-space:nowrap">Öffnen</button>';
     h += '</div>';
   });
   h += '</div></div>';
@@ -4515,7 +4873,7 @@ function showCourseLesson(lessonId, tab){
   _courseCurLesson = COURSE_LESSONS.find(l=>l.id===lessonId);
   _courseCurTab = tab || (courseHasChunks(_courseCurLesson) ? 'course' : 'learn');
   _courseTest = null;
-  _stepLessonId = null; // Stepper bei (Wieder-)Öffnen der Lektion neu aufbauen
+  _browseOpenChunk = null; // Browse-Ansicht bei (Wieder-)Öffnen der Lektion eingeklappt starten
   renderCourseLesson();
 }
 
@@ -4537,7 +4895,7 @@ function renderCourseLesson(){
   h += '<button onclick="showCourseOverview()" style="background:none;border:none;color:var(--muted);font-size:.72rem;cursor:pointer;padding:0;margin-bottom:.6rem">← Kurs-Übersicht</button>';
   h += '<div style="font-size:1rem;color:var(--gold2);margin-bottom:.8rem">L'+l.course_number+' · '+escHtml(l.title||'')+'</div>';
   h += '<div style="display:flex;gap:.4rem;margin-bottom:1rem">';
-  h += chunked ? (tabBtn('course','🎓 Kurs')+tabBtn('vocab','📚 Vokabeln')) : (tabBtn('learn','📖 Lernen')+tabBtn('vocab','📚 Vokabeln')+tabBtn('test','✍️ Test'));
+  h += chunked ? (tabBtn('course','📖 Ansicht')+tabBtn('vocab','📚 Vokabeln')) : (tabBtn('learn','📖 Lernen')+tabBtn('vocab','📚 Vokabeln')+tabBtn('test','✍️ Test'));
   h += '</div>';
   h += '<div id="course-tab-content"></div>';
   h += '</div>';
@@ -4547,7 +4905,7 @@ function renderCourseLesson(){
   if(_courseCurTab==='learn') renderCourseLearnTab(tc, l);
   else if(_courseCurTab==='vocab') renderCourseVocabTab(tc, l);
   else if(_courseCurTab==='test') renderCourseTestTab(tc, l);
-  else if(_courseCurTab==='course') renderCourseStepperTab(tc, l);
+  else if(_courseCurTab==='course') renderCourseBrowseTab(tc, l);
 }
 
 function renderCourseLearnTab(tc, l){
@@ -4853,247 +5211,59 @@ function courseChunkLearnHtml(l, chunk){
   return h;
 }
 
-let _stepChunks = [];       // [{key,label,dialog,grammar_headings,items:[...]}]
-let _stepLessonId = null;
-let _stepView = 'picker';   // 'picker' (Chunk-Übersicht) | 'chunk' (einzelner Abschnitt)
-let _stepIdx = 0;           // aktueller Chunk-Index (nur relevant wenn _stepView==='chunk')
-let _stepPhase = 'intro';   // 'intro' | 'items' | 'chunk-summary'
-let _stepItemIdx = 0;
-let _stepRevealed = false;
-let _stepChunkC = 0, _stepChunkW = 0;
-let _stepAllDone = [];      // [{id, correct}] über alle Chunks der Lektion, aus course_progress geladen/gespeichert
+// ── Lese-/Browse-Ansicht (ersetzt den alten Übungs-Stepper) ────────────────
+// Zeigt jeden Chunk einer Lektion mit Lock-Status; Inhalt (Dialog/Grammatik) ist
+// immer lesbar, unabhängig vom Freischalt-Stand. Abfrage passiert nicht hier,
+// sondern über die SRS-Queues (Kurs/Mix), siehe bCourseSrs()/bMix() weiter unten.
 
-function courseStartStepper(l){
+let _browseOpenChunk = null; // chunk_key des aktuell aufgeklappten Chunks, oder null
+
+function courseBrowseToggle(key){
+  _browseOpenChunk = (_browseOpenChunk===key) ? null : key;
+  renderCourseLesson();
+}
+
+function courseExLevelBadge(exerciseId){
+  const p = COURSE_EX_PROGRESS[exerciseId];
+  if(!p) return '<span style="font-size:.65rem;color:var(--muted)" title="Noch nicht freigeschaltet">🔒</span>';
+  const lvl = p.correct_count||0;
+  const due = courseExIsDue(exerciseId);
+  const color = lvl>=4 ? 'var(--green)' : lvl>=1 ? 'var(--gold)' : 'var(--muted)';
+  return '<span style="font-size:.65rem;color:'+color+'" title="Level '+lvl+(due?' · fällig':'')+'">L'+lvl+(due?' ⏰':'')+'</span>';
+}
+
+function renderCourseBrowseTab(tc, l){
+  if(!courseHasChunks(l)){ renderCourseLearnTab(tc, l); return; }
   const byKey = {};
-  (COURSE_EXERCISES_BY_LESSON[l.id]||[]).forEach(e=>{
-    const k = e.chunk_key || '__unassigned__';
-    (byKey[k] = byKey[k]||[]).push(e);
-  });
-  _stepChunks = (l.chunk_order||[]).map(c=>Object.assign({}, c, {items: byKey[c.key]||[]}));
-  _stepLessonId = l.id;
-  const existing = COURSE_PROGRESS_BY_LESSON[l.id];
-  const prevDone = existing && Array.isArray(existing.exercises_done) ? existing.exercises_done : [];
-  // Altes Format (nur IDs, aus dem flachen Test-Flow vor dem Chunking) nicht übernehmen.
-  _stepAllDone = prevDone.length && typeof prevDone[0]==='object' ? prevDone.slice() : [];
-  _stepView = 'picker';
-  _stepIdx = 0; _stepPhase = 'intro'; _stepItemIdx = 0; _stepRevealed = false;
-  _stepChunkC = 0; _stepChunkW = 0;
-}
-
-// Speichert den aktuellen Stand nach jedem Abschnitt automatisch (still, ohne Toast) —
-// damit Fortschritt beim Verlassen/Wiederöffnen der Lektion nicht verloren geht.
-async function courseStepSaveProgress(status){
-  const l = _courseCurLesson;
-  if(!l) return false;
-  const score = _stepAllDone.filter(d=>d.correct===true).length;
-  const existing = COURSE_PROGRESS_BY_LESSON[l.id];
-  const payload = { status: status, exercises_done: _stepAllDone, score_self: score };
-  if(status==='done') payload.completed_at = new Date().toISOString();
-  try{
-    if(existing){
-      await sbApi('course_progress?id=eq.'+existing.id, 'PATCH', payload);
-      Object.assign(existing, payload);
-    } else {
-      const res = await sbApi('course_progress?select=*', 'POST', Object.assign({user_id:currentUser.id, course_lesson_id:l.id}, payload), 'return=representation');
-      const row = Array.isArray(res) ? res[0] : res;
-      COURSE_PROGRESS_BY_LESSON[l.id] = row;
-    }
-    return true;
-  }catch(e){
-    showToast('Fehler beim Speichern: '+e.message,'err');
-    return false;
-  }
-}
-
-function renderCourseStepperTab(tc, l){
-  if(_stepLessonId !== l.id) courseStartStepper(l);
-
-  if(_stepView==='picker'){ renderStepPicker(tc, l); return; }
-  const chunk = _stepChunks[_stepIdx];
-
-  let h = '<button onclick="courseStepBackToPicker()" style="background:none;border:none;color:var(--muted);font-size:.7rem;cursor:pointer;padding:0;margin-bottom:.5rem">← Übersicht</button>';
-  h += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.5rem">';
-  h += '<div style="font-size:.68rem;color:var(--muted)">Abschnitt '+(_stepIdx+1)+' / '+_stepChunks.length+'</div>';
-  h += '<div style="font-size:.82rem;color:var(--gold2)">'+escHtml(chunk.label)+'</div>';
-  h += '</div>';
-  h += '<div style="height:4px;background:var(--border);border-radius:2px;margin-bottom:1rem;overflow:hidden">'
-     + '<div style="height:100%;width:'+Math.round(_stepIdx/_stepChunks.length*100)+'%;background:var(--gold)"></div></div>';
-
-  if(_stepPhase==='intro'){
-    h += courseChunkLearnHtml(l, chunk);
-    h += '<button onclick="courseStepBeginItems()" style="width:100%;margin-top:1rem;padding:.6rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">'
-       + (chunk.items.length ? 'Los geht\'s →' : 'Weiter →') + '</button>';
-    tc.innerHTML = h; return;
-  }
-
-  if(_stepPhase==='chunk-summary'){
-    const total = _stepChunkC + _stepChunkW;
-    h += '<div style="text-align:center;padding:1rem 0">';
-    h += '<div style="font-size:1.6rem;margin-bottom:.4rem">'+(total===0?'➡️':_stepChunkW===0?'✅':'📝')+'</div>';
-    if(total>0) h += '<div style="font-size:1rem;color:var(--gold2)">'+_stepChunkC+' von '+total+' richtig</div>';
-    const isLast = _stepIdx+1 >= _stepChunks.length;
-    h += '<div style="display:flex;gap:.5rem;justify-content:center;margin-top:1rem;flex-wrap:wrap">';
-    h += '<button onclick="courseStepBackToPicker()" style="padding:.6rem 1.1rem;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;cursor:pointer;border-radius:4px">← Übersicht</button>';
-    if(!isLast) h += '<button onclick="courseStepGotoNextChunk()" style="padding:.6rem 1.1rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">Nächster Abschnitt →</button>';
-    h += '</div>';
-    h += '</div>';
-    tc.innerHTML = h; return;
-  }
-
-  // _stepPhase === 'items'
-  const ex = chunk.items[_stepItemIdx];
-  if(!ex){ _stepPhase = 'chunk-summary'; renderCourseStepperTab(tc, l); return; }
-  const gradable = COURSE_GRADABLE_TYPES.includes(ex.exercise_type);
-  const label = ({translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',build_dialog:'Dialog bilden',grammar_drill:'Grammatik-Übung',grammar_card:'Merksatz',fixed_response:'Feste Antwort',pronunciation:'🔊 Aussprache'})[ex.exercise_type] || ex.exercise_type;
-
-  h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.3rem">'+label+' · '+(_stepItemIdx+1)+' / '+chunk.items.length+'</div>';
-  if(ex.exercise_type==='answer_pattern'){
-    h += '<div style="border:1px solid var(--border);border-radius:6px;padding:.6rem .8rem;margin-bottom:.8rem;font-size:.78rem;color:var(--text)">'
-       + '<div style="color:var(--gold);font-weight:700;margin-bottom:.3rem">📝 Zu erledigen:</div>'
-       + '<div>☐ Frage auf Deutsch übersetzen</div>'
-       + '<div>☐ Frage auf Tounsi beantworten</div>'
-       + '<div>☐ Deine Antwort auf Deutsch übersetzen</div>'
-       + '</div>';
-  } else if(ex.instruction) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(ex.instruction)+'</div>';
-  if(ex.prompt){
-    const vocabAudio = ex.vocabulary && ex.vocabulary.ninja_audio_url
-      ? ' <button onclick="playVocabAudio(\''+ex.vocabulary.ninja_audio_url.replace(/'/g,"\\'")+'\',event,'+(ex.vocabulary.ninja_audio_start||0)+','+(ex.vocabulary.ninja_audio_end||0)+')" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.85rem;padding:.1rem .5rem;cursor:pointer;border-radius:3px;vertical-align:middle">🔊</button>'
-      : '';
-    const vocabArabic = ex.vocabulary && ex.vocabulary.arabic_script
-      ? '<div style="font-size:1.3rem;margin-top:.3rem;color:var(--gold2)">'+escHtml(ex.vocabulary.arabic_script)+'</div>'
-      : '';
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem;font-size:.95rem;margin-bottom:.8rem">'+escHtml(ex.prompt)+vocabAudio+vocabArabic+'</div>';
-  }
-  const drillRows = ex.exercise_type==='grammar_drill' ? parseGrammarDrillSolution(ex.solution) : null;
-  if(drillRows && !_stepRevealed) h += '<div style="border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem">'+renderGrammarDrillGrid(drillRows, false)+'</div>';
-
-  if(!gradable){
-    if(ex.exercise_type==='build_dialog'){
-      h += '<div style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:1rem">'
-         + 'Das ist eine freie Aufgabe ohne feste Lösung — sprich oder schreib dir selbst einen kurzen Dialog dazu. '
-         + 'Wenn du das einmal laut oder schriftlich durchgespielt hast, geh weiter.'
-         + '</div>';
-    } else if(ex.solution){
-      h += '<div style="color:var(--gold2);font-size:.85rem;margin-bottom:1rem">'+escHtml(ex.solution)+'</div>';
-    }
-    h += '<button onclick="courseStepNextItem(null)" style="width:100%;padding:.6rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">Weiter</button>';
-  } else if(!_stepRevealed){
-    h += '<button onclick="courseStepReveal()" style="width:100%;padding:.6rem;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;cursor:pointer;border-radius:4px">Lösung zeigen</button>';
-  } else {
-    let solHtml = null;
-    if(ex.exercise_type==='answer_pattern'){
-      const m = (ex.solution||'').match(/^(.*?)\s*\(([^—]+)—\s*(.*)\)\s*$/);
-      if(m){
-        const antwortTn = m[1].trim(), frageDe = m[2].trim(), antwortDe = m[3].trim();
-        const row = (label,val) => '<div style="margin-bottom:.5rem"><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.15rem">'+label+'</div><div>'+escHtml(val)+'</div></div>';
-        solHtml = '<div>' + row('Frage auf Deutsch', frageDe) + row('Deine Antwort (Tounsi)', antwortTn) + row('Antwort auf Deutsch', antwortDe) + '</div>';
-      }
-    }
-    if(!solHtml && drillRows) solHtml = renderGrammarDrillGrid(drillRows, true);
-    if(!solHtml) solHtml = escHtml(ex.solution||'—');
-    h += '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2);margin-bottom:.8rem">'+solHtml+'</div>';
-    if(ex.partner_status===null || ex.partner_status===undefined){
-      h += '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.6rem">⚠️ ungeprüft — wartet auf Semias Prüfung</div>';
-    }
-    h += '<div style="display:flex;gap:.5rem">';
-    h += '<button onclick="courseStepNextItem(true)" style="flex:1;padding:.6rem;background:rgba(90,168,90,.15);border:1px solid var(--green);color:var(--green);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">✔️ Richtig</button>';
-    h += '<button onclick="courseStepNextItem(false)" style="flex:1;padding:.6rem;background:rgba(201,76,76,.12);border:1px solid var(--red);color:var(--red);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">✖️ Falsch</button>';
-    h += '</div>';
-  }
-  tc.innerHTML = h;
-}
-
-function courseStepBeginItems(){
-  const chunk = _stepChunks[_stepIdx];
-  // Falls dieser Chunk schon einmal gemacht wurde (Wiederholung): alte Ergebnisse
-  // verwerfen, damit die Gesamtsumme nicht doppelt zählt.
-  const ids = new Set(chunk.items.map(it=>it.id));
-  _stepAllDone = _stepAllDone.filter(d=>!ids.has(d.id));
-  _stepPhase = chunk.items.length ? 'items' : 'chunk-summary';
-  _stepItemIdx = 0; _stepRevealed = false; _stepChunkC = 0; _stepChunkW = 0;
-  renderCourseLesson();
-}
-
-// Öffnet einen Chunk direkt aus der Übersicht (egal ob offen, erledigt oder mit Fehlern).
-function courseStepOpenChunk(idx){
-  _stepIdx = idx;
-  _stepView = 'chunk';
-  _stepPhase = 'intro'; _stepItemIdx = 0; _stepRevealed = false; _stepChunkC = 0; _stepChunkW = 0;
-  renderCourseLesson();
-}
-
-function courseStepBackToPicker(){
-  courseStepSaveProgress('in_progress');
-  _stepView = 'picker';
-  renderCourseLesson();
-}
-
-function courseStepGotoNextChunk(){
-  courseStepSaveProgress('in_progress');
-  _stepIdx++;
-  _stepPhase = 'intro'; _stepItemIdx = 0; _stepRevealed = false;
-  renderCourseLesson();
-}
-
-function courseStepReveal(){ _stepRevealed = true; renderCourseLesson(); }
-
-function courseStepNextItem(correct){
-  const chunk = _stepChunks[_stepIdx];
-  const ex = chunk.items[_stepItemIdx];
-  if(ex){
-    if(correct===true){ _stepChunkC++; _stepAllDone.push({id:ex.id, correct:true}); }
-    else if(correct===false){ _stepChunkW++; _stepAllDone.push({id:ex.id, correct:false}); }
-    else { _stepAllDone.push({id:ex.id, correct:null}); }
-  }
-  _stepItemIdx++;
-  _stepRevealed = false;
-  if(_stepItemIdx >= chunk.items.length){
-    _stepPhase = 'chunk-summary';
-    courseStepSaveProgress('in_progress'); // still im Hintergrund, damit nichts verloren geht falls die App jetzt geschlossen wird
-  }
-  renderCourseLesson();
-}
-
-// Chunk-Übersicht: Einstiegspunkt des Kurs-Tabs. Zeigt jeden Abschnitt mit Status
-// und erlaubt, direkt in einen beliebigen (auch schon erledigten) Chunk zu springen.
-function renderStepPicker(tc, l){
-  const totalTallyable = _stepAllDone.filter(d=>d.correct===true || d.correct===false).length;
-  const totalCorrect = _stepAllDone.filter(d=>d.correct===true).length;
-  let h = '';
-  if(totalTallyable>0) h += '<div style="text-align:center;font-size:.85rem;color:var(--gold2);margin-bottom:1rem">'+totalCorrect+' von '+totalTallyable+' richtig</div>';
-  h += '<div style="display:flex;flex-direction:column;gap:.5rem">';
-  _stepChunks.forEach((chunk,i)=>{
-    const total = chunk.items.length;
-    const ids = new Set(chunk.items.map(it=>it.id));
-    const done = _stepAllDone.filter(d=>ids.has(d.id));
-    const attempted = done.length;
-    const w = done.filter(d=>d.correct===false).length;
-    const correct = attempted - w;
-    let icon, scoreTxt;
-    if(total===0){ icon = '📄'; scoreTxt = 'nur Lesen'; }
-    else if(attempted===0){ icon = '⚪'; scoreTxt = total+' Übungen'; }
-    else if(attempted<total){ icon = '🟡'; scoreTxt = attempted+'/'+total+' bearbeitet'; }
-    else { icon = w===0 ? '✅' : '⚠️'; scoreTxt = correct+'/'+total+' richtig'; }
-    h += '<button onclick="courseStepOpenChunk('+i+')" style="display:flex;justify-content:space-between;align-items:center;padding:.65rem .8rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;cursor:pointer;text-align:left;font-family:inherit;font-size:.85rem;color:var(--text)">';
-    h += '<span>'+icon+' '+escHtml(chunk.label)+'</span>';
-    h += '<span style="font-size:.68rem;color:var(--muted);white-space:nowrap;margin-left:.6rem">'+scoreTxt+'</span>';
+  (COURSE_EXERCISES_BY_LESSON[l.id]||[]).forEach(e=>{ (byKey[e.chunk_key]=byKey[e.chunk_key]||[]).push(e); });
+  let h = '<div style="display:flex;flex-direction:column;gap:.5rem">';
+  (l.chunk_order||[]).forEach(c=>{
+    const all = byKey[c.key]||[];
+    const srsItems = all.filter(e=>COURSE_SRS_TYPES.includes(e.exercise_type));
+    const unlocked = courseChunkUnlocked(srsItems);
+    const mastered = courseChunkMastered(srsItems);
+    const icon = !srsItems.length ? '📄' : mastered ? '✅' : unlocked ? '🟡' : '🔒';
+    const open = _browseOpenChunk === c.key;
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden">';
+    h += '<button onclick="courseBrowseToggle(\''+eq(c.key)+'\')" style="width:100%;display:flex;justify-content:space-between;align-items:center;padding:.65rem .8rem;background:none;border:none;cursor:pointer;text-align:left;font-family:inherit;font-size:.85rem;color:var(--text)">';
+    h += '<span>'+icon+' '+escHtml(c.label)+'</span>';
+    h += '<span style="font-size:.68rem;color:var(--muted);white-space:nowrap;margin-left:.6rem">'+(srsItems.length?srsItems.length+' Übungen · ':'')+(open?'▲':'▼')+'</span>';
     h += '</button>';
+    if(open){
+      h += '<div style="padding:0 .8rem .8rem">';
+      h += courseChunkLearnHtml(l, c);
+      if(srsItems.length){
+        h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin:.6rem 0 .3rem">Übungen</div>';
+        h += '<div style="display:flex;flex-wrap:wrap;gap:.4rem">';
+        srsItems.forEach(e=>{ h += '<span style="border:1px solid var(--border);border-radius:3px;padding:.15rem .45rem">'+courseExLevelBadge(e.id)+'</span>'; });
+        h += '</div>';
+      }
+      h += '</div>';
+    }
+    h += '</div>';
   });
   h += '</div>';
-  h += '<button id="course-step-finish-btn" onclick="courseStepFinish()" style="width:100%;margin-top:1.2rem;padding:.65rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.85rem;font-weight:700;cursor:pointer;border-radius:4px">✓ Lektion abschließen</button>';
   tc.innerHTML = h;
-}
-
-async function courseStepFinish(){
-  const btn = document.getElementById('course-step-finish-btn');
-  if(btn){ btn.disabled = true; btn.textContent = 'Speichere…'; }
-  const ok = await courseStepSaveProgress('done');
-  if(ok){
-    showToast('✓ Lektion abgeschlossen — gespeichert','ok');
-    showCourseOverview();
-  } else if(btn){
-    btn.disabled = false; btn.textContent = '✓ Nochmal versuchen';
-  }
 }
 
 // ── Antwort-Paare-Modus ────────────────────────────────────────────────────
@@ -7402,6 +7572,17 @@ window.addEventListener('unhandledrejection', (e) => {
       <button onclick="closeConjModal()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:.2rem .5rem">✕</button>
     </div>
     <div id="conj-modal-body"></div>
+  </div>
+</div>
+
+<!-- Grammatik Modal (Kurs-Übungen) -->
+<div id="grammar-modal" style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.6)" onclick="if(event.target===this)closeGrammarModal()">
+  <div style="position:absolute;bottom:0;left:0;right:0;background:var(--surface2);border-top:2px solid var(--gold);padding:1rem;box-shadow:0 -4px 14px rgba(0,0,0,.5);max-height:80vh;max-height:80dvh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem">
+      <span id="grammar-modal-title" style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold)">Grammatik</span>
+      <button onclick="closeGrammarModal()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:.2rem .5rem">✕</button>
+    </div>
+    <div id="grammar-modal-body"></div>
   </div>
 </div>
 

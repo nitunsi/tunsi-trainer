@@ -11,12 +11,25 @@ Regeln für den Lektionen/Stepper-Bereich des Trainers (`course_lessons`/`course
 
 ## Kurs-Modus: course_lessons / course_exercises
 
-Der Trainer hat neben der klassischen SRS-Vokabelabfrage einen Kurs-Modus (Stepper-UI: Chunk-Übersicht → Chunk-Intro → Items → Chunk-Zusammenfassung), aufgebaut aus den Uni-Wien-Lehrskripten. Zwei Tabellen:
+Der Trainer hat neben der klassischen SRS-Vokabelabfrage einen Kurs-Modus, aufgebaut aus den Uni-Wien-Lehrskripten. Drei Tabellen:
 
-- `course_lessons` — eine Zeile pro Lektion, mit `grammar_notes` (Markdown, `### Überschrift`-Abschnitte) und `chunk_order` (jsonb-Array: Reihenfolge/Gruppierung im Stepper — jedes Element hat `key`, `label`, `dialog`, `grammar_headings`)
+- `course_lessons` — eine Zeile pro Lektion, mit `grammar_notes` (Markdown, `### Überschrift`-Abschnitte) und `chunk_order` (jsonb-Array: Reihenfolge/Gruppierung — jedes Element hat `key`, `label`, `dialog`, `grammar_headings`)
 - `course_exercises` — eine Zeile pro Übungs-Item, mit `course_lesson_id`, `position` (Integer, Reihenfolge), `chunk_key` (muss zu einem `key` in `chunk_order` passen), `exercise_type`, `prompt`, `solution`, optional `vocabulary_id`
+- `course_exercise_progress` — SRS-Fortschritt pro Nutzer/Übung (seit 2026-09, siehe Abschnitt "Kurs-SRS" unten). `course_progress` (Fortschritt pro Nutzer/**Lektion**) existiert als Altlast der früheren Stepper-UI weiter in der DB, wird vom aktuellen Code aber nur noch vom (praktisch toten) Test-Tab für nicht gechunkte Lektionen geschrieben — nicht mit `course_exercise_progress` verwechseln.
 
 **Bei jeder Tabelle, die über die Zeit wächst, `sbApiPaged` verwenden, nicht `sbApi`** — PostgREST liefert standardmäßig max. 1000 Zeilen pro Request, unabhängig vom `select`. Ein einfacher `count(*)`-Check gegen 1000 ist ein guter Kurz-Test, wenn ein Nutzer "fehlende Inhalte" meldet, obwohl die DB sie zeigt (Präzedenzfall mit ~270 verlorenen Übungen: PRECEDENTS.md → Kurs-Modus).
+
+### Kurs-SRS (seit 2026-09) — ersetzt den alten Chunk-Stepper
+
+Hintergrund: Vokabellernen ("einfach abarbeiten") fiel leichter als der Kurs, weil der Kurs erzwang, eine ganze Lektion am Stück im Stepper durchzugehen. Der alte Stepper (Chunk-Übersicht → Chunk-Intro → Items → Chunk-Zusammenfassung, schrieb in `course_progress`) ist komplett entfernt (`courseStartStepper`, `renderCourseStepperTab`, `courseStep*`, `renderStepPicker` existieren nicht mehr). Ersetzt durch:
+
+- **Eigenes SRS pro Übung** (`course_exercise_progress`: `user_id`, `exercise_id`, `correct_count` als Level 0–6, `wrong_count`, `review_count`, `next_review`, `last_reviewed`, `last_correct`) — Stufen-Logik 1:1 wie beim Vokabel-SRS (`SRS_DAYS=[1,1,3,7,14,30,90]`, falsch → sofort zurück auf Level 0 & sofort wieder fällig). Implementiert in `courseExAnswer()`, gespiegelt von `srsAnswer()`. Rührt `progress`/`srsProgress` (Vokabeln) nirgends an — komplett getrennter Zustand.
+- **SRS-fähige Exercise-Typen** (`COURSE_SRS_TYPES`): `translate_de_tn`, `fill_blank`, `answer_pattern`, `grammar_drill`, `fixed_response`. Ausgeschlossen: `pronunciation` (läuft weiter über das Vokabel-SRS via `vocabulary_id`), `grammar_card` (reine Merkkarte, nur über den Grammatik-Button erreichbar, siehe unten), `build_dialog` (keine feste Lösung).
+- **Freischaltung chunk-weise, ein Chunk auf einmal**: `courseFlattenChunks()` legt alle Lektionen (nach `course_number`) und ihre Chunks (nach `chunk_order`) zu einer globalen Reihenfolge flach. `courseEnsureFrontierUnlocked()` schaltet höchstens einen weiteren Chunk frei — erst wenn der vorherige zu ≥90% auf Level ≥4 ist (`courseChunkMastered()`). Freischalten = für alle SRS-fähigen Übungen des Chunks eine `course_exercise_progress`-Zeile mit Level 0 anlegen (`courseUnlockChunk()`). Läuft nach jedem `loadCourseData()` und nach jeder beantworteten Übung (`courseExAnswer()` → `courseEnsureFrontierUnlocked()`).
+- **Drei Einstiegspunkte** im Nav (`setMode`): `flash` = reine Vokabelkarten (unverändert), `coursesrs` = nur fällige Kurs-Übungen (`goCourseSrs()`/`bCourseSrs()`), `mix` = fest 8 Vokabeln + 2 Kurs-Übungen pro Runde, bei zu wenig fälligen Kurs-Übungen mit Vokabeln aufgefüllt (`goMix()`/`bMix()`). Alle drei laufen über denselben bestehenden Übungsmotor (`exList`/`cIdx`/`render()`/`nxt()`/`showRes()`) — Kurs-Karten sind darin `ex.type==='course'`, gerendert von `rCourseEx()`.
+- **Grammatik-Button** (`showGrammarModal()`) auf jeder Kurs-Karte: zeigt Dialog/Grammatik des zugehörigen Chunks (`courseGrammarModalContent()` → `courseChunkLearnHtml()`) als Bottom-Sheet, unabhängig von der aktuellen Abfrage.
+- **Lese-/Browse-Ansicht** (`renderCourseBrowseTab()`, Tab "📖 Ansicht" innerhalb einer Lektion): zeigt alle Chunks einer Lektion inkl. Lock-Status (🔒/🟡/✅/📄) und Level-Badge pro Übung (`courseExLevelBadge()`) — Inhalt ist **immer lesbar**, auch für noch nicht freigeschaltete Chunks (bewusste Nutzerentscheidung, 2026-09-08). Ersetzt den alten Chunk-Stepper als Tab-Inhalt (Tab-Key bleibt `'course'`, nur das Ziel-Rendering hat sich geändert).
+- **Kurs-Übersicht** (`renderCourseOverview()`, Lektionsliste): Status/Icon jetzt aus `courseFlattenChunks()` berechnet (Anteil gemeisterter SRS-Übungen), nicht mehr aus `course_progress.status`. Alle Lektionen sind dort immer öffenbar (keine Lock-Buttons mehr auf dieser Ebene — Sperre existiert nur auf Chunk-Ebene, sichtbar in der Browse-Ansicht).
 
 ### Exercise-Typen
 
