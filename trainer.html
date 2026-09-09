@@ -2579,7 +2579,7 @@ function showFlashNextBar(v, ok){
   const S = 'padding:.9rem .95rem;border:none;border-left:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1.1rem;cursor:pointer;flex-shrink:0';
   bar.style.display = 'block';
   bar.style.borderTop = '1px solid var(--border)';
-  const overrideRow = cMode !== 'flash' ? '' : (!ok
+  const overrideRow = (cMode !== 'flash' && cMode !== 'mix') ? '' : (!ok
     ? '<div style="display:flex;width:100%;border-bottom:1px solid var(--border)"><button onclick="markFlashCorrect()" style="flex:1;padding:.75rem;border:none;background:rgba(76,172,110,.15);color:var(--green);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer">&#10003; War doch richtig</button></div>'
     : '<div style="display:flex;width:100%;border-bottom:1px solid var(--border)"><button onclick="markFlashWrong()" style="flex:1;padding:.75rem;border:none;background:rgba(201,76,76,.1);color:var(--red);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer">&#10007; War doch falsch</button></div>');
   bar.innerHTML =
@@ -2698,7 +2698,7 @@ async function _applyFlashCorrection(vid, toOk, orig){
 }
 
 function markFlashCorrect(){
-  if(cMode !== 'flash') return;
+  if(cMode !== 'flash' && cMode !== 'mix') return;
   const last = window._lastFlashVocab;
   if(!last || last.ok) return;
   last.ok = true;
@@ -2722,7 +2722,7 @@ function markFlashCorrect(){
 }
 
 function markFlashWrong(){
-  if(cMode !== 'flash') return;
+  if(cMode !== 'flash' && cMode !== 'mix') return;
   const last = window._lastFlashVocab;
   if(!last || !last.ok) return;
   last.ok = false;
