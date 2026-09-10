@@ -2950,7 +2950,7 @@ function showStats(){
     }).reverse().join('');
     const vocabOnly = levels.reduce((s,x)=>s+x,0);
     const courseTotal = courseDueDays[i].reduce((s,x)=>s+x,0);
-    return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.15rem">
+    return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.3rem">
       <span style="font-size:.75rem;font-weight:700;color:${labelColor};line-height:1.1">${vocabOnly||''}</span>
       <span style="font-size:.65rem;font-weight:700;color:var(--blue);line-height:1.1;min-height:.85rem">${courseTotal||''}</span>
       <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden">
@@ -3249,7 +3249,7 @@ async function loadActivityStats(){
       const pctDay = x.attempts ? Math.round(x.correct / x.attempts * 100) : null;
       const pctColor = pctDay === null ? 'var(--border)' : pctDay >= 80 ? 'var(--green)' : pctDay >= 50 ? 'var(--gold)' : 'var(--red)';
       const vocabOnly = x.attempts - x.courseAttempts;
-      return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.1rem">
+      return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.3rem">
         <span style="font-size:.75rem;font-weight:700;color:${labelColor};line-height:1.1">${vocabOnly||''}</span>
         <span style="font-size:.65rem;font-weight:700;color:var(--blue);line-height:1.1;min-height:.85rem">${x.courseAttempts||''}</span>
         <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;position:relative">
