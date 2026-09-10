@@ -2948,10 +2948,12 @@ function showStats(){
       const sh = Math.round(cnt / maxDay * 100);
       return `<div style="width:100%;height:${sh}%;min-height:3px;background:${levelColors[li]};"></div>`;
     }).reverse().join('');
+    const vocabOnly = levels.reduce((s,x)=>s+x,0);
     const courseTotal = courseDueDays[i].reduce((s,x)=>s+x,0);
-    return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.25rem">
-      <span style="font-size:.75rem;font-weight:700;color:${labelColor}">${total||''}</span>
-      <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden${courseTotal ? ';outline:1px solid var(--blue);outline-offset:-1px' : ''}">
+    return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.15rem">
+      <span style="font-size:.75rem;font-weight:700;color:${labelColor};line-height:1.1">${vocabOnly||''}</span>
+      <span style="font-size:.65rem;font-weight:700;color:var(--blue);line-height:1.1;min-height:.85rem">${courseTotal||''}</span>
+      <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden">
         ${total ? segments : ''}
       </div>
       <span style="font-size:.6rem;color:var(--muted);text-align:center">${name}</span>
@@ -3246,9 +3248,11 @@ async function loadActivityStats(){
       const labelColor = isToday ? 'var(--gold)' : 'var(--muted)';
       const pctDay = x.attempts ? Math.round(x.correct / x.attempts * 100) : null;
       const pctColor = pctDay === null ? 'var(--border)' : pctDay >= 80 ? 'var(--green)' : pctDay >= 50 ? 'var(--gold)' : 'var(--red)';
-      return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.15rem">
-        <span style="font-size:.75rem;font-weight:700;color:${labelColor}">${x.attempts||''}</span>
-        <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;position:relative${x.courseAttempts ? ';outline:1px solid var(--blue);outline-offset:-1px' : ''}">
+      const vocabOnly = x.attempts - x.courseAttempts;
+      return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.1rem">
+        <span style="font-size:.75rem;font-weight:700;color:${labelColor};line-height:1.1">${vocabOnly||''}</span>
+        <span style="font-size:.65rem;font-weight:700;color:var(--blue);line-height:1.1;min-height:.85rem">${x.courseAttempts||''}</span>
+        <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;position:relative">
           ${avgAttempts > 0 ? `<div style="position:absolute;left:0;right:0;bottom:${avgLinePct}%;border-top:1px dashed var(--gold);opacity:.7;z-index:2;"></div>` : ''}
           ${x.attempts ? `<div style="width:100%;height:${Math.round(h*hWrong/100)}%;min-height:${wrong?'3px':'0'};background:var(--red);"></div><div style="width:100%;height:${Math.round(h*hCorrect/100)}%;min-height:${x.correct?'3px':'0'};background:var(--green);"></div>` : ''}
         </div>
