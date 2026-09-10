@@ -2972,9 +2972,13 @@ function showStats(){
       { label: 'Level 5', color: '#4cac6e', idx: 6, hint: 'Wdh. in 30d' },
       { label: 'Level 6', color: '#1a7a3a', idx: 7, hint: 'Wdh. in 90d' },
     ];
-    const maxLevelCount = Math.max(...buckets.map(b => levelCount[b.idx] + courseLevelCount[b.idx]), 1);
+    // "Neu"-Bucket (idx 0): courseLevelCount[0] wird nie befüllt (gesperrte Kurs-Übungen
+    // stecken in courseNotStarted, siehe Kommentar oben), hier für die kombinierte
+    // Level-Verteilung trotzdem mitgezählt.
+    const courseCount = b => b.idx === 0 ? courseNotStarted : courseLevelCount[b.idx];
+    const maxLevelCount = Math.max(...buckets.map(b => levelCount[b.idx] + courseCount(b)), 1);
     return buckets.map(b => {
-      const cnt = levelCount[b.idx] + courseLevelCount[b.idx];
+      const cnt = levelCount[b.idx] + courseCount(b);
       const pctL = Math.round(cnt / maxLevelCount * 100);
       const dueToday = (dueDays[0] ? dueDays[0][b.idx] : 0) + (courseDueDays[0] ? courseDueDays[0][b.idx] : 0);
       return `<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;font-size:.72rem;">
@@ -2983,7 +2987,7 @@ function showStats(){
           <div style="height:100%;width:${pctL}%;background:${b.color};border-radius:4px;"></div>
         </div>
         <span style="min-width:28px;text-align:right;color:var(--muted)">${cnt}</span>
-        <span style="min-width:68px;color:var(--muted);font-size:.62rem">${b.hint}</span>
+        <span style="width:68px;flex-shrink:0;white-space:nowrap;overflow:visible;color:var(--muted);font-size:.62rem">${b.hint}</span>
         <span style="min-width:24px;text-align:right;font-size:.72rem;${dueToday > 0 ? 'color:var(--red)' : 'color:var(--muted)'}">${dueToday || ''}</span>
       </div>`;
     }).join('');
