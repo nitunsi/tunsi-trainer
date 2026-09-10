@@ -3063,7 +3063,7 @@ function showStats(){
         </div>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);padding:.7rem .7rem .5rem;">
-        <div style="display:flex;gap:.4rem;align-items:flex-end;height:90px;margin-bottom:.6rem">${forecastBars}</div>
+        <div style="display:flex;gap:.4rem;align-items:flex-end;height:120px;margin-bottom:.6rem">${forecastBars}</div>
         ${forecastBlockedCount > 0 ? `<div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem;" title="In deiner Partner-Review-Queue — aktuell nicht in der Karten-Abfrage">📬 ${forecastBlockedCount} gesperrt</div>` : ''}
         <div style="border-top:1px solid var(--border);padding-top:.5rem;display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;">
           <input id="pull-forward-count" type="number" min="1" max="200" value="20" style="width:3.5rem;padding:.3rem;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:.85rem;text-align:center;">
@@ -3263,7 +3263,7 @@ async function loadActivityStats(){
 
     el.innerHTML = totalAttempts === 0
       ? `<div style="color:var(--muted)">Noch keine Daten in diesem Zeitraum.</div>`
-      : `<div style="display:flex;gap:.4rem;align-items:flex-end;height:100px;margin-bottom:.5rem">${bars}</div>
+      : `<div style="display:flex;gap:.4rem;align-items:flex-end;height:140px;margin-bottom:.5rem">${bars}</div>
          <div style="border-top:1px solid var(--border);padding-top:.4rem;font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:.3rem">
            <span>${totalAttempts} Versuche · <span style="color:var(--green)">${pctCorrectAll}% richtig</span>${totalCourseAttempts ? ` · <span style="color:var(--blue)">davon ${totalCourseAttempts} 🎓 Kurs</span>` : ''}</span>
            <span>${totalVocabSet.size} Vokabeln geübt</span>
