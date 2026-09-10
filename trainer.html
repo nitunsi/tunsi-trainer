@@ -2950,7 +2950,7 @@ function showStats(){
     }).reverse().join('');
     const vocabOnly = levels.reduce((s,x)=>s+x,0);
     const courseTotal = courseDueDays[i].reduce((s,x)=>s+x,0);
-    return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.3rem">
+    return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.2rem">
       <span style="font-size:.75rem;font-weight:700;color:${labelColor};line-height:1.1">${vocabOnly||''}</span>
       <span style="font-size:.65rem;font-weight:700;color:var(--blue);line-height:1.1;min-height:.85rem">${courseTotal||''}</span>
       <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden">
@@ -3063,7 +3063,7 @@ function showStats(){
         </div>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);padding:.7rem .7rem .5rem;">
-        <div style="display:flex;gap:.4rem;align-items:flex-end;height:120px;margin-bottom:.6rem">${forecastBars}</div>
+        <div style="display:flex;gap:.4rem;align-items:flex-end;height:105px;margin-bottom:.6rem">${forecastBars}</div>
         ${forecastBlockedCount > 0 ? `<div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem;" title="In deiner Partner-Review-Queue — aktuell nicht in der Karten-Abfrage">📬 ${forecastBlockedCount} gesperrt</div>` : ''}
         <div style="border-top:1px solid var(--border);padding-top:.5rem;display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;">
           <input id="pull-forward-count" type="number" min="1" max="200" value="20" style="width:3.5rem;padding:.3rem;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:.85rem;text-align:center;">
@@ -3249,7 +3249,7 @@ async function loadActivityStats(){
       const pctDay = x.attempts ? Math.round(x.correct / x.attempts * 100) : null;
       const pctColor = pctDay === null ? 'var(--border)' : pctDay >= 80 ? 'var(--green)' : pctDay >= 50 ? 'var(--gold)' : 'var(--red)';
       const vocabOnly = x.attempts - x.courseAttempts;
-      return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.3rem">
+      return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.2rem">
         <span style="font-size:.75rem;font-weight:700;color:${labelColor};line-height:1.1">${vocabOnly||''}</span>
         <span style="font-size:.65rem;font-weight:700;color:var(--blue);line-height:1.1;min-height:.85rem">${x.courseAttempts||''}</span>
         <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;position:relative">
@@ -3263,7 +3263,7 @@ async function loadActivityStats(){
 
     el.innerHTML = totalAttempts === 0
       ? `<div style="color:var(--muted)">Noch keine Daten in diesem Zeitraum.</div>`
-      : `<div style="display:flex;gap:.4rem;align-items:flex-end;height:140px;margin-bottom:.5rem">${bars}</div>
+      : `<div style="display:flex;gap:.4rem;align-items:flex-end;height:122px;margin-bottom:.5rem">${bars}</div>
          <div style="border-top:1px solid var(--border);padding-top:.4rem;font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:.3rem">
            <span>${totalAttempts} Versuche · <span style="color:var(--green)">${pctCorrectAll}% richtig</span>${totalCourseAttempts ? ` · <span style="color:var(--blue)">davon ${totalCourseAttempts} 🎓 Kurs</span>` : ''}</span>
            <span>${totalVocabSet.size} Vokabeln geübt</span>
