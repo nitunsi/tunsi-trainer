@@ -1602,8 +1602,12 @@ function enterApp(user){
       document.querySelectorAll('.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));
       const statsBtn = document.querySelector('.lesson-chip[onclick*="\'stats\'"]');
       if(statsBtn) statsBtn.classList.add('active');
-      loadOverlayUpdate('Lektionen laden…', 97, '');
-      loadLessonChips().then(()=>loadCourseLessonOptions()).then(()=>{
+      loadOverlayUpdate('Lektionen laden…', 96, '');
+      loadLessonChips().then(()=>{
+        loadOverlayUpdate('Kurs laden…', 98, '');
+        return loadCourseLessonOptions();
+      }).then(()=>{
+        loadOverlayUpdate('Kurs laden…', 99, COURSE_LESSONS.length + ' Kurs-Lektionen · ' + Object.keys(COURSE_EX_BY_ID).length + ' Übungen');
         showStats();
         updateLessonChips();
         applyLatin();
