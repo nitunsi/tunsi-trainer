@@ -48,9 +48,52 @@ Die Tabelle stimmt, das Feld ist unsauber: Quellen- und Wortart-Marker stehen im
 
 1584/1585 sind der dokumentierte Homographen-Fall (beide Formen identisch) — hier wäre `homonym_ok=true` der saubere Weg statt der Klammer. Bei 3614 fehlt zusätzlich der komplette `past`- und `imperative`-Block in der Tabelle.
 
-### A3 · Vokal-Abweichung Zeile ↔ Tabelle (21) — **Einzelentscheidung nötig**
+### A3 · Vokal-Abweichung Zeile ↔ Tabelle (23) — **überwiegend versteckte Dubletten**
 
-Hier steht Hausschreibung gegen TUNICO-Übernahme. SKILL.md warnt ausdrücklich, dass TUNICOs `chatalpha` andere Vokale nutzt als unsere Imala-Regeln (`ytayyib` vs. unser `ytayyeb`) — und genau dieses Paar taucht hier auf. **Nicht mechanisch entscheidbar, pro Zeile prüfen.**
+**Nachtrag 2026-09-12, wichtiger als die ursprüngliche Einordnung:** Für jede dieser 23 Zeilen wurde geprüft, ob die andere Schreibung auch als eigene Vokabel existiert. **Bei 14 von 23 existiert sie.** Das sind keine Schreibvarianten, sondern Dubletten — genau die Vokal-Varianten-Falle aus PRECEDENTS.md, die `normKey()` nicht findet, weil dort keine Vokale gefaltet werden.
+
+Die Frage ist damit nicht „welche Schreibung ist richtig", sondern **„zusammenlegen oder beide behalten"** — und beim Zusammenlegen greift das Standard-Merge-Vorgehen (die Zeile mit Lernfortschritt behalten, Bedeutungsnuance vorher in `german` übernehmen, Verweise in `vocab_lesson_refs` umbiegen).
+
+#### Die 14 Dubletten-Paare, mit Empfehlung (noch nicht bestätigt)
+
+| behalten | löschen | Begründung |
+|---|---|---|
+| **404** `y7eb` — er mag · L6 | 3781 `y7ib` · L5 | höherer Level; SKILL.md nennt `y7eb` als unsere Form |
+| **405** `ytayyeb` — er kocht · L6, 13 Versuche | 4028 `ytayyib` · L4 | dito, SKILL.md nennt `ytayyeb` |
+| **2222** `ybaddal` — er wechselt · L6 | 4306 `ybaddil` · L5 | höherer Level |
+| **2223** `ykammal` — er beendet · L6 | 4174 `ykammil` · L5 | höherer Level |
+| **1219** `yitkallam` — er spricht · L6 | 3450 `ytkallam` · L3 | höherer Level |
+| **3647** `yqaddem` — er präsentiert · L5, 21 Versuche | 4228 `yqaddim` · L4 | mehr Fortschritt |
+| **2226** `ykassar` — er zerbricht · L5, 14 Versuche | 2849 `ykasser` · kein Fortschritt | nur eine ist gelernt |
+| **3385** `qaddem` — er präsentierte · L5 | 4394 `qaddim` · kein Fortschritt | dito |
+| **4178** `kammil` — er beendete · L5 | 1658 `kammal` · kein Fortschritt | dito |
+| **2202** `yinsa7` — er rät · L2, 22 Versuche | 4360 `ynsa7` · kein Fortschritt | dito (2202 ist nebenbei ein Leech) |
+| **3816** `yijbid` — ziehen · L5, 12 Versuche, Audio | 3434 `yjbed` · kein Fortschritt | Audio + Fortschritt; **Gloss auf „er zieht" korrigieren** (steht im Infinitiv) |
+| **4168** `ya3raf` — er weiß · L5, Audio | 3723 `ya3rif` · L5 | Gleichstand, Audio gibt den Ausschlag |
+| **4170** `yalqa` — er findet · L4, 8 Versuche | 4035 `yilqa` · L4, 4 Versuche | mehr Versuche |
+| **3827** `y3awid` · L5, 10 Versuche | 3442 `y3awwed` · kein Fortschritt | **Sonderfall, siehe unten** |
+
+**Sonderfall `y3awwed`:** Die gelernte Zeile (3827) trägt die falsche Form — die Gemination fehlt (عوّد hat Schadda) — und zusätzlich einen Infinitiv-Gloss. Die korrekte Form (3442) ist ungelernt. Vorschlag: 3827 behalten, auf `y3awwed` / „er wiederholt" korrigieren, **danach** 3442 löschen. Reihenfolge wichtig — das ist der in PRECEDENTS.md dokumentierte Fall „Korrektur erzeugt Dublette".
+
+**Ausdrücklich keine Dublette:** `4045 yijra` „es geschieht" vs. `4039 yijri` „er läuft" — verwandte Wurzel, verschiedene Bedeutung. Beide behalten.
+
+#### Die restlichen 8 — dort ist es wirklich „Zeile oder Tabelle"
+
+`526 tnijjem` · `576 eqif` · `732 youja3` · `1042 nsakker` · `3052 osket` · `3432 y3jeb` · `3435 yrodd` · `3443 ylawwej`
+
+Kein Zwilling im Bestand, also kein Beleg für eine Seite. **Eine generelle Regel ist nicht ableitbar** — der Bestand selbst ist beim Stammvokal von Form-II-Verben uneinheitlich:
+
+| Stammvokal | Anzahl | Beispiele |
+|---|---|---|
+| `-a-` | 51 | `ysakkar`, `ykhallas`, `yfakkar`, `yqarrar` |
+| `-e-` | 27 | `ysallem`, `yqaddem`, `ynaqqes`, `y7arrek` |
+| `-i-` | 20 | `ykammil`, `ynajjim`, `ysallif`, `y3ammir` |
+
+Eine Vereinheitlichung würde ~100 Zeilen anfassen und wäre eine eigene, große Entscheidung. **Empfehlung: diese 8 vorerst stehen lassen** — für sich genommen nicht falsch, nur uneinheitlich mit ihrer Tabelle.
+
+#### Ursprüngliche Einordnung (gilt weiterhin für die 8 oben)
+
+Hier steht Hausschreibung gegen TUNICO-Übernahme. SKILL.md warnt ausdrücklich, dass TUNICOs `chatalpha` andere Vokale nutzt als unsere Imala-Regeln (`ytayyib` vs. unser `ytayyeb`).
 
 | ID | Zeile | Tabelle | Bedeutung |
 |---|---|---|---|
@@ -101,7 +144,7 @@ Dreimal dasselbe Verb تْعَشَّى — die Gemination fehlt durchgängig in 
 
 **Wichtig — keine globale Vereinheitlichung:** Die Endungen `-it` / `-et` / `-at` sind in den Tabellen vermutlich morphologisch bedingt (starke Verben `3amlit`, hohle `qalet`, defektive `qrat`), nicht zufällig inkonsistent. Verteilung über alle Tabellen: 293× `-it`, 238× `-et`, 115× `-at`. Eine Sammelkorrektur würde korrekte Formen kaputtmachen.
 
-### A6 · Phrase mit angehängter Verbtabelle (10)
+### A6 · Phrase mit angehängter Verbtabelle (8)
 
 Die Tabelle passt zum Verb *im Satz*, aber die Zeile ist eine Phrase oder Grußformel. Kein Fehler im engeren Sinn — der 🔠-Button zeigt hier eine Vollkonjugation auf einer Redewendung.
 
@@ -118,7 +161,9 @@ Die Tabelle passt zum Verb *im Satz*, aber die Zeile ist eine Phrase oder Grußf
 
 3383 und 3420 verstoßen zusätzlich gegen „Schrägstrich-Muster sofort aufteilen" — das sind zwei verschiedene Verben in einem Feld (siehe Liste D).
 
-Entscheidung offen: Tabelle an Phrasen dranlassen (schadet nichts, laut SKILL.md „richtet keinen Schaden an") oder entfernen.
+**Empfehlung (noch nicht bestätigt): die vier `3ayyit`-Sätze behalten, die beiden `3ayshik`-Zeilen entkoppeln.** Bei „Ruf die Feuerwehr" ist `3ayyit` wirklich der Imperativ des Verbs — die Tabelle daneben hilft beim Lernen. `3ayshik` dagegen ist eine erstarrte Höflichkeitsformel („danke"), die mit „leben lassen" nur noch etymologisch zusammenhängt; eine Vollkonjugation darauf verwirrt mehr, als sie nützt. 3383/3420 fallen ohnehin unter Liste D2.
+
+Alle 8 dranzulassen ist ebenfalls vertretbar — SKILL.md sagt selbst, eine falsche Zuordnung „richtet keinen Schaden an", weil es reine Anzeigedaten sind und der SRS-Fortschritt unberührt bleibt.
 
 ---
 
@@ -174,7 +219,9 @@ Rohfassung hatte 194 Treffer. Nach drei Ausschlüssen — Digraphen `sh/th/kh/gh
 
 `3629 jzayriya` · `3632 maghribiya` · `3635 muritaniya` · `3638 libiya` · `3653 swisriya` · `3655 3arbiya` · `3670 isbaniya` · dazu die Plurale `4105 sudaniyin` · `4106 lubnaniyin`
 
-Alle mit ـِيَّة (Schadda auf ي), alle ohne Doppel-`y` in der Transliteration. Das ist eine systematische Entscheidung, keine Einzelfehler — entweder alle auf `-iyya`/`-iyyin` oder bewusst alle so lassen. **Als Block entscheiden, nicht einzeln.**
+Alle mit ـِيَّة (Schadda auf ي), alle ohne Doppel-`y` in der Transliteration. Das ist eine systematische Entscheidung, keine Einzelfehler.
+
+✅ **Entschieden 2026-09-12: `-iyya` / `-iyyin`.** Also `jzayriyya`, `maghribiyya`, `muritaniyya`, `libiyya`, `swisriyya`, `3arbiyya`, `isbaniyya`, `sudaniyyin`, `lubnaniyyin`. Beim Umstellen die maskulinen Geschwisterformen mitprüfen, damit die Paare nicht auseinanderlaufen.
 
 ### Auffällige Gruppe: Verbpaare mit Form-II-Gemination (10)
 
@@ -216,7 +263,25 @@ Verstoß gegen „Einträge mit Schrägstrich-Muster sofort aufteilen". Der Dupl
 
 `465` · `477` · `504` · `600` · `997` · `1016` · `1457` · `1460` · `1552` · `2022` · `2179` · `2423` · `2729` · `2731` · `2858` · `2859` · `3383` · `3420` · `4107`
 
-Nicht alle sind gleich zu behandeln: `1016 hotel / util` und `2858 routila / 3ankbout` sind echte Synonympaare (zwei Wörter, eine Bedeutung), `3383 qarra / 3allem` sind zwei verschiedene Verben, `2731 emshi lqoddem / toul` sind zwei verschiedene Befehle. `arabic_script` enthält bei 20 Zeilen ebenfalls „/" — bei `847 fi lamen` und `1362 7allit` sogar, ohne dass `darija` eines hat.
+**Gegenprobe 2026-09-12: Kein einziger Bestandteil dieser 19 Einträge existiert auch als eigene Vokabel.** Die Dubletten-Gefahr, die die Regel begründet (der Duplikat-Check normalisiert den ganzen String inkl. „/" zu einem Key), ist hier also aktuell theoretisch. Das senkt die Dringlichkeit deutlich.
+
+**Empfehlung (noch nicht bestätigt): nur 5 aufteilen, 14 stehen lassen.**
+
+Aufteilen — zwei verschiedene Wörter oder Befehle, nicht dieselbe Bedeutung:
+
+| ID | Zeile | warum |
+|---|---|---|
+| 2179 | `itwi / tabbaq` — falten / zusammenfalten | zwei verschiedene Verben |
+| 2731 | `emshi lqoddem / toul` — fahr vorwärts / geradeaus | zwei verschiedene Befehle |
+| 3383 | `qarra / 3allem` — er lehrte | zwei verschiedene Verben |
+| 3420 | `yqarri / y3allem` — er lehrt | dito |
+| 1460 | `berk allah fik / yer7am weldik` | zwei eigenständige Dankesformeln |
+
+Stehen lassen — echte Synonyme oder Kurz-/Langform desselben Begriffs, bei denen `checkAnswer()` zu Recht beide Varianten akzeptiert: `465` · `477` (`m7atta`/`ma7attet et-trinou`, kurz/lang) · `504` · `600` · `997` · `1016` (`hotel`/`util`) · `1457` · `1552` · `2022` (`a7san`/`khir`) · `2423` · `2729` (`7abbes`/`a7bes`, Variante desselben Imperativs) · `2858` · `2859` · `4107` (zwei Pluralformen).
+
+Bei diesen 14 würde Aufteilen die Karte schlechter machen: Man müsste beim Abfragen raten, welche der beiden Varianten gerade gemeint ist.
+
+`arabic_script` enthält bei 20 Zeilen ebenfalls „/" — bei `847 fi lamen` und `1362 7allit` sogar, ohne dass `darija` eines hat.
 
 ### D3 · Lateinische Zeichen im `arabic_script` (4)
 
@@ -235,12 +300,28 @@ Nicht alle sind gleich zu behandeln: `1016 hotel / util` und `2858 routila / 3an
 
 ---
 
-## Was als Nächstes entschieden werden muss
+## Abarbeitungs-Reihenfolge (Vorschlag, Stand 2026-09-12)
 
-1. **A3 (21 Zeilen)** — Zeile oder Tabelle? Bei `y7ib`/`y7eb` und `ytayyib`/`ytayyeb` entscheidet SKILL.md bereits für die Tabelle; der Rest braucht Einzelprüfung.
-2. **A6 (10 Zeilen)** — Verbtabellen an Phrasen dranlassen oder entfernen?
-3. **C-Nationalitäten (8+2)** — `-iya` oder `-iyya` als Hausform? Als Block.
-4. **D2 (19 Zeilen)** — welche Schrägstriche sind Synonyme (bleiben) und welche gehören aufgeteilt?
-5. **Portionierung** — alles auf einmal bestätigen oder in Häppchen nach Fehlerart?
+Nach Fehlerart statt nach ID — pro Runde **eine** Entscheidung statt vieler einzelner, und bei einem Fehler ist der Schaden auf eine Klasse begrenzt und mit einer Abfrage rückgängig zu machen.
+
+| Runde | Inhalt | Zeilen | Entscheidung nötig? |
+|---|---|---|---|
+| 1 | **B + A1** — Plural-Endungen | 13 (6 davon aus A1) | nein, reiner Regelverstoß |
+| 2 | **A2** — Klammer-Zusätze im `darija`-Feld | 5 | nein |
+| 3 | **A4** — Gemination bei تْعَشَّى | 3 | nein |
+| 4 | **A3-Merges** — 14 Dubletten-Paare | 28 → 14 | ja, Tabelle oben prüfen |
+| 5 | **D2-Splits** (5) + **A6-Entkopplungen** (2) | 7 | ja |
+| 6 | **C** — Gemination | 93 | ja, in Häppchen à ~20 (~15 % Fehlalarme) |
+| — | **C-Nationalitäten** | 10 | ✅ entschieden: `-iyya` |
+
+Runden 1–3 sind zusammen 21 Zeilen und ohne weitere Rückfrage sauber abzuarbeiten.
+
+### Noch offen
+
+1. **A3-Merges** — Zustimmung zur Tabelle der 14 Paare (oder Einzelkorrekturen daran).
+2. **A6** — die beiden `3ayshik`-Zeilen entkoppeln oder alle 8 so lassen?
+3. **D2** — Zustimmung zu den 5 Splits.
+4. **Die 8 A3-Reste ohne Zwilling** — vorerst stehen lassen (Empfehlung) oder doch angleichen?
+5. **Form-II-Stammvokal** (`-a-` 51 / `-e-` 27 / `-i-` 20) — eigene, große Entscheidung; bisher bewusst nicht angefasst.
 
 Neue Vokabelzeilen (48 fehlende Verbformen) sind laut Absprache in Ordnung, aber **vorher fragen** — und getrennt davon fragen, **ob sie fällig gesetzt** werden sollen.
