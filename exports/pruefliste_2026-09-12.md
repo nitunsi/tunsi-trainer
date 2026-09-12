@@ -1,6 +1,10 @@
 # Prüfliste 2026-09-12 — Verb-Selbstcheck, Plural-Endung, Gemination
 
-Ergebnis von Etappe 1 des Prüfplans. **Nichts davon ist in Supabase geändert worden** — das sind reine Fundlisten zum Abarbeiten (Etappe 2).
+Ergebnis von Etappe 1 des Prüfplans, seit 2026-09-12 teilweise abgearbeitet.
+
+> **Stand:** ✅ **Runde 4 (A3-Merges) ist ausgeführt** — 14 Dubletten zusammengelegt, siehe Abschnitt A3. Alle übrigen Listen sind unverändert und warten auf Bestätigung.
+>
+> Bestand danach: **3.798 Vokabeln** (vorher 3.812), **2.105 progress-Zeilen** (vorher 2.113). Verb-Selbstcheck: **38 Treffer** (vorher 49).
 
 Die drei SQL-Abfragen dazu stehen in `skills/tunsi/SKILL.md` → „Datenqualitäts-Checks (SQL)" und lassen sich jederzeit neu laufen lassen.
 
@@ -54,7 +58,20 @@ Die Tabelle stimmt, das Feld ist unsauber: Quellen- und Wortart-Marker stehen im
 
 Die Frage ist damit nicht „welche Schreibung ist richtig", sondern **„zusammenlegen oder beide behalten"** — und beim Zusammenlegen greift das Standard-Merge-Vorgehen (die Zeile mit Lernfortschritt behalten, Bedeutungsnuance vorher in `german` übernehmen, Verweise in `vocab_lesson_refs` umbiegen).
 
-#### Die 14 Dubletten-Paare, mit Empfehlung (noch nicht bestätigt)
+#### ✅ Die 14 Dubletten-Paare — ausgeführt am 2026-09-12
+
+Bestätigt und in dieser Reihenfolge geschrieben:
+
+1. **Gloss-Ergänzungen** an den bleibenden Zeilen: 404 „er mag / er liebt" · 2222 „er wechselt / er verändert" · 2223 „er beendet / er macht fertig / er erledigt" · 1219 „er spricht / er redet" · 2226 „er zerbricht / er zerkleinert".
+2. **Zwei echte Korrekturen:** 3827 `y3awid` → `y3awwed` mit Gloss „er wiederholt / er tut es nochmal" (`translit_skeleton` neu berechnet); 3816 Infinitiv-Gloss repariert → „er zieht / er reißt / er hebt ab (Geld)".
+3. **3385 `qaddem`** von `lesson_id` 46 (Präsens) nach 47 (Vergangenheit) umgehängt.
+4. **7 Kurs-Übungen umgehängt** (Fremdschlüssel ist `NO ACTION`, ein direktes DELETE wäre gescheitert): Übungen 388/401 → 1219, 283/290 → 4168, 379/392/446 → 404.
+5. **12 Verweise in `vocab_lesson_refs`** über 8 Lektionen neu aufgebaut — ersetzt, bzw. ersatzlos entfernt wo die Ziel-ID schon in der Liste stand (L2 bei 3450→1219 und 3781→404). Ergebnis geprüft: 0 tote Verweise, 0 doppelte IDs, alle 13 Lektionen im gültigen `ids:…|darija:…`-Format.
+6. **14 DELETE.** `progress` und `vocabulary_review` per CASCADE mit, `review_log` per SET NULL (44 Protokollzeilen haben ihre Wortzuordnung verloren, bleiben aber als Zeilen für die Tagesstatistik erhalten).
+
+**Offener Rest aus diesem Merge:** Bei den bleibenden Zeilen wurde die `conjugation`-Tabelle **nicht** mit angepasst. 12 davon (u.a. 2222 `ybaddal` vs. Tabelle `ybaddil`, 2223 `ykammal` vs. `ykammil`, 4168 `ya3raf` vs. `ya3rif`) widersprechen weiterhin ihrer eigenen Tabelle — die Karte lehrt die eine, das 🔠-Blatt zeigt die andere Schreibung. Das ist der Grund, warum der Selbstcheck bei 38 statt bei 27 steht. Eigener Arbeitsschritt, noch nicht entschieden.
+
+#### Die 14 Paare im Detail
 
 | behalten | löschen | Begründung |
 |---|---|---|
@@ -304,12 +321,12 @@ Bei diesen 14 würde Aufteilen die Karte schlechter machen: Man müsste beim Abf
 
 Nach Fehlerart statt nach ID — pro Runde **eine** Entscheidung statt vieler einzelner, und bei einem Fehler ist der Schaden auf eine Klasse begrenzt und mit einer Abfrage rückgängig zu machen.
 
-| Runde | Inhalt | Zeilen | Entscheidung nötig? |
+| Runde | Inhalt | Zeilen | Status |
 |---|---|---|---|
 | 1 | **B + A1** — Plural-Endungen | 13 (6 davon aus A1) | nein, reiner Regelverstoß |
 | 2 | **A2** — Klammer-Zusätze im `darija`-Feld | 5 | nein |
 | 3 | **A4** — Gemination bei تْعَشَّى | 3 | nein |
-| 4 | **A3-Merges** — 14 Dubletten-Paare | 28 → 14 | ja, Tabelle oben prüfen |
+| 4 | **A3-Merges** — 14 Dubletten-Paare | 28 → 14 | ✅ ausgeführt 2026-09-12 |
 | 5 | **D2-Splits** (5) + **A6-Entkopplungen** (2) | 7 | ja |
 | 6 | **C** — Gemination | 93 | ja, in Häppchen à ~20 (~15 % Fehlalarme) |
 | — | **C-Nationalitäten** | 10 | ✅ entschieden: `-iyya` |
