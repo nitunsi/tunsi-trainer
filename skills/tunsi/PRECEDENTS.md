@@ -286,11 +286,15 @@ Beim Prüfen der ya-Gemination ergab `arabic_script ~ 'يّ'` nur 7 Treffer, obw
 
 **Lehre:** Bei jeder neuen Regex auf `arabic_script` erst gegenprüfen, ob sie überhaupt greift — eine Trefferzahl, die plausibel niedrig aussieht, kann eine stumme Fehlregel sein. Der billigste Test: eine Zeile, von der man weiß, dass sie treffen muss, einzeln abfragen und die Codepoints ausgeben (`to_hex(ascii(ch))` über `regexp_split_to_array(arabic_script,'')`).
 
-## Waw-Gemination — bewusst offen gelassen (2026-09-12)
+## Waw-Gemination — erst offen gelassen, dann entschieden (2026-09-12)
 
-Nachdem die ya-Regel (`yy`) dreifach belegt war, lag die Übertragung auf و nahe. Gegenbeleg: Ninja schreibt هُوَ **ohne** Schadda als `houwa` — das `w` steht dort für den Buchstaben Waw, nicht für eine Verdopplung; `ww` erscheint erst bei echter Schadda (تَوَّا → `tawwa`). Die eigene هو/هي-Familie ist in sich uneinheitlich (493 `houa`/هُوَ, 1445 `houa`/هُوَّ, 3339 `houwa`/هُوَّ, 3340 `hiyya`/هِيَّ, 3812 `ahuwa`/أَهُوَّا, 1782+3747 `houa`/هو).
+**Erste Runde, Fehlschluss:** Nachdem die ya-Regel (`yy`) dreifach belegt war, lag die Übertragung auf و nahe. Als Gegenbeleg schien zu sprechen, dass Ninja هُوَ als `houwa` mit einem `w` schreibt. Daraufhin wurde eine bereits ausgeführte Einzelkorrektur `3812 ahuwa`→`ahuwwa` **zurückgenommen** und die Frage offen gelassen.
 
-Eine bereits ausgeführte Einzelkorrektur `3812 ahuwa`→`ahuwwa` wurde deshalb **noch in derselben Sitzung zurückgenommen**: sie war nach der Schadda-Regel vertretbar, hätte die Zeile aber als einzige gegen `3339 houwa` gestellt. Gleiche Begründung wie bei `1392 y3ayshek` — eine Familienschreibung wird als Block entschieden oder gar nicht. Lieber eine bekannte offene Frage als eine neue, selbstgemachte Inkonsistenz.
+**Zweite Runde, Auflösung:** Der Gegenbeleg war keiner. In هُوَ steht **keine Schadda** — ein Waw-Buchstabe ergibt ein `w`. Die Systematik ist exakt symmetrisch zu ya (هِيَ → `hiya`, هِيَّ → `hiyya`; هُوَ → `houwa`, هُوَّ → `houwwa`). Der Bestand schreibt waw mit Schadda **40 : 4** als `ww`; die 4 Gegenbeispiele sind wortfinale Schadda und die bewusst kontrahierte `shnou`-Familie. Die Rücknahme von 3812 war also im Ergebnis falsch — richtig ist `ahouwwa` — aber **im Verfahren richtig**: die Zeile hätte als einzige gegen ihre Geschwister gestanden, und die Begründung, die das aufgelöst hat, lag zu dem Zeitpunkt nicht vor.
+
+**Lehre:** Ein einzelner Quellenbeleg widerlegt eine Regel nur, wenn er wirklich denselben Fall zeigt. „Ninja schreibt hier ein `w`" war erst dann aussagekräftig, als geprüft war, ob dort überhaupt eine Schadda steht. Vorher war es eine Beobachtung über ein anderes Wort.
+
+**Ausgeführt:** 11 Zeilen — die هو-Familie auf `houwwa` (493, 1445, 1782, 3339, 3747), `ahuwa`→`ahouwwa` (3812), die هي-Familie auf `hiyya` (1887, 3711; drei Zeilen schrieben es schon so), `taw`→`tawwa` (1661, 3197) und `melwen`→`mlawwen` (3163, dessen Parallelzeile 3710 `mlawwen` bereits schrieb).
 
 ## arabic_skeleton/translit_skeleton Herleitung — Rezept 4 (2026-09-05)
 

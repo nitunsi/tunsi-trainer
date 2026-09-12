@@ -606,7 +606,25 @@ SELECT id, darija, arabic_script, german FROM vocabulary
 WHERE arabic_script ~ 'ي[ًٌٍَُِْٰ]*ّ' AND darija !~ 'yy' ORDER BY id;
 ```
 
-**Gemination von waw: bewusst NICHT entschieden (Stand 2026-09-12).** Die ya-Regel lässt sich **nicht** auf و übertragen. Ninja schreibt هُوَ (ohne Schadda) als `houwa` — das `w` ist dort der Buchstabe Waw selbst, nicht die Verdopplung; erst bei echter Schadda kommt `ww` (تَوَّا → `tawwa`). Im eigenen Bestand ist die هو/هي-Familie in sich uneinheitlich: 493 `houa`/هُوَ, 1445 `houa`/هُوَّ, 3339 `houwa`/هُوَّ, 3340 `hiyya`/هِيَّ, 3812 `ahuwa`/أَهُوَّا, 1782+3747 `houa`/هو — sechs Zeilen, vier Arabisch-Varianten, drei Transliterationen. **Erst als Block entscheiden (wie bei `3ayshik`), nicht einzeln korrigieren.** Präzedenzfall dazu: eine Einzelkorrektur `ahuwa`→`ahuwwa` wurde am selben Tag wieder zurückgenommen, weil sie die Zeile von ihren Geschwistern abgekoppelt hätte.
+**Gemination von waw: `ww` (entschieden 2026-09-12).** Dieselbe Regel wie bei ya, ohne Ausnahme. Eigener Bestand **40 : 4** (`sawwar`, `lawwej`, `rawwa7`, `dawwara`, `mfawwer`, `ynawwar`, `tsawwert`, `tawwa`, `khawwaf`, `zawweli` …), Ninja `tawwa` تَوَّا.
+
+**Der scheinbare Widerspruch war ein Denkfehler:** Ninja schreibt هُوَ als `houwa` mit *einem* `w` — dort steht aber **keine Schadda**. Ein Waw-Buchstabe → ein `w`. Die Systematik ist exakt symmetrisch zu ya:
+
+| | ohne Schadda | mit Schadda |
+|---|---|---|
+| ya | هِيَ → `hiya` | هِيَّ → `hiyya` |
+| waw | هُوَ → `houwa` | هُوَّ → `houwwa` |
+
+```sql
+SELECT id, darija, arabic_script, german FROM vocabulary
+WHERE arabic_script ~ 'و[ًٌٍَُِْٰ]*ّ' AND darija !~ 'ww' ORDER BY id;
+```
+
+**Drei dokumentierte Ausnahmen, die dieser Check zu Recht meldet und die so bleiben:**
+
+1. **Wortfinale Schadda** wird nicht transliteriert — `dhaw` ضَوّْ, `jaw` جَوّ, `qwi` قُوِّي. Gleiche Regel wie im Gemination-Check darüber.
+2. **Die `shnou`-Familie** (7 Zeilen) — `shnoua` ← شْنُوَّا ist als bewusste Kontraktionsform dokumentiert, nicht als Fehler. **Aber:** die Familie trägt fünf verschiedene Schreibungen (`shnoua`, `shnou`, `shnouwa`, `shnowwa`, `shnouwwa`) und zwei Arabisch-Endungen (ـا/ـة). Eigener Durchgang, Block-Entscheidung wie bei `3ayshik`.
+3. **`1622 t3awinni`** تعاوّني — die Schadda sitzt dort auf dem waw von تعاون, was nach Tippfehler im Arabischen aussieht (erwartet: تعاوني). Nicht als Transliterationsfehler behandeln, bevor das Arabische geklärt ist.
 
 **Skelett-Vergleich als Vorfilter für Liste C (seit 2026-09-12).** `public._translit_skeleton(darija)` gegen `public._arabic_skeleton(arabic_script)` trennt die Schadda-Verdachtsliste viel schärfer als die Regex allein: bei 69 Verdachtszeilen waren 48 skelett-uneinig und 21 einig; unter den einwortig-uneinigen waren nach Prüfung 28 von 35 echte Fehler. Als erste Spalte in jede Verdachtsabfrage aufnehmen und nach `ts <> as_` sortieren.
 

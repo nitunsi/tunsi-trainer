@@ -845,3 +845,38 @@ Verifiziert: Syntax-Check (`vm.Script`) sauber, Positivtest (2 × ح / 1 × `7`)
 **`1843`** — `jeux vidéos` → `jeux video` (Akzente gibt es im Hausalphabet nicht) plus Lehnwort-Markierung, analog zu `taxi`. Damit ist kein unmarkiertes `x` mehr im Bestand.
 
 **Nebenbei repariert: `scratchpad/extract.js`.** Sein Endanker war `"\n];"` — also die *erste* Array-Schließung nach `isLoanword`. Mit `CONSONANT_PAIRS` liegt dort jetzt ein zweites Array, der Extraktor hätte `TRANSLIT_RULES` gar nicht mehr erwischt. Zum zweiten Mal in dieser Sitzung ein zu unscharfer Anker in diesem Skript (vorher: Zeilennummern). Jetzt gezielt auf den Abschluss von `TRANSLIT_RULES` verankert, mit harter Fehlermeldung wenn ein Anker fehlt.
+
+---
+
+## Runde 10 · waw-Gemination entschieden (2026-09-12, 11 Zeilen)
+
+**Mein gestriger Gegenbeleg war keiner.** Ich hatte die waw-Frage offen gelassen, weil Ninja هُوَ als `houwa` mit *einem* `w` schreibt — dort steht aber **keine Schadda**. Ein Waw-Buchstabe ergibt ein `w`. Damit ist die Systematik exakt symmetrisch zu ya:
+
+| | ohne Schadda | mit Schadda |
+|---|---|---|
+| ya | هِيَ → `hiya` | هِيَّ → `hiyya` |
+| waw | هُوَ → `houwa` | هُوَّ → `houwwa` |
+
+Der Bestand bestätigt das mit **40 : 4** (`sawwar`, `lawwej`, `rawwa7`, `dawwara`, `mfawwer`, `ynawwar`, `tsawwert`, `tawwa`, `khawwaf`, `zawweli` …).
+
+### ✅ Ausgeführt
+
+| Gruppe | Zeilen |
+|---|---|
+| هو-Familie → `houwwa` | 493, 1445, 1782, 3339, 3747 |
+| `ahuwa` → `ahouwwa` | 3812 *(die gestern zurückgenommene Korrektur, jetzt mit Begründung)* |
+| هي-Familie → `hiyya` | 1887, 3711 *(1643, 3340, 3743 schrieben es schon so)* |
+| `taw` → `tawwa` | 1661, 3197 — Bestand 7 : 2, Ninja `tawwa` تَوَّا |
+| `melwen` → `mlawwen` | 3163 — Parallelzeile 3710 schrieb `mlawwen` bereits |
+
+`checkAnswer()` akzeptiert alle sechs geprüften Paare in beide Richtungen, Prüf-Tab bleibt auf 0 von 3.780.
+
+### 🚫 Drei Ausnahmen, die der Check zu Recht meldet und die so bleiben
+
+1. **Wortfinale Schadda** wird nicht transliteriert — `dhaw` ضَوّْ, `jaw` جَوّ, `qwi` قُوِّي. Gleiche Regel wie im Gemination-Check.
+2. **`shnou`-Familie (7 Zeilen)** — `shnoua` ← شْنُوَّا ist in SKILL.md als gewollte Kontraktion dokumentiert, nicht als Fehler. Die habe ich nicht angefasst. **Aber:** fünf Schreibungen (`shnoua`, `shnou`, `shnouwa`, `shnowwa`, `shnouwwa`) und zwei Arabisch-Endungen (ـا/ـة) innerhalb einer Familie. Eigener Durchgang, Block-Entscheidung wie bei `3ayshik`.
+3. **`1622 t3awinni`** تعاوّني — die Schadda sitzt auf dem waw von تعاون und sieht nach einem Tippfehler im Arabischen aus (erwartet: تعاوني). Erst das Arabische klären, dann die Transliteration.
+
+### Zur gestrigen Rücknahme von 3812
+
+Die war **im Ergebnis falsch** — `ahouwwa` ist richtig — **im Verfahren aber richtig**: Die Zeile hätte als einzige gegen ihre Geschwister gestanden, und die Begründung, die das auflöst, lag zu dem Zeitpunkt nicht vor. Lieber eine offene Frage als eine selbstgemachte Inkonsistenz; die Frage wurde dann eben beantwortet.
