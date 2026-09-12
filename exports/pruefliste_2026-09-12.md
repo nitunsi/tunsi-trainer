@@ -2,7 +2,7 @@
 
 Ergebnis von Etappe 1 des Prüfplans, seit 2026-09-12 teilweise abgearbeitet.
 
-> **Stand:** ✅ **Klasse A komplett** (A1–A6), **Liste E**, **Runde 5 (D2)** bis auf einen zurückgestellten Fall. Offen: Runde 6 (Gemination, 93) und zwei Nachträge, siehe unten.
+> **Stand:** ✅ **Klasse A komplett** (A1–A6), **Liste E**, **Runde 5 (D2)** bis auf zwei Rückstellungen, **Runde 6 Gruppe 1** (13 Zeilen). Offen: Runde 6 Gruppen 2–4 (79 Zeilen) — zwei davon brauchen erst eine Familien-Entscheidung.
 >
 > Bestand: **3.790 Vokabeln** (3.812 minus 24 Dubletten, plus 2 aus Aufteilungen). Verb-Selbstcheck **26** (vorher 49). Regel 21 (`-iou`): **0** (vorher 13). Vokal-Dubletten Stufe A: **2** (vorher 10, beide bewusste Fehlalarme). Duplikat-Check: 0.
 
@@ -491,3 +491,28 @@ Beim ersten INSERT-Versuch schlug die Aufteilung mit `23505 duplicate key value 
 **Das war ein echter, nutzersichtbarer Bug**, unabhängig von diesem Prüfdurchgang: Jeder Anlegeversuch in der App wäre gescheitert — „➕ Neue Vokabel" (`saveNewVocab`), „➕ Neu anlegen" im TUNICO-Tab (`_tnAddNew`), Semias Vorschlagsformular (`partnerSubmitSuggestion`) und „Neue Lektion" (`saveNewLesson`).
 
 Behoben per `setval()` auf den jeweiligen `max(id)`. `course_exercises`, `progress` und `review_log` waren in Ordnung. **Empfehlung: nach jedem größeren Bulk-Import mit expliziten IDs die Sequenz mitziehen** — gehört als Schritt in die Bulk-Insert-Anleitung in IMPORTS.md.
+
+
+---
+
+## Runde 6 · Gemination — Gruppe 1 erledigt (13 Zeilen)
+
+Die 92 Verdachtszeilen wurden in vier Gruppen sortiert. Gruppe 1 ist das ـِيَّة-Muster, für das die `-iyya`-Entscheidung schon vorlag.
+
+✅ **Ausgeführt 2026-09-12:** `3shiya`→`3shiyya` · `makla zemniya`→`makla zemniyya` · `jzayriya`→`jzayriyya` · `maghribiya`→`maghribiyya` · `muritaniya`→`muritaniyya` · `libiya`→`libiyya` · `swisriya`→`swisriyya` · `3arbiya`→`3arbiyya` · `isbaniya`→`isbaniyya` · `ta7iya`→`ta7iyya` · `sudaniyin`→`sudaniyyin` · `lubnaniyin`→`lubnaniyyin` · `msara / masriyin`→`msara / masriyyin`
+
+Alle 13 vorher auf Kollision geprüft (alle frei). Die maskulinen Geschwister (`jzayri`, `libi`, `3arbi`, `maghribi`, `swisri`, `isbani`, `muritani`, `sudani`, `lubnani`, `masri`) tragen im Arabischen keine Schadda auf dem ي und bleiben korrekt bei einfachem `-i`.
+
+→ **Nachtrag (offen):** `4444 marroukiya` „Marokkanerin [Synonym zu maghribiya]" gehört ins selbe Muster, wurde aber von der Prüfregel nicht erfasst — das Wort enthält mit `rr` bereits eine korrekte Gemination, und der Filter schließt jede Zeile mit Doppelbuchstaben aus. **Blinder Fleck der Regel:** Eine vorhandene Gemination maskiert eine zweite fehlende. Dazu ist das `arabic_script` مرّوكية nur teilvokalisiert (Schadda auf ر, aber keine auf ي) — nach der Regel „unvokalisiert → nicht raten" nicht von allein zu entscheiden.
+
+### Konventionsfund: verdoppelte Digraphen
+
+Bei Gruppe 2 stellte sich die Frage, ob ein geminierter Digraph als `ddh` oder `dhdh` geschrieben wird. Der Bestand antwortet eindeutig — siehe die neue Tabelle in SKILL.md → Konsonanten. Kurz: **ganzer Digraph** (`dhdh`, `thth`, `shsh`, `khkh`), bei `shsh`/`khkh` ohne ein einziges Gegenbeispiel.
+
+**Konflikt mit einem dokumentierten Präzedenzfall:** Die einzigen zwei `ddh`-Zeilen (`1648 7addhar`, `2218 y7addhar`) stammen aus der in PRECEDENTS.md festgehaltenen Korrektur vom 2026-08-07. Sie widersprechen der Konvention, die neun andere ض-Geminationen befolgen — darunter `itfadhdhal` aus derselben Wurzelfamilie. **Entscheidung nötig**, weil eine Vereinheitlichung eine dokumentierte Entscheidung überschreiben würde.
+
+### Familien-Entscheidung nötig: die `3ayshek`-Gruppe
+
+`1392 y3ayshek` steht in Gruppe 2 zur Korrektur an. Beim Prüfen zeigte sich: **17 Zeilen im Bestand verwenden dieses Wort in fünf verschiedenen Schreibweisen** — `3ayshik` (851), `3ayshek` (2685, 3001, 3002, 3132), `y3ayshek` (1392, 1434, 1435, 1439, 1440), `y3ayshik` (1750, 1945, 3701), `y3ayyshik` (1438) — während das `arabic_script` durchgängig عَيِّشِك mit Schadda auf ي schreibt, also `3ayyshik` nahelegt.
+
+Eine Einzelkorrektur von 1392 würde die Zeile von 15 Geschwistern abkoppeln. Das ist wie bei den Nationalitäten eine Block-Entscheidung. Zusätzlich trägt 1392 im `arabic_script` den Rest `(b...)` — einer der vier Einträge mit lateinischen Zeichen im arabischen Feld (Liste D3).

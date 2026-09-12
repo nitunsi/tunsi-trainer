@@ -134,6 +134,19 @@ Die Datei `tounsi_db_YYYY-MM-DD.md` im Projektwissen ist die primäre Datenquell
 
 Keine Großbuchstaben in darija — weder als Emphase-Marker noch am Satzanfang. Durchgehend kleingeschrieben.
 
+**Gemination eines Digraphen: der ganze Digraph wird verdoppelt (belegt 2026-09-12).** Bei Schadda auf ض/ظ/ذ/ش/خ/غ wird nicht nur der erste Buchstabe gedoppelt, sondern die komplette Schreibung:
+
+| Laut | richtig | falsch | Bestandsbeleg |
+|---|---|---|---|
+| ضّ | `dhdh` | ~~`ddh`~~ | `itfadhdhal`, `ya3adhdh`, `rabbi yfadhdhlik` (9×) |
+| ظّ/ذّ | `thth` | ~~`tth`~~ | `kaththab`, `naththaf`, `mnaththam`, `ykathther` (6×) |
+| شّ | `shsh` | — | `t3ashsha`, `ghushsh`, `mitghashshish` (11×) |
+| خّ | `khkh` | — | `mukhkh`, `wakhkhar`, `fi likhkhir` (7×) |
+
+Bei `shsh` und `khkh` gibt es im Bestand **null** Gegenbeispiele, bei `dhdh`/`thth` jeweils nur zwei — die Regel ist also praktisch ausnahmslos.
+
+**Bekannte Ausnahme, die dagegen steht:** PRECEDENTS.md → Verben dokumentiert für 2026-08-07 die Korrektur `7adhar`→`7addhar` (plus `y7adhar`→`y7addhar`) mit `ddh`. Das sind genau die beiden `ddh`-Zeilen im Bestand (ids 1648, 2218) und sie widersprechen der Konvention, die die übrigen neun ض-Geminationen befolgen — auch Wörter derselben Wurzelfamilie wie `itfadhdhal`. Vor einer Vereinheitlichung auf `7adhdhar`/`y7adhdhar` Rückfrage, weil es eine dokumentierte Entscheidung überschreibt.
+
 ### Vokale & häufige Wörter
 
 | Form | Korrekt | Nie |
