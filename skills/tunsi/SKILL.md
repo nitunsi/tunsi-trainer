@@ -14,12 +14,13 @@ Fokus dieser Datei: bestehende Trainer-Vokabeln prüfen, neue Vokabeln nachschla
 
 | Situation | Relevante Abschnitte |
 |---|---|
-| Vokabel überprüfen / neue Vokabel nachschlagen / Import-Batch gegenchecken | vocab_lookup — Cross-Source-Abgleich (ganz unten) |
+| **Bestand systematisch prüfen / „alle Regeln laufen lassen"** | **Datenqualitäts-Checks (SQL)** — und dort zuerst den Kasten „Transliterations-Check". Das SQL dort ist nur eine **Teilmenge** der Regeln; der vollständige Lauf geht über den Node-Harness gegen `trainer.html`. Wer „alle Regeln geprüft" schreiben will, muss diesen Weg gehen. |
+| Einzelne Vokabel überprüfen / neue nachschlagen / Import-Batch gegenchecken | vocab_lookup — Cross-Source-Abgleich (ganz unten) |
 | Nutzer hat Vokabeln mit 🚩 markiert | Workflow: Geflaggte Vokabeln (🚩) live gegen Derja Ninja prüfen |
 | Frischer Batch soll automatisch geprüft werden | Workflow: Frisch importierte Batch-Vokabeln flaggen + verifizieren |
-| Neue Vokabel(n) schreiben | Kern-Workflow: neue Vokabel(n) verarbeiten → Transliteration — Ziel-Konvention → Topic-Pflichtfeld |
+| Neue Vokabel(n) schreiben | Kern-Workflow: neue Vokabel(n) verarbeiten → Transliteration — Ziel-Konvention → Topic (Pflichtfeld NUR bei Neuanlage) |
 | Vokabel ist ein Verb (prüfen ODER anlegen) | Verben → Verb-Konjugationsmodell (3-Zeilen-Ziel, `conjugation`, `conj_rotate`) — gilt auch bei geflaggten Einzelformen |
-| Was ist von früher noch unerledigt? | Offene Punkte (direkt unten) |
+| Was ist von früher noch unerledigt? | Offene Punkte (direkt unten) — **die Zahlen dort sind ein Schnappschuss, vor jeder Planung mit dem SQL daneben neu ziehen** |
 | PDF/Foto-Quelle auswerten, neue Quelle importieren | IMPORTS.md |
 | Kurs-Modus (course_lessons/course_exercises) oder Code-Änderung an trainer.html | COURSE_MODE.md |
 
@@ -29,18 +30,38 @@ Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nic
 
 - **Ninja-Transliteration in Trainer-Konvention** (besprochen 2026-09-05, bewusst zurückgestellt): `derja_ninja_entries.darija` ist in Ninjas eigener Konvention, nicht unserer — anders als bei TUNICO/Peace Corps gibt es dafür noch keine `chatalpha`-Spalte. Wäre nur aus dem vollvokalisierten `arabic_script` heraus zuverlässig baubar (nicht aus Ninjas `darija` selbst), mit eigenem Validierungsaufwand. Bisher kein Bedarf, seit klar ist: Original-Transliteration wird ohnehin nur im Zweifelsfall herangezogen, `chatalpha` reicht für den Regelfall.
 
-**Laufender Prüfdurchgang (Stand 2026-09-12).** Vollständige Fundlisten mit Klassifizierung und Entscheidungsstand: `exports/pruefliste_2026-09-12.md` — dort weiterarbeiten, nicht neu aufrollen. Kurzstand:
+**Laufender Prüfdurchgang.** Vollständige Fundlisten mit Klassifizierung und Entscheidungsstand: `exports/pruefliste_2026-09-12.md` — dort weiterarbeiten, nicht neu aufrollen.
 
-| Posten | Menge | Status |
+⚠️ **Die folgenden Zahlen sind ein Schnappschuss vom 2026-09-13, kein Stand.** Sie veralten mit jeder Korrektur und haben genau das schon einmal getan — die frühere Fassung dieser Tabelle nannte 49 statt 19 beim Verb-Selbstcheck und 93 statt 21 bei der Gemination, also Posten, die längst erledigt waren. **Vor jeder Planung neu ziehen, nie aus dieser Tabelle zitieren.** Die Abfrage dafür steht direkt darunter.
+
+| Posten | Schnappschuss 2026-09-13 | Einordnung |
 |---|---|---|
-| Verb-Selbstcheck (Zeile ≠ eigene Tabelle) | 49 → 26 | A1–A4 erledigt; A5 (4 Zeilen, Vergangenheits-Endung) und A6 (8 Phrasen mit Verbtabelle) offen |
-| Plural-Endung `-iou` | 13 → 0 | erledigt, jetzt Regel 21 in `TRANSLIT_RULES` |
-| Konsonant-Anzahl statt -Vorkommen | 11 → 0 | erledigt, jetzt Regel 22 in `TRANSLIT_RULES` |
-| Gemination (Schadda ohne Doppelbuchstaben) | 93 | offen, Verdachtsliste mit ~15 % Fehlalarmen |
-| Vokal-Dubletten im Bestand | 177 Verdachtspaare | offen, Fehlalarm-Muster siehe Datenqualitäts-Checks |
-| Schrägstrich im `darija`-Feld | 19 | 5 zum Aufteilen vorgeschlagen, 14 sind echte Synonyme |
-| Unvokalisiertes `arabic_script` | 785 (701 ohne Notiz/Flag) | offen, keine Entscheidung getroffen |
-| Präsens-Verben mit Infinitiv-Gloss | 9 (19 ohne Topic-Filter) | offen |
+| Bestand | 3.780 | — |
+| `TRANSLIT_RULES` (22 Regeln, Prüf-Tab) | 0 | sauber, per Node-Harness verifiziert |
+| Verb-Selbstcheck | 19 | Zeilen ohne vollständige `conjugation`, bekannter D4-Rückstand |
+| Liste C (Schadda ohne Gemination) | 21 | überwiegend mehrwortig, Schadda sitzt in einem anderen Wort |
+| unvokalisiertes `arabic_script` | 746 | **keine Kampagne** — siehe Datenqualitäts-Checks → Vokalisierung |
+| `ar_key`-Gruppen (vokalisierungsunabhängig) | 75 | ~20 % echte Funde, Rest strukturelle Fehlalarme |
+| Schrägstrich im `darija` | 16 | echte Synonyme, Aufteilungen sind durch |
+| Präsens-Verb mit Infinitiv-Gloss | 0 | erledigt |
+| verwaiste ids in `course_lessons.vocab_lesson_refs` | 11 | Altbestand, tote Vokabel-Slots im Kurs |
+
+```sql
+-- Zieht alle Posten oben neu. Ergebnis gegen die Tabelle halten; weicht es ab, gilt das Ergebnis.
+SELECT 'Bestand' AS posten, count(*)::text AS wert FROM vocabulary
+UNION ALL SELECT 'Verb-Selbstcheck', count(*)::text FROM vocabulary
+  WHERE conjugation IS NOT NULL AND NOT conj_rotate AND conjugation::text NOT LIKE '%"'||darija||'"%'
+UNION ALL SELECT 'unvokalisiert', count(*)::text FROM vocabulary WHERE arabic_script !~ '[ًٌٍَُِّْٰٟ]'
+UNION ALL SELECT 'Schraegstrich im darija', count(*)::text FROM vocabulary WHERE darija ~ '/'
+UNION ALL SELECT 'ar_key-Gruppen', count(*)::text FROM (
+  SELECT lower(regexp_replace(regexp_replace(arabic_script,'[ًٌٍَُِْٰٟ]','','g'),
+                              E'[\\s.,;:!?()/\\\\''"«» -]+','','g')) AS k
+  FROM vocabulary WHERE length(arabic_script) > 2 GROUP BY 1 HAVING count(*) > 1) t
+UNION ALL SELECT 'verwaiste Kurs-ids', (SELECT count(*)::text FROM (
+  SELECT DISTINCT unnest(string_to_array(split_part(replace(vocab_lesson_refs,'ids:',''),'|',1), ','))::int AS vid
+  FROM course_lessons WHERE vocab_lesson_refs LIKE 'ids:%') r
+  WHERE NOT EXISTS (SELECT 1 FROM vocabulary v WHERE v.id = r.vid));
+```
 
 - **`-ou` nach Konsonant** (113 Zeilen): Die Konjugationstabellen schreiben 511× `-u` gegen 39× `-ou`, eine Vereinheitlichung wäre also begründbar. **Bewusst nicht angefasst**, weil die Mehrheit der Treffer gar kein Plural ist, sondern das Possessivsuffix (`3andou` „er hat", `7lou` „süß"). Nur mit Wortart-Prüfung angehbar, nicht per Regex.
 - **Verb-Modell-Abdeckung:** 181 Verbgruppen haben eine `conjugation`-Tabelle, davon erreichen 87 das 3-Zeilen-Ziel; 48 neue Zeilen würden alle auf 3 bringen. 88 Gruppen haben keine rotierende Zeile (62 davon bräuchten nur ein `conj_rotate`-Flag, keine Neuanlage). Weitere **169 Verb-Zeilen haben gar keine Tabelle** — ob das Modell auf sie ausgeweitet wird, ist offen.
@@ -201,7 +222,7 @@ Aus der Uni-Wien-Lautlehre abgeleitete Prüfregeln, immer anwendbar wenn `arabic
 9. **Kolloquiale Vokal-Elision nur bei markiertem Sukun.** Reduktion nur dort, wo das Arabische selbst ein Sukun trägt (قْوِيَّة→"qwiyya"). Eine markierte Fatha/Kasra/Damma wird nicht gestrichen, auch wenn die Aussprache subjektiv reduziert klingt (صَيْدَلِيَّة→"sidaliyya").
 10. **Länderadjektiv vs. Ländername** ist eine Unterkategorie von Regel 5 — Konsonantenskelett-Match reicht nicht, Wortart genau prüfen.
 
-## Topic-Pflichtfeld
+## Topic (Pflichtfeld NUR bei Neuanlage)
 
 Jeder INSERT muss ein `topic` enthalten — niemals weglassen oder null lassen. Steuert die Lernpriorisierung im Aktivierungsmodus (Prio 1 = sofort vorschlagen).
 

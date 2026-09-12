@@ -218,6 +218,18 @@ Die Endung ist in **allen** 16 Zeilen `-ik`, nie `-ek`: jedes `arabic_script` ha
 
 **Nebenbefund, nicht angefasst:** die Klammer-Hinweise `(a...)`/`(y...)`/`(b...)` in den `german`-Feldern von 1391 `aman` / 1392 `y3ayyshik` / 1393 `brabbi` sind **kein Import-Müll**, sondern die bewusste Unterscheidung dreier Synonyme für „bitte" — nicht entfernen. Der `(b...)`-Rest im `arabic_script` von 1392 (`يْعَيِّشِك (b...)`, samt `arabic_skeleton` `3shk(b)`) war dagegen echter Copy-Paste-Müll aus 1393 und wurde entfernt. Offen: 1113 `billehi` heißt ebenfalls „bitte", hat aber keinen Hinweis-Zusatz.
 
+## Skill-Audit — was beim ersten Durchgang übersehen wurde (2026-09-13)
+
+Nach der Reparatur der beiden gemeldeten Skill-Defekte (SQL-Teilmenge, „Pflichtfeld") ein zweiter, gezielter Durchgang. Die zwei bekannten Regex-Fallen waren sauber — **kein einziges `\b`** in irgendeinem SQL, keine `<Buchstabe>ّ`-Regex außerhalb des eigenen Gegenbeispiels. Drei andere Defekte lagen noch offen:
+
+1. **Die „Kurzstand"-Tabelle ganz oben war durchgehend veraltet** — und damit das Erste, was ein Leser sieht. Sie nannte 49 statt 19 beim Verb-Selbstcheck, 93 statt 21 bei der Gemination, 177 offene Vokal-Dubletten (abgearbeitet) und 9 Präsens-Verben mit Infinitiv-Gloss (0). Wer von dort aus plant, arbeitet Erledigtes nach. **Dieselbe Fehlerklasse wie „13 Regeln": der Skill sagt dem Leser etwas Falsches.**
+2. **Die Überschrift hieß weiter `## Topic-Pflichtfeld`** — das Wort, das den Prüfbericht in die Irre geführt hatte. Der Fließtext war korrigiert, die Überschrift nicht, und Überschriften werden zuerst gelesen.
+3. **Der Schnellzugriff hatte keinen Eintrag für „Bestand systematisch prüfen".** Seine erste Zeile schickte „Vokabel überprüfen" zu `vocab_lookup`; der 341-Zeilen-Abschnitt mit allen Checks hatte gar keinen Einstieg. Das erklärt, warum der fremde Prüflauf zum falschen SQL griff — er hat den richtigen Abschnitt nie angesteuert bekommen.
+
+**Struktureller Fix statt Zahlenpflege:** Harte Zahlen in einer Skill-Datei veralten stumm, weil niemand sie beim Arbeiten mitzieht. Die Tabelle trägt jetzt ein ausdrückliches „Schnappschuss, kein Stand", nennt den eigenen Verfallsfall als Warnung und hat **das SQL direkt darunter, das sie reproduziert**. Ein Leser kann in zehn Sekunden prüfen, statt zu glauben. Gegengetestet: das eingebettete SQL läuft und liefert exakt die Tabellenwerte.
+
+**Lehre:** Ein Skill-Audit darf nicht bei den Regeln aufhören. Einstiegstabelle, Überschriften und Querverweise sind das, was zuerst gelesen wird — und veralten am schnellsten, weil sie beim inhaltlichen Arbeiten nie angefasst werden. Beim Prüfen mit der Frage anfangen: *was sieht jemand, der die Datei zum ersten Mal öffnet, und stimmt das noch?*
+
 ## Der Skill selbst war die Fehlerquelle (2026-09-13)
 
 Ein Prüfdurchgang aus einer anderen Sitzung meldete „**TRANSLIT_RULES (13 Regeln)** — null Treffer" und listete zusätzlich 26 `topic`-Befunde. Beides war nicht Nachlässigkeit des Prüfers, sondern **direkt aus SKILL.md ableitbar**:
