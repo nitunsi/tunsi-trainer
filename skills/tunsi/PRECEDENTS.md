@@ -218,6 +218,22 @@ Die Endung ist in **allen** 16 Zeilen `-ik`, nie `-ek`: jedes `arabic_script` ha
 
 **Nebenbefund, nicht angefasst:** die Klammer-Hinweise `(a...)`/`(y...)`/`(b...)` in den `german`-Feldern von 1391 `aman` / 1392 `y3ayyshik` / 1393 `brabbi` sind **kein Import-Müll**, sondern die bewusste Unterscheidung dreier Synonyme für „bitte" — nicht entfernen. Der `(b...)`-Rest im `arabic_script` von 1392 (`يْعَيِّشِك (b...)`, samt `arabic_skeleton` `3shk(b)`) war dagegen echter Copy-Paste-Müll aus 1393 und wurde entfernt. Offen: 1113 `billehi` heißt ebenfalls „bitte", hat aber keinen Hinweis-Zusatz.
 
+## Checks nach Verbindlichkeit sortiert, nicht nach Thema (2026-09-13)
+
+`Datenqualitäts-Checks (SQL)` war mit 340 von 899 Zeilen der größte Abschnitt des Skills und rein chronologisch gewachsen — jeder neue Check kam unten dran. Ein Leser sah 39 Blöcke in loser Folge und konnte einem Treffer nicht ansehen, **was er bedeutet**: ein Fehler oder ein Kandidat mit 80 % Fehlalarmquote.
+
+Sortiert nach genau dieser Frage, in drei Gruppen:
+
+- **A — muss auf 0 stehen** (8 Blöcke): ein Treffer ist ein Fehler, keine bekannten Fehlalarme, ohne Quellenrecherche entscheidbar. Zuerst laufen lassen.
+- **B — Verdachtsliste** (17 Blöcke): ein Treffer ist ein *Kandidat*. Jede Liste trägt ihre gemessene Quote (Gemination ~15 %, arabischer Duplikat-Check ~80 %). **Nie im Block korrigieren.**
+- **C — Regeln fürs Prüfen selbst** (14 Blöcke): keine Abfragen, sondern die Fallen. Vor dem Bau einer eigenen Prüfabfrage lesen.
+
+**Verlustfrei umgebaut, nicht neu geschrieben:** die Blöcke wurden programmatisch an den Fettdruck-Titeln geschnitten, klassifiziert und in neuer Reihenfolge zusammengesetzt. Gegengeprüft: 23 SQL-Blöcke vorher wie nachher, alle 39 Titel wiedergefunden.
+
+**Ein Fehler dabei, der die Methode bestätigt:** die erste Klassifikation matchte Schlüsselwörter gegen die ganze erste Zeile eines Blocks. Weil Markdown-Absätze einzeilig sind, traf `Verb-Selbstcheck:` mitten im Fließtext eines ganz anderen Absatzes und sortierte ihn nach A. Aufgefallen nur, weil die Klassifikation **vor** dem Schreiben ausgegeben und gelesen wurde. Fix: nur gegen den Text zwischen den ersten `**` matchen.
+
+**Lehre:** Die Gliederung eines Regelwerks sollte der Frage folgen, die der Leser am Treffer hat — hier „darf ich das einfach korrigieren?" — nicht der Reihenfolge, in der die Regeln entstanden sind.
+
 ## Zwei Prüf-Workflows waren einer (2026-09-13)
 
 Der Skill führte zwei getrennte Prüf-Workflows: „Geflaggte Vokabeln (🚩) live gegen Derja Ninja prüfen" und „Frisch importierte Batch-Vokabeln flaggen + verifizieren (leichtgewichtige Variante)". Beide machten dasselbe — interne Checks, dann Ninja → TUNICO → Peace Corps, dann klassifizieren. Sie unterschieden sich in **genau einem Punkt**: wohin das Ergebnis geschrieben wird (`vocabulary_review` gegen direktes `UPDATE vocabulary`).
