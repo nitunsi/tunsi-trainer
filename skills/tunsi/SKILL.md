@@ -29,6 +29,21 @@ Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nic
 
 - **Ninja-Transliteration in Trainer-Konvention** (besprochen 2026-09-05, bewusst zurückgestellt): `derja_ninja_entries.darija` ist in Ninjas eigener Konvention, nicht unserer — anders als bei TUNICO/Peace Corps gibt es dafür noch keine `chatalpha`-Spalte. Wäre nur aus dem vollvokalisierten `arabic_script` heraus zuverlässig baubar (nicht aus Ninjas `darija` selbst), mit eigenem Validierungsaufwand. Bisher kein Bedarf, seit klar ist: Original-Transliteration wird ohnehin nur im Zweifelsfall herangezogen, `chatalpha` reicht für den Regelfall.
 
+**Laufender Prüfdurchgang (Stand 2026-09-12).** Vollständige Fundlisten mit Klassifizierung und Entscheidungsstand: `exports/pruefliste_2026-09-12.md` — dort weiterarbeiten, nicht neu aufrollen. Kurzstand:
+
+| Posten | Menge | Status |
+|---|---|---|
+| Verb-Selbstcheck (Zeile ≠ eigene Tabelle) | 49 → 26 | A1–A4 erledigt; A5 (4 Zeilen, Vergangenheits-Endung) und A6 (8 Phrasen mit Verbtabelle) offen |
+| Plural-Endung `-iou` | 13 → 0 | erledigt, jetzt Regel 21 in `TRANSLIT_RULES` |
+| Gemination (Schadda ohne Doppelbuchstaben) | 93 | offen, Verdachtsliste mit ~15 % Fehlalarmen |
+| Vokal-Dubletten im Bestand | 177 Verdachtspaare | offen, Fehlalarm-Muster siehe Datenqualitäts-Checks |
+| Schrägstrich im `darija`-Feld | 19 | 5 zum Aufteilen vorgeschlagen, 14 sind echte Synonyme |
+| Unvokalisiertes `arabic_script` | 785 (701 ohne Notiz/Flag) | offen, keine Entscheidung getroffen |
+| Präsens-Verben mit Infinitiv-Gloss | 9 (19 ohne Topic-Filter) | offen |
+
+- **`-ou` nach Konsonant** (113 Zeilen): Die Konjugationstabellen schreiben 511× `-u` gegen 39× `-ou`, eine Vereinheitlichung wäre also begründbar. **Bewusst nicht angefasst**, weil die Mehrheit der Treffer gar kein Plural ist, sondern das Possessivsuffix (`3andou` „er hat", `7lou` „süß"). Nur mit Wortart-Prüfung angehbar, nicht per Regex.
+- **Verb-Modell-Abdeckung:** 181 Verbgruppen haben eine `conjugation`-Tabelle, davon erreichen 87 das 3-Zeilen-Ziel; 48 neue Zeilen würden alle auf 3 bringen. 88 Gruppen haben keine rotierende Zeile (62 davon bräuchten nur ein `conj_rotate`-Flag, keine Neuanlage). Weitere **169 Verb-Zeilen haben gar keine Tabelle** — ob das Modell auf sie ausgeweitet wird, ist offen.
+
 ## Grundsatz: Nie ohne Bestätigung in Supabase schreiben
 
 Jedes INSERT/UPDATE/DELETE erst als Vorschlag zeigen (betroffene Zeilen/Werte), auf Bestätigung warten, dann schreiben. Gilt für jede Tabelle, jede Größenordnung — auch ein einzelnes Wort.
@@ -50,7 +65,11 @@ Die Datei `tounsi_db_YYYY-MM-DD.md` im Projektwissen ist die primäre Datenquell
    - `darija`: Homographen beachten (Konjugationspaare sie/ich haben oft identische Transliteration — kein Duplikat, aber `german` muss Person klar benennen).
    - `german`: als eigenständige Suchanfrage, Synonyme mitdenken ("einfach"≈"leicht", "Lied"≈"Gesang", "Darlehen"≈"Kredit"). Bei Fund: als Auffälligkeit markieren, Entscheidung dem Nutzer überlassen.
    - Bei strukturierten Listen (Adjektiv-/Verb-Tabellen): zuerst ein Themen-Sweep gegen den passenden `topic`, nicht Wort für Wort.
-   - Duplikat-Check auch NACH jeder nachträglichen Schreibkorrektur wiederholen, nicht nur vor der Neuanlage — eine Korrektur ist im Effekt ein neues `darija`.
+   - **Duplikat-Check VOR jeder nachträglichen Schreibkorrektur, nicht erst danach** — eine Korrektur ist im Effekt ein neues `darija`. Wenn die *korrigierte* Schreibung bereits im Bestand existiert, ist die vermeintliche Schreibkorrektur in Wahrheit ein **Merge** und muss als solcher behandelt werden (Kurs-Verweise umbiegen, Felder zusammenführen, Dublette löschen) — sonst entsteht aus einer Reparatur eine neue Dublette. Zweimal am 2026-09-12 aufgetreten: `y3awid`→`y3awwed` traf die bestehende id 3442, `yit3asha`→`yit3ashsha` traf id 4029. Älterer Fall: `yisma7`→`yisma3` (PRECEDENTS.md → Duplikat-Check).
+     ```sql
+     -- vor JEDEM UPDATE auf darija laufen lassen:
+     SELECT id, darija, german FROM vocabulary WHERE lower(btrim(darija)) = lower('<neue_schreibung>');
+     ```
    - Nach dem Schreiben: App-eigenen "🔍 Duplikat-Prüfung"-Tab nutzen oder bei Live-Zugriff selbst nachbauen (SQL siehe unten) — gründlicher als Ad-hoc-Stichproben vorher.
 4. **Topic setzen** (Pflichtfeld, siehe eigener Abschnitt) — Claude darf selbst entscheiden, keine Rückfrage nötig.
 5. **Liste zeigen, warten.** Fehlende Einträge tabellarisch (Arabic, Darija, Deutsch, lesson_id, topic), Auffälligkeiten/Rückfragen gesammelt am Ende. Kein SQL ohne Bestätigung.
@@ -255,6 +274,17 @@ In beiden Fällen: wie genau (welches Topic, Suffix abschneiden oder ersetzen) n
 2. Bei Unsicherheit Derja Ninja als Tiebreaker, sonst als Rückfrage markieren.
 3. Rohformen-Varianten im Korpus (Tippfehler/Dialektvarianten wie `qatt`/`qult`/`qutt` nebeneinander) nicht blind übernehmen, plausibelste Form wählen.
 
+**Widerspricht die Zeile ihrer eigenen `conjugation`-Tabelle, entscheidet das vokalisierte `arabic_script` — nicht die Tabelle (seit 2026-09-12).** Die Tabellen stammen überwiegend aus TUNICOs `forms_chatalpha` und tragen deshalb teils TUNICOs Vokale statt unserer. „Die Tabelle ist führend" ist als Faustregel brauchbar, aber nur solange das Arabische nicht dagegensteht. Entscheidungsreihenfolge:
+
+1. **`arabic_script` lesen** (Schadda? Kasra? Fatha?) — es ist der höhere Anker.
+2. Stimmt es mit der Tabelle überein → **Zeile** nachziehen.
+3. Stimmt es mit der Zeile überein → **Tabelle** korrigieren, und zwar alle Zellen desselben Musters, nicht nur die eine.
+4. Ist `arabic_script` unvokalisiert oder selbst zweifelhaft → als Rückfrage markieren, nicht raten.
+
+Präzedenzfälle vom 2026-09-12: `ybaddal`/`ybaddil` (يُبَدِّل, Schadda+Kasra → Tabelle bestätigt, Zeile nachgezogen), `ykammal`/`ykammil` (dito), aber `ya3raf`/`ya3rif` (يَعْرَفْ, **Fatha** → hier war die Tabelle falsch, vier Zellen des Präsens-Blocks auf `-a-` korrigiert; die Pluralformen `na3rfu`/`ta3rfu`/`ya3rfu` elidieren den Stammvokal und bleiben unangetastet).
+
+**Kein Hausmuster für den Stammvokal ableitbar.** Auszählung 2026-09-12 über alle Form-II-Verben im Bestand: `-a-` 51× (`ysakkar`, `ykhallas`), `-e-` 27× (`ysallem`, `yqaddem`), `-i-` 20× (`ykammil`, `ynajjim`). Eine Vereinheitlichung würde ~100 Zeilen betreffen und ist bewusst nicht entschieden — bei Einzelfällen ohne Geschwisterbeleg deshalb nichts angleichen, sondern stehen lassen.
+
 **Pflicht-Suchschritt vor jeder Verb-Ergänzung: bestehende Zeilen desselben Verbs auch unter Alt-Topics finden.** Eine Suche nur mit `topic IN ('Verben-Konjugation','Vergangenheit','Verben')` übersieht Zeilen mit Legacy-Topics wie `(L14)`, `(L18)` oder `NULL` — Präzedenzfall 2026-09-06: `yakol`/`er isst` hatte `topic=" (L14)"` und wurde dadurch komplett übersehen, obwohl das Verb (`kla`/essen) sonst als "nur 1 Zeile vorhanden" durchgegangen wäre. Immer den **ganzen** Bestand per Konsonantenskelett gegenchecken (auch über Gemination/Vokal-Abweichungen hinweg, s.o.), nicht nur die Standard-Verb-Topics.
 
 **Fehlende Zielzeilen nachlegen — zwei getrennte Rückfragen (Stand 2026-09-12).** Neue Zeilen anzulegen, wenn Formen fehlen, ist grundsätzlich in Ordnung. Aber:
@@ -348,6 +378,36 @@ SELECT n.id nid, n.darija ndar, n.german nger, o.id oid, o.darija odar, o.german
 FROM newv n JOIN oldv o ON n.ck = o.ck AND n.lesson_id = o.lesson_id;
 ```
 Jeden Treffer einzeln prüfen — echte Duplikate von Zufallskollisionen unterscheiden (z.B. `yaqli`="braten" vs. `yqul`="sagen" kollidieren zufällig auf `yql`, sind aber verschiedene Wörter).
+
+**Variante für den Bestandsaudit (seit 2026-09-12): Vokal-Dubletten im ganzen Bestand, ohne Batch-Grenze.** Die Fassung oben braucht eine „erste neue id" und eine `lesson_id`-Eingrenzung — sie findet deshalb nur Dubletten *innerhalb eines frischen Imports*. Vokal-Varianten, die über Jahre und Lektionsgrenzen hinweg entstanden sind, bleiben unsichtbar. Diese Fassung ersetzt die Batch-Eingrenzung durch einen Bedeutungs-Filter (Glosse müssen sich überlappen), was die Zufallstreffer erschlägt:
+
+```sql
+WITH v AS (
+  SELECT id, darija, german, arabic_script,
+    regexp_replace(lower(regexp_replace(darija,'[^a-z0-9]','','g')),'[aeiou]','','g') AS skel,
+    lower(regexp_replace(regexp_replace(german,'\([^)]*\)','','g'),'[^a-zäöüß]','','g')) AS gkey
+  FROM vocabulary WHERE darija IS NOT NULL AND darija <> '' AND NOT homonym_ok
+)
+SELECT a.id, a.darija, a.german, b.id, b.darija, b.german,
+       (regexp_replace(a.arabic_script,'[ً-ٰٟ]','','g') = regexp_replace(b.arabic_script,'[ً-ٰٟ]','','g')) AS gleiches_arabisch
+FROM v a JOIN v b ON a.skel = b.skel AND a.id < b.id AND length(a.skel) >= 3
+WHERE lower(a.darija) <> lower(b.darija)
+  AND (a.gkey = b.gkey OR a.gkey LIKE '%'||b.gkey||'%' OR b.gkey LIKE '%'||a.gkey||'%')
+ORDER BY gleiches_arabisch DESC, a.id;
+```
+
+Erster Lauf 2026-09-12: **177 Verdachtspaare**, davon 166 in Zeilen ohne `conjugation` — also in dem Teil des Bestands, den der batch-gebundene Check nie erreicht hat. `gleiches_arabisch = true` ist die schärfste Teilmenge (14 Paare); Stichprobe daraus von Hand beurteilt: **8 echt, 6 Fehlalarme**.
+
+**Die Fehlalarme folgen vier wiederkehrenden Mustern — alle am `german`-Feld erkennbar, vor der Vorlage herausfiltern:**
+
+| Muster | Beispiel | Erkennbar an |
+|---|---|---|
+| m/f-Paar desselben Adjektivs | `qsir` / `qsira` „kurz (m.)/(f.)" | `(m.)` vs. `(f.)` im Gloss |
+| Imperativ vs. Vergangenheit | `l3ab` „er spielte" / `el3ab` „spiel!" | `(Imperativ)` bzw. `!` |
+| Imperativ vs. Partizip | `weqif` „steh!" / `waqif` „stehend" | Partizip-Gloss auf `-end` |
+| Kollektiv vs. Nomen unitatis | `rmal` „Sand" / `ramla` „Sand (f.)" | `(f.)` bei Stoffnamen |
+
+Diese Paare sind **korrekt und dürfen nicht zusammengelegt werden** — bei Imperativ/Vergangenheit ggf. `homonym_ok=true` setzen, wenn die Schreibung wirklich identisch wird.
 
 **Duplikat-Prüfung nach `normKey()`-Logik (App-Tab „🔍 Duplikat-Prüfung" 1:1 nachgebaut):**
 ```sql
