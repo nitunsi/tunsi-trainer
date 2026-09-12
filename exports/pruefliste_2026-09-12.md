@@ -833,3 +833,15 @@ Nach zwei stumm falschen Regeln an einem Tag habe ich die Regeln selbst geprüft
 - **3143** (Sprichwort „Wer die Kutteln nicht waschen kann…") — drei ذ als `d` statt `th` geschrieben: `dbi7a`→`thbi7a`, `makhedtha`→`makheththa`, `makhedtou`→`makhethtou`. Die mechanische Regel erzeugt hier mit `makheththa` etwas schwer Lesbares; das will ich nicht ohne dich entscheiden.
 - **1843 `tel3ab jeux vidéos`** — französischer Text samt Akzenten im `darija`-Feld, während das Arabische جو فيديو arabisiert schreibt. Vom Anzahl-Check nicht erfasst.
 - **Regel 22 für `TRANSLIT_RULES`?** Der Anzahl-Vergleich hat ~0 % Fehlalarme und erfüllt damit die Aufnahmeregel aus SKILL.md. Das wäre eine Code-Änderung an `trainer.html` und braucht Bestätigung.
+
+### ✅ Regel 22 eingebaut + die letzten drei Punkte erledigt (2026-09-12)
+
+**Regel 22 in `TRANSLIT_RULES`** (`trainer.html`): Konsonanten-Gegencheck nach **Anzahl** statt nach Vorkommen. Buchstabenpaare einmal vorkompiliert in `CONSONANT_PAIRS` neben `isLoanword`, damit nicht je Zeile zwölf Regexe neu gebaut werden. Sie greift bewusst nur, wenn **beide** Seiten mindestens einmal vorkommen — fehlt der Gegenpart ganz, hat Regel 5–16 schon angeschlagen, so meldet kein Fall doppelt.
+
+Verifiziert: Syntax-Check (`vm.Script`) sauber, Positivtest (2 × ح / 1 × `7`) schlägt an, Negativtest (2 × ح / 2 × `7`) schweigt, Lehnwort-Ausnahme greift. **Prüf-Tab steht mit allen 22 Regeln auf 0 von 3.780.**
+
+**`3143`** — meine gestrige Sorge war unbegründet. Ich hatte `makheththa` falsch zusammengesetzt; zwischen ذ und ت steht eine Kasra, es heißt `makhthitha`. Voll lesbar, kein Grund zur Ausnahme. Korrigiert: `makhedtha`→`makhthitha`, `dbi7a`→`thbi7a`, `makhedtou`→`makhithtou`.
+
+**`1843`** — `jeux vidéos` → `jeux video` (Akzente gibt es im Hausalphabet nicht) plus Lehnwort-Markierung, analog zu `taxi`. Damit ist kein unmarkiertes `x` mehr im Bestand.
+
+**Nebenbei repariert: `scratchpad/extract.js`.** Sein Endanker war `"\n];"` — also die *erste* Array-Schließung nach `isLoanword`. Mit `CONSONANT_PAIRS` liegt dort jetzt ein zweites Array, der Extraktor hätte `TRANSLIT_RULES` gar nicht mehr erwischt. Zum zweiten Mal in dieser Sitzung ein zu unscharfer Anker in diesem Skript (vorher: Zeilennummern). Jetzt gezielt auf den Abschluss von `TRANSLIT_RULES` verankert, mit harter Fehlermeldung wenn ein Anker fehlt.

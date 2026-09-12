@@ -6399,6 +6399,12 @@ function dupeEntryHtml(v, extraActions){
 
 // Regeln f\u00fcr den Transliterations-Check \u2014 jede Regel liefert true bei einem Verstoss
 const isLoanword = v => /(frz\.|franz\.|ital\.|engl\.|lehnwort)/i.test(v.en||'');
+// Buchstabenpaare fuer den Anzahl-Gegencheck (Regel 22), einmal vorkompiliert statt je Zeile neu
+const CONSONANT_PAIRS = [
+  [/ح/g, /7/g], [/خ/g, /kh/gi], [/ع/g, /3/g], [/ش/g, /sh/gi], [/ض/g, /dh/gi],
+  [/ج/g, /j/gi], [/ز/g, /z/gi], [/غ/g, /gh?/gi], [/ق/g, /[qgk]/gi],
+  [/ه/g, /h/gi], [/س/g, /s/gi], [/[ظذ]/g, /th/gi],
+];
 const TRANSLIT_RULES = [
   { label: 'Verbotene Ziffern (2/5/9 statt Hamza weglassen / kh / q)',
     test: v => /[259]/.test(v.tr) },
@@ -6465,6 +6471,21 @@ const TRANSLIT_RULES = [
   // Erster Lauf 2026-09-12: 13 Treffer, alle echt, keine Fehlalarme.
   { label: 'Plural-Endung "-iou"/"-eou"/"-aou" statt "-iw"/"-aw"',
     test: v => /(iou|eou|aou)(\b|$)/.test(v.tr) },
+  // Die Konsonanten-Regeln oben pruefen nur, OB der Gegenpart vorkommt. Sobald irgendwo im
+  // Feld ein "7" steht, schweigen sie — bei Saetzen verdeckt das einen Fehler in einem
+  // einzelnen Wort (1649 hatte 3x ح und 2x "7", das falsch geschriebene erste Wort blieb
+  // jahrelang unsichtbar). Dieser Check vergleicht die ANZAHL und ergaenzt sie dadurch:
+  // er greift nur, wenn beide Seiten mindestens einmal vorkommen, sonst hat die jeweilige
+  // Regel oben schon angeschlagen. Erster Lauf 2026-09-12: 11 Treffer, 10 echte Fehler.
+  { label: 'Konsonant im Arabischen h\u00e4ufiger als sein Gegenst\u00fcck in der Transliteration (Fehler in einem einzelnen Wort eines Satzes)',
+    test: v => {
+      if(!v.ar || !v.tr || isLoanword(v)) return false;
+      return CONSONANT_PAIRS.some(([reAr, reTr]) => {
+        const a = (v.ar.match(reAr) || []).length;
+        const t = (v.tr.match(reTr) || []).length;
+        return a > 0 && t > 0 && a > t;
+      });
+    } },
 ];
 
 // Zählt betroffene Vokabeln (distinct), für die Statistik-Kachel — reine Zahl, kein Rendering

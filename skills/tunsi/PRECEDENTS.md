@@ -218,6 +218,16 @@ Die Endung ist in **allen** 16 Zeilen `-ik`, nie `-ek`: jedes `arabic_script` ha
 
 **Nebenbefund, nicht angefasst:** die Klammer-Hinweise `(a...)`/`(y...)`/`(b...)` in den `german`-Feldern von 1391 `aman` / 1392 `y3ayyshik` / 1393 `brabbi` sind **kein Import-Müll**, sondern die bewusste Unterscheidung dreier Synonyme für „bitte" — nicht entfernen. Der `(b...)`-Rest im `arabic_script` von 1392 (`يْعَيِّشِك (b...)`, samt `arabic_skeleton` `3shk(b)`) war dagegen echter Copy-Paste-Müll aus 1393 und wurde entfernt. Offen: 1113 `billehi` heißt ebenfalls „bitte", hat aber keinen Hinweis-Zusatz.
 
+## scratchpad/extract.js — Anker zum zweiten Mal zu unscharf (2026-09-12)
+
+Das Node-Harness zieht `normalize`/`checkAnswer`/`TRANSLIT_RULES` per Textanker aus `trainer.html`. Nachdem die erste Fassung an fest verdrahteten Zeilennummern zerbrochen war, lief sie über Inhaltsanker — der Endanker war aber schlicht `"\n];"`, also *die erste* Array-Schließung nach `const isLoanword`.
+
+Beim Einbau von Regel 22 kam mit `CONSONANT_PAIRS` ein **zweites** Array zwischen `isLoanword` und `TRANSLIT_RULES`. Damit hätte der Extraktor bei `CONSONANT_PAIRS` gestoppt und `TRANSLIT_RULES` gar nicht mehr exportiert — das Harness wäre mit `ReferenceError` gestorben, oder schlimmer: hätte bei einer nachlässigeren Fassung stumm eine leere Regelliste geprüft und „alles sauber" gemeldet.
+
+Fix: Endanker gezielt auf den Abschluss von `TRANSLIT_RULES` (`indexOf('const TRANSLIT_RULES = [')`, dann das nächste `\n];`), plus harte Fehlermeldung, wenn einer der drei Anker fehlt.
+
+**Lehre:** Ein Inhaltsanker ist nur so gut, wie er eindeutig ist. „Die erste schließende Klammer nach X" ist keine Eigenschaft des Ziels, sondern eine Annahme über alles, was dazwischen liegen könnte. Beim Erweitern der gespiegelten Datei immer prüfen, ob der Extraktor noch dasselbe greift — er scheitert sonst unter Umständen still.
+
 ## Audit der 21 TRANSLIT_RULES — Vorkommen statt Anzahl (2026-09-12)
 
 Nach zwei stumm falschen Prüfregeln an einem Tag (`\b` statt `\y`, Zeichenreihenfolge im `arabic_script`) wurden die 21 Live-Regeln aus `trainer.html` selbst geprüft — der Tab, dessen Wert laut SKILL.md darin liegt, dass „0 Treffer" wirklich „sauber" heißt.
