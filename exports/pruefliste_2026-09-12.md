@@ -943,3 +943,41 @@ Die **26 `topic`-Befunde**. SKILL.md sagt ausdrücklich, dass bestehende Legacy-
 2. **Der Transliterations-Tab nennt die Grundgesamtheit:** „N von M Vokabeln geprüft · R Regeln", im Erfolgs- wie im Trefferfall. Dieselbe Lehre wie beim Harness-Export — eine Null ohne Nenner ist keine Aussage.
 
 **Geprüft und in Ordnung:** Das Feld-Mapping (`ar: v.arabic_script`, `tr: v.darija`, `en: v.german`) passt zu dem, was die Regeln erwarten — die Konsonantenregeln schauen also wirklich ins Arabische. `sbApi()` wirft bei `!r.ok`, ein Gateway Timeout lässt den Ladevorgang sichtbar scheitern statt ihn stumm zu kürzen. Zähl- und Render-Funktion des Tabs filtern identisch.
+
+---
+
+## Runde 13 · Vokalisierung, erster Block (2026-09-13)
+
+**Warum zuerst:** Von 3.780 Zeilen haben **alle** ein `arabic_script` — die internen Checks erreichen also 100 %. Aber **768 Zeilen (20 %) sind unvokalisiert**, und dort ist jeder Schadda-basierte Check strukturell blind. Genau das hat heute fünfmal zugeschlagen (die `7adhdhar`-Familie allein hatte vier verdeckte Mitglieder).
+
+**`english` ist dagegen die kleinere Lücke, als die Zahl suggeriert:** von 1.699 fehlenden sind **823 Sätze und Phrasen** — die haben kein Wörterbuch-Lemma, da gibt es strukturell nichts nachzufüllen. Von den 876 fehlenden Einzelwörtern sind **655 bereits `external_confirmed`**. Wirklich ungeprüft und ohne Schlüssel: 221 Zeilen (5,8 %).
+
+### Die Ninja-Route ist schwächer als ihre Trefferzahl
+
+50 Zeilen hatten einen *eindeutigen* Ninja-Treffer über das arabische Skelett (Länge ≥ 4). Nach Prüfung waren **20 brauchbar**. Der Rest waren Kollisionen quer über Lexeme:
+
+| unsere Zeile | Ninja-Treffer | Ninjas Bedeutung |
+|---|---|---|
+| `nimshiw` „wir gehen" | نْمَشْ | **freckles** |
+| `nit3asha` „ich esse zu Abend" | إنْتِعَاشَة | **revitalization** |
+| `kibrit` „ich wurde alt" | كِبْرِيتْ | **Sulfur** |
+| `tnijjem` „du kannst" | تَنْجِيمْ | **occultism** |
+| `itrtin` „zwei Liter" | تَرْتِينْ | **tart, pastry** |
+
+Lösung: **Buchstaben-Identitätsprüfung als `AND`-Bedingung im `UPDATE`** — Ninjas Schreibung nur übernehmen, wenn nach Entfernen aller Harakat kein Buchstabe abweicht. Das erschlägt auch die Numerus-Fälle (Ninja gibt den Singular, unsere Zeile ist Plural).
+
+Drei Dinge sieht der Filter nicht und mussten von Hand raus: `4401 tfahim` (Ninjas تَفَاهُمْ ist das Nomen, unsere Zeile das Verb), `1057 toshrob` (Ninjas تِشْرَبْ hieße `tishrab` und widerspräche unserer darija), `797`/`2107` (Ninjas Fassung ist selbst unvokalisiert).
+
+### ✅ 20 Zeilen vokalisiert
+
+`345 bisbes` · `354 jilbena` · `394 maqroudh` · `411 tarbousha` · `527 waqtesh` · `571 ousteth` · `580 tanjra` · `607 tilmith` · `624 frank` · `734 majrou7` · `739 mustashfa` · `807 dakourdou` · `841 hetheka` · `1048 kafteji` · `1064 direct` · `1248 ta7foun` · `1828 stoush` · `2106 fransis` · `2161 khobztin` · `4434 3tash`
+
+19 von 20 haben danach stimmige Skelettpaare; `1064 direct` weicht ab (`drct` gegen `drkt`) — französisches Lehnwort, entsprechend im Gloss markiert. **Prüf-Tab weiter 0 von 3.780:** die 20 Zeilen waren bereits korrekt, sie waren nur nicht prüfbar.
+
+**Stand:** unvokalisiert 768 → **748**, davon 506 Einzelwörter.
+
+### Wie es weitergeht
+
+Die Ninja-Route ist damit weitgehend ausgeschöpft. Für die restlichen 506 Einzelwörter bleiben: **164 mit vokalisiertem Geschwister im Bestand** (gleiches Skelett — strukturell sicherer, weil dieselbe Wortfamilie), der Rest von Hand oder aus TUNICO. Kein Bulk-Job.
+
+**Vorgemerkt, nicht vergessen:** die 6 Trenner-Fälle aus dem externen Protokoll. `checkAnswer()` akzeptiert bei `/` jede Teilantwort — bei `4465 katib` „Schriftsteller / Sekretär" zählt „Sekretär" als richtig, wenn „Schriftsteller" gemeint war. Das verfälscht direkt den Lernfortschritt und ist **kein** Kosmetikpunkt.
