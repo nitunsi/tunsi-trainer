@@ -10,7 +10,7 @@ Präzedenzfall: beim Import von Lektion 4–7 wurden ~15 Verben doppelt angelegt
 
 **Imperativ+Vergangenheit-Bündelung** (nicht nur Imperativ+Präsens): mehrfacher Präzedenzfall 2026-08-06 (`ejbed`/`jbed`, `sakkar`, `naqqaz`, `lawwej` — alle als eine Zeile "Imperativ! / er tat" angelegt, nachträglich in zwei Zeilen aufgeteilt). Da Imperativ und Vergangenheit bei manchen Verbmustern gleich geschrieben werden (z.B. `sakkar`/`sakkar`), beide Zeilen dann mit `homonym_ok=true` markieren, damit der Duplikat-Check sie nicht fälschlich meldet.
 
-**`darija` transliteriert als MSA-Imperativ (a-/i-/o-Präfix), obwohl `arabic_script` bereits korrekt die 3.-Person-Vergangenheit (فَعَل, kein Präfix) zeigt.** Präzedenzfall 2026-08-07: systematische Suche `darija ~ '^[aio][a-z0-9]' AND german ~* '^(er|sie)\s'` (ohne Match am arabic_script-Anfang) fand 15 betroffene Zeilen in `topic='Verben-Konjugation'`/`Verben-Infinitiv`, alle mit korrektem y-Präfix-Präsens-Sibling in derselben Lektion (z.B. `imsa7`→`masa7` neben Präsens `yimsa7`, `odhrab`→`dharab` neben `yodhrab`, `ikthib`→`kathab` neben `yikthib`). `darija` einfach aus dem bereits korrekten `arabic_script` neu transliterieren, nicht das arabic_script antasten. Dabei fiel ein Folgefund auf: `7adhar`(id 1648, "er bereitete vor", arabic_script حَضَّر mit Shadda/Gemination) wurde durch die Korrektur von id 1615 (`i7dhar`→`7adhar`, "er nahm teil", arabic_script حَضَر ohne Shadda — echtes MSA-Homonym-Paar Form I/Form II, von Ninja bestätigt: حضر=attend, حضّر/تحضير=prepare) zum exakten Duplikat, weil beide Zeilen die Gemination im `darija`-Feld verschluckt hatten. Auch dort: `darija` an die im `arabic_script` bereits vorhandene Gemination anpassen (`7adhar`→`7addhar`, inkl. Präsens-Sibling `y7adhar`→`y7addhar`), nicht raten oder homonym_ok setzen.
+**`darija` transliteriert als MSA-Imperativ (a-/i-/o-Präfix), obwohl `arabic_script` bereits korrekt die 3.-Person-Vergangenheit (فَعَل, kein Präfix) zeigt.** Präzedenzfall 2026-08-07: systematische Suche `darija ~ '^[aio][a-z0-9]' AND german ~* '^(er|sie)\s'` (ohne Match am arabic_script-Anfang) fand 15 betroffene Zeilen in `topic='Verben-Konjugation'`/`Verben-Infinitiv`, alle mit korrektem y-Präfix-Präsens-Sibling in derselben Lektion (z.B. `imsa7`→`masa7` neben Präsens `yimsa7`, `odhrab`→`dharab` neben `yodhrab`, `ikthib`→`kathab` neben `yikthib`). `darija` einfach aus dem bereits korrekten `arabic_script` neu transliterieren, nicht das arabic_script antasten. Dabei fiel ein Folgefund auf: `7adhar`(id 1648, "er bereitete vor", arabic_script حَضَّر mit Shadda/Gemination) wurde durch die Korrektur von id 1615 (`i7dhar`→`7adhar`, "er nahm teil", arabic_script حَضَر ohne Shadda — echtes MSA-Homonym-Paar Form I/Form II, von Ninja bestätigt: حضر=attend, حضّر/تحضير=prepare) zum exakten Duplikat, weil beide Zeilen die Gemination im `darija`-Feld verschluckt hatten. Auch dort: `darija` an die im `arabic_script` bereits vorhandene Gemination anpassen, nicht raten oder homonym_ok setzen. ⚠️ **Die damals gewählte Schreibung `7addhar`/`y7addhar` war falsch** — bei einem Digraphen wird der ganze Digraph verdoppelt, richtig ist `7adhdhar`/`y7adhdhar`; Begründung unten unter „Digraph-Gemination". Der Befund selbst (Gemination gehört ins `darija`, das `arabic_script` ist führend) bleibt gültig.
 
 ## Duplikat-Check — Fallgeschichten
 
@@ -178,6 +178,43 @@ Ergebnis: 4.874/5.004 Zeilen rekonstruiert (446 davon mit Unsicherheits-Hinweis)
 **Nachtrag — M-Transkriptionsfehler aufgelöst (2026-09-05):** die 33 oben erwähnten `M`-Zeilen (ID-Bereich ~237–1804, Schwerpunkt 1078–1265) wurden einzeln semantisch geprüft, nicht nur gezählt: bei JEDER der 33 Zeilen ergibt `M`→`H` ein korrektes, zum `headword` passendes Wort — `taSMi:M`→`taSHi:H`=تصحيح "Korrektur", `muMa:dhra`→`muHa:dhra`=محاضرة "Konferenz", `timsa:M`→`timsa:H`=تمساح "Krokodil", `Mub liTTila:3`→`Hub liTTila:3`=حب الاطلاع "Neugier", `nMa:s`→`nHa:s`=نحاس "Kupfer", u.a. — keine einzige Gegenprobe ergab ein Wort, das mit `M` als eigenem Laut (statt als verwechseltem `H`) sinnvoll wäre. `forms_phonetic` für alle 33 IDs korrigiert (`M`→`H`), danach `forms_chatalpha`/`forms_skeleton`/`arabic_script_reconstructed`/`peacecorps_candidates.chatalpha` neu berechnet.
 
 **Stolperstein beim Schreiben:** ein erster Versuch verkettete "Phonetik korrigieren" → "Chatalpha aus der korrigierten Phonetik neu berechnen" → "Arabisch neu rekonstruieren" als CTEs (`WITH ... UPDATE ... RETURNING`) in EINER SQL-Anweisung. Ergebnis: `forms_phonetic` wurde korrekt zu `H` korrigiert, aber `forms_chatalpha` blieb auf dem alten `M`→`m`-Stand hängen (z.B. `muHa:dhra` in `forms_phonetic`, aber weiterhin `mumadhra` statt `mu7adhra` in `forms_chatalpha`). Grund: mehrere datenverändernde CTEs in derselben Anweisung teilen sich denselben Snapshot vom Anweisungsbeginn — eine spätere CTE sieht die Schreibungen einer früheren CTE auf dieselbe Tabelle NICHT. Fix: die Schritte als separate, nacheinander ausgeführte Anweisungen laufen lassen, nicht als verkettete CTEs. Gleiche Falle wie bei jedem mehrstufigen Update auf derselben Tabelle — bei "korrigiere X, dann leite Y aus dem korrigierten X ab" in einer Anweisung immer misstrauisch sein und hinterher gegenchecken, nicht nur den Erfolgsstatus der Anweisung.
+
+## Digraph-Gemination — `dhdh` statt `ddh` (2026-09-12, überschreibt 2026-08-07)
+
+Anlass: die Konventionstabelle in SKILL.md war aus dem eigenen Bestand abgeleitet (`dhdh` 9 : `ddh` 2, `thth` 6 : `tth` 2) und damit zu dünn belegt, um die zwei Ausreißer (ids 1648 `7addhar`, 2218 `y7addhar`) zu überschreiben — zumal die auf einer **dokumentierten** Entscheidung vom 2026-08-07 beruhten. Also erst recherchiert, dann entschieden.
+
+**Denkfehler der ersten Zählung:** `tth` als Gegenbeispiel zu `thth` zu werten. Beim Nachlesen der Einzeltreffer — nicht der Zahlen — war **jeder einzelne** ein Morphemgrenzen-`t` vor `th`, keine Gemination: TUNICO `tṯawwib`→`tthawwib`, `tḏ̣āṛif`→`ttharif`, `tḏ̣āḥik`→`ttha7ik`, `mutṯaqqaf`→`mutthaqqaf` (9/9); Ninja `تْذَكِّرْ`→`tthakkir`, `مِتْثَقِّفْ`→`mittha99if`, `تْذُوبِلْ`→`tthouwbil` (17/17); eigener Bestand `نِتْثَاوَب`→`netthaowb` (3042), `تَذْبَح`→`tthba7` (3073) (2/2). Nach Abzug dieser Scheintreffer steht es bei echter ذّ/ظّ-Gemination **40:0 (TUNICO), 34:0 (Ninja), 6:0 (eigener Bestand)**. Lehre: eine Regex-Zählung über Konsonantenfolgen trennt Gemination nicht von Morphemgrenzen — die Treffer einzeln lesen, sonst erfindet man sich Gegenbeispiele.
+
+**Belege für volle Verdopplung, drei unabhängige Quellen:**
+
+- **TUNICO** (DMG-Transliteration → `lemma_chatalpha`, maschinell und damit konsistent): echte Gemination in 14/14 Fällen voll verdoppelt — `ʕaḏḏib`→`3aththib`, `aḏḏin`→`aththin`, `kaḏḏāb`→`kaththab`, `baẓẓaʕ`→`baththa3`, `ḏḏakkiṛ`→`ththakkir`, `ḏḏall`→`ththall`, `ṭuẓẓīna`→`tuththina`, `mīẓẓu`→`miththu`. Dazu `shsh` 35:0, `khkh` 21:0, `ghgh` 2:0.
+- **Derja Ninja** (von Tunesiern geschrieben, eigenes Chat-Alphabet): `dhdh` 70 : `ddh` 2, `chch` 2 : `cch` 0.
+- **Eigener Bestand**: `dhdh` 9 : `ddh` 2, `shsh` 11 : 0, `khkh` 7 : 0 — die 2 `ddh` sind genau 1648/2218.
+
+**Zwei Argumente unabhängig von der Statistik:**
+
+1. `dh`/`th`/`sh`/`kh`/`gh` stehen für je **einen** Laut. `ddh` liest sich als /d/+/ð/, und diese Folge existiert an Morphemgrenzen wirklich — `ddh` ist also mehrdeutig, nicht nur ungewöhnlich.
+2. **Maschineller Selbsttest:** `public._translit_skeleton('7addhar')` = `7ddhr`, `public._arabic_skeleton('حَضَّر')` = `7dhdhr` — die beiden Skelett-Spalten **derselben Zeile** widersprechen sich, Duplikat- und Cross-Source-Abgleich sehen zwei verschiedene Wörter. Mit `7adhdhar` liefern beide `7dhdhr`. Generell: weichen `_translit_skeleton(darija)` und `_arabic_skeleton(arabic_script)` voneinander ab, ist die Transliteration falsch, nicht das Arabische.
+
+**Kein Lerner-Nachteil:** `checkAnswer()` im Node-Harness gegen beide Schreibungen getestet, in beide Richtungen akzeptiert (`7addhar` ↔ `7adhdhar`, `y7addhar` ↔ `y7adhdhar`). Die Umstellung ist reine Datenqualität, kein Eingriff in bereits Gelerntes.
+
+## 3ayshik / y3ayyshik — zwei Schreibungen sind hier richtig (2026-09-12)
+
+17 Zeilen der Höflichkeitsfloskel („danke"/„bitte") trugen fünf verschiedene Schreibungen: `3ayshik`, `3ayshek`, `y3ayshek`, `y3ayshik`, `y3ayyshik`. Naheliegend, aber falsch wäre gewesen, alles auf **eine** Form zu ziehen. Ninja führt zwei **getrennte Lemmata**:
+
+- عَيْشِكْ `3aychik` = „thanks" und عَيْشُو `3aychouw` = „thanks" — beide **ohne** Schadda, zweimal unabhängig so geschrieben.
+- عَيِّشْ `3ayyich` = „may you live" — **mit** Schadda. TUNICO hat dazu das Verb `ʕayyiš` → `3ayyish` „ein langes Leben geben (Gott)".
+
+Das ist keine Vokalisierungs-Schlamperei, sondern eine lexikografische Unterscheidung: die erstarrte Interjektion ist lautlich reduziert, die volle Verbform يعيّشك („möge Er dir Leben geben") nicht. Entsprechend vereinheitlicht:
+
+| Form | Schreibung | arabic_script | Zeilen |
+|---|---|---|---|
+| erstarrte Floskel, ohne Präfix | `3ayshik` | عَيْشِك (ohne Schadda) | 851, 2685, 3001, 3002, 3132 |
+| volle Verbform, mit y-Präfix | `y3ayyshik` | يْعَيِّشِك (mit Schadda) | 1392, 1425, 1427, 1434, 1435, 1438, 1439, 1440, 1750, 1945, 3701 |
+
+Die Endung ist in **allen** 16 Zeilen `-ik`, nie `-ek`: jedes `arabic_script` hat Kasra unter ك. Das `yy` folgt derselben Regel wie das `dhdh` oben — Schadda wird transliteriert; das Vorbild stand schon in Zeile 1438 direkt daneben (`rabbi yfadhdhlik` aus يْفَضِّلك).
+
+**Nebenbefund, nicht angefasst:** die Klammer-Hinweise `(a...)`/`(y...)`/`(b...)` in den `german`-Feldern von 1391 `aman` / 1392 `y3ayyshik` / 1393 `brabbi` sind **kein Import-Müll**, sondern die bewusste Unterscheidung dreier Synonyme für „bitte" — nicht entfernen. Der `(b...)`-Rest im `arabic_script` von 1392 (`يْعَيِّشِك (b...)`, samt `arabic_skeleton` `3shk(b)`) war dagegen echter Copy-Paste-Müll aus 1393 und wurde entfernt. Offen: 1113 `billehi` heißt ebenfalls „bitte", hat aber keinen Hinweis-Zusatz.
 
 ## arabic_skeleton/translit_skeleton Herleitung — Rezept 4 (2026-09-05)
 

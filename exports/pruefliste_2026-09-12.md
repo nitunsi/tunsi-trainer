@@ -513,6 +513,63 @@ Bei Gruppe 2 stellte sich die Frage, ob ein geminierter Digraph als `ddh` oder `
 
 ### Familien-Entscheidung nötig: die `3ayshek`-Gruppe
 
-`1392 y3ayshek` steht in Gruppe 2 zur Korrektur an. Beim Prüfen zeigte sich: **17 Zeilen im Bestand verwenden dieses Wort in fünf verschiedenen Schreibweisen** — `3ayshik` (851), `3ayshek` (2685, 3001, 3002, 3132), `y3ayshek` (1392, 1434, 1435, 1439, 1440), `y3ayshik` (1750, 1945, 3701), `y3ayyshik` (1438) — während das `arabic_script` durchgängig عَيِّشِك mit Schadda auf ي schreibt, also `3ayyshik` nahelegt.
+`1392 y3ayshek` steht in Gruppe 2 zur Korrektur an. Beim Prüfen zeigte sich: **17 Zeilen im Bestand verwenden dieses Wort in fünf verschiedenen Schreibweisen** — `3ayshik` (851), `3ayshek` (2685, 3001, 3002, 3132), `y3ayshek` (1392, 1434, 1435, 1439, 1440), `y3ayshik` (1750, 1945, 3701), `y3ayyshik` (1438) — während das `arabic_script` überwiegend عَيِّشِك mit Schadda auf ي schreibt, also `3ayyshik` nahelegt. *(Korrektur nach der Recherche unten: „durchgängig" stimmte nicht — 851 hat عَيْشِكْ ohne Schadda, und genau das ist der Schlüssel zur Lösung.)*
 
 Eine Einzelkorrektur von 1392 würde die Zeile von 15 Geschwistern abkoppeln. Das ist wie bei den Nationalitäten eine Block-Entscheidung. Zusätzlich trägt 1392 im `arabic_script` den Rest `(b...)` — einer der vier Einträge mit lateinischen Zeichen im arabischen Feld (Liste D3).
+
+---
+
+## Runde 6 · Recherche-Ergebnisse — beide offenen Entscheidungen geklärt (2026-09-12)
+
+### ✅ Geminierter Digraph: `dhdh`, nicht `ddh` — dreifach belegt
+
+Die Zählung aus dem eigenen Bestand allein (`dhdh` 9 : `ddh` 2) war zu dünn, um eine dokumentierte Entscheidung zu überschreiben. Nachrecherche in allen drei Quellen:
+
+| Quelle | `dhdh` : `ddh` | `thth` : `tth` | `shsh` : `ssh` | `khkh` : `kkh` | `ghgh` : `ggh` |
+|---|---|---|---|---|---|
+| eigener Bestand | 9 : 2 | 6 : 2 | 11 : 0 | 7 : 0 | 0 : 0 |
+| Derja Ninja | 70 : 2 | 34 : 17 | 2 : 0 *(Ninja schreibt `ch`)* | – *(Ninja schreibt `5`)* | – |
+| TUNICO `lemma_chatalpha` | – *(kein `dh` im Alphabet)* | 40 : 9 | 35 : 0 | 21 : 0 | 2 : 0 |
+
+**Der entscheidende Fehler in der ersten Zählung:** Die `tth`-Treffer sind **keine** Gegenbeispiele. Beim Nachlesen der Einzeltreffer — nicht der Zahlen — ist jeder einzelne ein Morphemgrenzen-`t` vor `th`, keine Gemination:
+
+- TUNICO 9/9: `tṯawwib`→`tthawwib`, `tḏ̣āṛif`→`ttharif`, `tḏ̣āḥik`→`ttha7ik`, `mutṯaqqaf`→`mutthaqqaf`
+- Ninja 17/17: `تْذَكِّرْ`→`tthakkir`, `مِتْثَقِّفْ`→`mittha99if`, `تْذُوبِلْ`→`tthouwbil`
+- eigener Bestand 2/2: `نِتْثَاوَب`→`netthaowb` (3042), `تَذْبَح`→`tthba7` (3073)
+
+Nach Abzug dieser Scheintreffer steht es bei echter ذّ/ظّ-Gemination **40:0, 34:0, 6:0**. Und wo TUNICO eine echte Gemination hat, verdoppelt es in **14 von 14** Fällen voll: `ʕaḏḏib`→`3aththib`, `aḏḏin`→`aththin`, `kaḏḏāb`→`kaththab`, `baẓẓaʕ`→`baththa3`, `ḏḏakkiṛ`→`ththakkir`, `ḏḏall`→`ththall`, `ṭuẓẓīna`→`tuththina`, `mīẓẓu`→`miththu`.
+
+Zwei Argumente unabhängig von der Statistik:
+
+1. **Lautlehre** — `dh`/`th`/`sh`/`kh`/`gh` stehen für je *einen* Laut. `ddh` liest sich als /d/+/ð/, und diese Folge kommt an Morphemgrenzen echt vor. `ddh` ist also mehrdeutig, nicht nur ungewöhnlich.
+2. **Maschinell prüfbar** — `_translit_skeleton('7addhar')` = `7ddhr`, aber `_arabic_skeleton('حَضَّر')` = `7dhdhr`: Die beiden Skelett-Spalten *derselben Zeile* widersprechen sich, Duplikat- und Cross-Source-Abgleich sehen zwei verschiedene Wörter. Mit `7adhdhar` liefern beide `7dhdhr`.
+
+`checkAnswer()` im Node-Harness gegengetestet: `7addhar` ↔ `7adhdhar` und `y7addhar` ↔ `y7adhdhar` werden in beide Richtungen akzeptiert. Kein Lerner-Nachteil, reine Datenqualität.
+
+**Offen — braucht ein Ja:** ids **1648 `7addhar` → `7adhdhar`** und **2218 `y7addhar` → `y7adhdhar`**. Beide Schreibungen sind kollisionsfrei geprüft. Die Änderung überschreibt bewusst die Entscheidung vom 2026-08-07; in PRECEDENTS.md ist die alte Stelle bereits mit Begründung entwertet.
+
+**Nebenfund aus demselben Check:** id **3073** (`essakina ej-jdida madhya brrsha tthba7 thb7an`) hat zwei andere Fehler — `essakina` statt `essakkina` (السِّكِّينَة, Schadda auf س *und* ك) und `brrsha` statt `barsha` (بَرْشَة; dieselbe Zeile 3042 schreibt es korrekt). Nicht angefasst.
+
+### ✅ `3ayshik`-Familie vereinheitlicht — 14 Zeilen geändert
+
+Ninja führt **zwei getrennte Lemmata**, und das löst den Fall:
+
+- عَيْشِكْ `3aychik` = „thanks" und عَيْشُو `3aychouw` = „thanks" — beide **ohne** Schadda, zweimal unabhängig so geschrieben
+- عَيِّشْ `3ayyich` = „may you live" — **mit** Schadda; TUNICO hat dazu das Verb `ʕayyiš` → `3ayyish` „ein langes Leben geben (Gott)"
+
+Das ist keine Vokalisierungs-Schlamperei, sondern eine lexikografische Unterscheidung: die erstarrte Interjektion ist lautlich reduziert, die volle Verbform يعيّشك („möge Er dir Leben geben") nicht. Deshalb sind hier **zwei** Schreibungen richtig, nicht eine — aber eben nur zwei statt fünf:
+
+| Form | Schreibung | `arabic_script` | Zeilen |
+|---|---|---|---|
+| erstarrte Floskel, ohne Präfix | `3ayshik` | عَيْشِك (ohne Schadda) | 851, 2685, 3001, 3002, 3132 |
+| volle Verbform, mit y-Präfix | `y3ayyshik` | يْعَيِّشِك (mit Schadda) | 1392, 1425, 1427, 1434, 1435, 1438, 1439, 1440, 1750, 1945, 3701 |
+
+Die Endung ist in **allen 16** Zeilen `-ik`, nie `-ek` — jedes `arabic_script` hat Kasra unter ك. Das `yy` folgt derselben Regel wie das `dhdh`: Schadda wird transliteriert. Das Vorbild stand schon in Zeile 1438 direkt daneben (`rabbi yfadhdhlik` aus يْفَضِّلك).
+
+Ausgeführt: 14 Zeilen (851 und 1438 waren bereits korrekt), alle 14 neuen Schreibungen vorher auf Kollision geprüft (alle frei), `translit_skeleton`/`arabic_skeleton` über `public._translit_skeleton()`/`_arabic_skeleton()` neu berechnet. `checkAnswer()` akzeptiert alte *und* neue Schreibung in beide Richtungen — kein Eingriff in bereits Gelerntes. Der `(b...)`-Rest im `arabic_script` von 1392 ist damit auch weg (**Liste D3: 4 → 3**).
+
+**Nicht angefasst, aber aufgefallen:**
+
+- Die Klammer-Hinweise `(a...)`/`(y...)`/`(b...)` in den `german`-Feldern von 1391 `aman` / 1392 `y3ayyshik` / 1393 `brabbi` sind **kein Import-Müll**, sondern die bewusste Unterscheidung dreier Synonyme für „bitte". Nur der `(b...)` im *arabischen* Feld von 1392 war echter Copy-Paste-Müll aus 1393. — Offen: **1113 `billehi`** heißt ebenfalls „bitte", hat aber keinen Hinweis-Zusatz und fällt damit aus dem Schema.
+- **1425 `yberik fik (y3ayyshik)`** „Danke (Antwort auf Glückwunsch)" und **1945 `ybarik fik y3ayyshik`** „Gott segne dich (Antwort auf Glückwunsch)" sind derselbe Satz in zwei Schreibungen (`yberik` / `ybarik`, arabisch يُبارِك / يْبَارِكْ) mit fast identischem Gloss — **Merge-Kandidat**. Beide haben jetzt denselben `translit_skeleton` `brkfk3shk`; vom `normKey()`-Duplikat-Check der App ist das nicht erfassbar, über den Skelett-Vergleich schon.
+- **1394 `tfadhal`** („Bitte sehr / Hier / Nach Ihnen") — `arabic_script` تْفَضَّل hat Schadda auf ض, die Transliteration nicht: `_translit_skeleton` = `tfdhl` gegen `_arabic_skeleton` = `tfdhdhl`. Richtig wäre `tfadhdhal`, wie es **2095 `itfadhdhal`** und **1916 `itfadhdhal oq3od`** bereits schreiben. Gleiche Fehlerklasse wie `7addhar`, nur ohne `ddh` — deshalb vom Digraph-Check nicht erfasst, wohl aber vom Schadda-Check (Liste C). Danach bleiben 1394 und 2095 zusätzlich Merge-Kandidaten (dasselbe Wort mit/ohne prothetisches Alif, überlappender Gloss).

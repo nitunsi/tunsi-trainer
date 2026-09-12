@@ -134,18 +134,24 @@ Die Datei `tounsi_db_YYYY-MM-DD.md` im Projektwissen ist die primäre Datenquell
 
 Keine Großbuchstaben in darija — weder als Emphase-Marker noch am Satzanfang. Durchgehend kleingeschrieben.
 
-**Gemination eines Digraphen: der ganze Digraph wird verdoppelt (belegt 2026-09-12).** Bei Schadda auf ض/ظ/ذ/ش/خ/غ wird nicht nur der erste Buchstabe gedoppelt, sondern die komplette Schreibung:
+**Gemination eines Digraphen: der ganze Digraph wird verdoppelt (Regel belegt 2026-09-12, drei unabhängige Quellen).** Bei Schadda auf ض/ظ/ذ/ش/خ/غ wird nicht nur der erste Buchstabe gedoppelt, sondern die komplette Schreibung:
 
-| Laut | richtig | falsch | Bestandsbeleg |
-|---|---|---|---|
-| ضّ | `dhdh` | ~~`ddh`~~ | `itfadhdhal`, `ya3adhdh`, `rabbi yfadhdhlik` (9×) |
-| ظّ/ذّ | `thth` | ~~`tth`~~ | `kaththab`, `naththaf`, `mnaththam`, `ykathther` (6×) |
-| شّ | `shsh` | — | `t3ashsha`, `ghushsh`, `mitghashshish` (11×) |
-| خّ | `khkh` | — | `mukhkh`, `wakhkhar`, `fi likhkhir` (7×) |
+| Laut | richtig | falsch | eigener Bestand | Ninja | TUNICO |
+|---|---|---|---|---|---|
+| ضّ | `dhdh` | ~~`ddh`~~ | 9 : 2 | 70 : 2 | ض kommt in TUNICOs `chatalpha` nicht als `dh` vor |
+| ظّ/ذّ | `thth` | ~~`tth`~~ | 6 : 0 | 34 : 0 | 40 : 0 |
+| شّ | `shsh` | ~~`ssh`~~ | 11 : 0 | 2 : 0 (Ninja schreibt `ch`) | 35 : 0 |
+| خّ | `khkh` | ~~`kkh`~~ | 7 : 0 | – (Ninja schreibt `5`) | 21 : 0 |
+| غّ | `ghgh` | ~~`ggh`~~ | 0 : 0 | – | 2 : 0 |
 
-Bei `shsh` und `khkh` gibt es im Bestand **null** Gegenbeispiele, bei `dhdh`/`thth` jeweils nur zwei — die Regel ist also praktisch ausnahmslos.
+**Die `tth`-Treffer sind keine Gegenbeispiele** — das war der Denkfehler der ersten Zählung. Jeder einzelne davon (9 in TUNICO, 17 in Ninja, 2 im eigenen Bestand) ist ein **Morphemgrenzen-`t`** vor `th`, keine Gemination: TUNICO `tṯawwib`→`tthawwib`, `tḏ̣āṛif`→`ttharif`, `mutṯaqqaf`→`mutthaqqaf`; Ninja `تْذَكِّرْ`→`tthakkir`, `مِتْثَقِّفْ`→`mittha99if`; eigener Bestand `نِتْثَاوَب`→`netthaowb` (id 3042), `تَذْبَح`→`tthba7` (id 3073). Diese Zeilen sind korrekt und dürfen **nicht** zu `thth` "korrigiert" werden. Echte ذّ/ظّ-Gemination schreibt TUNICO in **14 von 14** Fällen voll: `ʕaḏḏib`→`3aththib`, `aḏḏin`→`aththin`, `kaḏḏāb`→`kaththab`, `baẓẓaʕ`→`baththa3`, `ḏḏakkiṛ`→`ththakkir`, `ḏḏall`→`ththall`, `ṭuẓẓīna`→`tuththina`, `mīẓẓu`→`miththu`.
 
-**Bekannte Ausnahme, die dagegen steht:** PRECEDENTS.md → Verben dokumentiert für 2026-08-07 die Korrektur `7adhar`→`7addhar` (plus `y7adhar`→`y7addhar`) mit `ddh`. Das sind genau die beiden `ddh`-Zeilen im Bestand (ids 1648, 2218) und sie widersprechen der Konvention, die die übrigen neun ض-Geminationen befolgen — auch Wörter derselben Wurzelfamilie wie `itfadhdhal`. Vor einer Vereinheitlichung auf `7adhdhar`/`y7adhdhar` Rückfrage, weil es eine dokumentierte Entscheidung überschreibt.
+Dazu zwei Argumente, die unabhängig von der Zählung gelten:
+
+- **Lautlehre:** `dh`/`th`/`sh`/`kh`/`gh` sind Digraphen für je **einen** Laut. `ddh` liest sich als /d/+/ð/ — und diese Folge kommt an Morphemgrenzen echt vor, `ddh` ist also nicht bloß ungewöhnlich, sondern **mehrdeutig**.
+- **Maschinell nachweisbar:** `public._translit_skeleton('7addhar')` = `7ddhr`, aber `public._arabic_skeleton('حَضَّر')` = `7dhdhr`. Die beiden Skelett-Spalten derselben Zeile widersprechen sich, d.h. Duplikat- und Cross-Source-Abgleich sehen zwei verschiedene Wörter. Mit `7adhdhar` ergeben beide Funktionen `7dhdhr`. Das ist der schnellste Selbsttest für jede vermutete Digraph-Gemination: **stimmen `_translit_skeleton(darija)` und `_arabic_skeleton(arabic_script)` nicht überein, ist die Transliteration falsch, nicht das Arabische.**
+
+**Überschreibt eine frühere Entscheidung:** PRECEDENTS.md → Verben hatte für 2026-08-07 `7adhar`→`7addhar` (plus `y7adhar`→`y7addhar`) mit `ddh` festgehalten. Das ist widerlegt; richtig ist `7adhdhar`/`y7adhdhar`. Details und Begründung: PRECEDENTS.md → Digraph-Gemination.
 
 ### Vokale & häufige Wörter
 
@@ -519,6 +525,17 @@ WHERE arabic_script ~ 'ّ'
 ORDER BY id;
 ```
 Restliche Fehlalarm-Muster (nicht weiter automatisierbar): Kontraktionsformen, bei denen das Arabische die volle Form schreibt (`shnoua` ← شْنُوَّا); mehrwortige Phrasen, bei denen die Schadda in einem anderen Wort sitzt; unmarkierte Fremdwörter (`rouba` ← رُوبَّا — mit `(frz.)` im Gloss automatisch ausgeschlossen). Zwei Gruppen im Ergebnis als Block entscheiden, nicht einzeln: Nationalitäten-Feminina auf ـِيَّة (8 Zeilen + 2 Plurale) und Form-II-Verbpaare (Präsens/Vergangenheit desselben Verbs, 10 Zeilen) — sonst laufen Geschwisterformen auseinander.
+
+**Halb verdoppelter Digraph (seit 2026-09-12).** Scharfer Zusatz-Check zum Gemination-Check darüber: findet `ddh`/`tth`/`ssh`/`kkh`/`ggh`, also Geminationen, bei denen nur der erste Buchstabe des Digraphen gedoppelt wurde. Begründung der Regel: SKILL.md → Digraph-Gemination, Historie: PRECEDENTS.md.
+```sql
+SELECT id, darija, arabic_script, german,
+       public._translit_skeleton(darija) AS ts, public._arabic_skeleton(arabic_script) AS as_
+FROM vocabulary
+WHERE darija ~ '(ddh|tth|ssh|kkh|ggh)'
+  AND darija !~ '(dhdh|thth|shsh|khkh|ghgh)'
+ORDER BY id;
+```
+**Pflicht-Gegenprobe vor jeder Korrektur — `tth` ist fast immer ein Fehlalarm:** in TUNICO (9/9), Ninja (17/17) und im eigenen Bestand (2/2) war jedes `tth` ein Morphemgrenzen-`t` vor `th` (`netthaowb` ← نِتْثَاوَب, `tthba7` ← تَذْبَح), keine Gemination. Entscheidungskriterium ist nicht die Buchstabenfolge, sondern das Arabische: steht dort eine Schadda auf ذ/ظ, ist es Gemination; steht ein eigenes ت davor, ist die Zeile korrekt. Kürzester Selbsttest: `_translit_skeleton(darija)` gegen `_arabic_skeleton(arabic_script)` halten — bei echter Fehlschreibung laufen die beiden an genau dieser Stelle auseinander (`7addhar` → `7ddhr` vs. `7dhdhr`), bei einem Präfix-`t` stimmen sie dort überein. **Bei mehrwortigen Zeilen die Stelle vergleichen, nicht die ganzen Strings** — die können aus völlig anderen Gründen abweichen. Beispiel id 3073: `tthb7` steht in beiden Skeletten identisch (also korrektes Präfix-`t`), die Gesamt-Skelette unterscheiden sich trotzdem, weil in derselben Zeile zwei andere Fehler stecken (`essakina` statt `essakkina` zu السِّكِّينَة, `brrsha` statt `barsha` zu بَرْشَة).
 
 **Bekannte Fehlalarm-Fallen bei diesen Checks (nicht blind fixen):**
 - Französische/italienische Lehnwörter — im `german`-Feld `(frz.)`/`(ital.)`/`(engl.)`/`(Lehnwort)` markieren statt Transliteration zu erzwingen
