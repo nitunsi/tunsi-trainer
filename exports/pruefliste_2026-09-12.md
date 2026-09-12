@@ -4,7 +4,7 @@ Ergebnis von Etappe 1 des Prüfplans, seit 2026-09-12 teilweise abgearbeitet.
 
 > **Stand:** ✅ **Runde 4 (A3-Merges) ist ausgeführt** — 14 Dubletten zusammengelegt, siehe Abschnitt A3. Alle übrigen Listen sind unverändert und warten auf Bestätigung.
 >
-> Bestand danach: **3.798 Vokabeln** (vorher 3.812), **2.105 progress-Zeilen** (vorher 2.113). Verb-Selbstcheck: **38 Treffer** (vorher 49).
+> Bestand danach: **3.798 Vokabeln** (vorher 3.812), **2.105 progress-Zeilen** (vorher 2.113). Verb-Selbstcheck: **35 Treffer** (vorher 49), davon 0 aus dem Merge.
 
 Die drei SQL-Abfragen dazu stehen in `skills/tunsi/SKILL.md` → „Datenqualitäts-Checks (SQL)" und lassen sich jederzeit neu laufen lassen.
 
@@ -69,7 +69,23 @@ Bestätigt und in dieser Reihenfolge geschrieben:
 5. **12 Verweise in `vocab_lesson_refs`** über 8 Lektionen neu aufgebaut — ersetzt, bzw. ersatzlos entfernt wo die Ziel-ID schon in der Liste stand (L2 bei 3450→1219 und 3781→404). Ergebnis geprüft: 0 tote Verweise, 0 doppelte IDs, alle 13 Lektionen im gültigen `ids:…|darija:…`-Format.
 6. **14 DELETE.** `progress` und `vocabulary_review` per CASCADE mit, `review_log` per SET NULL (44 Protokollzeilen haben ihre Wortzuordnung verloren, bleiben aber als Zeilen für die Tagesstatistik erhalten).
 
-**Offener Rest aus diesem Merge:** Bei den bleibenden Zeilen wurde die `conjugation`-Tabelle **nicht** mit angepasst. 12 davon (u.a. 2222 `ybaddal` vs. Tabelle `ybaddil`, 2223 `ykammal` vs. `ykammil`, 4168 `ya3raf` vs. `ya3rif`) widersprechen weiterhin ihrer eigenen Tabelle — die Karte lehrt die eine, das 🔠-Blatt zeigt die andere Schreibung. Das ist der Grund, warum der Selbstcheck bei 38 statt bei 27 steht. Eigener Arbeitsschritt, noch nicht entschieden.
+#### ✅ Nachzug: Zeile und Tabelle angeglichen (2026-09-12)
+
+Nach dem Merge widersprachen **3** der bleibenden Zeilen weiterhin ihrer eigenen `conjugation`-Tabelle (nicht 12 — die Zahl war eine Fehlschätzung aus dem Gesamtstand des Selbstchecks). Bei allen dreien entscheidet das vokalisierte `arabic_script`, nicht die Tabelle allein:
+
+| ID | Zeile war | Tabelle sagt | `arabic_script` | Ergebnis |
+|---|---|---|---|---|
+| 2222 | `ybaddal` | `ybaddil` | يُبَدِّل — Schadda + **Kasra** | Zeile → `ybaddil` |
+| 2223 | `ykammal` | `ykammil` | يُكَمِّل — Schadda + **Kasra** | Zeile → `ykammil` |
+| 4168 | `ya3raf` | `ya3rif` | يَعْرَفْ — **Fatha** | **Tabelle** → `ya3raf` |
+
+Bei 2222/2223 bestätigt das Arabische die Tabelle — dort wurde die Zeile nachgezogen (`translit_skeleton` neu berechnet, keine neuen Dubletten entstanden, weil die konkurrierende Schreibung vorher gelöscht wurde).
+
+**4168 ist die Ausnahme:** Dort trägt das Arabische Fatha, die Tabelle aber durchgängig `-i-` (`ya3rif`/`ta3rif`/`na3rif`) — die TUNICO-Handschrift, vor deren 1:1-Übernahme SKILL.md ausdrücklich warnt. Hier wurde die **Tabelle** korrigiert: vier Zellen des Präsens-Blocks auf `-a-` (`ya3raf`, `ta3raf` ×2, `na3raf`). Die Pluralformen (`na3rfu`, `ta3rfu`, `ya3rfu`) elidieren den Stammvokal und blieben unverändert.
+
+**Merkregel daraus:** „Tabelle ist führend" gilt nur, solange das vokalisierte `arabic_script` nicht widerspricht. Es ist der höhere Anker — die Tabellen stammen überwiegend aus TUNICOs `forms_chatalpha`, das andere Vokale nutzt als unsere Imala-Regeln.
+
+Verb-Selbstcheck danach: **35 Treffer** (49 → 38 → 35), davon **0** aus dem A3-Merge. Duplikat-Check über den ganzen Bestand: 0.
 
 #### Die 14 Paare im Detail
 
