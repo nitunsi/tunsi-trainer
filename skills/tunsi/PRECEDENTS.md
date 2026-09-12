@@ -218,6 +218,16 @@ Die Endung ist in **allen** 16 Zeilen `-ik`, nie `-ek`: jedes `arabic_script` ha
 
 **Nebenbefund, nicht angefasst:** die Klammer-Hinweise `(a...)`/`(y...)`/`(b...)` in den `german`-Feldern von 1391 `aman` / 1392 `y3ayyshik` / 1393 `brabbi` sind **kein Import-Müll**, sondern die bewusste Unterscheidung dreier Synonyme für „bitte" — nicht entfernen. Der `(b...)`-Rest im `arabic_script` von 1392 (`يْعَيِّشِك (b...)`, samt `arabic_skeleton` `3shk(b)`) war dagegen echter Copy-Paste-Müll aus 1393 und wurde entfernt. Offen: 1113 `billehi` heißt ebenfalls „bitte", hat aber keinen Hinweis-Zusatz.
 
+## Zwei Prüf-Workflows waren einer (2026-09-13)
+
+Der Skill führte zwei getrennte Prüf-Workflows: „Geflaggte Vokabeln (🚩) live gegen Derja Ninja prüfen" und „Frisch importierte Batch-Vokabeln flaggen + verifizieren (leichtgewichtige Variante)". Beide machten dasselbe — interne Checks, dann Ninja → TUNICO → Peace Corps, dann klassifizieren. Sie unterschieden sich in **genau einem Punkt**: wohin das Ergebnis geschrieben wird (`vocabulary_review` gegen direktes `UPDATE vocabulary`).
+
+Das Eingeständnis stand im Skill selbst: *„Bei Unklarheit, welcher der beiden Workflows gemeint ist: im Zweifel nachfragen, die Schreibpfade unterscheiden sich."* Eine Regel, die den Leser zwingt, vorab zu klassifizieren, in welchem Prozess er ist, ist keine Regel, sondern eine Weiche ohne Nutzen. Nebenwirkung: für „eine einzelne Vokabel prüfen" gab es gar keinen Einstieg — der Fall fiel zwischen die beiden Workflows.
+
+**Zusammengelegt zu „Vokabeln prüfen — EIN Prozess"** mit fünf Schritten. Was wechselt, ist **nur die Auswahl der Zeilen** (eine id, `flagged=true`, ein Import-Batch, die fälligen, eine Verdachtsliste); das Vorgehen ist identisch. Der Schreibpfad wird zu **einer Frage in Schritt 5**: war die Zeile geflaggt? Ja → `vocabulary_review`, weil Nils im Tab entscheiden will. Nein → direkt.
+
+**Lehre:** Wenn zwei Abschnitte eines Skills dieselben Schritte in anderer Reihenfolge erzählen und am Ende „im Zweifel nachfragen, welcher gemeint ist" steht, ist das kein Dokumentationsproblem, sondern ein Designfehler. Prüfen, worin sie sich *wirklich* unterscheiden — meist ist es ein einziger Parameter, und der gehört in den Prozess hinein, nicht vor ihn.
+
 ## Skill-Audit — was beim ersten Durchgang übersehen wurde (2026-09-13)
 
 Nach der Reparatur der beiden gemeldeten Skill-Defekte (SQL-Teilmenge, „Pflichtfeld") ein zweiter, gezielter Durchgang. Die zwei bekannten Regex-Fallen waren sauber — **kein einziges `\b`** in irgendeinem SQL, keine `<Buchstabe>ّ`-Regex außerhalb des eigenen Gegenbeispiels. Drei andere Defekte lagen noch offen:

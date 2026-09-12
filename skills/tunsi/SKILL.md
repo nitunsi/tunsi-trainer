@@ -14,11 +14,10 @@ Fokus dieser Datei: bestehende Trainer-Vokabeln prüfen, neue Vokabeln nachschla
 
 | Situation | Relevante Abschnitte |
 |---|---|
-| **Bestand systematisch prüfen / „alle Regeln laufen lassen"** | **Datenqualitäts-Checks (SQL)** — und dort zuerst den Kasten „Transliterations-Check". Das SQL dort ist nur eine **Teilmenge** der Regeln; der vollständige Lauf geht über den Node-Harness gegen `trainer.html`. Wer „alle Regeln geprüft" schreiben will, muss diesen Weg gehen. |
-| Einzelne Vokabel überprüfen / neue nachschlagen / Import-Batch gegenchecken | vocab_lookup — Cross-Source-Abgleich (ganz unten) |
-| Nutzer hat Vokabeln mit 🚩 markiert | Workflow: Geflaggte Vokabeln (🚩) live gegen Derja Ninja prüfen |
-| Frischer Batch soll automatisch geprüft werden | Workflow: Frisch importierte Batch-Vokabeln flaggen + verifizieren |
-| Neue Vokabel(n) schreiben | Kern-Workflow: neue Vokabel(n) verarbeiten → Transliteration — Ziel-Konvention → Topic (Pflichtfeld NUR bei Neuanlage) |
+| **Vokabeln prüfen — eine, ein Batch, geflaggte, fällige, der ganze Bestand** | **Vokabeln prüfen — EIN Prozess.** Ein Vorgehen für alle Fälle; es wechselt nur die Auswahl der Zeilen. |
+| Neue Vokabel nachschlagen / Quellen abgleichen | vocab_lookup — Cross-Source-Abgleich (ganz unten), das Werkzeug hinter Schritt 3 |
+| „alle Regeln laufen lassen" | Datenqualitäts-Checks (SQL) — **das SQL dort ist nur eine Teilmenge**; der vollständige Lauf geht über den Node-Harness gegen `trainer.html` |
+| Neue Vokabel(n) schreiben | Kern-Workflow: neue Vokabel(n) verarbeiten → Transliteration — Ziel-Konvention → Topic |
 | Vokabel ist ein Verb (prüfen ODER anlegen) | Verben → Verb-Konjugationsmodell (3-Zeilen-Ziel, `conjugation`, `conj_rotate`) — gilt auch bei geflaggten Einzelformen |
 | Was ist von früher noch unerledigt? | Offene Punkte (direkt unten) — **die Zahlen dort sind ein Schnappschuss, vor jeder Planung mit dem SQL daneben neu ziehen** |
 | PDF/Foto-Quelle auswerten, neue Quelle importieren | IMPORTS.md |
@@ -222,7 +221,7 @@ Aus der Uni-Wien-Lautlehre abgeleitete Prüfregeln, immer anwendbar wenn `arabic
 9. **Kolloquiale Vokal-Elision nur bei markiertem Sukun.** Reduktion nur dort, wo das Arabische selbst ein Sukun trägt (قْوِيَّة→"qwiyya"). Eine markierte Fatha/Kasra/Damma wird nicht gestrichen, auch wenn die Aussprache subjektiv reduziert klingt (صَيْدَلِيَّة→"sidaliyya").
 10. **Länderadjektiv vs. Ländername** ist eine Unterkategorie von Regel 5 — Konsonantenskelett-Match reicht nicht, Wortart genau prüfen.
 
-## Topic (Pflichtfeld NUR bei Neuanlage)
+## Topic (immer selbst setzen, nie melden)
 
 Jeder INSERT muss ein `topic` enthalten — niemals weglassen oder null lassen. Steuert die Lernpriorisierung im Aktivierungsmodus (Prio 1 = sofort vorschlagen).
 
@@ -285,14 +284,9 @@ Nie verwenden: Vokabeln, null, freie Texte außerhalb der Liste.
 
 Weitere Ad-hoc-Werte im Bestand, **bewusst nicht aufgenommen** (je 2–5 Zeilen, gehen in bestehende Topics auf): `Gesellschaft`, `Bildung` (→ Schule), `Küche` (→ Essen/Wohnen), `Feiertage` (→ Zeit), `Glückwünsche` (→ Höflichkeit), `Komparativ` (→ Adjektive/Grammatik), `Schlafzimmer` (→ Wohnen), `Arbeit` (→ Berufe). Diese Zeilen werden nicht nachgepflegt (siehe Bestandspflege-Regel unten) — nur bei ohnehin fälliger Bearbeitung mitrichten.
 
-**Topic ist unkritisch, im Zweifel selbst entscheiden.** Anders als bei `lesson_id` darf Claude bei `topic` selbst das plausibelste Topic wählen und direkt setzen, ohne vorher nachzufragen. Kurz begründen, aber nicht als offene Frage stehen lassen.
+**Topic wird immer selbst gesetzt — nie fragen, nie melden.** Nils ist das Feld nicht wichtig. Daraus folgt genau eine Regel: bei jeder Zeile, die du ohnehin anfasst, das plausibelste Topic aus der Tabelle oben setzen — ohne Rückfrage, ohne Begründung. Bei jedem INSERT ein Topic mitgeben.
 
-**Bestandspflege bei Topic ist kein eigenes Ziel (Stand 2026-09-05).** Nils ist das Feld grundsätzlich nicht wichtig. Bestehende falsche/fehlende/inkonsistente Topics — auch systemische Muster wie die verbreiteten `"Wort (Lxx)"`-Suffixe oder reine `"(Lxx)"`-Tags ohne Themenwort — werden nicht von sich aus gesucht, geprüft oder als Fund gemeldet. Nur zwei Anlässe rechtfertigen ein Anfassen:
-
-1. **Neuanlage:** Pflichtfeld **nur hier** — bei jedem neuen INSERT `topic` korrekt setzen. Das Wort „Pflichtfeld" gilt ausschließlich für neue Zeilen; **bestehende Zeilen ohne oder mit Legacy-Topic sind kein Befund und gehören in keinen Prüfbericht.**
-2. **Ohnehin fällige Bearbeitung:** Wird eine bestehende Vokabel aus anderem Grund verändert (Korrektur, Update, Ninja-Abgleich…), das Topic bei der Gelegenheit gleich mitrichten, falls es falsch/fehlend/im Lxx-Suffix-Format ist.
-
-In beiden Fällen: wie genau (welches Topic, Suffix abschneiden oder ersetzen) nicht rückfragen — einfach entscheiden, wie schon oben beschrieben.
+**Was NICHT passiert:** bestehende falsche, fehlende oder Legacy-Topics (`" (L16)"`, `"Alltag (L12)"`, `NULL`) werden **nicht gesucht, nicht gezählt, nicht als Befund gemeldet**. Sie gehören in keinen Prüfbericht. Präzedenzfall 2026-09-13: ein Prüflauf listete 26 solcher Zeilen als eigene Fundsektion — verlorene Arbeit auf beiden Seiten.
 
 ## Verben
 
@@ -695,80 +689,71 @@ Ebenso `course_lessons.vocab_lesson_refs` gegen die alte Schreibung prüfen (`da
 
 **Faustregel aus diesen 8 Läufen:** Eine Regel gehört nur dann in `TRANSLIT_RULES`, wenn sie nahe an 0 % Fehlalarme liegt — der Wert der beiden Prüf-Tabs liegt darin, dass „0 Treffer" wirklich „sauber" heißt. Alles mit Restunschärfe bleibt SQL im Skill und wird als Verdachtsliste abgearbeitet.
 
-## Workflow: Geflaggte Vokabeln (🚩) live gegen Derja Ninja prüfen
+## Vokabeln prüfen — EIN Prozess
 
-Wenn Nils im Trainer Vokabeln mit 🚩 markiert, ist das der Auftrag, sie zu recherchieren und Korrekturvorschläge in `vocabulary_review` einzutragen — die eigentliche Recherche läuft außerhalb der App, der Ninja-Check-Tab im Trainer ist nur für die menschliche Freigabe/Ablehnung. Kein automatisches UPDATE direkt auf `vocabulary`, außer der Eintrag ist zweifelsfrei bereits korrekt (Schritt 6).
+Es gibt **einen** Prüfprozess. Was von Fall zu Fall wechselt, ist die **Auswahl der Zeilen** — nie das Vorgehen. Hier standen früher zwei getrennte Workflows („geflaggt" und „frischer Import") mitsamt dem Zusatz „bei Unklarheit nachfragen, welcher gemeint ist". Sie unterschieden sich in genau einem Punkt: dem Schreibpfad. Der ist jetzt Schritt 5.
 
-Auslöser: "Ich habe Vokabeln markiert" → `SELECT * FROM vocabulary WHERE flagged = true` als erster Schritt. **Sofort danach, für den ganzen Batch als EINE Sammelabfrage:** `SELECT * FROM vocabulary_review WHERE vocabulary_id IN (<alle IDs>)` — Konflikt-Check ganz am Anfang, bevor ein Korrekturplan gebaut wird (nicht erst kurz vorm Schreiben, sonst muss ein fertiger Plan nachträglich umgebaut werden).
+### Schritt 1 — Auswahl
 
-### Ablauf pro geflaggter Vokabel
+| Anlass | Auswahl |
+|---|---|
+| „Ich habe Vokabeln markiert" | `WHERE flagged = true` |
+| **eine einzelne Vokabel** | `WHERE id = <id>` — genauso gültig wie ein Batch, kein Sonderweg |
+| frisch importierter Batch | die ids des Batches |
+| „prüf die fälligen" | über `progress.next_review` |
+| Bestandsaudit | eine Verdachtsliste aus **Datenqualitäts-Checks (SQL)** |
 
-0. **Interne Konsistenz-Checks zuerst — kostenlos, kein externer Request nötig, vor dem Ninja/TUNICO/Peace-Corps-Abgleich.** Deckt eine andere Fehlerklasse ab als der externe Abgleich: eine Vokabel kann extern bestätigt sein und trotzdem kaputt vokalisiert/transliteriert sein. Für den ganzen geflaggten Batch als SQL (siehe "Transliterations-Check" oben für die fertigen Regex-Queries):
-   - Vokalisierungs-Vollständigkeit (`arabic_script` komplett ohne Harakat/Sukun?)
-   - Konsonanten-Gegencheck arabic_script vs. darija (ح→7, خ→kh, ع→3, غ→gh, ش→sh, ق→q/g/k, ض→dh)
-   - Ziffern (2/5/9) oder Großbuchstaben in `darija`
-   - Wortanzahl-Abgleich arabic_script vs. darija (Hinweis auf fehlende/zusätzliche Wörter)
-   - "/" im `german`-Feld: echte Synonyme vs. Bedeutungskollision (sollte `;` sein) — Testkriterium siehe Duplikat-Check-Regeln oben
-   - "/" im `darija`- oder `arabic_script`-Feld: Schrägstrich-Muster gehört aufgeteilt (siehe Verben-Regeln) — der Duplikat-Check normalisiert den ganzen String inkl. "/" zu einem Key und übersieht dadurch bestehende Einzelform-Einträge
-   - Präsens-Verb mit Infinitiv-Gloss statt 3. Person Singular
-   - Plural-Endung `-iou`/`-eou`/`-aou` statt `-iw`/`-aw`
-   - Gemination: Schadda im Arabischen ohne Doppelbuchstaben in `darija` (Verdachtsliste, ~15 % Fehlalarme)
-   Funde hier vor Schritt 6 mit korrigieren, nicht getrennt von den Ninja-Funden behandeln.
+**Immer mit dabei, unabhängig von der Auswahl** — als EINE Sammelabfrage am Anfang, bevor ein Korrekturplan gebaut wird:
+```sql
+SELECT * FROM vocabulary_review WHERE vocabulary_id IN (<alle ids>);
+SELECT vocabulary_id, user_comment, change_reason FROM vocabulary_review
+WHERE change_category = 'ninja_check_kommentiert' AND NOT reviewed;   -- Nils' Rückkanal, siehe Schritt 5
+```
 
-0b. **Wenn die geflaggte Vokabel ein Verb ist, zusätzlich das 3-Zeilen-Modell prüfen** (Details: "Verb-Konjugationsmodell" oben). Eine einzelne geflaggte Verbform sagt nichts darüber, ob die anderen beiden Zielzeilen existieren — Präzedenzfall 2026-09-12: `y7jem` (id 3614) war als „eine Zeile, Tabelle dran, fertig" durchgegangen, tatsächlich fehlten 2 von 3 Zeilen und die Tabelle hatte weder `past` noch `imperative`.
-   - **Verb-Selbstcheck zuerst** (SQL oben): steht die eigene `darija`-Form in der eigenen `conjugation`-Tabelle? Das ist der billigste Test und fängt falsch zugeordnete Tabellen, Klammer-Zusätze im Feld und Schreibkonflikte in einem Durchgang.
-   - Bestand nach Präsens-Grundform UND Vergangenheit-Grundform desselben Verbs durchsuchen — **auch unter Alt-Topics und `topic IS NULL`**, per Konsonantenskelett (Pflicht-Suchschritt im Verb-Konjugationsmodell).
-   - Prüfen, ob eine dritte rotierende Zeile (`conj_rotate=true`) existiert. Fehlt sie, aber es gibt bereits ≥3 Zeilen, reicht ein Flag auf einer vorhandenen Zeile — keine Neuanlage.
-   - `tunico_verb_id` gegen `tunico_corpus_verbs` prüfen (Konsonantenskelett gegen `forms_chatalpha[]`) und verknüpfen, falls dort gelistet. **Kein Treffer ist kein Mangel:** die Korpustabelle enthält nur die 300 häufigsten Verben, ein reguläres Lexikon-Verb aus `tunico_import` steht dort nicht und behält korrekt `tunico_verb_id = NULL`.
-   - `conjugation` an allen Zeilen des Verbs synchron halten — Stand 2026-09-12 sind 3 Gruppen bereits auseinandergelaufen.
-   - **Fehlende Zielzeilen werden als Vorschlagsliste gezeigt, nicht direkt geschrieben** (siehe Neuanlage-Regel im Verb-Konjugationsmodell).
-1. **Offline-Quellen zuerst, in dieser Reihenfolge — alle drei, nicht nur die erste** (Details zu jeder Tabelle: IMPORTS.md):
-   1. `derja_ninja_entries` — schnell, aber ein Snapshot (2026-08-17), kann bei mehrteiligen Begriffen unvollständig sein.
-   2. `tunico_import` (Englisch-Übersetzung als Suchschlüssel gegen `senses`/`de_gloss`) — liefert oft das komplette Bedeutungsspektrum eines mehrdeutigen Worts, wo ein einzelner Ninja-Treffer nur eine Facette zeigt.
-   3. `peacecorps_dict_import` (Englisch-Übersetzung gegen `headword`/`senses`) — dritte unabhängige Quelle, v.a. bei älterem/ungewöhnlichem Lehrbuchvokabular ohne Ninja-/TUNICO-Treffer.
-   Erst wenn KEINE der drei einen Treffer liefert, gilt eine Vokabel als "keine externe Bestätigung" — nicht schon nach `derja_ninja_entries` allein.
-2. **Live-Check, wenn keine der drei Offline-Quellen etwas liefert:** siehe IMPORTS.md → Abgleich mit Derja Ninja für URL-Schema, HTML-Struktur und den Ninja-eigenen Transliterations-Schlüssel für `script=transliterated`-Suchen.
-3. **Ninjas Transliteration ist ein Strukturhinweis, keine Vorlage** — nie 1:1 übernehmen (andere Konvention: ch statt sh, 9 statt q), aber prüfen ob sie ein von unserer Transliteration übersehenes Feature zeigt (v.a. Gemination). In Chat-Alphabet übertragen.
-4. **Klassifizieren:**
-   - arabic_script + Bedeutung bestätigt → ggf. nur Transliteration korrigieren und/oder Audio ergänzen
-   - arabic_script oder Bedeutung weicht ab → Korrektur mit Begründung vorschlagen
-   - Kein eigener Treffer, aber in Beispielsätzen anderer Einträge bestätigt → Bedeutung gilt als bestätigt, kein Audio → `ninja_check_kein_vorschlag`
-   - Gar kein Treffer → ebenfalls `ninja_check_kein_vorschlag`, im `change_reason` transparent machen
-   - **Nur diese zwei exakten Strings für `change_category` beim Schreiben:** `ninja_check_pending` und `ninja_check_kein_vorschlag`. Keine eigenen Varianten — die App filtert im Ninja-Check-Tab hart auf diese Werte.
-   - **Die App schreibt vier weitere Werte zurück** (nie selbst setzen, aber beim Lesen kennen — sie sagen, was mit einem früheren Vorschlag passiert ist):
+### Schritt 2 — Intern prüfen (kostenlos, kein Netz)
 
-     | Wert | Von wem | Bedeutung |
-     |---|---|---|
-     | `ninja_check_uebernommen` | ✅-Knopf | Vorschlag übernommen, `vocabulary` ist aktualisiert |
-     | `ninja_check_ignoriert` | 🚫-Knopf | Vorschlag abgelehnt — **nicht erneut denselben Vorschlag machen** |
-     | `ninja_check_kein_vorschlag_bestaetigt` | 👍-Knopf | „keine Quelle gefunden" zur Kenntnis genommen |
-     | `ninja_check_kommentiert` | 💬-Knopf | **Nils hat einen Hinweis hinterlassen — das ist ein Auftrag, siehe unten** |
+Die Checks aus **Datenqualitäts-Checks (SQL)**, auf die Auswahl eingeschränkt. Deckt eine andere Fehlerklasse ab als der externe Abgleich: eine Vokabel kann extern bestätigt und trotzdem kaputt transliteriert sein. **Vor** Schritt 3.
 
-   - **`ninja_check_kommentiert` ist die wichtigste dieser vier.** Der 💬-Knopf („Erneut prüfen lassen") schreibt einen Freitext nach `vocabulary_review.user_comment` und setzt `reviewed=false`. Das ist der einzige Rückkanal von Nils zur nächsten Session: Kontext, Vermutung oder ein alternativer Suchbegriff zu einer Vokabel, die beim ersten Anlauf nicht auffindbar war. **Bei jedem 🚩-Durchgang mitabfragen**, nicht nur `flagged`:
+Ist die Vokabel ein **Verb**, zusätzlich das 3-Zeilen-Modell (siehe „Verb-Konjugationsmodell"): Verb-Selbstcheck zuerst, dann den Bestand per Konsonantenskelett nach Präsens- UND Vergangenheits-Grundform durchsuchen — auch unter Alt-Topics und `topic IS NULL`. Präzedenzfall 2026-09-12: `y7jem` (3614) galt als „eine Zeile, Tabelle dran, fertig"; tatsächlich fehlten 2 von 3 Zeilen. Fehlende Zielzeilen werden **als Vorschlagsliste gezeigt, nicht geschrieben**.
 
-     ```sql
-     SELECT vocabulary_id, user_comment, change_reason
-     FROM vocabulary_review
-     WHERE change_category = 'ninja_check_kommentiert' AND NOT reviewed;
-     ```
-     Mit dem Hinweis erneut suchen und das Ergebnis wieder als `ninja_check_pending`/`ninja_check_kein_vorschlag` schreiben, damit es im Tab wieder sichtbar wird.
-5. **Vor dem Schreiben:** bestehende `vocabulary_review`-Zeilen prüfen (idealerweise schon als Sammelabfrage am Anfang, siehe oben) — auch mit `change_category IS NULL` (für Nils im Tab unsichtbare Altlasten).
-   - **Technischer Zwang:** `vocabulary_review.vocabulary_id` hat UNIQUE-Constraint. Zweiter INSERT crasht mit `23505 duplicate key` — immer erst SELECT, dann UPDATE statt INSERT wenn schon eine Zeile existiert.
-   - **Konflikt-Check:** bestehende Zeile mit abweichendem Vorschlag (z.B. `partner_status='pending'` mit anderem Wort) → nie stillschweigend überschreiben, beide Versionen zeigen, Nils entscheiden lassen.
-   - **Ausnahme — erkennbare Altlast:** ohne Rückfrage überschreibbar nur wenn kein `change_reason`/`change_category` UND der aktuelle `vocabulary`-Wert bereits sichtbar abweicht. Nur EINES der Kriterien erfüllt oder unklar → als Konflikt behandeln.
-6. **Schreiben** (INSERT/UPDATE auf `vocabulary_review`): `change_category` wie Schritt 4, `reviewed=false`, Felder aus der aktuellen `vocabulary`-Zeile übernehmen (ggf. korrigiert), `ninja_audio_url` nur bei echtem Wort-Audio, `change_reason` kurzer Klartext. Kein SQL ohne Bestätigung. `flagged` bleibt `true`, solange ein offener Vorschlag existiert (App setzt `false` selbst bei Übernahme/Ablehnung) — nur bei zweifelsfrei bereits korrektem Eintrag ohne etwas zu zeigen: direkt `flagged=false`, ohne `vocabulary_review`.
+### Schritt 3 — Extern prüfen: alle drei Quellen, nicht nur die erste
 
-## Workflow: Frisch importierte Batch-Vokabeln flaggen + verifizieren (leichtgewichtige Variante)
+1. `derja_ninja_entries` — schnell, aber ein Snapshot (2026-08-17), bei mehrteiligen Begriffen oft unvollständig
+2. `tunico_import` — liefert das volle Bedeutungsspektrum, wo Ninja nur eine Facette zeigt
+3. `peacecorps_dict_import` — dritte unabhängige Quelle, v.a. bei älterem Lehrbuchvokabular
 
-Abweichend vom 🚩-Workflow (der für einzelne, manuell markierte Vokabeln über `vocabulary_review`/Ninja-Check-Tab läuft): Wenn Nils bei einem frischen Import-Batch "als flagged markieren" sagt, ist das eine schnellere Batch-Verifizierung:
+Erst wenn **keine** der drei trifft, gilt „keine externe Bestätigung". Werkzeug für alle drei: **vocab_lookup** (unten) — `english_key` als primäre Achse, Skelett-Treffer nur separat und ab Länge 4. Live-Ninja nur, wenn offline nichts kommt (IMPORTS.md).
 
-1. Neue Vokabeln mit `flagged = true` anlegen
-2. **Automatisch, ohne Zuruf, direkt nach jedem Batch:** `SELECT * FROM vocabulary WHERE flagged = true`, jede gegen `derja_ninja_entries` (offline zuerst) und bei Bedarf Live-Ninja-Suche prüfen. Realistische Erwartung: Trefferquote oft nur ~1-2% (Lehrbuch-/Fachvokabular) — trotzdem grundsätzlich versuchen.
-3. Ergebnis gruppiert zeigen (bestätigt / korrigiert / nicht auffindbar) — bei Unsicherheiten `AskUserQuestion` statt raten
-4. Nach Bestätigung: **direkt** `UPDATE vocabulary SET flagged = false, ninja_checked_at = now() [, ninja_audio_url = ..., ninja_audio_start = ..., ninja_audio_end = ...]` — kein Umweg über `vocabulary_review` (das ist für Korrektur-Vorschläge zur Freigabe gedacht, nicht "neu importiert, jetzt geprüft")
-5. Echte Duplikate aus dem eigenen Batch: normalen Duplikat-Merge-Workflow anwenden, nicht einfach flagged lassen
+Drei Fallen, jede schon einmal zugeschlagen:
+- **Ninjas Transliteration ist ein Strukturhinweis, keine Vorlage** — andere Konvention (`ch` statt `sh`, `9` statt `q`, `ouw` für ū). Prüfen, ob sie ein übersehenes Feature zeigt (v.a. Gemination), aber nie 1:1 übernehmen. `touwl` ist so in den Bestand gerutscht, richtig ist `toul`.
+- **Ein Skelett-Treffer ist kein Wort-Treffer.** `nimshiw` „wir gehen" trifft نْمَشْ „freckles". Bedeutung gegenlesen, nicht nur das Skelett.
+- **Gleiches Arabisch heißt nicht „Dublette"** — es kann auch heißen, dass eine der Zeilen inhaltlich falsch ist (Präzedenzfall `metrobbi`, PRECEDENTS.md).
 
-Bei Unklarheit, welcher der beiden Workflows gemeint ist: im Zweifel nachfragen, die Schreibpfade unterscheiden sich (`vocabulary_review` vs. direktes `UPDATE vocabulary`).
+### Schritt 4 — Zeigen
+
+Immer, ausnahmslos, vor jedem Schreiben: betroffene Zeilen mit Ist-Wert, Soll-Wert und Beleg. Bei Unsicherheit `AskUserQuestion` statt raten.
+
+### Schritt 5 — Schreiben: genau eine Entscheidung
+
+**War die Zeile geflaggt?**
+
+- **Ja** → `vocabulary_review`. Nils will im Ninja-Check-Tab selbst entscheiden. `change_category` nur `ninja_check_pending` oder `ninja_check_kein_vorschlag` (die App filtert hart darauf), `reviewed=false`, `change_reason` kurzer Klartext. `flagged` bleibt `true`, solange ein Vorschlag offen ist. **Ausnahme:** Eintrag ist zweifelsfrei schon korrekt → direkt `flagged=false`, ganz ohne `vocabulary_review`.
+- **Nein** → direkt `UPDATE vocabulary`. Bei frisch importierten Zeilen zusätzlich `flagged=false, ninja_checked_at=now()`.
+
+**Technischer Zwang:** `vocabulary_review.vocabulary_id` hat einen UNIQUE-Constraint — ein zweiter INSERT crasht mit `23505`. Immer erst SELECT, dann UPDATE statt INSERT.
+
+**Konflikt:** bestehende Zeile mit abweichendem Vorschlag → nie stillschweigend überschreiben, beide Versionen zeigen. **Ausnahme „erkennbare Altlast":** überschreibbar nur, wenn kein `change_reason`/`change_category` **und** der aktuelle `vocabulary`-Wert bereits sichtbar abweicht. Nur eines davon erfüllt → Konflikt.
+
+**Diese vier Werte schreibt die App zurück** — nie selbst setzen, aber beim Lesen kennen:
+
+| Wert | Von wem | Bedeutung |
+|---|---|---|
+| `ninja_check_uebernommen` | ✅-Knopf | Vorschlag übernommen, `vocabulary` ist aktualisiert |
+| `ninja_check_ignoriert` | 🚫-Knopf | Vorschlag abgelehnt — **nicht erneut denselben Vorschlag machen** |
+| `ninja_check_kein_vorschlag_bestaetigt` | 👍-Knopf | „keine Quelle gefunden" zur Kenntnis genommen |
+| `ninja_check_kommentiert` | 💬-Knopf | **Nils hat einen Hinweis hinterlassen — das ist ein Auftrag, siehe unten** |
+
+**`ninja_check_kommentiert` ist der wichtigste davon.** Der 💬-Knopf schreibt Freitext nach `user_comment` und setzt `reviewed=false` — der einzige Rückkanal von Nils zur nächsten Sitzung. Mit dem Hinweis erneut suchen und das Ergebnis wieder als `ninja_check_pending`/`ninja_check_kein_vorschlag` schreiben, damit es im Tab sichtbar wird.
 
 ## vocab_lookup — Cross-Source-Abgleich (seit 2026-09-05)
 
