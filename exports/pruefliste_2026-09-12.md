@@ -687,3 +687,62 @@ Liste C **36 → 25**. Digraph-Check meldet 4 Zeilen, alle vier bekannt korrekt 
 
 - **`923 touwl` → `toul`** (طُولْ, „geradeaus"). TUNICO hat `tul`/`ṭūl`. `touwl` war **Ninjas eigene Konvention** (`ouw` für ū, wie in `nammouwsa`, `5ouwf`, `mouwsiy9iyya`) und ist bei einem Import 1:1 durchgerutscht — genau das, wovor IMPORTS.md warnt. Ninjas Transliterationsspalte nie ungeprüft übernehmen.
 - **`4444 marroukiya` → `marroukiyya`**, `arabic_script` مرّوكية → مرّوكيّة. Der Nachzügler aus Gruppe 1 (die vorhandene `rr`-Gemination hatte die fehlende `yy`-Gemination vor der Prüfregel versteckt). Im Gloss außerdem den Querverweis `[Synonym zu maghribiya]` auf `maghribiyya` nachgezogen — ein Bestandssweep über alle `german`-Felder zeigte, dass dies der einzige Verweis auf eine inzwischen geänderte Schreibung war.
+
+---
+
+## Runde 8 · Der arabische Duplikat-Schlüssel war kaputt (2026-09-12)
+
+### Der Befund
+
+`ar_key` in SKILL.md (Zeile 461) strippt Leerzeichen und Satzzeichen, **aber keine Diakritika**. Zwei Zeilen mit demselben arabischen Wort sind für den Check verschiedene Wörter, sobald sie unterschiedlich vokalisiert sind:
+
+| | Gruppen mit >1 Zeile |
+|---|---|
+| `ar_key` wie dokumentiert | **6** |
+| Diakritika gestrippt | **126** |
+
+### Verfeinerung: die Schadda gehört NICHT zu den Vokalzeichen
+
+Der naheliegende Fix (alle Diakritika weg) ist zu grob — er verschmilzt Form I und Form II, also genau die Unterscheidung, die diese Sitzung herausgearbeitet hat (حَضَر „er nahm teil" gegen حَضَّر „er bereitete vor"). Die Schadda ist ein Konsonantenverdopplungszeichen und gehört zum Gerüst.
+
+| Schlüsselvariante | Gruppen | Zeilen |
+|---|---|---|
+| A: alle Diakritika weg | 126 | 264 |
+| **B: nur Kurzvokale weg, Schadda bleibt** | **86** | **179** |
+
+Die 40 Differenzgruppen sind die Form-I/II-Paare. **B ist der richtige Schlüssel.**
+
+```sql
+lower(regexp_replace(regexp_replace(arabic_script,'[ًٌٍَُِْٰٟ]','','g'),
+                     E'[\\s.,;:!?()/\\\\''"«» -]+','','g'))
+```
+
+### Auswertung der 86 Gruppen
+
+| Muster | Gruppen | Bewertung |
+|---|---|---|
+| `-it`/`-t`-Verbpaar (3. Pers. f. gegen 1. Pers. Vergangenheit) | 21 | Fehlalarm, strukturell — der Bestand legt dieses Paar für jedes Verb bewusst an |
+| bereits mit `homonym_ok` markiert | 17 | Check arbeitet korrekt |
+| echt verschiedene Wörter mit gleichem Gerüst | ~30 | kein Fehler (`morra`/`marra`, `jomal`/`jmal`, `ktob`/`ktib`, `3irq`/`3araq`) |
+| Imperativ/Vergangenheit derselben Wurzel | ~5 | kein Duplikat, aber `homonym_ok`-Kandidaten |
+| **echte Funde** | **17** | siehe unten |
+
+Trefferquote damit rund 20 % — dieselbe Größenordnung wie bei der Vokal-Dubletten-Runde (177 → 8).
+
+### ✅ Neuer Fehlertyp gefunden: Femininum mit maskulinem `arabic_script` (3)
+
+Der Schlüssel deckte auf, dass drei feminine Zeilen die **Maskulinform** im Arabischen tragen — das ة fehlte, weshalb sie mit ihrem eigenen maskulinen Geschwister kollidierten:
+
+| id | darija | arabic alt | arabic neu | Geschwister |
+|---|---|---|---|---|
+| 1128 | `qsira` „kurz (f.)" | قْصِيرْ | قْصِيرَة | 433 `qsir` |
+| 1178 | `ghamqa` „dunkel (f.)" | غَامِقْ | غَامْقَة | 457 `ghamaq` |
+| 2656 | `ramla` „Sand (f.)" | رْمَلْ | رَمْلَة | 2632 `rmal` |
+
+Ein Sweep über alle Zeilen mit `(f.)` im Gloss und ohne ة/ا/ى am Wortende fand nur diese drei plus drei berechtigte Ausnahmen (`hethi` هَاذِي, `anahi` أَنَاهِي — beide auf ي). **Offen:** `3976 shah` شَاه ist als „(f.)" glossiert, das Arabische sieht maskulin aus; das Wort ist zu ungewöhnlich zum Raten.
+
+### ✅ Verpasstes Form-II-Geschwister (1)
+
+`1325 7adhrit` „sie bereitete vor" trug حَضْرِتْ **ganz ohne Schadda** und stand damit bei der Form-I-Familie (`1337 7adhirt`/`1338 7dhart` = „teilnehmen"), obwohl das Gloss Form II ist. → `7adhdhrit`, حَضَّرِت. Die vierte Zeile der `7adhdhar`-Familie, die alle bisherigen Runden übersehen hatten.
+
+**Nebenbefund, nicht angefasst:** `1337 7adhirt` ist als „sie nahm teil" glossiert, hat aber die Vokalstellung der 1. Person. Alle Parallelzeilen benutzen `-it` für die 3. Pers. f. (`3arfit`, `ghaslit`, `qeblit`) — `7adhrit` wäre das Muster. Eigene Frage, nicht mit der Gemination vermischt.
