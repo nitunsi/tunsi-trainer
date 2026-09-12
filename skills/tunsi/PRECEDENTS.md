@@ -218,6 +218,18 @@ Die Endung ist in **allen** 16 Zeilen `-ik`, nie `-ek`: jedes `arabic_script` ha
 
 **Nebenbefund, nicht angefasst:** die Klammer-Hinweise `(a...)`/`(y...)`/`(b...)` in den `german`-Feldern von 1391 `aman` / 1392 `y3ayyshik` / 1393 `brabbi` sind **kein Import-Müll**, sondern die bewusste Unterscheidung dreier Synonyme für „bitte" — nicht entfernen. Der `(b...)`-Rest im `arabic_script` von 1392 (`يْعَيِّشِك (b...)`, samt `arabic_skeleton` `3shk(b)`) war dagegen echter Copy-Paste-Müll aus 1393 und wurde entfernt. Offen: 1113 `billehi` heißt ebenfalls „bitte", hat aber keinen Hinweis-Zusatz.
 
+## Zeichenreihenfolge im arabic_script — stille Regex-Falle (2026-09-12)
+
+Beim Prüfen der ya-Gemination ergab `arabic_script ~ 'يّ'` nur 7 Treffer, obwohl optisch in vielen Zeilen eine Schadda auf dem ya steht. Ursache: die Kombinationszeichen sind **Vokal vor Schadda** gespeichert (`طَيَّبِت` = `0637 064e 064a 064e 0651 …`), nicht in der kanonischen Unicode-Reihenfolge Schadda-vor-Vokal. Bestandsweit: **803 Zeilen Vokal-vor-Schadda, 16 andersherum.** Jede Regel `<Buchstabe>ّ` verfehlt damit fast den ganzen Bestand und meldet — genau wie `\b` statt `\y` — einfach nichts. Fix: `ي[ًٌٍَُِْٰ]*ّ`. Die erste, falsche Zählung hätte beinahe zu „يّ wird einfach `y` geschrieben" geführt; mit korrigierter Regex steht es **67 : 14 für `yy`**, und TUNICO wie Ninja bestätigen das mit 14/14.
+
+**Lehre:** Bei jeder neuen Regex auf `arabic_script` erst gegenprüfen, ob sie überhaupt greift — eine Trefferzahl, die plausibel niedrig aussieht, kann eine stumme Fehlregel sein. Der billigste Test: eine Zeile, von der man weiß, dass sie treffen muss, einzeln abfragen und die Codepoints ausgeben (`to_hex(ascii(ch))` über `regexp_split_to_array(arabic_script,'')`).
+
+## Waw-Gemination — bewusst offen gelassen (2026-09-12)
+
+Nachdem die ya-Regel (`yy`) dreifach belegt war, lag die Übertragung auf و nahe. Gegenbeleg: Ninja schreibt هُوَ **ohne** Schadda als `houwa` — das `w` steht dort für den Buchstaben Waw, nicht für eine Verdopplung; `ww` erscheint erst bei echter Schadda (تَوَّا → `tawwa`). Die eigene هو/هي-Familie ist in sich uneinheitlich (493 `houa`/هُوَ, 1445 `houa`/هُوَّ, 3339 `houwa`/هُوَّ, 3340 `hiyya`/هِيَّ, 3812 `ahuwa`/أَهُوَّا, 1782+3747 `houa`/هو).
+
+Eine bereits ausgeführte Einzelkorrektur `3812 ahuwa`→`ahuwwa` wurde deshalb **noch in derselben Sitzung zurückgenommen**: sie war nach der Schadda-Regel vertretbar, hätte die Zeile aber als einzige gegen `3339 houwa` gestellt. Gleiche Begründung wie bei `1392 y3ayshek` — eine Familienschreibung wird als Block entschieden oder gar nicht. Lieber eine bekannte offene Frage als eine neue, selbstgemachte Inkonsistenz.
+
 ## arabic_skeleton/translit_skeleton Herleitung — Rezept 4 (2026-09-05)
 
 Für Rezept 4 (fertigen `INSERT INTO vocabulary` bauen) mussten `translit_skeleton`/`arabic_skeleton` mitberechnet werden, ohne die App-Logik zu kennen (kein JS-Code im Repo, der diese Spalten befüllt — vermutlich immer per Hand/Adhoc-Skript nachgezogen, siehe 3.688/3.698 Zeilen befüllt trotz keiner dokumentierten Formel). Wie beim Peace-Corps-Fall: Regel per Reverse-Engineering aus dem Bestand hergeleitet, nicht geraten.

@@ -635,3 +635,50 @@ Vorher geprüft und frei: Duplikat-Check für alle 29 neuen Schreibungen, Refere
 ### 🔸 Offen aus Block 4: vier unvokalisierte `arabic_script`
 
 Nach der Korrektur haben `1167` (ينظف), `1831` (تنظف), `1274` (نحضر), `4383` (بحر) ein auseinanderlaufendes Skelettpaar — nicht weil die Transliteration falsch wäre, sondern weil ihr Arabisch die Gemination gar nicht schreibt. Eine minimale Ergänzung (nur die Schadda: ينظّف, تنظّف, نحضّر, بحّر) wäre durch die Geschwisterzeilen 1654 نَظَّف, 1648 حَضَّر, 4578 بَحَّرْت und durch TUNICO gedeckt — also kein Raten. Nicht ausgeführt, weil nicht Teil der freigegebenen Blöcke.
+
+---
+
+## Runde 7 · Block 5 abgeräumt + ya-Gemination (2026-09-12, 30 Zeilen)
+
+### ✅ Block 5 aus Runde 6 — sieben von acht geklärt
+
+| id | Änderung | Beleg |
+|---|---|---|
+| 3673 | `arabic_script` لّعَبْ → إلْعَبْ | Schadda ohne Träger war ein Tippfehler; `el3ab` selbst steht als Imperativ in allen sechs Tabellen der `l3ab`-Familie |
+| 1988 | `arabic_script` ضَعِّفْ → أَضْعَف | war der Form-II-Imperativ „schwäche!"; Komparativ wie 1991 `askhan` أَسْخَن |
+| 3221 | `arabic_script` شُرِّبْتْشِي → شْرَبْتْشِي | Schadda machte daraus Form II „zu trinken geben" (TUNICO `šaṛṛab`), Gloss sagt aber „Hast du getrunken?" |
+| 2330 | `jneyni` → `jannan` | Ninja `jannan` جَنَّانْ + TUNICO `žannān` = Gärtner; das Arabische war schon richtig, die Transliteration nicht |
+| 1141 | `maskha` → `massakha`, arabic مسّخْ → مَسَّخَة | TUNICO `massax`, Geschwister 440 `massakh` |
+| 1145 | `maskhin` → `massakhin`, arabic مسخين → مَسَّخِين | blinder Fleck: unvokalisiert, gleicher Fehler |
+| 416 | Gloss → „Kleid (frz. robe)" | Lehnwort markiert, fällt damit dauerhaft aus dem Check |
+
+`2068 bit-tabi3a` bleibt als reiner Filter-Fehlalarm stehen, `2538 nifli` bleibt offen (Arabisch نِفْلِّي nicht eindeutig lesbar; Ninja hat `flis` فْلِسْ „bankrott gehen", was auf نِفْلِس deuten würde — zu unsicher).
+
+Dazu die vier unvokalisierten Geschwister aus Runde 6 nachgezogen (nur die Schadda ergänzt, durch 1654 نَظَّف / 1648 حَضَّر / 4578 بَحَّرْت gedeckt): `1167` ينظّف · `1831` تنظّف · `1274` نحضّر · `4383` بحّر. Alle vier haben jetzt stimmige Skelettpaare. In `1655` außerdem `masskha`→`massakha` und das überzählige Alif in `الازم`→`لازم`.
+
+### ⚠️ Stille Regex-Falle gefunden: Zeichenreihenfolge
+
+`arabic_script ~ 'يّ'` lieferte 7 Treffer, obwohl optisch viel mehr Zeilen eine Schadda auf dem ya tragen. Grund: die Kombinationszeichen stehen **Vokal vor Schadda** (`طَيَّبِت` = `0637 064e 064a 064e 0651 …`), nicht kanonisch. Bestandsweit **803 Zeilen so, 16 andersherum** — jede Regel `<Buchstabe>ّ` verfehlt damit ~98 % und meldet stumm nichts. Dieselbe Klasse wie `\b` statt `\y`. Richtig: `ي[ًٌٍَُِْٰ]*ّ`.
+
+Mit der falschen Regex hätte die Zählung „يّ wird einfach `y` geschrieben" ergeben. Korrigiert steht es **67 : 14 für `yy`**, TUNICO 14/14, Ninja 14/14.
+
+### ✅ ya-Gemination (15 Zeilen)
+
+`1323 taybit`→`tayybit` · `1324 tayebt`→`tayyebt` · `2197 maytin`→`mayyitin` (Geschwister 2290 `mayyit`/2291 `mayyita`) · `2295 flayis`→`flayyis` · `2781 nazel-li`→`nazelli` · `2794 mathebia`→`mathebiyya` · `2811 rwayeq`→`rwayyeq` · `2876 mrayeq`→`mrayyeq` · `3069 jayda`→`jayyda` · `4119 ahaya`→`ahayya` · `4464 mdhayef`→`mdhayyef` · `2378 babbaghayo`→`babbaghayyo` · `3971 urubbiyin`→`urubbiyyin` · `3659 mdhayfa`→`mdhayyfa` (+ arabic مُضَيفَة → مُضَيِّفَة, wieder ein unvokalisiertes Geschwister)
+
+**Die `tayyab`-Tabelle war in sich widersprüchlich:** Präsens und Imperativ schrieben `tayy-` (`ntayyeb`, `ttayybu`, `tayyeb`), die Vergangenheit `tay-` (`tayebna`, `taybit`). Dieselbe Tabelle, dasselbe Verb. In allen vier Zeilen (405, 1323, 1324, 1646) korrigiert.
+
+### 🔙 Eine eigene Änderung zurückgenommen: `3812 ahuwa`
+
+`ahuwa` → `ahuwwa` war nach der Schadda-Regel vertretbar (أَهُوَّا), wurde aber wieder zurückgesetzt. Ninja schreibt هُوَ **ohne** Schadda als `houwa` — das `w` steht dort für den Buchstaben Waw, nicht für die Verdopplung. Die ya-Regel lässt sich also nicht auf waw übertragen, und die eigene هو/هي-Familie ist in sich uneinheitlich: 493 `houa`/هُوَ · 1445 `houa`/هُوَّ · 3339 `houwa`/هُوَّ · 3340 `hiyya`/هِيَّ · 3812 `ahuwa`/أَهُوَّا · 1782+3747 `houa`/هو — sechs Zeilen, vier Arabisch-Varianten, drei Transliterationen. **Das ist eine Block-Entscheidung wie bei `3ayshik`, keine Einzelkorrektur.** Lieber eine bekannte offene Frage als eine selbstgemachte Inkonsistenz.
+
+### Stand danach
+
+Liste C **36 → 25**. Digraph-Check meldet 4 Zeilen, alle vier bekannt korrekt (3042, 3073, 722 `thhar` ظهر, 4254 `ythhar-li` يظهرلي). Verb-Selbstcheck 19 von 652. Bestand unverändert 3.790.
+
+### Offen nach dieser Runde
+
+1. **waw-Gemination / هو-هي-Familie** — Block-Entscheidung, siehe oben. Betrifft auch `shnoua` / `shnou` / `shnouwa` (drei Schreibungen für شْنُوَّا, id 837/3206/2530) und `taw` / `tawwa` (Ninja: `tawwa` تَوَّا).
+2. **Restliche 25 Liste-C-Zeilen** — 21 mehrwortig, dort sitzt die Schadda meist in einem anderen Wort des Satzes.
+3. `1622 t3awinni` — `arabic_script` تعاوّني hat eine Schadda auf waw, die wie ein Tippfehler aussieht.
+4. `2538 nifli`, `1445`/`3339` siehe Punkt 1.
