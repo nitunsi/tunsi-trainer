@@ -14,11 +14,14 @@ Fokus dieser Datei: bestehende Trainer-Vokabeln prüfen, neue Vokabeln nachschla
 
 | Situation | Relevante Abschnitte |
 |---|---|
-| Vokabel überprüfen / neue Vokabel nachschlagen / Import-Batch gegenchecken | vocab_lookup — Cross-Source-Abgleich (ganz unten) |
-| Nutzer hat Vokabeln mit 🚩 markiert | Workflow: Geflaggte Vokabeln (🚩) live gegen Derja Ninja prüfen |
-| Frischer Batch soll automatisch geprüft werden | Workflow: Frisch importierte Batch-Vokabeln flaggen + verifizieren |
-| Neue Vokabel(n) schreiben | Kern-Workflow: neue Vokabel(n) verarbeiten → Transliteration — Ziel-Konvention → Topic-Pflichtfeld |
-| Was ist von früher noch unerledigt? | Offene Punkte (direkt unten) |
+| **Vokabeln prüfen — eine, ein Batch, geflaggte, fällige, der ganze Bestand** | **Vokabeln prüfen — EIN Prozess.** Ein Vorgehen für alle Fälle; es wechselt nur die Auswahl der Zeilen. |
+| Neue Vokabel nachschlagen / Quellen abgleichen | vocab_lookup — Cross-Source-Abgleich (ganz unten), das Werkzeug hinter Schritt 3 |
+| „alle Regeln laufen lassen" | Datenqualitäts-Checks → **A** (müssen auf 0 stehen). Das SQL dort ist nur eine Teilmenge; der vollständige Lauf geht über den Node-Harness gegen `trainer.html` |
+| Bestand nach Kandidaten durchsuchen | Datenqualitäts-Checks → **B** (Verdachtslisten mit Fehlalarmquote) — **nie im Block korrigieren** |
+| Eigene Prüfabfrage bauen | Datenqualitäts-Checks → **C** (Regeln fürs Prüfen selbst) — erst lesen, drei der Fallen dort haben schon Prüfläufe stumm wertlos gemacht |
+| Neue Vokabel(n) schreiben | Kern-Workflow: neue Vokabel(n) verarbeiten → Transliteration — Ziel-Konvention → Topic |
+| Vokabel ist ein Verb (prüfen ODER anlegen) | Verben → Verb-Konjugationsmodell (3-Zeilen-Ziel, `conjugation`, `conj_rotate`) — gilt auch bei geflaggten Einzelformen |
+| Was ist von früher noch unerledigt? | Offene Punkte (direkt unten) — **die Zahlen dort sind ein Schnappschuss, vor jeder Planung mit dem SQL daneben neu ziehen** |
 | PDF/Foto-Quelle auswerten, neue Quelle importieren | IMPORTS.md |
 | Kurs-Modus (course_lessons/course_exercises) oder Code-Änderung an trainer.html | COURSE_MODE.md |
 
@@ -27,6 +30,42 @@ Fokus dieser Datei: bestehende Trainer-Vokabeln prüfen, neue Vokabeln nachschla
 Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nicht Teil der laufenden Regeln:
 
 - **Ninja-Transliteration in Trainer-Konvention** (besprochen 2026-09-05, bewusst zurückgestellt): `derja_ninja_entries.darija` ist in Ninjas eigener Konvention, nicht unserer — anders als bei TUNICO/Peace Corps gibt es dafür noch keine `chatalpha`-Spalte. Wäre nur aus dem vollvokalisierten `arabic_script` heraus zuverlässig baubar (nicht aus Ninjas `darija` selbst), mit eigenem Validierungsaufwand. Bisher kein Bedarf, seit klar ist: Original-Transliteration wird ohnehin nur im Zweifelsfall herangezogen, `chatalpha` reicht für den Regelfall.
+
+**Laufender Prüfdurchgang.** Vollständige Fundlisten mit Klassifizierung und Entscheidungsstand: `exports/pruefliste_2026-09-12.md` — dort weiterarbeiten, nicht neu aufrollen.
+
+⚠️ **Die folgenden Zahlen sind ein Schnappschuss vom 2026-09-13, kein Stand.** Sie veralten mit jeder Korrektur und haben genau das schon einmal getan — die frühere Fassung dieser Tabelle nannte 49 statt 19 beim Verb-Selbstcheck und 93 statt 21 bei der Gemination, also Posten, die längst erledigt waren. **Vor jeder Planung neu ziehen, nie aus dieser Tabelle zitieren.** Die Abfrage dafür steht direkt darunter.
+
+| Posten | Schnappschuss 2026-09-13 | Einordnung |
+|---|---|---|
+| Bestand | 3.780 | — |
+| `TRANSLIT_RULES` (22 Regeln, Prüf-Tab) | 0 | sauber, per Node-Harness verifiziert |
+| Verb-Selbstcheck | 19 | Zeilen ohne vollständige `conjugation`, bekannter D4-Rückstand |
+| Liste C (Schadda ohne Gemination) | 21 | überwiegend mehrwortig, Schadda sitzt in einem anderen Wort |
+| unvokalisiertes `arabic_script` | 746 | **keine Kampagne** — siehe Datenqualitäts-Checks → Vokalisierung |
+| `ar_key`-Gruppen (vokalisierungsunabhängig) | 75 | ~20 % echte Funde, Rest strukturelle Fehlalarme |
+| Schrägstrich im `darija` | 16 | echte Synonyme, Aufteilungen sind durch |
+| Präsens-Verb mit Infinitiv-Gloss | 0 | erledigt |
+| verwaiste ids in `course_lessons.vocab_lesson_refs` | 11 | Altbestand, tote Vokabel-Slots im Kurs |
+
+```sql
+-- Zieht alle Posten oben neu. Ergebnis gegen die Tabelle halten; weicht es ab, gilt das Ergebnis.
+SELECT 'Bestand' AS posten, count(*)::text AS wert FROM vocabulary
+UNION ALL SELECT 'Verb-Selbstcheck', count(*)::text FROM vocabulary
+  WHERE conjugation IS NOT NULL AND NOT conj_rotate AND conjugation::text NOT LIKE '%"'||darija||'"%'
+UNION ALL SELECT 'unvokalisiert', count(*)::text FROM vocabulary WHERE arabic_script !~ '[ًٌٍَُِّْٰٟ]'
+UNION ALL SELECT 'Schraegstrich im darija', count(*)::text FROM vocabulary WHERE darija ~ '/'
+UNION ALL SELECT 'ar_key-Gruppen', count(*)::text FROM (
+  SELECT lower(regexp_replace(regexp_replace(arabic_script,'[ًٌٍَُِْٰٟ]','','g'),
+                              E'[\\s.,;:!?()/\\\\''"«» -]+','','g')) AS k
+  FROM vocabulary WHERE length(arabic_script) > 2 GROUP BY 1 HAVING count(*) > 1) t
+UNION ALL SELECT 'verwaiste Kurs-ids', (SELECT count(*)::text FROM (
+  SELECT DISTINCT unnest(string_to_array(split_part(replace(vocab_lesson_refs,'ids:',''),'|',1), ','))::int AS vid
+  FROM course_lessons WHERE vocab_lesson_refs LIKE 'ids:%') r
+  WHERE NOT EXISTS (SELECT 1 FROM vocabulary v WHERE v.id = r.vid));
+```
+
+- **`-ou` nach Konsonant** (113 Zeilen): Die Konjugationstabellen schreiben 511× `-u` gegen 39× `-ou`, eine Vereinheitlichung wäre also begründbar. **Bewusst nicht angefasst**, weil die Mehrheit der Treffer gar kein Plural ist, sondern das Possessivsuffix (`3andou` „er hat", `7lou` „süß"). Nur mit Wortart-Prüfung angehbar, nicht per Regex.
+- **Verb-Modell-Abdeckung:** 181 Verbgruppen haben eine `conjugation`-Tabelle, davon erreichen 87 das 3-Zeilen-Ziel; 48 neue Zeilen würden alle auf 3 bringen. 88 Gruppen haben keine rotierende Zeile (62 davon bräuchten nur ein `conj_rotate`-Flag, keine Neuanlage). Weitere **169 Verb-Zeilen haben gar keine Tabelle** — ob das Modell auf sie ausgeweitet wird, ist offen.
 
 ## Grundsatz: Nie ohne Bestätigung in Supabase schreiben
 
@@ -49,7 +88,11 @@ Die Datei `tounsi_db_YYYY-MM-DD.md` im Projektwissen ist die primäre Datenquell
    - `darija`: Homographen beachten (Konjugationspaare sie/ich haben oft identische Transliteration — kein Duplikat, aber `german` muss Person klar benennen).
    - `german`: als eigenständige Suchanfrage, Synonyme mitdenken ("einfach"≈"leicht", "Lied"≈"Gesang", "Darlehen"≈"Kredit"). Bei Fund: als Auffälligkeit markieren, Entscheidung dem Nutzer überlassen.
    - Bei strukturierten Listen (Adjektiv-/Verb-Tabellen): zuerst ein Themen-Sweep gegen den passenden `topic`, nicht Wort für Wort.
-   - Duplikat-Check auch NACH jeder nachträglichen Schreibkorrektur wiederholen, nicht nur vor der Neuanlage — eine Korrektur ist im Effekt ein neues `darija`.
+   - **Duplikat-Check VOR jeder nachträglichen Schreibkorrektur, nicht erst danach** — eine Korrektur ist im Effekt ein neues `darija`. Wenn die *korrigierte* Schreibung bereits im Bestand existiert, ist die vermeintliche Schreibkorrektur in Wahrheit ein **Merge** und muss als solcher behandelt werden (Kurs-Verweise umbiegen, Felder zusammenführen, Dublette löschen) — sonst entsteht aus einer Reparatur eine neue Dublette. Zweimal am 2026-09-12 aufgetreten: `y3awid`→`y3awwed` traf die bestehende id 3442, `yit3asha`→`yit3ashsha` traf id 4029. Älterer Fall: `yisma7`→`yisma3` (PRECEDENTS.md → Duplikat-Check).
+     ```sql
+     -- vor JEDEM UPDATE auf darija laufen lassen:
+     SELECT id, darija, german FROM vocabulary WHERE lower(btrim(darija)) = lower('<neue_schreibung>');
+     ```
    - Nach dem Schreiben: App-eigenen "🔍 Duplikat-Prüfung"-Tab nutzen oder bei Live-Zugriff selbst nachbauen (SQL siehe unten) — gründlicher als Ad-hoc-Stichproben vorher.
 4. **Topic setzen** (Pflichtfeld, siehe eigener Abschnitt) — Claude darf selbst entscheiden, keine Rückfrage nötig.
 5. **Liste zeigen, warten.** Fehlende Einträge tabellarisch (Arabic, Darija, Deutsch, lesson_id, topic), Auffälligkeiten/Rückfragen gesammelt am Ende. Kein SQL ohne Bestätigung.
@@ -114,6 +157,27 @@ Die Datei `tounsi_db_YYYY-MM-DD.md` im Projektwissen ist die primäre Datenquell
 
 Keine Großbuchstaben in darija — weder als Emphase-Marker noch am Satzanfang. Durchgehend kleingeschrieben.
 
+**Gemination eines Digraphen: der ganze Digraph wird verdoppelt (Regel belegt 2026-09-12, drei unabhängige Quellen).** Bei Schadda auf ض/ظ/ذ/ش/خ/غ wird nicht nur der erste Buchstabe gedoppelt, sondern die komplette Schreibung:
+
+| Laut | richtig | falsch | eigener Bestand | Ninja | TUNICO |
+|---|---|---|---|---|---|
+| ضّ | `dhdh` | ~~`ddh`~~ | 11 : 0 | 70 : 2 | ض kommt in TUNICOs `chatalpha` nicht als `dh` vor |
+| ظّ/ذّ | `thth` | ~~`tth`~~ | 6 : 0 | 34 : 0 | 40 : 0 |
+| شّ | `shsh` | ~~`ssh`~~ | 11 : 0 | 2 : 0 (Ninja schreibt `ch`) | 35 : 0 |
+| خّ | `khkh` | ~~`kkh`~~ | 7 : 0 | – (Ninja schreibt `5`) | 21 : 0 |
+| غّ | `ghgh` | ~~`ggh`~~ | 0 : 0 | – | 2 : 0 |
+
+**Die `tth`-Treffer sind keine Gegenbeispiele** — das war der Denkfehler der ersten Zählung. Jeder einzelne davon (9 in TUNICO, 17 in Ninja, 2 im eigenen Bestand) ist ein **Morphemgrenzen-`t`** vor `th`, keine Gemination: TUNICO `tṯawwib`→`tthawwib`, `tḏ̣āṛif`→`ttharif`, `mutṯaqqaf`→`mutthaqqaf`; Ninja `تْذَكِّرْ`→`tthakkir`, `مِتْثَقِّفْ`→`mittha99if`; eigener Bestand `نِتْثَاوَب`→`netthaowb` (id 3042), `تَذْبَح`→`tthba7` (id 3073). Diese Zeilen sind korrekt und dürfen **nicht** zu `thth` "korrigiert" werden. Echte ذّ/ظّ-Gemination schreibt TUNICO in **14 von 14** Fällen voll: `ʕaḏḏib`→`3aththib`, `aḏḏin`→`aththin`, `kaḏḏāb`→`kaththab`, `baẓẓaʕ`→`baththa3`, `ḏḏakkiṛ`→`ththakkir`, `ḏḏall`→`ththall`, `ṭuẓẓīna`→`tuththina`, `mīẓẓu`→`miththu`.
+
+**Verwandte Fehlerklasse: `h` statt Verdopplung (gefunden 2026-09-12).** `7h` für geminiertes ح und `thh` für geminiertes ث/ذ/ظ. Richtig ist `77` (27× im Bestand: `sa77a`, `na77a`, `twa77ashtek`; Ninja `mouwa77da`, `titna77aa`) bzw. `thth`. Betroffen waren `yba7har`/`ba7har`/`ba7hart` (→ `ba77ar`-Familie) und `moumathhla` (→ `moumaththla`). **Aber `7h`/`thh` sind nicht per se falsch:** `722 thhar` (ظهر, Rücken) und `4254 ythhar-li` (يظهرلي) sind echte ظ+ه-Folgen und korrekt. Gleiche Logik wie bei `tth` — dieselbe Buchstabenfolge ist an einer Morphemgrenze richtig und bei Schadda falsch. Entschieden wird nur am `arabic_script`.
+
+Dazu zwei Argumente, die unabhängig von der Zählung gelten:
+
+- **Lautlehre:** `dh`/`th`/`sh`/`kh`/`gh` sind Digraphen für je **einen** Laut. `ddh` liest sich als /d/+/ð/ — und diese Folge kommt an Morphemgrenzen echt vor, `ddh` ist also nicht bloß ungewöhnlich, sondern **mehrdeutig**.
+- **Maschinell nachweisbar:** `public._translit_skeleton('7addhar')` = `7ddhr`, aber `public._arabic_skeleton('حَضَّر')` = `7dhdhr`. Die beiden Skelett-Spalten derselben Zeile widersprechen sich, d.h. Duplikat- und Cross-Source-Abgleich sehen zwei verschiedene Wörter. Mit `7adhdhar` ergeben beide Funktionen `7dhdhr`. Das ist der schnellste Selbsttest für jede vermutete Digraph-Gemination: **stimmen `_translit_skeleton(darija)` und `_arabic_skeleton(arabic_script)` nicht überein, ist die Transliteration falsch, nicht das Arabische.**
+
+**Überschrieb eine frühere Entscheidung:** PRECEDENTS.md → Verben hatte für 2026-08-07 `7adhar`→`7addhar` (plus `y7adhar`→`y7addhar`) mit `ddh` festgehalten. Widerlegt und am 2026-09-12 korrigiert (ids 1648, 2218 → `7adhdhar`/`y7adhdhar`, inkl. der vier Formen in der `conjugation` von 2218). Damit hat der Bestand in **allen fünf Reihen null echte Gegenbeispiele**. Details: PRECEDENTS.md → Digraph-Gemination.
+
 ### Vokale & häufige Wörter
 
 | Form | Korrekt | Nie |
@@ -159,7 +223,7 @@ Aus der Uni-Wien-Lautlehre abgeleitete Prüfregeln, immer anwendbar wenn `arabic
 9. **Kolloquiale Vokal-Elision nur bei markiertem Sukun.** Reduktion nur dort, wo das Arabische selbst ein Sukun trägt (قْوِيَّة→"qwiyya"). Eine markierte Fatha/Kasra/Damma wird nicht gestrichen, auch wenn die Aussprache subjektiv reduziert klingt (صَيْدَلِيَّة→"sidaliyya").
 10. **Länderadjektiv vs. Ländername** ist eine Unterkategorie von Regel 5 — Konsonantenskelett-Match reicht nicht, Wortart genau prüfen.
 
-## Topic-Pflichtfeld
+## Topic (immer selbst setzen, nie melden)
 
 Jeder INSERT muss ein `topic` enthalten — niemals weglassen oder null lassen. Steuert die Lernpriorisierung im Aktivierungsmodus (Prio 1 = sofort vorschlagen).
 
@@ -209,17 +273,22 @@ Gültige Topics — nur diese verwenden:
 | Reisen | 3 | Reisevokabular (Reisepass, Ticket, Gepäck…) — abzugrenzen von Transport (Verkehrsmittel selbst) |
 | Schule | 3 | Schulische Gegenstände/Einrichtungen außerhalb des reinen Klassenzimmers (Schultasche, Direktor…) |
 | Politik | – | Politische Ämter, Institutionen, Staatswesen |
+| Beispielsätze | 2 | Ganze Beispielsätze aus Quellen (82 Zeilen im Bestand) |
+| Gottesformeln | 2 | Segenswünsche und Gottesanrufungen — Lektion "Gottesformeln & Segenswünsche" (51) |
+| Sprichwörter | – | Sprichwörter — Lektion "Sprichwörter" (32); in IMPORTS.md ausdrücklich vorgeschrieben |
+| Länder | – | Ländernamen, abzugrenzen von Nationalitäten (13) |
+| Geografie | – | Geografische Begriffe, Himmelsrichtungen (11) |
+| Notfall | 1 | Hilferufe, Notfallsituationen — Lektion "Notfall & Sicherheit" (3) |
 
 Nie verwenden: Vokabeln, null, freie Texte außerhalb der Liste.
 
-**Topic ist unkritisch, im Zweifel selbst entscheiden.** Anders als bei `lesson_id` darf Claude bei `topic` selbst das plausibelste Topic wählen und direkt setzen, ohne vorher nachzufragen. Kurz begründen, aber nicht als offene Frage stehen lassen.
+**Die Liste wurde 2026-09-12 an den Bestand angeglichen.** Sechs Werte waren dort längst etabliert (teils mit eigener Lektion), standen aber nicht in der Liste — mit der Folge, dass ein regelkonformer Eintrag als Regelverstoß erschien und umgekehrt. `Sprichwörter` war sogar ein echter Selbstwiderspruch: IMPORTS.md schreibt ihn für Instagram-Sprichwörter ausdrücklich vor, SKILL.md verbot ihn.
 
-**Bestandspflege bei Topic ist kein eigenes Ziel (Stand 2026-09-05).** Nils ist das Feld grundsätzlich nicht wichtig. Bestehende falsche/fehlende/inkonsistente Topics — auch systemische Muster wie die verbreiteten `"Wort (Lxx)"`-Suffixe oder reine `"(Lxx)"`-Tags ohne Themenwort — werden nicht von sich aus gesucht, geprüft oder als Fund gemeldet. Nur zwei Anlässe rechtfertigen ein Anfassen:
+Weitere Ad-hoc-Werte im Bestand, **bewusst nicht aufgenommen** (je 2–5 Zeilen, gehen in bestehende Topics auf): `Gesellschaft`, `Bildung` (→ Schule), `Küche` (→ Essen/Wohnen), `Feiertage` (→ Zeit), `Glückwünsche` (→ Höflichkeit), `Komparativ` (→ Adjektive/Grammatik), `Schlafzimmer` (→ Wohnen), `Arbeit` (→ Berufe). Diese Zeilen werden nicht nachgepflegt (siehe Bestandspflege-Regel unten) — nur bei ohnehin fälliger Bearbeitung mitrichten.
 
-1. **Neuanlage:** Pflichtfeld bleibt bestehen — bei jedem neuen INSERT `topic` korrekt setzen.
-2. **Ohnehin fällige Bearbeitung:** Wird eine bestehende Vokabel aus anderem Grund verändert (Korrektur, Update, Ninja-Abgleich…), das Topic bei der Gelegenheit gleich mitrichten, falls es falsch/fehlend/im Lxx-Suffix-Format ist.
+**Topic wird immer selbst gesetzt — nie fragen, nie melden.** Nils ist das Feld nicht wichtig. Daraus folgt genau eine Regel: bei jeder Zeile, die du ohnehin anfasst, das plausibelste Topic aus der Tabelle oben setzen — ohne Rückfrage, ohne Begründung. Bei jedem INSERT ein Topic mitgeben.
 
-In beiden Fällen: wie genau (welches Topic, Suffix abschneiden oder ersetzen) nicht rückfragen — einfach entscheiden, wie schon oben beschrieben.
+**Was NICHT passiert:** bestehende falsche, fehlende oder Legacy-Topics (`" (L16)"`, `"Alltag (L12)"`, `NULL`) werden **nicht gesucht, nicht gezählt, nicht als Befund gemeldet**. Sie gehören in keinen Prüfbericht. Präzedenzfall 2026-09-13: ein Prüflauf listete 26 solcher Zeilen als eigene Fundsektion — verlorene Arbeit auf beiden Seiten.
 
 ## Verben
 
@@ -254,7 +323,24 @@ In beiden Fällen: wie genau (welches Topic, Suffix abschneiden oder ersetzen) n
 2. Bei Unsicherheit Derja Ninja als Tiebreaker, sonst als Rückfrage markieren.
 3. Rohformen-Varianten im Korpus (Tippfehler/Dialektvarianten wie `qatt`/`qult`/`qutt` nebeneinander) nicht blind übernehmen, plausibelste Form wählen.
 
+**Widerspricht die Zeile ihrer eigenen `conjugation`-Tabelle, entscheidet das vokalisierte `arabic_script` — nicht die Tabelle (seit 2026-09-12).** Die Tabellen stammen überwiegend aus TUNICOs `forms_chatalpha` und tragen deshalb teils TUNICOs Vokale statt unserer. „Die Tabelle ist führend" ist als Faustregel brauchbar, aber nur solange das Arabische nicht dagegensteht. Entscheidungsreihenfolge:
+
+1. **`arabic_script` lesen** (Schadda? Kasra? Fatha?) — es ist der höhere Anker.
+2. Stimmt es mit der Tabelle überein → **Zeile** nachziehen.
+3. Stimmt es mit der Zeile überein → **Tabelle** korrigieren, und zwar alle Zellen desselben Musters, nicht nur die eine.
+4. Ist `arabic_script` unvokalisiert oder selbst zweifelhaft → als Rückfrage markieren, nicht raten.
+
+Präzedenzfälle vom 2026-09-12: `ybaddal`/`ybaddil` (يُبَدِّل, Schadda+Kasra → Tabelle bestätigt, Zeile nachgezogen), `ykammal`/`ykammil` (dito), aber `ya3raf`/`ya3rif` (يَعْرَفْ, **Fatha** → hier war die Tabelle falsch, vier Zellen des Präsens-Blocks auf `-a-` korrigiert; die Pluralformen `na3rfu`/`ta3rfu`/`ya3rfu` elidieren den Stammvokal und bleiben unangetastet).
+
+**Kein Hausmuster für den Stammvokal ableitbar.** Auszählung 2026-09-12 über alle Form-II-Verben im Bestand: `-a-` 51× (`ysakkar`, `ykhallas`), `-e-` 27× (`ysallem`, `yqaddem`), `-i-` 20× (`ykammil`, `ynajjim`). Eine Vereinheitlichung würde ~100 Zeilen betreffen und ist bewusst nicht entschieden — bei Einzelfällen ohne Geschwisterbeleg deshalb nichts angleichen, sondern stehen lassen.
+
 **Pflicht-Suchschritt vor jeder Verb-Ergänzung: bestehende Zeilen desselben Verbs auch unter Alt-Topics finden.** Eine Suche nur mit `topic IN ('Verben-Konjugation','Vergangenheit','Verben')` übersieht Zeilen mit Legacy-Topics wie `(L14)`, `(L18)` oder `NULL` — Präzedenzfall 2026-09-06: `yakol`/`er isst` hatte `topic=" (L14)"` und wurde dadurch komplett übersehen, obwohl das Verb (`kla`/essen) sonst als "nur 1 Zeile vorhanden" durchgegangen wäre. Immer den **ganzen** Bestand per Konsonantenskelett gegenchecken (auch über Gemination/Vokal-Abweichungen hinweg, s.o.), nicht nur die Standard-Verb-Topics.
+
+**Fehlende Zielzeilen nachlegen — zwei getrennte Rückfragen (Stand 2026-09-12).** Neue Zeilen anzulegen, wenn Formen fehlen, ist grundsätzlich in Ordnung. Aber:
+1. **Erst fragen, ob angelegt werden soll** — mit der konkreten Liste (darija, arabic_script, german, topic, lesson_id), nicht pauschal.
+2. **Danach getrennt fragen, ob die neuen Zeilen fällig gesetzt werden sollen.** Nicht mit Frage 1 zusammenziehen und nicht automatisch `next_review = now()` setzen: Nils aktiviert neue Vokabeln bewusst selbst, damit die Queue nicht unkontrolliert wächst. Ohne ausdrückliches Ja wird die `progress`-Zeile entweder gar nicht angelegt oder mit `next_review = NULL`.
+
+Das gilt auch dann, wenn die Neuanlage aus einem 🚩-Auftrag herausfällt — der Auftrag lautet „prüf dieses Wort", nicht „leg neue Wörter an". Ausnahme bleibt der ausdrückliche Import-Batch-Workflow, bei dem Nils die Neuanlage selbst angestoßen hat.
 
 **Bestandspflege (Stand 2026-09-06): nur ergänzen, nicht kürzen.** Verben mit mehr als 3 vorhandenen Zeilen (volle/teilweise Personal-Paradigmen aus früheren Sessions) werden NICHT gekürzt/gelöscht — das wird auf einen späteren, gezielten Vokabel-Check verschoben. Bei diesem künftigen Check: pro Verb auf die 3 Ziel-Slots konsolidieren (Präsens+Vergangenheit+eine Person behalten, Rest als Kandidat für Löschung markieren, nicht automatisch löschen — erst zeigen, dann auf Bestätigung warten wie immer). Bis dahin: überzählige Zeilen einfach so stehen lassen.
 
@@ -266,9 +352,45 @@ In beiden Fällen: wie genau (welches Topic, Suffix abschneiden oder ersetzen) n
 
 ## Datenqualitäts-Checks (SQL)
 
-Nicht nur nach einem frischen Import relevant — dieselben Checks eignen sich für jede Stichprobe/jeden Verdacht gegen den Bestand.
+Drei Gruppen, und die Zugehörigkeit sagt, **was ein Treffer bedeutet** — das ist wichtiger als die Abfrage selbst:
 
-**Transliterations-Check — konsolidiertes SQL (`TRANSLIT_RULES` in trainer.html):**
+| | Gruppe | Ein Treffer heißt | Vorgehen |
+|---|---|---|---|
+| **A** | Checks, die auf 0 stehen müssen | ein Fehler, keine Fehlalarme bekannt | korrigieren (nach Schritt 4 des Prüfprozesses) |
+| **B** | Verdachtslisten mit Fehlalarmquote | ein *Kandidat*, Quote je Liste dokumentiert | einzeln gegen die Quellen prüfen, **nie im Block korrigieren** |
+| **C** | Regeln fürs Prüfen selbst | — | vor dem Schreiben eines neuen Checks lesen |
+
+**Reihenfolge:** erst A (kostenlos, eindeutig), dann B, und C liest man, bevor man eine eigene Abfrage baut. Jede Zahl hier ist ein Schnappschuss — siehe Warnung unter „Offene Punkte".
+
+---
+
+### A · Checks, die auf 0 stehen müssen
+
+Ein Treffer ist ein Fehler. Diese Gruppe zuerst laufen lassen: sie braucht kein Netz, hat keine bekannten Fehlalarme, und ihre Funde sind ohne Quellenrecherche entscheidbar.
+
+**⚠️ Transliterations-Check — SQL deckt nur einen TEIL von `TRANSLIT_RULES` ab.** Das folgende SQL prüft die **Konsonanten-Gegenchecks (Regeln 5–16)** plus Ziffern/Großbuchstaben, Wortanzahl und Artikel — zusammen rund **14 der 22** Regeln. Es ist **kein** vollständiger Ersatz für den Prüf-Tab. Nicht enthalten: `ch` statt `sh` (2), Sonnenbuchstaben-Assimilation (4), unmarkiertes Femininum (19), `wa`/`u` statt `w-` (20), Plural `-iou` (21), Konsonanten-Anzahlvergleich (22).
+
+**Wer „alle Regeln geprüft" sagen will, muss die echten 22 laufen lassen** — per Node-Harness gegen `trainer.html`, nicht per SQL-Nachbau:
+
+```bash
+# scratchpad/extract.js zieht normalize/checkAnswer/TRANSLIT_RULES per Anker aus trainer.html
+node extract.js && node -e '
+const L=require("./lib.js"); const fs=require("fs");
+const rows=JSON.parse(fs.readFileSync("fresh_all.json","utf8"))
+  .map(r=>({id:r.id,tr:r.darija||"",ar:r.arabic_script||"",en:r.german||""}));
+const ids=new Set();
+L.TRANSLIT_RULES.forEach((r,i)=>{ const h=rows.filter(v=>{try{return r.test(v);}catch(e){return false;}});
+  h.forEach(x=>ids.add(x.id)); if(h.length) console.log("Regel "+(i+1)+": "+h.length+" — "+r.label); });
+console.log("betroffen: "+ids.size+" von "+rows.length+" ("+L.TRANSLIT_RULES.length+" Regeln)");
+'
+```
+
+**Zwei Pflicht-Plausibilitätsprüfungen bei jedem Harness-Lauf** — beide haben schon still versagt:
+
+1. **`L.TRANSLIT_RULES.length` mit ausgeben.** Fällt der Extraktor auf einen Teilblock zurück, prüft man stumm eine gekürzte Regelliste. Präzedenzfall: PRECEDENTS.md → `extract.js`.
+2. **Zeilenzahl des Exports gegen `SELECT count(*) FROM vocabulary` prüfen.** Der geblätterte REST-Export liefert bei Last `{"message":"Gateway Timeout"}` statt eines Arrays — `[].concat(fehlerobjekt)` hängt das klaglos als *ein* Element an, und der Lauf meldet „0 Treffer" über einem halben Bestand. Jede Seite auf `Array.isArray` prüfen, bei Fehlschlag wiederholen, und am Ende hart gegen die erwartete Zahl vergleichen statt weiterzurechnen.
+
+**Das SQL unten (Teilmenge, für schnelle Stichproben):**
 
 ```sql
 -- Ziffern 2/5/9, Großbuchstaben
@@ -326,22 +448,6 @@ WHERE arabic_script ~ '(^|\s)ال\S'
   AND darija !~* '([a-z]{1,2})-\1';
 ```
 
-**Wichtig — Postgres-Regex-Falle:** Wortgrenze ist `\y`, NICHT `\b` (das ist in Postgres ein Backspace-Zeichen, matcht lautlos nichts). Bei jedem neuen Regex mit Wortgrenzen einmal kurz gegen ein Testwort verifizieren, bevor auf das Ergebnis (0 Treffer) vertraut wird.
-
-**Zusätzlicher Check nach größeren Batches: Konsonanten-Skelett-Vergleich neu vs. alt** (findet Vokalvarianten-Duplikate, die der normale Duplikat-Check übersieht — `normKey()` entfernt keine Vokale, `yqoum` matcht `yqum` dort NICHT). Eingeschränkt auf dieselbe `lesson_id` (sonst zu viele Zufallstreffer):
-```sql
-WITH cons AS (
-  SELECT id, arabic_script, darija, german, lesson_id,
-    regexp_replace(lower(regexp_replace(darija,'[^a-z0-9]','','g')), '[aeiou]', '', 'g') AS ck
-  FROM vocabulary WHERE lesson_id IN (/* betroffene lesson_ids */)
-),
-newv AS (SELECT * FROM cons WHERE id >= /* erste neue id im Batch */),
-oldv AS (SELECT * FROM cons WHERE id < /* erste neue id im Batch */)
-SELECT n.id nid, n.darija ndar, n.german nger, o.id oid, o.darija odar, o.german oger
-FROM newv n JOIN oldv o ON n.ck = o.ck AND n.lesson_id = o.lesson_id;
-```
-Jeden Treffer einzeln prüfen — echte Duplikate von Zufallskollisionen unterscheiden (z.B. `yaqli`="braten" vs. `yqul`="sagen" kollidieren zufällig auf `yql`, sind aber verschiedene Wörter).
-
 **Duplikat-Prüfung nach `normKey()`-Logik (App-Tab „🔍 Duplikat-Prüfung" 1:1 nachgebaut):**
 ```sql
 WITH norm AS (
@@ -365,6 +471,243 @@ GROUP BY en_key HAVING count(*) > 1
 ORDER BY field, key;
 ```
 
+**Verb-Selbstcheck: Zeile gegen die eigene `conjugation`-Tabelle (seit 2026-09-12).** Eine feste Verb-Zeile mit Konjugationstabelle muss ihre eigene `darija`-Form in einer Zelle dieser Tabelle wiederfinden — sonst lehrt die Karteikarte eine andere Schreibung, als das 🔠-Blatt daneben zeigt. Rein interner Vergleich, keine externe Quelle nötig, **keine Fehlalarme möglich**. Deshalb vor jedem externen Abgleich laufen lassen, nicht danach.
+
+```sql
+SELECT v.id, v.darija, v.german, v.topic
+FROM vocabulary v
+WHERE v.conjugation IS NOT NULL AND NOT v.conj_rotate
+  AND NOT EXISTS (
+    SELECT 1 FROM jsonb_each(v.conjugation) b(bn,bv), jsonb_each(bv) s(sn,cell)
+    WHERE jsonb_typeof(bv)='object'
+      AND lower(btrim(cell->>'darija')) = lower(btrim(v.darija)))
+ORDER BY v.id;
+```
+
+`conj_rotate=true` ist ausgenommen — dort ist der Zeilenwert bewusst nur ein Anzeigewert und muss nicht in der Tabelle stehen. Erster Lauf 2026-09-12: 49 Treffer von 670 Zeilen, vollständig klassifiziert in `exports/pruefliste_2026-09-12.md`. Die Treffer zerfallen in sechs Klassen — Plural-`-ou`, Klammer-Zusatz im `darija`-Feld, Vokal-/Imala-Abweichung, fehlende Gemination, Vergangenheits-Endung, Phrase-mit-Verbtabelle. **Nur die ersten beiden sind mechanisch entscheidbar**, bei den übrigen steht Hausschreibung gegen TUNICO-Übernahme und es braucht Einzelprüfung.
+
+Ergänzende Struktur-Checks am selben Datenbestand (Zahlen vom 2026-09-12):
+```sql
+-- Verbgruppen: 3-Zeilen-Ziel, rotierende Zeile, Tabellen-Synchronität
+WITH c AS (SELECT id, darija, conjugation, conj_rotate, tunico_verb_id
+           FROM vocabulary WHERE conjugation IS NOT NULL),
+grp AS (
+  SELECT COALESCE(tunico_verb_id::text,
+                  'skel:'||regexp_replace(lower(regexp_replace(darija,'[^a-z0-9]','','g')),'[aeiou]','','g')) AS verb_key,
+         count(*) AS zeilen,
+         count(*) FILTER (WHERE conj_rotate) AS rotierend,
+         count(DISTINCT conjugation::text) AS versch_tabellen,
+         string_agg(id::text||':'||darija, ' | ' ORDER BY id) AS formen
+  FROM c GROUP BY 1)
+SELECT * FROM grp WHERE zeilen <> 3 OR rotierend <> 1 OR versch_tabellen > 1 ORDER BY zeilen, verb_key;
+```
+Stand 2026-09-12: 181 Gruppen, davon 87 auf dem 3-Zeilen-Ziel, 22 mit nur einer Zeile, 68 mit Altbestand > 3 Zeilen (bleiben laut Bestandspflege-Regel unangetastet), 88 ohne rotierende Zeile (davon 62 mit ≥3 Zeilen — dort reicht ein `conj_rotate`-Flag auf einer vorhandenen Zeile, keine Neuanlage), 3 mit auseinandergelaufenen Tabellen, 35 Zeilen mit unvollständiger Tabelle. Zusätzlich 169 Verb-Zeilen ganz ohne `conjugation` — ob das Modell auf die ausgeweitet wird, ist offen.
+
+**Plural-Endung `-iou`/`-eou`/`-aou` (seit 2026-09-12, auch als Regel 21 in `TRANSLIT_RULES`).** Die Hausregel „Plural يفعلوا → `-iw`" stand bisher ohne Prüfung in der Konventionstabelle. Erster Lauf: 13 Treffer, alle echt, keine Fehlalarme.
+```sql
+SELECT id, darija, german FROM vocabulary WHERE darija ~ '(iou|eou|aou)(\y|$)';
+```
+Bei mehrwortigen Einträgen steht die Endung teils mehrfach im Feld — jedes Vorkommen prüfen, nicht nur das erste.
+
+**Halb verdoppelter Digraph (seit 2026-09-12).** Scharfer Zusatz-Check zum Gemination-Check darüber: findet `ddh`/`tth`/`ssh`/`kkh`/`ggh`, also Geminationen, bei denen nur der erste Buchstabe des Digraphen gedoppelt wurde. Begründung der Regel: SKILL.md → Digraph-Gemination, Historie: PRECEDENTS.md.
+```sql
+SELECT id, darija, arabic_script, german,
+       public._translit_skeleton(darija) AS ts, public._arabic_skeleton(arabic_script) AS as_
+FROM vocabulary
+WHERE darija ~ '(ddh|tth|ssh|kkh|ggh|7h|thh)'
+  AND darija !~ '(dhdh|thth|shsh|khkh|ghgh|77)'
+ORDER BY id;
+```
+
+---
+
+### B · Verdachtslisten (mit Fehlalarmquote)
+
+Ein Treffer ist ein **Kandidat, kein Fehler**. Jede Liste trägt ihre gemessene Fehlalarmquote — die steht dort nicht zur Zierde: bei der Gemination sind ~15 % Fehlalarme, beim arabischen Duplikat-Check ~80 %. **Nie im Block korrigieren**, immer einzeln gegen Ninja/TUNICO/Peace Corps prüfen. Präzedenzfälle, in denen ein Blockfix falsch gewesen wäre: `bnin`, `skhan` (dort war das `arabic_script` der Fehler), `metrobbi` (gegenteiliger Gloss statt Dublette), die 30 Ninja-Skelett-Kollisionen bei der Vokalisierung.
+
+**Zusätzlicher Check nach größeren Batches: Konsonanten-Skelett-Vergleich neu vs. alt** (findet Vokalvarianten-Duplikate, die der normale Duplikat-Check übersieht — `normKey()` entfernt keine Vokale, `yqoum` matcht `yqum` dort NICHT). Eingeschränkt auf dieselbe `lesson_id` (sonst zu viele Zufallstreffer):
+```sql
+WITH cons AS (
+  SELECT id, arabic_script, darija, german, lesson_id,
+    regexp_replace(lower(regexp_replace(darija,'[^a-z0-9]','','g')), '[aeiou]', '', 'g') AS ck
+  FROM vocabulary WHERE lesson_id IN (/* betroffene lesson_ids */)
+),
+newv AS (SELECT * FROM cons WHERE id >= /* erste neue id im Batch */),
+oldv AS (SELECT * FROM cons WHERE id < /* erste neue id im Batch */)
+SELECT n.id nid, n.darija ndar, n.german nger, o.id oid, o.darija odar, o.german oger
+FROM newv n JOIN oldv o ON n.ck = o.ck AND n.lesson_id = o.lesson_id;
+```
+Jeden Treffer einzeln prüfen — echte Duplikate von Zufallskollisionen unterscheiden (z.B. `yaqli`="braten" vs. `yqul`="sagen" kollidieren zufällig auf `yql`, sind aber verschiedene Wörter).
+
+**Variante für den Bestandsaudit (seit 2026-09-12): Vokal-Dubletten im ganzen Bestand, ohne Batch-Grenze.** Die Fassung oben braucht eine „erste neue id" und eine `lesson_id`-Eingrenzung — sie findet deshalb nur Dubletten *innerhalb eines frischen Imports*. Vokal-Varianten, die über Jahre und Lektionsgrenzen hinweg entstanden sind, bleiben unsichtbar. Diese Fassung ersetzt die Batch-Eingrenzung durch einen Bedeutungs-Filter (Glosse müssen sich überlappen), was die Zufallstreffer erschlägt:
+
+```sql
+WITH v AS (
+  SELECT id, darija, german, arabic_script,
+    regexp_replace(lower(regexp_replace(darija,'[^a-z0-9]','','g')),'[aeiou]','','g') AS skel,
+    lower(regexp_replace(regexp_replace(german,'\([^)]*\)','','g'),'[^a-zäöüß]','','g')) AS gkey
+  FROM vocabulary WHERE darija IS NOT NULL AND darija <> '' AND NOT homonym_ok
+)
+SELECT a.id, a.darija, a.german, b.id, b.darija, b.german,
+       (regexp_replace(a.arabic_script,'[ً-ٰٟ]','','g') = regexp_replace(b.arabic_script,'[ً-ٰٟ]','','g')) AS gleiches_arabisch
+FROM v a JOIN v b ON a.skel = b.skel AND a.id < b.id AND length(a.skel) >= 3
+WHERE lower(a.darija) <> lower(b.darija)
+  AND (a.gkey = b.gkey OR a.gkey LIKE '%'||b.gkey||'%' OR b.gkey LIKE '%'||a.gkey||'%')
+ORDER BY gleiches_arabisch DESC, a.id;
+```
+
+Erster Lauf 2026-09-12: **177 Verdachtspaare**, davon 166 in Zeilen ohne `conjugation` — also in dem Teil des Bestands, den der batch-gebundene Check nie erreicht hat. `gleiches_arabisch = true` ist die schärfste Teilmenge (14 Paare); Stichprobe daraus von Hand beurteilt: **8 echt, 6 Fehlalarme**.
+
+**Die Fehlalarme folgen vier wiederkehrenden Mustern — alle am `german`-Feld erkennbar, vor der Vorlage herausfiltern:**
+
+| Muster | Beispiel | Erkennbar an |
+|---|---|---|
+| m/f-Paar desselben Adjektivs | `qsir` / `qsira` „kurz (m.)/(f.)" | `(m.)` vs. `(f.)` im Gloss |
+| Imperativ vs. Vergangenheit | `l3ab` „er spielte" / `el3ab` „spiel!" | `(Imperativ)` bzw. `!` |
+| Imperativ vs. Partizip | `weqif` „steh!" / `waqif` „stehend" | Partizip-Gloss auf `-end` |
+| Kollektiv vs. Nomen unitatis | `rmal` „Sand" / `ramla` „Sand (f.)" | `(f.)` bei Stoffnamen |
+
+Diese Paare sind **korrekt und dürfen nicht zusammengelegt werden** — bei Imperativ/Vergangenheit ggf. `homonym_ok=true` setzen, wenn die Schreibung wirklich identisch wird.
+
+**Filter-Feinheit, die zählt (2026-09-12 durchgemessen):** Ein `(f.)`-Marker auf *einer* Seite ist KEIN Ausschlusskriterium — das killt echte Dubletten (`djeja` „Henne / Huhn (f.)" ↔ `djaja` „Huhn", `neyy` „roh (m.)" ↔ `nayy` „roh"). Ausschließen nur, wenn **beide** Seiten gegensätzliche Marker tragen:
+
+```sql
+  AND NOT ((a.m AND b.f) OR (a.f AND b.m))   -- echtes m/f-Paar
+  AND NOT (a.pl <> b.pl) AND NOT (a.sg <> b.sg)  -- Numerus-Paar
+  AND NOT (a.imp <> b.imp)                   -- Imperativ vs. andere Form
+  AND NOT (a.part <> b.part)                 -- Partizip vs. andere Form
+```
+Gegen eine Kontrollmenge von 14 handgeprüften Paaren validiert: alle 8 echten überleben, 4 von 6 Fehlalarmen fallen raus.
+
+**Wichtigste Lehre — nur `gleiches_arabisch = true` ist eine Arbeitsliste.** Roh 177 Paare, nach allen Filtern 71. Von den 61 Paaren mit *unterschiedlichem* `arabic_script` ist praktisch keines eine Dublette, sondern korrekte Morphologie: `khamsa`/`khams` (fünf/fünfter), `3ashra`/`3shour` (zehn/zehnter), `khobz`/`khobza` (Brot / ein Brot), `qrib`/`qriba` (nah m./f.), `forshita`/`frashit` (Gabel Sg/Pl). Viele davon tragen **gar keinen Marker im Gloss**, sind also durch keinen Filter aussortierbar. Die 10 Paare mit identischem Arabisch enthielten dagegen 8 echte Dubletten.
+
+→ **Beim nächsten Lauf nur die `gleiches_arabisch`-Teilmenge vorlegen.** Den Rest nicht aufrollen — das war der Irrweg, den dieser Durchgang einmal gegangen ist.
+
+⚠️ **Der `ar_key` oben ist diakritika-empfindlich — das ist Absicht (er bildet die App nach), aber als Duplikat-Prüfung ist er blind.** Zwei Zeilen mit demselben arabischen Wort sind für ihn verschiedene Wörter, sobald sie unterschiedlich vokalisiert sind: **6 Gruppen** gegen **86** mit gestripptem Vokal. Den folgenden Check deshalb **zusätzlich** laufen lassen — er geht bewusst über das hinaus, was der App-Tab kann.
+
+**Arabischer Duplikat-Check, vokalisierungs-unabhängig (seit 2026-09-12).**
+```sql
+WITH v AS (
+  SELECT id, darija, german, homonym_ok,
+    lower(regexp_replace(regexp_replace(arabic_script,'[ًٌٍَُِْٰٟ]','','g'),
+                         E'[\\s.,;:!?()/\\\\''"«» -]+','','g')) AS k
+  FROM vocabulary WHERE arabic_script IS NOT NULL AND length(arabic_script) > 2
+)
+SELECT k, count(*) AS n, bool_or(homonym_ok) AS hom,
+       string_agg(id||' '||darija||' = '||left(german,40), '  ||  ' ORDER BY id) AS zeilen
+FROM v GROUP BY k HAVING count(*) > 1 ORDER BY n DESC, k;
+```
+
+**Die Schadda gehört NICHT in die Stripliste.** Sie ist ein Konsonantenverdopplungszeichen, kein Vokalzeichen — sie mitzustrippen verschmilzt Form I und Form II (حَضَر „er nahm teil" gegen حَضَّر „er bereitete vor") und erzeugt 40 Scheingruppen. 126 Gruppen mit Schadda gestrippt gegen 86 ohne; die Differenz sind genau diese Paare.
+
+**Fehlalarm-Profil (erster vollständiger Lauf, 86 Gruppen):**
+
+| Muster | Gruppen | |
+|---|---|---|
+| `-it`/`-t`-Verbpaar (3. Pers. f. gegen 1. Pers. Vergangenheit) | 21 | strukturell, der Bestand legt es für jedes Verb an |
+| bereits `homonym_ok` | 17 | Check arbeitet korrekt |
+| echt verschiedene Wörter mit gleichem Gerüst | ~30 | `morra`/`marra`, `ktob`/`ktib`, `3irq`/`3araq`, `jomal`/`jmal` |
+| Imperativ/Vergangenheit derselben Wurzel | ~5 | kein Duplikat, aber `homonym_ok`-Kandidaten |
+| **echte Funde** | **17** | ~20 % Trefferquote |
+
+**Beim Prüfen nicht auf „Dublette ja/nein" verengen.** Gleiches Arabisch kann auch heißen, dass eine der beiden Zeilen inhaltlich falsch ist. Präzedenzfall `metrobbi` (PRECEDENTS.md): zwei Zeilen mit identischem Arabisch trugen **gegenteilige** Glosse, und die Quellenprüfung zeigte, dass nicht die eine die Dublette der anderen war, sondern beide Glosse invertiert. Jede Gruppe gegen Ninja/TUNICO/Peace Corps prüfen, nicht nur gegeneinander.
+
+**Gemination: Schadda im Arabischen, aber kein Doppelbuchstabe in `darija` (Kandidat, seit 2026-09-12).** Setzt Lautlehre-Regel 2 um. **Verdachtsliste, keine Fehlerliste** — Stichprobe 16 von 93 Treffern: 11 echt, 5 Fehlalarme (~15 %). Deshalb bewusst NICHT in `TRANSLIT_RULES` übernommen, sonst stünde der Prüf-Tab dauerhaft auf ~93 statt auf 0.
+```sql
+SELECT id, arabic_script, darija, german FROM vocabulary
+WHERE arabic_script ~ 'ّ'
+  AND regexp_replace(lower(darija),'(sh|th|kh|gh|ch|dh)','#','g') !~ '([a-z0-9#])\1'   -- Digraphen als Einheit
+  AND lower(darija) !~ '\y(w-)?(l|b|f|m)?(el|il|le|li|es|esh|et|eth|ej|ed|en|er|ez)-' -- Artikel, auch nach Präposition
+  AND regexp_replace(arabic_script,'[ً-ٰٟ]','','g') !~ '(^|\s)ال'
+  AND german !~* '(frz\.|franz\.|ital\.|engl\.|lehnwort)'
+  AND regexp_replace(arabic_script,'[ًٌٍَُِْٰٟ]','','g') !~ 'ّ\s*$'                     -- wortfinale Schadda
+ORDER BY id;
+```
+Restliche Fehlalarm-Muster (nicht weiter automatisierbar): Kontraktionsformen, bei denen das Arabische die volle Form schreibt (`shnoua` ← شْنُوَّا); mehrwortige Phrasen, bei denen die Schadda in einem anderen Wort sitzt; unmarkierte Fremdwörter (`rouba` ← رُوبَّا — mit `(frz.)` im Gloss automatisch ausgeschlossen). Zwei Gruppen im Ergebnis als Block entscheiden, nicht einzeln: Nationalitäten-Feminina auf ـِيَّة (8 Zeilen + 2 Plurale) und Form-II-Verbpaare (Präsens/Vergangenheit desselben Verbs, 10 Zeilen) — sonst laufen Geschwisterformen auseinander.
+
+**Diese Lücke betrifft nur mehrwortige Zeilen** — und dort fast immer eine `h`/`7`- oder `d`/`th`-Verwechslung in genau einem Wort. Gefundene Fehlerbilder: `nsalhu`→`nsalla7u`, `hadh-dhert`→`7adhdhart`, `rouhou`→`rou7ou`, `yslah`→`ysla7`, `t7iz`→`thiz`, `t7abbel`→`thabbel`, `dhahab`→`thahab`.
+
+**Pflicht-Gegenprobe vor jeder Korrektur — `tth` ist fast immer ein Fehlalarm:** in TUNICO (9/9), Ninja (17/17) und im eigenen Bestand (2/2) war jedes `tth` ein Morphemgrenzen-`t` vor `th` (`netthaowb` ← نِتْثَاوَب, `tthba7` ← تَذْبَح), keine Gemination. Entscheidungskriterium ist nicht die Buchstabenfolge, sondern das Arabische: steht dort eine Schadda auf ذ/ظ, ist es Gemination; steht ein eigenes ت davor, ist die Zeile korrekt. Kürzester Selbsttest: `_translit_skeleton(darija)` gegen `_arabic_skeleton(arabic_script)` halten — bei echter Fehlschreibung laufen die beiden an genau dieser Stelle auseinander (`7addhar` → `7ddhr` vs. `7dhdhr`), bei einem Präfix-`t` stimmen sie dort überein. **Bei mehrwortigen Zeilen die Stelle vergleichen, nicht die ganzen Strings** — die können aus völlig anderen Gründen abweichen. Beispiel id 3073: `tthb7` steht in beiden Skeletten identisch (also korrektes Präfix-`t`), die Gesamt-Skelette unterscheiden sich trotzdem, weil in derselben Zeile zwei andere Fehler stecken (`essakina` statt `essakkina` zu السِّكِّينَة, `brrsha` statt `barsha` zu بَرْشَة).
+
+**Gemination von ya: `yy` (belegt 2026-09-12).** Schadda auf ي wird transliteriert wie jede andere Gemination. Eigener Bestand **67 : 14** (`mayyit`, `tayyab`, `ykhayyat`, `7orriyya`, `bnayya`), TUNICO **14/14** (`xayyāṭ`→`khayyat`, `ṛayyaḥ`→`rayya7`), Ninja **14/14** (`خَيَّاطْ`→`5ayyat`, `بَيِّنْ`→`bayyin`). Von den 14 Gegenbeispielen waren nach Prüfung 14 echte Fehler oder Lehnwörter; korrigiert wurden u.a. `taybit`→`tayybit`, `maytin`→`mayyitin` (Geschwister 2290 `mayyit`), `rwayeq`→`rwayyeq`, `mdhayef`→`mdhayyef`.
+```sql
+SELECT id, darija, arabic_script, german FROM vocabulary
+WHERE arabic_script ~ 'ي[ًٌٍَُِْٰ]*ّ' AND darija !~ 'yy' ORDER BY id;
+```
+
+**Gemination von waw: `ww` (entschieden 2026-09-12).** Dieselbe Regel wie bei ya, ohne Ausnahme. Eigener Bestand **40 : 4** (`sawwar`, `lawwej`, `rawwa7`, `dawwara`, `mfawwer`, `ynawwar`, `tsawwert`, `tawwa`, `khawwaf`, `zawweli` …), Ninja `tawwa` تَوَّا.
+
+**Der scheinbare Widerspruch war ein Denkfehler:** Ninja schreibt هُوَ als `houwa` mit *einem* `w` — dort steht aber **keine Schadda**. Ein Waw-Buchstabe → ein `w`. Die Systematik ist exakt symmetrisch zu ya:
+
+| | ohne Schadda | mit Schadda |
+|---|---|---|
+| ya | هِيَ → `hiya` | هِيَّ → `hiyya` |
+| waw | هُوَ → `houwa` | هُوَّ → `houwwa` |
+
+```sql
+SELECT id, darija, arabic_script, german FROM vocabulary
+WHERE arabic_script ~ 'و[ًٌٍَُِْٰ]*ّ' AND darija !~ 'ww' ORDER BY id;
+```
+
+**Drei dokumentierte Ausnahmen, die dieser Check zu Recht meldet und die so bleiben:**
+
+1. **Wortfinale Schadda** wird nicht transliteriert — `dhaw` ضَوّْ, `jaw` جَوّ, `qwi` قُوِّي. Gleiche Regel wie im Gemination-Check darüber.
+2. **Die `shnou`-Familie** (7 Zeilen) — `shnoua` ← شْنُوَّا ist als bewusste Kontraktionsform dokumentiert, nicht als Fehler. **Aber:** die Familie trägt fünf verschiedene Schreibungen (`shnoua`, `shnou`, `shnouwa`, `shnowwa`, `shnouwwa`) und zwei Arabisch-Endungen (ـا/ـة). Eigener Durchgang, Block-Entscheidung wie bei `3ayshik`.
+3. **`1622 t3awinni`** تعاوّني — die Schadda sitzt dort auf dem waw von تعاون, was nach Tippfehler im Arabischen aussieht (erwartet: تعاوني). Nicht als Transliterationsfehler behandeln, bevor das Arabische geklärt ist.
+
+---
+
+### C · Regeln fürs Prüfen selbst
+
+Keine Abfragen, sondern die Fallen und Methodenregeln. **Vor dem Bau einer neuen Prüfabfrage lesen** — drei der vier hier dokumentierten Fallen haben schon einmal einen kompletten Prüflauf stumm wertlos gemacht.
+
+**Wichtig — Postgres-Regex-Falle:** Wortgrenze ist `\y`, NICHT `\b` (das ist in Postgres ein Backspace-Zeichen, matcht lautlos nichts). Bei jedem neuen Regex mit Wortgrenzen einmal kurz gegen ein Testwort verifizieren, bevor auf das Ergebnis (0 Treffer) vertraut wird.
+
+**⚠️ Die Konsonanten-Regeln 5–16 in `TRANSLIT_RULES` prüfen VORKOMMEN, nicht ANZAHL (entdeckt 2026-09-12).** `v.ar && /ح/.test(v.ar) && !/7/.test(v.tr)` schweigt, sobald **irgendwo** im Feld ein `7` steht. Bei einwortigen Zeilen egal, bei Sätzen ein Loch: `hadh-dhert barsha 7ajet lil-7afla` (3 × ح, 2 × `7`) lief jahrelang als sauber durch, weil `7ajet` und `7afla` die Regel beruhigten — das falsch geschriebene erste Wort sah sie nie. Erster Lauf des Anzahl-Vergleichs: **11 Treffer, 10 echte Fehler, 1 Entscheidungsfall** — praktisch keine Fehlalarme. **Seit 2026-09-12 als Regel 22 in `TRANSLIT_RULES` live**, mit vorkompilierten Buchstabenpaaren in `CONSONANT_PAIRS` direkt neben `isLoanword`. Sie greift bewusst nur, wenn **beide** Seiten mindestens einmal vorkommen — fehlt der Gegenpart ganz, hat die zuständige Regel 5–16 schon angeschlagen; so meldet kein Fall doppelt.
+
+```sql
+-- Zaehlvergleich je Buchstabenpaar; in SQL umstaendlich, im Node-Harness natuerlicher.
+-- Paare: ح→7, خ→kh, ع→3, ش→sh, ض→dh, ج→j, ز→z, غ→gh?, ق→[qgk], ه→h, س→s, [ظذ]→th
+SELECT id, darija, arabic_script, german,
+       (length(arabic_script) - length(replace(arabic_script,'ح',''))) AS ar_n,
+       (length(darija)        - length(replace(darija,'7','')))        AS tr_n
+FROM vocabulary
+WHERE arabic_script LIKE '%ح%' AND darija LIKE '%7%'
+  AND german !~* '(frz\.|franz\.|ital\.|engl\.|lehnwort)'
+  AND (length(arabic_script) - length(replace(arabic_script,'ح','')))
+    > (length(darija) - length(replace(darija,'7','')))
+ORDER BY id;
+```
+
+**ت+ه an der Morphemgrenze wird `th` geschrieben — die Konvention existiert bereits.** 6 von 8 Bestandszeilen machen es so (`waqtha` وقتها, `shrobtha` شربتها, `mammethom`, `thimni` تْهِمِّني). Dass `th` auch der Digraph für ظ/ذ/ث ist, wird in Kauf genommen — gleiche Lage wie `tth` (Präfix-`t` vor `th`) und `thh` (`thhar` ظهر). Entschieden wird immer am `arabic_script`, nie an der Buchstabenfolge.
+
+**Lateinisches `x` gehört nicht ins Hausalphabet** — 5 Zeilen tragen es, alle französische Lehnwörter (`taxi`, `taxist`, `jeux vidéos`). Lösung ist **nicht** Umschrift zu `ks`, sondern die Lehnwort-Markierung im Gloss (`(frz.)`), damit `isLoanword()` greift. `taxi` wird auch von Tunesiern so geschrieben.
+
+**⚠️ Zeichenreihenfolge: Vokalzeichen stehen VOR der Schadda (entdeckt 2026-09-12).** Im Bestand steht die Schadda in **803** Zeilen nach dem Vokalzeichen (`ي` + Kasra + Schadda = `064a 0650 0651`) und nur in **16** davor. Die kanonische Unicode-Reihenfolge ist die umgekehrte. Folge: **jede Prüfregel der Form `<Buchstabe>ّ` verfehlt ~98 % des Bestands und meldet stillschweigend nichts** — dieselbe Falle wie `\b` statt `\y`. Immer die Vokalzeichen mit erlauben:
+```sql
+-- FALSCH: findet fast nichts
+WHERE arabic_script ~ 'يّ'
+-- RICHTIG:
+WHERE arabic_script ~ 'ي[ًٌٍَُِْٰ]*ّ'
+```
+`arabic_script ~ 'ّ'` allein (Schadda irgendwo) ist von der Reihenfolge unabhängig und bleibt gültig.
+
+**Skelett-Vergleich als Vorfilter für Liste C (seit 2026-09-12).** `public._translit_skeleton(darija)` gegen `public._arabic_skeleton(arabic_script)` trennt die Schadda-Verdachtsliste viel schärfer als die Regex allein: bei 69 Verdachtszeilen waren 48 skelett-uneinig und 21 einig; unter den einwortig-uneinigen waren nach Prüfung 28 von 35 echte Fehler. Als erste Spalte in jede Verdachtsabfrage aufnehmen und nach `ts <> as_` sortieren.
+
+⚠️ **Systematischer Fehlalarm: der Artikel (gemessen 2026-09-13).** Von 646 Zeilen mit uneinigen Skeletten tragen **190 (29 %)** einen Artikel im `darija`. Die beiden Funktionen behandeln ihn unterschiedlich: `el-manshir` → `lmnshr`, aber المنشير → `mnshr`; `f-ed-dar` → `fddr`, aber في الدار → `fldr`. **Kein Datenfehler, ein Artefakt der beiden Skelett-Formeln.** Bei jedem Skelett-Treffer mit `el-`/`ed-`/`es-`… im `darija` zuerst prüfen, ob die Differenz nur an dieser Stelle sitzt — dann verwerfen. In einer Stichprobe von 10 fälligen Vokabeln waren **beide** Skelett-Treffer von dieser Art.
+
+⚠️ **Blind für Halbvokale.** Beide Formeln streichen ا/و/ي. Ein fehlender oder überzähliger Langvokal im `arabic_script` ist für den Vergleich unsichtbar — `سكاكن` und `سكاكين` ergeben beide `skkn`. Diese Fehlerklasse findet nur der Quellenabgleich.
+
+**Nach jeder Verbkorrektur die ganze Wurzelfamilie durchsehen (seit 2026-09-12).** Der Schadda-Check sieht nur vokalisierte Zeilen. Geschwisterformen mit unvokalisiertem `arabic_script` tragen denselben Fehler und bleiben unsichtbar — bei der `naththaf`/`7adhdhar`/`ba77ar`-Runde waren das 4 zusätzliche Zeilen (`ynathaf` ينظف, `tnathaf` تنظف, `n7adhar` نحضر, `ba7har` بحر), gefunden nur durch die gezielte Geschwistersuche. Gleicher blinder Fleck wie bei `4444 marroukiya`.
+
+**`conjugation` immer mitziehen (seit 2026-09-12).** Eine `darija`-Korrektur an einer Verbzeile muss dieselbe Ersetzung in `conjugation` machen — auch für Formen, die keine eigene Vokabelzeile haben (`nathamna`, `ba7hru`, `ba7hret`). Sonst steht das `darija` der Zeile nicht mehr in ihrer eigenen Tabelle und der Verb-Selbstcheck meldet sie sofort. In der Gruppe-2-Runde betraf das 8 von 31 geänderten Zeilen. Vorher prüfen:
+```sql
+SELECT id, darija FROM vocabulary WHERE conjugation::text ~ '<alte_schreibung>';
+```
+Ebenso `course_lessons.vocab_lesson_refs` gegen die alte Schreibung prüfen (`darija:`-Teil referenziert über den Wortlaut, nicht über die id).
+
+**Das `arabic_script` kann der Fehler sein, nicht die Transliteration (seit 2026-09-12).** Zwei Fälle aus Gruppe 2: `3023 bnin` „lecker" trug بَنِّين mit Schadda, TUNICO hat aber `bnīn` (langes ī, keine Gemination); `1087 skhan` „heiß (Pl.)" trug سَخَّان — das heißt „Boiler"/„erhitzen" (TUNICO `saxxan`), der Plural zu سْخُون ist سْخَان. Beide wären ohne Quellenprüfung als „fehlende Gemination" genau falsch herum korrigiert worden. Bei jedem Treffer, dessen Wurzel im Gloss nicht zum Arabischen passt, erst die Quelle fragen.
+
 **Bekannte Fehlalarm-Fallen bei diesen Checks (nicht blind fixen):**
 - Französische/italienische Lehnwörter — im `german`-Feld `(frz.)`/`(ital.)`/`(engl.)`/`(Lehnwort)` markieren statt Transliteration zu erzwingen
 - غ/ق können dialektal zu "g"/"k" verschoben sein (ngammed, bargouth, bgar, maktou3) — kein Fehler, Regel akzeptiert das bereits
@@ -374,59 +717,111 @@ ORDER BY field, key;
 
 **Konsonanten-Gegenchecks ج/ز/ه/س** sind mit im SQL oben — Details zum ersten Testlauf (8 echte Bestandsfehler, u.a. systematische ه→7-Verwechslung): PRECEDENTS.md → Prüfungen nach jedem Import.
 
-**Neue Checks aus Kurs-Grammatiknotizen ableiten — wiederkehrende Praxis, nicht einmalig.** `grammar_notes` in `course_lessons` (siehe COURSE_MODE.md) enthalten viele Regeln — nur solche aufnehmen, die rein aus `darija`/`german`/`arabic_script` ableitbar sind, OHNE Wortart-Wissen/Kontext (wie die Sonnenbuchstaben-Regel). Bei jeder neuen/überarbeiteten Lektion erneut versuchen. **Immer erst gegen den Bestand testen (Fehlalarmquote) und zeigen, bevor eine Regel dauerhaft in `TRANSLIT_RULES` übernommen wird.** Bisher 4 Kandidaten getestet, 2 bestanden (unmarkierte Feminina, "und"=immer "w-"), 2 verworfen (Verb-Personalpräfix, m/f-Adjektivpaare=masc+"a" — beide an Dialekt-Realität gescheitert, Details: PRECEDENTS.md → Prüfungen nach jedem Import).
+**Neue Checks aus Kurs-Grammatiknotizen ableiten — wiederkehrende Praxis, nicht einmalig.** `grammar_notes` in `course_lessons` (siehe COURSE_MODE.md) enthalten viele Regeln — nur solche aufnehmen, die rein aus `darija`/`german`/`arabic_script` ableitbar sind, OHNE Wortart-Wissen/Kontext (wie die Sonnenbuchstaben-Regel). Bei jeder neuen/überarbeiteten Lektion erneut versuchen. **Immer erst gegen den Bestand testen (Fehlalarmquote) und zeigen, bevor eine Regel dauerhaft in `TRANSLIT_RULES` übernommen wird.** Bisher 8 Kandidaten getestet, 4 in `TRANSLIT_RULES` übernommen (unmarkierte Feminina, "und"=immer "w-", Plural-Endung `-iou`, Konsonanten-Anzahlvergleich als Regel 22), 2 verworfen (Verb-Personalpräfix, m/f-Adjektivpaare=masc+"a" — beide an Dialekt-Realität gescheitert, Details: PRECEDENTS.md → Prüfungen nach jedem Import), 2 bewusst nur als SQL im Skill (Verb-Selbstcheck: gehört in den Prüfablauf, nicht in den Transliterations-Tab; Gemination: ~15 % Fehlalarme, würde den Tab dauerhaft rot halten).
 
-## Workflow: Geflaggte Vokabeln (🚩) live gegen Derja Ninja prüfen
+**Der Prüf-Tab nennt seit 2026-09-13 die Grundgesamtheit.** Unter dem Ergebnis steht „N von M Vokabeln geprüft · R Regeln" — im Erfolgs- wie im Trefferfall. Grund: „0 Auffälligkeiten" ohne Nenner ist keine Aussage; ein halb geladener Bestand oder eine gekürzte Regelliste sähen identisch aus. Zusätzlich bricht `sbApiPaged()` jetzt hart ab, wenn die geladene Zeilenzahl nicht dem `count`-Header entspricht — ein still unvollständiger `ALL_VOCAB` verfälscht SRS-Queue, Duplikat-Check und Prüf-Tabs gleichermaßen.
 
-Wenn Nils im Trainer Vokabeln mit 🚩 markiert, ist das der Auftrag, sie zu recherchieren und Korrekturvorschläge in `vocabulary_review` einzutragen — die eigentliche Recherche läuft außerhalb der App, der Ninja-Check-Tab im Trainer ist nur für die menschliche Freigabe/Ablehnung. Kein automatisches UPDATE direkt auf `vocabulary`, außer der Eintrag ist zweifelsfrei bereits korrekt (Schritt 6).
+**Faustregel aus diesen 8 Läufen:** Eine Regel gehört nur dann in `TRANSLIT_RULES`, wenn sie nahe an 0 % Fehlalarme liegt — der Wert der beiden Prüf-Tabs liegt darin, dass „0 Treffer" wirklich „sauber" heißt. Alles mit Restunschärfe bleibt SQL im Skill und wird als Verdachtsliste abgearbeitet.
 
-Auslöser: "Ich habe Vokabeln markiert" → `SELECT * FROM vocabulary WHERE flagged = true` als erster Schritt. **Sofort danach, für den ganzen Batch als EINE Sammelabfrage:** `SELECT * FROM vocabulary_review WHERE vocabulary_id IN (<alle IDs>)` — Konflikt-Check ganz am Anfang, bevor ein Korrekturplan gebaut wird (nicht erst kurz vorm Schreiben, sonst muss ein fertiger Plan nachträglich umgebaut werden).
+## Vokabeln prüfen — EIN Prozess
 
-### Ablauf pro geflaggter Vokabel
+Es gibt **einen** Prüfprozess. Was von Fall zu Fall wechselt, ist die **Auswahl der Zeilen** — nie das Vorgehen. Hier standen früher zwei getrennte Workflows („geflaggt" und „frischer Import") mitsamt dem Zusatz „bei Unklarheit nachfragen, welcher gemeint ist". Sie unterschieden sich in genau einem Punkt: dem Schreibpfad. Der ist jetzt Schritt 5.
 
-0. **Interne Konsistenz-Checks zuerst — kostenlos, kein externer Request nötig, vor dem Ninja/TUNICO/Peace-Corps-Abgleich.** Deckt eine andere Fehlerklasse ab als der externe Abgleich: eine Vokabel kann extern bestätigt sein und trotzdem kaputt vokalisiert/transliteriert sein. Für den ganzen geflaggten Batch als SQL (siehe "Transliterations-Check" oben für die fertigen Regex-Queries):
-   - Vokalisierungs-Vollständigkeit (`arabic_script` komplett ohne Harakat/Sukun?)
-   - Konsonanten-Gegencheck arabic_script vs. darija (ح→7, خ→kh, ع→3, غ→gh, ش→sh, ق→q/g/k, ض→dh)
-   - Ziffern (2/5/9) oder Großbuchstaben in `darija`
-   - Wortanzahl-Abgleich arabic_script vs. darija (Hinweis auf fehlende/zusätzliche Wörter)
-   - "/" im `german`-Feld: echte Synonyme vs. Bedeutungskollision (sollte `;` sein) — Testkriterium siehe Duplikat-Check-Regeln oben
-   Funde hier vor Schritt 6 mit korrigieren, nicht getrennt von den Ninja-Funden behandeln.
-1. **Offline-Quellen zuerst, in dieser Reihenfolge — alle drei, nicht nur die erste** (Details zu jeder Tabelle: IMPORTS.md):
-   1. `derja_ninja_entries` — schnell, aber ein Snapshot (2026-08-17), kann bei mehrteiligen Begriffen unvollständig sein.
-   2. `tunico_import` (Englisch-Übersetzung als Suchschlüssel gegen `senses`/`de_gloss`) — liefert oft das komplette Bedeutungsspektrum eines mehrdeutigen Worts, wo ein einzelner Ninja-Treffer nur eine Facette zeigt.
-   3. `peacecorps_dict_import` (Englisch-Übersetzung gegen `headword`/`senses`) — dritte unabhängige Quelle, v.a. bei älterem/ungewöhnlichem Lehrbuchvokabular ohne Ninja-/TUNICO-Treffer.
-   Erst wenn KEINE der drei einen Treffer liefert, gilt eine Vokabel als "keine externe Bestätigung" — nicht schon nach `derja_ninja_entries` allein.
-2. **Live-Check, wenn keine der drei Offline-Quellen etwas liefert:** siehe IMPORTS.md → Abgleich mit Derja Ninja für URL-Schema, HTML-Struktur und den Ninja-eigenen Transliterations-Schlüssel für `script=transliterated`-Suchen.
-3. **Ninjas Transliteration ist ein Strukturhinweis, keine Vorlage** — nie 1:1 übernehmen (andere Konvention: ch statt sh, 9 statt q), aber prüfen ob sie ein von unserer Transliteration übersehenes Feature zeigt (v.a. Gemination). In Chat-Alphabet übertragen.
-4. **Klassifizieren:**
-   - arabic_script + Bedeutung bestätigt → ggf. nur Transliteration korrigieren und/oder Audio ergänzen
-   - arabic_script oder Bedeutung weicht ab → Korrektur mit Begründung vorschlagen
-   - Kein eigener Treffer, aber in Beispielsätzen anderer Einträge bestätigt → Bedeutung gilt als bestätigt, kein Audio → `ninja_check_kein_vorschlag`
-   - Gar kein Treffer → ebenfalls `ninja_check_kein_vorschlag`, im `change_reason` transparent machen
-   - **Nur diese zwei exakten Strings für `change_category`:** `ninja_check_pending` und `ninja_check_kein_vorschlag`. Keine eigenen Varianten — die App filtert im Ninja-Check-Tab hart auf genau diese zwei Werte.
-5. **Vor dem Schreiben:** bestehende `vocabulary_review`-Zeilen prüfen (idealerweise schon als Sammelabfrage am Anfang, siehe oben) — auch mit `change_category IS NULL` (für Nils im Tab unsichtbare Altlasten).
-   - **Technischer Zwang:** `vocabulary_review.vocabulary_id` hat UNIQUE-Constraint. Zweiter INSERT crasht mit `23505 duplicate key` — immer erst SELECT, dann UPDATE statt INSERT wenn schon eine Zeile existiert.
-   - **Konflikt-Check:** bestehende Zeile mit abweichendem Vorschlag (z.B. `partner_status='pending'` mit anderem Wort) → nie stillschweigend überschreiben, beide Versionen zeigen, Nils entscheiden lassen.
-   - **Ausnahme — erkennbare Altlast:** ohne Rückfrage überschreibbar nur wenn kein `change_reason`/`change_category` UND der aktuelle `vocabulary`-Wert bereits sichtbar abweicht. Nur EINES der Kriterien erfüllt oder unklar → als Konflikt behandeln.
-6. **Schreiben** (INSERT/UPDATE auf `vocabulary_review`): `change_category` wie Schritt 4, `reviewed=false`, Felder aus der aktuellen `vocabulary`-Zeile übernehmen (ggf. korrigiert), `ninja_audio_url` nur bei echtem Wort-Audio, `change_reason` kurzer Klartext. Kein SQL ohne Bestätigung. `flagged` bleibt `true`, solange ein offener Vorschlag existiert (App setzt `false` selbst bei Übernahme/Ablehnung) — nur bei zweifelsfrei bereits korrektem Eintrag ohne etwas zu zeigen: direkt `flagged=false`, ohne `vocabulary_review`.
+### Schritt 1 — Auswahl
 
-## Workflow: Frisch importierte Batch-Vokabeln flaggen + verifizieren (leichtgewichtige Variante)
+| Anlass | Auswahl |
+|---|---|
+| „Ich habe Vokabeln markiert" | `WHERE flagged = true` |
+| **eine einzelne Vokabel** | `WHERE id = <id>` — genauso gültig wie ein Batch, kein Sonderweg |
+| frisch importierter Batch | die ids des Batches |
+| „prüf die fälligen" | `progress.next_review` — **das Fenster läuft von 03:00 Berlin bis 03:00 des Folgetags** (`nextReviewDE()`), nicht von Mitternacht:<br>`WHERE p.next_review >= timestamp '<tag> 03:00' AND p.next_review < timestamp '<tag+1> 03:00'` |
+| Bestandsaudit | eine Verdachtsliste aus **Datenqualitäts-Checks (SQL)** |
 
-Abweichend vom 🚩-Workflow (der für einzelne, manuell markierte Vokabeln über `vocabulary_review`/Ninja-Check-Tab läuft): Wenn Nils bei einem frischen Import-Batch "als flagged markieren" sagt, ist das eine schnellere Batch-Verifizierung:
+**Immer mit dabei, unabhängig von der Auswahl** — als EINE Sammelabfrage am Anfang, bevor ein Korrekturplan gebaut wird:
+```sql
+SELECT * FROM vocabulary_review WHERE vocabulary_id IN (<alle ids>);
+SELECT vocabulary_id, user_comment, change_reason FROM vocabulary_review
+WHERE change_category = 'ninja_check_kommentiert' AND NOT reviewed;   -- Nils' Rückkanal, siehe Schritt 5
+```
 
-1. Neue Vokabeln mit `flagged = true` anlegen
-2. **Automatisch, ohne Zuruf, direkt nach jedem Batch:** `SELECT * FROM vocabulary WHERE flagged = true`, jede gegen `derja_ninja_entries` (offline zuerst) und bei Bedarf Live-Ninja-Suche prüfen. Realistische Erwartung: Trefferquote oft nur ~1-2% (Lehrbuch-/Fachvokabular) — trotzdem grundsätzlich versuchen.
-3. Ergebnis gruppiert zeigen (bestätigt / korrigiert / nicht auffindbar) — bei Unsicherheiten `AskUserQuestion` statt raten
-4. Nach Bestätigung: **direkt** `UPDATE vocabulary SET flagged = false, ninja_checked_at = now() [, ninja_audio_url = ..., ninja_audio_start = ..., ninja_audio_end = ...]` — kein Umweg über `vocabulary_review` (das ist für Korrektur-Vorschläge zur Freigabe gedacht, nicht "neu importiert, jetzt geprüft")
-5. Echte Duplikate aus dem eigenen Batch: normalen Duplikat-Merge-Workflow anwenden, nicht einfach flagged lassen
+### Schritt 2 — Intern prüfen (kostenlos, kein Netz)
 
-Bei Unklarheit, welcher der beiden Workflows gemeint ist: im Zweifel nachfragen, die Schreibpfade unterscheiden sich (`vocabulary_review` vs. direktes `UPDATE vocabulary`).
+Die Checks aus **Datenqualitäts-Checks (SQL)**, auf die Auswahl eingeschränkt. Deckt eine andere Fehlerklasse ab als der externe Abgleich: eine Vokabel kann extern bestätigt und trotzdem kaputt transliteriert sein. **Vor** Schritt 3.
+
+Ist die Vokabel ein **Verb**, zusätzlich das 3-Zeilen-Modell (siehe „Verb-Konjugationsmodell"): Verb-Selbstcheck zuerst, dann den Bestand per Konsonantenskelett nach Präsens- UND Vergangenheits-Grundform durchsuchen — auch unter Alt-Topics und `topic IS NULL`. Präzedenzfall 2026-09-12: `y7jem` (3614) galt als „eine Zeile, Tabelle dran, fertig"; tatsächlich fehlten 2 von 3 Zeilen. Fehlende Zielzeilen werden **als Vorschlagsliste gezeigt, nicht geschrieben**.
+
+### Schritt 3 — Extern prüfen: alle drei Quellen, nicht nur die erste
+
+**Nicht überspringen, auch wenn Schritt 2 sauber war.** Die internen Checks vergleichen `darija` gegen `arabic_script` — sie können prinzipbedingt nicht sehen, ob die **Bedeutung** stimmt. Eine Zeile kann durch jeden A- und B-Check laufen und trotzdem das Falsche lehren. Präzedenzfall aus dem Stichprobentest 2026-09-13: `710 el-manshir` ist als „Korridor / Flur" glossiert, TUNICO hat `manšiṛ` = „Platz zum Wäscheaufhängen, Hof im Küchenflügel" — alle internen Checks sauber, 4 richtige gegen 15 falsche Antworten im Lernverlauf.
+
+1. `derja_ninja_entries` — schnell, aber ein Snapshot (2026-08-17), bei mehrteiligen Begriffen oft unvollständig
+2. `tunico_import` — liefert das volle Bedeutungsspektrum, wo Ninja nur eine Facette zeigt
+3. `peacecorps_dict_import` — dritte unabhängige Quelle, v.a. bei älterem Lehrbuchvokabular
+
+Erst wenn **keine** der drei trifft, gilt „keine externe Bestätigung". Werkzeug für alle drei: **vocab_lookup** (unten) — `english_key` als primäre Achse, Skelett-Treffer nur separat und ab Länge 4. Live-Ninja nur, wenn offline nichts kommt (IMPORTS.md).
+
+Drei Fallen, jede schon einmal zugeschlagen:
+- **Ninjas Transliteration ist ein Strukturhinweis, keine Vorlage** — andere Konvention (`ch` statt `sh`, `9` statt `q`, `ouw` für ū). Prüfen, ob sie ein übersehenes Feature zeigt (v.a. Gemination), aber nie 1:1 übernehmen. `touwl` ist so in den Bestand gerutscht, richtig ist `toul`.
+- **Ein Skelett-Treffer ist kein Wort-Treffer.** `nimshiw` „wir gehen" trifft نْمَشْ „freckles". Bedeutung gegenlesen, nicht nur das Skelett.
+- **Gleiches Arabisch heißt nicht „Dublette"** — es kann auch heißen, dass eine der Zeilen inhaltlich falsch ist (Präzedenzfall `metrobbi`, PRECEDENTS.md).
+
+### Schritt 4 — Zeigen
+
+Immer, ausnahmslos, vor jedem Schreiben: betroffene Zeilen mit Ist-Wert, Soll-Wert und Beleg. Bei Unsicherheit `AskUserQuestion` statt raten.
+
+### Schritt 5 — Schreiben: genau eine Entscheidung
+
+**War die Zeile geflaggt?**
+
+- **Ja** → `vocabulary_review`. Nils will im Ninja-Check-Tab selbst entscheiden. `change_category` nur `ninja_check_pending` oder `ninja_check_kein_vorschlag` (die App filtert hart darauf), `reviewed=false`, `change_reason` kurzer Klartext. `flagged` bleibt `true`, solange ein Vorschlag offen ist. **Ausnahme:** Eintrag ist zweifelsfrei schon korrekt → direkt `flagged=false`, ganz ohne `vocabulary_review`.
+- **Nein** → direkt `UPDATE vocabulary`. Bei frisch importierten Zeilen zusätzlich `flagged=false, ninja_checked_at=now()`.
+
+**Technischer Zwang:** `vocabulary_review.vocabulary_id` hat einen UNIQUE-Constraint — ein zweiter INSERT crasht mit `23505`. Immer erst SELECT, dann UPDATE statt INSERT.
+
+**Konflikt:** bestehende Zeile mit abweichendem Vorschlag → nie stillschweigend überschreiben, beide Versionen zeigen. **Ausnahme „erkennbare Altlast":** überschreibbar nur, wenn kein `change_reason`/`change_category` **und** der aktuelle `vocabulary`-Wert bereits sichtbar abweicht. Nur eines davon erfüllt → Konflikt.
+
+**Diese vier Werte schreibt die App zurück** — nie selbst setzen, aber beim Lesen kennen:
+
+| Wert | Von wem | Bedeutung |
+|---|---|---|
+| `ninja_check_uebernommen` | ✅-Knopf | Vorschlag übernommen, `vocabulary` ist aktualisiert |
+| `ninja_check_ignoriert` | 🚫-Knopf | Vorschlag abgelehnt — **nicht erneut denselben Vorschlag machen** |
+| `ninja_check_kein_vorschlag_bestaetigt` | 👍-Knopf | „keine Quelle gefunden" zur Kenntnis genommen |
+| `ninja_check_kommentiert` | 💬-Knopf | **Nils hat einen Hinweis hinterlassen — das ist ein Auftrag, siehe unten** |
+
+**`ninja_check_kommentiert` ist der wichtigste davon.** Der 💬-Knopf schreibt Freitext nach `user_comment` und setzt `reviewed=false` — der einzige Rückkanal von Nils zur nächsten Sitzung. Mit dem Hinweis erneut suchen und das Ergebnis wieder als `ninja_check_pending`/`ninja_check_kein_vorschlag` schreiben, damit es im Tab sichtbar wird.
 
 ## vocab_lookup — Cross-Source-Abgleich (seit 2026-09-05)
 
 **`vocab_lookup`** ist eine View (kein Materialized/keine Kopie — liest live aus `derja_ninja_entries`/`tunico_import`/`peacecorps_dict_import`, ändert nichts an den Rohtabellen) mit einheitlichen Spalten für alle drei: `source`, `source_id`, `english_key` (lowercased, primäre Suchachse), `headword_display`, `source_translit` (Lautschrift der Quelle in DEREN eigener Konvention, nicht unser Chat-Alphabet), `chatalpha` (unsere Konvention — bei TUNICO immer befüllt, bei Peace Corps 5.004/5.070 befüllt), `chatalpha_plural`, `gender`, `pos`, `arabic_script` (nur Ninja zuverlässig — echte, unabhängige Quellenangabe), `arabic_reconstructed`/`arabic_reconstruction_note` (nur bei `source='peacecorps'` befüllt — unvokalisierter Rekonstruktions-**Vorschlag**, kein Faktum, siehe unten), `translit_skeleton`/`arabic_skeleton`, `example_en`/`example_de`/`example_ph`, `audio_url`, `note`. Eine Zeile pro Sinn/Beispiel, nicht pro Lemma — ein mehrdeutiges Lemma erzeugt mehrere Zeilen mit demselben `source_id`. Details/Historie zu jeder Quelle: IMPORTS.md.
 
 **`arabic_reconstructed` ist NIE eine unabhängige Bestätigung, nur eine Ableitung unserer eigenen Regel aus Peace Corps' eigener Lautschrift** — bei einem 3-Quellen-Vergleich zählt es nicht als zweite Quelle neben Ninja, sonst täuscht ein systematischer Regelfehler eine "doppelte Bestätigung" vor, die keine ist (siehe PRECEDENTS.md → Peace-Corps-Arabisch-Rekonstruktion). Rekonstruiert wird per `public._pc_reconstruct_arabic(forms_phonetic[1])` aus dem ORIGINAL `forms_phonetic` (nicht aus `forms_chatalpha`!), weil das Original über Groß-/Kleinschreibung Emphase-Laute unterscheidet (H/S/T = ح/ص/ط vs. h/s/t = ه/س/ت), die `forms_chatalpha` bereits verloren hat. Bekannte Restunsicherheit: ض/ظ/ذ fallen im Original alle auf `dh` zusammen (`arabic_reconstruction_note` zeigt das an), außerdem keine Unterscheidung ا/ى bei wortschlussendem Langvokal. 4.874/5.004 Peace-Corps-Zeilen rekonstruiert, 130 bewusst nicht (Fremdwörter/Platzhalter/Transkriptionsfehler statt Rateversuch).
+
+**Vokalisierung aus Ninja übernehmen — nur mit Buchstaben-Identitätsprüfung (seit 2026-09-13).** Ninja vokalisiert konsequent, der Bestand zu 20 % nicht. Die naheliegende Übernahme per `arabic_skeleton`-Match ist aber **viel schwächer, als die Trefferzahl aussieht**: von 50 Zeilen mit *eindeutigem* Ninja-Treffer (Skelett ≥ 4) waren nach Prüfung nur 20 brauchbar. Der Rest waren Skelett-Kollisionen quer über Lexeme hinweg — `nimshiw` „wir gehen" traf نْمَشْ „freckles", `nit3asha` „ich esse zu Abend" traf إنْتِعَاشَة „revitalization", `kibrit` „ich wurde alt" traf كِبْرِيتْ „Sulfur", `tnijjem` „du kannst" traf تَنْجِيمْ „occultism".
+
+**Pflichtfilter, mechanisch statt nach Augenmaß:** Ninjas Schreibung nur übernehmen, wenn sie nach Entfernen aller Harakat **buchstabenidentisch** mit der eigenen ist — es dürfen nur Vokalzeichen dazukommen, kein einziger Buchstabe sich ändern. Als `AND`-Bedingung direkt ins `UPDATE`, nicht als Vorabprüfung:
+```sql
+AND btrim(regexp_replace(<ninja_arabisch>,'[ًٌٍَُِّْٰٟ]','','g')) = btrim(v.arabic_script)
+```
+Das erschlägt alle Kollisionen und zusätzlich die Numerus-/Genus-Fälle (Ninja gibt den Singular, die Zeile ist Plural: `fnejin`←فِنْجَانْ, `tlemtha`←تِلْمِيذْ, `trabesh`←طَرْبُوشَةْ).
+
+**Danach trotzdem drei Dinge von Hand prüfen**, die der Filter nicht sieht: (1) ob Ninjas Eintrag dieselbe **Wortart** ist (`tfahim` „er einigte sich" gegen Ninjas تَفَاهُمْ, das Nomen „understanding" — buchstabenidentisch, anderes Wort); (2) ob Ninjas Vokalisierung der eigenen `darija` widerspricht (`toshrob` gegen تِشْرَبْ = `tishrab`); (3) ob Ninjas Fassung überhaupt vokalisiert ist — bei `intikhabat` und `amriken` ist sie es nicht, da gibt es nichts zu übernehmen.
+
+**Vokalisierung NICHT von einer Geschwisterzeile übernehmen (belegt 2026-09-13).** Naheliegend, aber systematisch falsch: im Arabischen teilt die ganze Ableitungsfamilie dasselbe Konsonantengerüst, und **die Vokalisierung ist genau das, was die Wörter unterscheidet**. Ein Skelett-Match innerhalb des Bestands findet deshalb bevorzugt *andere* Wörter derselben Wurzel:
+
+| unvokalisiert | „Geschwister" mit gleichen Buchstaben | tatsächlich |
+|---|---|---|
+| `sfer` „null" صفر | `sfor` „gelb (Pl.)" صْفُر | zwei Wörter |
+| `ktob` „Bücher" كتب | `ktib` „er schrieb" كتِب | Nomen vs. Verb |
+| `b7ar` „Meer" بحر | `ba77ar` „er ging ans Meer" بحّر | Nomen vs. Verb Maß II |
+| `qra` „er las" قرى | `qarra` „er lehrte" قَرَّى | Maß I vs. Maß II |
+| `bra` „genas" برا | `barra` „draußen" بَرَّا | zwei Wörter |
+
+Der Buchstaben-Identitätsfilter, der die Ninja-Route rettet, **hilft hier nicht** — er ist per Konstruktion erfüllt. Von 29 Paaren blieben 2 brauchbar, und zwar nur die, bei denen **auch die `darija` identisch** ist (echte Homonympaare, bei denen wirklich nur Harakat fehlen): 652/2296 `maqfoul`, 4410/4295 `tsa77ar`.
+
+**Regel:** Vokalisierung aus dem Bestand nur übernehmen, wenn `darija` **und** Buchstaben übereinstimmen. Alles andere braucht eine lexem-gebundene Quelle oder Handarbeit.
+
+**Konsequenz für die Planung:** Der Vokalisierungs-Rückstand (Stand 2026-09-13: 746 Zeilen, davon 504 Einzelwörter) ist **nicht als Kampagne abarbeitbar**. Ninja liefert nach Filter ~20 pro Durchgang, die Geschwister-Route praktisch nichts. Sinnvoll ist die Regel „ohnehin fällige Bearbeitung": wird eine Zeile aus anderem Grund angefasst, die Vokalisierung bei der Gelegenheit mitziehen.
 
 **Nie blind über `translit_skeleton`/`arabic_skeleton` joinen — kurze Skelette (≤3 Konsonanten) kollidieren zufällig** (Präzedenzfall: PRECEDENTS.md → vocab_lookup). `english_key` ist die primäre, zuverlässige Achse; Skeleton-Treffer nur separat markiert und mit `length(...) >= 4` gefiltert.
 

@@ -10,7 +10,7 @@ Präzedenzfall: beim Import von Lektion 4–7 wurden ~15 Verben doppelt angelegt
 
 **Imperativ+Vergangenheit-Bündelung** (nicht nur Imperativ+Präsens): mehrfacher Präzedenzfall 2026-08-06 (`ejbed`/`jbed`, `sakkar`, `naqqaz`, `lawwej` — alle als eine Zeile "Imperativ! / er tat" angelegt, nachträglich in zwei Zeilen aufgeteilt). Da Imperativ und Vergangenheit bei manchen Verbmustern gleich geschrieben werden (z.B. `sakkar`/`sakkar`), beide Zeilen dann mit `homonym_ok=true` markieren, damit der Duplikat-Check sie nicht fälschlich meldet.
 
-**`darija` transliteriert als MSA-Imperativ (a-/i-/o-Präfix), obwohl `arabic_script` bereits korrekt die 3.-Person-Vergangenheit (فَعَل, kein Präfix) zeigt.** Präzedenzfall 2026-08-07: systematische Suche `darija ~ '^[aio][a-z0-9]' AND german ~* '^(er|sie)\s'` (ohne Match am arabic_script-Anfang) fand 15 betroffene Zeilen in `topic='Verben-Konjugation'`/`Verben-Infinitiv`, alle mit korrektem y-Präfix-Präsens-Sibling in derselben Lektion (z.B. `imsa7`→`masa7` neben Präsens `yimsa7`, `odhrab`→`dharab` neben `yodhrab`, `ikthib`→`kathab` neben `yikthib`). `darija` einfach aus dem bereits korrekten `arabic_script` neu transliterieren, nicht das arabic_script antasten. Dabei fiel ein Folgefund auf: `7adhar`(id 1648, "er bereitete vor", arabic_script حَضَّر mit Shadda/Gemination) wurde durch die Korrektur von id 1615 (`i7dhar`→`7adhar`, "er nahm teil", arabic_script حَضَر ohne Shadda — echtes MSA-Homonym-Paar Form I/Form II, von Ninja bestätigt: حضر=attend, حضّر/تحضير=prepare) zum exakten Duplikat, weil beide Zeilen die Gemination im `darija`-Feld verschluckt hatten. Auch dort: `darija` an die im `arabic_script` bereits vorhandene Gemination anpassen (`7adhar`→`7addhar`, inkl. Präsens-Sibling `y7adhar`→`y7addhar`), nicht raten oder homonym_ok setzen.
+**`darija` transliteriert als MSA-Imperativ (a-/i-/o-Präfix), obwohl `arabic_script` bereits korrekt die 3.-Person-Vergangenheit (فَعَل, kein Präfix) zeigt.** Präzedenzfall 2026-08-07: systematische Suche `darija ~ '^[aio][a-z0-9]' AND german ~* '^(er|sie)\s'` (ohne Match am arabic_script-Anfang) fand 15 betroffene Zeilen in `topic='Verben-Konjugation'`/`Verben-Infinitiv`, alle mit korrektem y-Präfix-Präsens-Sibling in derselben Lektion (z.B. `imsa7`→`masa7` neben Präsens `yimsa7`, `odhrab`→`dharab` neben `yodhrab`, `ikthib`→`kathab` neben `yikthib`). `darija` einfach aus dem bereits korrekten `arabic_script` neu transliterieren, nicht das arabic_script antasten. Dabei fiel ein Folgefund auf: `7adhar`(id 1648, "er bereitete vor", arabic_script حَضَّر mit Shadda/Gemination) wurde durch die Korrektur von id 1615 (`i7dhar`→`7adhar`, "er nahm teil", arabic_script حَضَر ohne Shadda — echtes MSA-Homonym-Paar Form I/Form II, von Ninja bestätigt: حضر=attend, حضّر/تحضير=prepare) zum exakten Duplikat, weil beide Zeilen die Gemination im `darija`-Feld verschluckt hatten. Auch dort: `darija` an die im `arabic_script` bereits vorhandene Gemination anpassen, nicht raten oder homonym_ok setzen. ⚠️ **Die damals gewählte Schreibung `7addhar`/`y7addhar` war falsch** — bei einem Digraphen wird der ganze Digraph verdoppelt, richtig ist `7adhdhar`/`y7adhdhar`; Begründung unten unter „Digraph-Gemination". Der Befund selbst (Gemination gehört ins `darija`, das `arabic_script` ist führend) bleibt gültig.
 
 ## Duplikat-Check — Fallgeschichten
 
@@ -178,6 +178,196 @@ Ergebnis: 4.874/5.004 Zeilen rekonstruiert (446 davon mit Unsicherheits-Hinweis)
 **Nachtrag — M-Transkriptionsfehler aufgelöst (2026-09-05):** die 33 oben erwähnten `M`-Zeilen (ID-Bereich ~237–1804, Schwerpunkt 1078–1265) wurden einzeln semantisch geprüft, nicht nur gezählt: bei JEDER der 33 Zeilen ergibt `M`→`H` ein korrektes, zum `headword` passendes Wort — `taSMi:M`→`taSHi:H`=تصحيح "Korrektur", `muMa:dhra`→`muHa:dhra`=محاضرة "Konferenz", `timsa:M`→`timsa:H`=تمساح "Krokodil", `Mub liTTila:3`→`Hub liTTila:3`=حب الاطلاع "Neugier", `nMa:s`→`nHa:s`=نحاس "Kupfer", u.a. — keine einzige Gegenprobe ergab ein Wort, das mit `M` als eigenem Laut (statt als verwechseltem `H`) sinnvoll wäre. `forms_phonetic` für alle 33 IDs korrigiert (`M`→`H`), danach `forms_chatalpha`/`forms_skeleton`/`arabic_script_reconstructed`/`peacecorps_candidates.chatalpha` neu berechnet.
 
 **Stolperstein beim Schreiben:** ein erster Versuch verkettete "Phonetik korrigieren" → "Chatalpha aus der korrigierten Phonetik neu berechnen" → "Arabisch neu rekonstruieren" als CTEs (`WITH ... UPDATE ... RETURNING`) in EINER SQL-Anweisung. Ergebnis: `forms_phonetic` wurde korrekt zu `H` korrigiert, aber `forms_chatalpha` blieb auf dem alten `M`→`m`-Stand hängen (z.B. `muHa:dhra` in `forms_phonetic`, aber weiterhin `mumadhra` statt `mu7adhra` in `forms_chatalpha`). Grund: mehrere datenverändernde CTEs in derselben Anweisung teilen sich denselben Snapshot vom Anweisungsbeginn — eine spätere CTE sieht die Schreibungen einer früheren CTE auf dieselbe Tabelle NICHT. Fix: die Schritte als separate, nacheinander ausgeführte Anweisungen laufen lassen, nicht als verkettete CTEs. Gleiche Falle wie bei jedem mehrstufigen Update auf derselben Tabelle — bei "korrigiere X, dann leite Y aus dem korrigierten X ab" in einer Anweisung immer misstrauisch sein und hinterher gegenchecken, nicht nur den Erfolgsstatus der Anweisung.
+
+## Digraph-Gemination — `dhdh` statt `ddh` (2026-09-12, überschreibt 2026-08-07)
+
+Anlass: die Konventionstabelle in SKILL.md war aus dem eigenen Bestand abgeleitet (`dhdh` 9 : `ddh` 2, `thth` 6 : `tth` 2) und damit zu dünn belegt, um die zwei Ausreißer (ids 1648 `7addhar`, 2218 `y7addhar`) zu überschreiben — zumal die auf einer **dokumentierten** Entscheidung vom 2026-08-07 beruhten. Also erst recherchiert, dann entschieden.
+
+**Denkfehler der ersten Zählung:** `tth` als Gegenbeispiel zu `thth` zu werten. Beim Nachlesen der Einzeltreffer — nicht der Zahlen — war **jeder einzelne** ein Morphemgrenzen-`t` vor `th`, keine Gemination: TUNICO `tṯawwib`→`tthawwib`, `tḏ̣āṛif`→`ttharif`, `tḏ̣āḥik`→`ttha7ik`, `mutṯaqqaf`→`mutthaqqaf` (9/9); Ninja `تْذَكِّرْ`→`tthakkir`, `مِتْثَقِّفْ`→`mittha99if`, `تْذُوبِلْ`→`tthouwbil` (17/17); eigener Bestand `نِتْثَاوَب`→`netthaowb` (3042), `تَذْبَح`→`tthba7` (3073) (2/2). Nach Abzug dieser Scheintreffer steht es bei echter ذّ/ظّ-Gemination **40:0 (TUNICO), 34:0 (Ninja), 6:0 (eigener Bestand)**. Lehre: eine Regex-Zählung über Konsonantenfolgen trennt Gemination nicht von Morphemgrenzen — die Treffer einzeln lesen, sonst erfindet man sich Gegenbeispiele.
+
+**Belege für volle Verdopplung, drei unabhängige Quellen:**
+
+- **TUNICO** (DMG-Transliteration → `lemma_chatalpha`, maschinell und damit konsistent): echte Gemination in 14/14 Fällen voll verdoppelt — `ʕaḏḏib`→`3aththib`, `aḏḏin`→`aththin`, `kaḏḏāb`→`kaththab`, `baẓẓaʕ`→`baththa3`, `ḏḏakkiṛ`→`ththakkir`, `ḏḏall`→`ththall`, `ṭuẓẓīna`→`tuththina`, `mīẓẓu`→`miththu`. Dazu `shsh` 35:0, `khkh` 21:0, `ghgh` 2:0.
+- **Derja Ninja** (von Tunesiern geschrieben, eigenes Chat-Alphabet): `dhdh` 70 : `ddh` 2, `chch` 2 : `cch` 0.
+- **Eigener Bestand**: `dhdh` 9 : `ddh` 2, `shsh` 11 : 0, `khkh` 7 : 0 — die 2 `ddh` sind genau 1648/2218.
+
+**Zwei Argumente unabhängig von der Statistik:**
+
+1. `dh`/`th`/`sh`/`kh`/`gh` stehen für je **einen** Laut. `ddh` liest sich als /d/+/ð/, und diese Folge existiert an Morphemgrenzen wirklich — `ddh` ist also mehrdeutig, nicht nur ungewöhnlich.
+2. **Maschineller Selbsttest:** `public._translit_skeleton('7addhar')` = `7ddhr`, `public._arabic_skeleton('حَضَّر')` = `7dhdhr` — die beiden Skelett-Spalten **derselben Zeile** widersprechen sich, Duplikat- und Cross-Source-Abgleich sehen zwei verschiedene Wörter. Mit `7adhdhar` liefern beide `7dhdhr`. Generell: weichen `_translit_skeleton(darija)` und `_arabic_skeleton(arabic_script)` voneinander ab, ist die Transliteration falsch, nicht das Arabische.
+
+**Kein Lerner-Nachteil:** `checkAnswer()` im Node-Harness gegen beide Schreibungen getestet, in beide Richtungen akzeptiert (`7addhar` ↔ `7adhdhar`, `y7addhar` ↔ `y7adhdhar`). Die Umstellung ist reine Datenqualität, kein Eingriff in bereits Gelerntes.
+
+**Ausgeführt 2026-09-12** (ids 1648, 2218). **Dabei nicht vergessen: die `conjugation` mitziehen** — 2218 trug die alte Schreibung in allen vier Präsensformen (`n7addhar`, `t7addhar`, `t7addhar`, `y7addhar`); ohne diese Ersetzung hätte der Verb-Selbstcheck die Zeile unmittelbar nach der Korrektur gemeldet, weil ihr `darija` nicht mehr in der eigenen Tabelle steht. Danach `_translit_skeleton` = `_arabic_skeleton` = `7dhdhr` für beide Zeilen, und der Digraph-Check meldet im ganzen Bestand nur noch die zwei bekannten Präfix-`t`-Zeilen (3042, 3073).
+
+## 3ayshik / y3ayyshik — zwei Schreibungen sind hier richtig (2026-09-12)
+
+17 Zeilen der Höflichkeitsfloskel („danke"/„bitte") trugen fünf verschiedene Schreibungen: `3ayshik`, `3ayshek`, `y3ayshek`, `y3ayshik`, `y3ayyshik`. Naheliegend, aber falsch wäre gewesen, alles auf **eine** Form zu ziehen. Ninja führt zwei **getrennte Lemmata**:
+
+- عَيْشِكْ `3aychik` = „thanks" und عَيْشُو `3aychouw` = „thanks" — beide **ohne** Schadda, zweimal unabhängig so geschrieben.
+- عَيِّشْ `3ayyich` = „may you live" — **mit** Schadda. TUNICO hat dazu das Verb `ʕayyiš` → `3ayyish` „ein langes Leben geben (Gott)".
+
+Das ist keine Vokalisierungs-Schlamperei, sondern eine lexikografische Unterscheidung: die erstarrte Interjektion ist lautlich reduziert, die volle Verbform يعيّشك („möge Er dir Leben geben") nicht. Entsprechend vereinheitlicht:
+
+| Form | Schreibung | arabic_script | Zeilen |
+|---|---|---|---|
+| erstarrte Floskel, ohne Präfix | `3ayshik` | عَيْشِك (ohne Schadda) | 851, 2685, 3001, 3002, 3132 |
+| volle Verbform, mit y-Präfix | `y3ayyshik` | يْعَيِّشِك (mit Schadda) | 1392, 1425, 1427, 1434, 1435, 1438, 1439, 1440, 1750, 1945, 3701 |
+
+Die Endung ist in **allen** 16 Zeilen `-ik`, nie `-ek`: jedes `arabic_script` hat Kasra unter ك. Das `yy` folgt derselben Regel wie das `dhdh` oben — Schadda wird transliteriert; das Vorbild stand schon in Zeile 1438 direkt daneben (`rabbi yfadhdhlik` aus يْفَضِّلك).
+
+**Nebenbefund, nicht angefasst:** die Klammer-Hinweise `(a...)`/`(y...)`/`(b...)` in den `german`-Feldern von 1391 `aman` / 1392 `y3ayyshik` / 1393 `brabbi` sind **kein Import-Müll**, sondern die bewusste Unterscheidung dreier Synonyme für „bitte" — nicht entfernen. Der `(b...)`-Rest im `arabic_script` von 1392 (`يْعَيِّشِك (b...)`, samt `arabic_skeleton` `3shk(b)`) war dagegen echter Copy-Paste-Müll aus 1393 und wurde entfernt. Offen: 1113 `billehi` heißt ebenfalls „bitte", hat aber keinen Hinweis-Zusatz.
+
+## Skill-Test an 10 fälligen Vokabeln (2026-09-13)
+
+Der umgebaute Skill wurde end-to-end an 10 übermorgen fälligen Vokabeln durchgespielt, um die Frage „wird wirklich alles geprüft?" zu beantworten. **Nein** — der Test legte drei Lücken offen, alle inzwischen geschlossen.
+
+**Was trug:** Gruppe A lief komplett sauber (7 Checks, 0 Treffer). Die Pflicht-Sammelabfrage auf `vocabulary_review` in Schritt 1 zahlte sich sofort aus: 4 der 10 Zeilen hatten offene Review-Einträge mit `change_category IS NULL` (im Tab unsichtbare Altlasten), eine (`710`) sogar `partner_status='pending'` — ein Konflikt nach Regel 5, den man ohne diesen Schritt beim Schreiben überfahren hätte.
+
+**Lücke 1 — die Auswahl „fällige" hatte kein SQL.** Die Tabelle in Schritt 1 sagte nur „über `progress.next_review`". Jede andere Auswahl dort ist direkt hinschreibbar; diese verlangt zu wissen, dass das Fenster bei 03:00 Berlin beginnt (`nextReviewDE()`), nicht um Mitternacht. Ergänzt.
+
+**Lücke 2 — der Skelett-Vergleich hat einen systematischen Artikel-Fehlalarm.** In der Stichprobe waren **beide** Treffer davon: `el-manshir` → `lmnshr` gegen المنشير → `mnshr`; `f-ed-dar` → `fddr` gegen في الدار → `fldr`. Die beiden Formeln behandeln den Artikel unterschiedlich. Bestandsweit gemessen: von 646 Zeilen mit uneinigen Skeletten tragen **190 (29 %)** einen Artikel. Dokumentiert.
+
+Dabei fiel eine zweite Blindheit derselben Formeln auf: sie streichen ا/و/ي, ein fehlender Langvokal im `arabic_script` ist für sie unsichtbar (`سكاكن` und `سكاكين` ergeben beide `skkn`). Ebenfalls dokumentiert.
+
+**Lücke 3 — Schritt 3 war als „externe Bestätigung" beschrieben, nicht als das, was er ist.** Die internen Checks vergleichen `darija` gegen `arabic_script`; sie können prinzipbedingt nicht sehen, ob die **Bedeutung** stimmt. Der Test lieferte den Beleg: `710 el-manshir` ist als „Korridor / Flur" glossiert, TUNICO hat `manšiṛ` = „Platz zum Wäscheaufhängen, Hof im Küchenflügel". Jeder A- und B-Check meldet die Zeile sauber — und der Lernverlauf zeigt 4 richtige gegen **15 falsche** Antworten. Schritt 3 trägt jetzt den ausdrücklichen Hinweis „nicht überspringen, auch wenn Schritt 2 sauber war".
+
+**Ein Verdacht von mir war unbegründet**, und das gehört zum Ergebnis: Bei `586 skekin` سكاكن hielt ich das Arabische für unvollständig (erwartet سكاكين). Gegenprobe: TUNICO führt den Plural als `skākin`, Peace Corps als `ska:kin` — das lange ā ist ein Alif, kein Ya. **Das Arabische ist korrekt.** Ohne die Quellenprüfung hätte ich eine richtige Zeile „korrigiert" — dieselbe Falle wie bei `bnin` und `skhan`.
+
+## Checks nach Verbindlichkeit sortiert, nicht nach Thema (2026-09-13)
+
+`Datenqualitäts-Checks (SQL)` war mit 340 von 899 Zeilen der größte Abschnitt des Skills und rein chronologisch gewachsen — jeder neue Check kam unten dran. Ein Leser sah 39 Blöcke in loser Folge und konnte einem Treffer nicht ansehen, **was er bedeutet**: ein Fehler oder ein Kandidat mit 80 % Fehlalarmquote.
+
+Sortiert nach genau dieser Frage, in drei Gruppen:
+
+- **A — muss auf 0 stehen** (8 Blöcke): ein Treffer ist ein Fehler, keine bekannten Fehlalarme, ohne Quellenrecherche entscheidbar. Zuerst laufen lassen.
+- **B — Verdachtsliste** (17 Blöcke): ein Treffer ist ein *Kandidat*. Jede Liste trägt ihre gemessene Quote (Gemination ~15 %, arabischer Duplikat-Check ~80 %). **Nie im Block korrigieren.**
+- **C — Regeln fürs Prüfen selbst** (14 Blöcke): keine Abfragen, sondern die Fallen. Vor dem Bau einer eigenen Prüfabfrage lesen.
+
+**Verlustfrei umgebaut, nicht neu geschrieben:** die Blöcke wurden programmatisch an den Fettdruck-Titeln geschnitten, klassifiziert und in neuer Reihenfolge zusammengesetzt. Gegengeprüft: 23 SQL-Blöcke vorher wie nachher, alle 39 Titel wiedergefunden.
+
+**Ein Fehler dabei, der die Methode bestätigt:** die erste Klassifikation matchte Schlüsselwörter gegen die ganze erste Zeile eines Blocks. Weil Markdown-Absätze einzeilig sind, traf `Verb-Selbstcheck:` mitten im Fließtext eines ganz anderen Absatzes und sortierte ihn nach A. Aufgefallen nur, weil die Klassifikation **vor** dem Schreiben ausgegeben und gelesen wurde. Fix: nur gegen den Text zwischen den ersten `**` matchen.
+
+**Lehre:** Die Gliederung eines Regelwerks sollte der Frage folgen, die der Leser am Treffer hat — hier „darf ich das einfach korrigieren?" — nicht der Reihenfolge, in der die Regeln entstanden sind.
+
+## Zwei Prüf-Workflows waren einer (2026-09-13)
+
+Der Skill führte zwei getrennte Prüf-Workflows: „Geflaggte Vokabeln (🚩) live gegen Derja Ninja prüfen" und „Frisch importierte Batch-Vokabeln flaggen + verifizieren (leichtgewichtige Variante)". Beide machten dasselbe — interne Checks, dann Ninja → TUNICO → Peace Corps, dann klassifizieren. Sie unterschieden sich in **genau einem Punkt**: wohin das Ergebnis geschrieben wird (`vocabulary_review` gegen direktes `UPDATE vocabulary`).
+
+Das Eingeständnis stand im Skill selbst: *„Bei Unklarheit, welcher der beiden Workflows gemeint ist: im Zweifel nachfragen, die Schreibpfade unterscheiden sich."* Eine Regel, die den Leser zwingt, vorab zu klassifizieren, in welchem Prozess er ist, ist keine Regel, sondern eine Weiche ohne Nutzen. Nebenwirkung: für „eine einzelne Vokabel prüfen" gab es gar keinen Einstieg — der Fall fiel zwischen die beiden Workflows.
+
+**Zusammengelegt zu „Vokabeln prüfen — EIN Prozess"** mit fünf Schritten. Was wechselt, ist **nur die Auswahl der Zeilen** (eine id, `flagged=true`, ein Import-Batch, die fälligen, eine Verdachtsliste); das Vorgehen ist identisch. Der Schreibpfad wird zu **einer Frage in Schritt 5**: war die Zeile geflaggt? Ja → `vocabulary_review`, weil Nils im Tab entscheiden will. Nein → direkt.
+
+**Lehre:** Wenn zwei Abschnitte eines Skills dieselben Schritte in anderer Reihenfolge erzählen und am Ende „im Zweifel nachfragen, welcher gemeint ist" steht, ist das kein Dokumentationsproblem, sondern ein Designfehler. Prüfen, worin sie sich *wirklich* unterscheiden — meist ist es ein einziger Parameter, und der gehört in den Prozess hinein, nicht vor ihn.
+
+## Skill-Audit — was beim ersten Durchgang übersehen wurde (2026-09-13)
+
+Nach der Reparatur der beiden gemeldeten Skill-Defekte (SQL-Teilmenge, „Pflichtfeld") ein zweiter, gezielter Durchgang. Die zwei bekannten Regex-Fallen waren sauber — **kein einziges `\b`** in irgendeinem SQL, keine `<Buchstabe>ّ`-Regex außerhalb des eigenen Gegenbeispiels. Drei andere Defekte lagen noch offen:
+
+1. **Die „Kurzstand"-Tabelle ganz oben war durchgehend veraltet** — und damit das Erste, was ein Leser sieht. Sie nannte 49 statt 19 beim Verb-Selbstcheck, 93 statt 21 bei der Gemination, 177 offene Vokal-Dubletten (abgearbeitet) und 9 Präsens-Verben mit Infinitiv-Gloss (0). Wer von dort aus plant, arbeitet Erledigtes nach. **Dieselbe Fehlerklasse wie „13 Regeln": der Skill sagt dem Leser etwas Falsches.**
+2. **Die Überschrift hieß weiter `## Topic-Pflichtfeld`** — das Wort, das den Prüfbericht in die Irre geführt hatte. Der Fließtext war korrigiert, die Überschrift nicht, und Überschriften werden zuerst gelesen.
+3. **Der Schnellzugriff hatte keinen Eintrag für „Bestand systematisch prüfen".** Seine erste Zeile schickte „Vokabel überprüfen" zu `vocab_lookup`; der 341-Zeilen-Abschnitt mit allen Checks hatte gar keinen Einstieg. Das erklärt, warum der fremde Prüflauf zum falschen SQL griff — er hat den richtigen Abschnitt nie angesteuert bekommen.
+
+**Struktureller Fix statt Zahlenpflege:** Harte Zahlen in einer Skill-Datei veralten stumm, weil niemand sie beim Arbeiten mitzieht. Die Tabelle trägt jetzt ein ausdrückliches „Schnappschuss, kein Stand", nennt den eigenen Verfallsfall als Warnung und hat **das SQL direkt darunter, das sie reproduziert**. Ein Leser kann in zehn Sekunden prüfen, statt zu glauben. Gegengetestet: das eingebettete SQL läuft und liefert exakt die Tabellenwerte.
+
+**Lehre:** Ein Skill-Audit darf nicht bei den Regeln aufhören. Einstiegstabelle, Überschriften und Querverweise sind das, was zuerst gelesen wird — und veralten am schnellsten, weil sie beim inhaltlichen Arbeiten nie angefasst werden. Beim Prüfen mit der Frage anfangen: *was sieht jemand, der die Datei zum ersten Mal öffnet, und stimmt das noch?*
+
+## Der Skill selbst war die Fehlerquelle (2026-09-13)
+
+Ein Prüfdurchgang aus einer anderen Sitzung meldete „**TRANSLIT_RULES (13 Regeln)** — null Treffer" und listete zusätzlich 26 `topic`-Befunde. Beides war nicht Nachlässigkeit des Prüfers, sondern **direkt aus SKILL.md ableitbar**:
+
+1. Der SQL-Block war überschrieben mit „Transliterations-Check — **konsolidiertes SQL (`TRANSLIT_RULES` in trainer.html)**" und gab sich damit als vollständiger Spiegel der Regeln aus. Tatsächlich deckte er die Konsonanten-Gegenchecks plus Ziffern/Wortanzahl/Artikel ab — rund **14 von 22**. Wer dem Skill folgte, prüfte einen Teil und durfte glauben, alles geprüft zu haben.
+2. Unter der Überschrift „Bestandspflege bei Topic ist kein eigenes Ziel" stand als Punkt 1 „**Pflichtfeld** bleibt bestehen" — gemeint für Neuanlagen. Der Prüfbericht machte daraus die Sektion „topic-Pflichtfeld" mit 26 Bestandszeilen, also genau das, was der Absatz darüber verbietet.
+
+**Behoben:** Überschrift sagt jetzt offen, welche Regeln das SQL abdeckt und welche nicht, mit Node-Harness-Aufruf als einzigem vollständigen Lauf; „Pflichtfeld" ist ausdrücklich auf neue Zeilen begrenzt, mit dem Zusatz, dass bestehende Legacy-Topics in keinen Prüfbericht gehören.
+
+**Lehre:** Wenn ein kompetenter Leser den Skill befolgt und trotzdem das Falsche tut, ist der Skill der Defekt. Bei jedem Befund aus einem fremden Lauf zuerst fragen: *konnte die Anweisung so gelesen werden?* — bevor man den Lauf für schlampig hält.
+
+## Harness-Export scheiterte still — Gateway Timeout als Array behandelt (2026-09-13)
+
+Direkt beim Nachprüfen des obigen Falls dieselbe Fehlerklasse im eigenen Werkzeug: der geblätterte REST-Export holt `vocabulary` in vier Seiten à 1000. Zwei Seiten kamen unter Last als `{"message":"Gateway Timeout"}` zurück. `[].concat(obj)` hängt ein Objekt klaglos als **ein** Element an — aus 3.780 Zeilen wurden 1.782, und der Regel-Lauf meldete brav „0 Treffer", nur eben über weniger als der Hälfte des Bestands. Kein Fehler, keine Warnung.
+
+**Fix:** `scratchpad/export.sh` prüft jede Seite auf führendes `[`, wiederholt bis zu viermal mit Backoff und bricht hart ab, wenn die Gesamtzahl nicht der erwarteten entspricht.
+
+**Lehre:** Ein Prüflauf, der „0" meldet, ist erst dann eine Aussage, wenn die Grundgesamtheit verifiziert ist. Bei jedem Harness-Lauf die Zeilenzahl mitloggen und gegen `count(*)` halten — eine Zahl, die niemand ausgibt, kann auch niemand als falsch erkennen.
+
+## scratchpad/extract.js — Anker zum zweiten Mal zu unscharf (2026-09-12)
+
+Das Node-Harness zieht `normalize`/`checkAnswer`/`TRANSLIT_RULES` per Textanker aus `trainer.html`. Nachdem die erste Fassung an fest verdrahteten Zeilennummern zerbrochen war, lief sie über Inhaltsanker — der Endanker war aber schlicht `"\n];"`, also *die erste* Array-Schließung nach `const isLoanword`.
+
+Beim Einbau von Regel 22 kam mit `CONSONANT_PAIRS` ein **zweites** Array zwischen `isLoanword` und `TRANSLIT_RULES`. Damit hätte der Extraktor bei `CONSONANT_PAIRS` gestoppt und `TRANSLIT_RULES` gar nicht mehr exportiert — das Harness wäre mit `ReferenceError` gestorben, oder schlimmer: hätte bei einer nachlässigeren Fassung stumm eine leere Regelliste geprüft und „alles sauber" gemeldet.
+
+Fix: Endanker gezielt auf den Abschluss von `TRANSLIT_RULES` (`indexOf('const TRANSLIT_RULES = [')`, dann das nächste `\n];`), plus harte Fehlermeldung, wenn einer der drei Anker fehlt.
+
+**Lehre:** Ein Inhaltsanker ist nur so gut, wie er eindeutig ist. „Die erste schließende Klammer nach X" ist keine Eigenschaft des Ziels, sondern eine Annahme über alles, was dazwischen liegen könnte. Beim Erweitern der gespiegelten Datei immer prüfen, ob der Extraktor noch dasselbe greift — er scheitert sonst unter Umständen still.
+
+## Audit der 21 TRANSLIT_RULES — Vorkommen statt Anzahl (2026-09-12)
+
+Nach zwei stumm falschen Prüfregeln an einem Tag (`\b` statt `\y`, Zeichenreihenfolge im `arabic_script`) wurden die 21 Live-Regeln aus `trainer.html` selbst geprüft — der Tab, dessen Wert laut SKILL.md darin liegt, dass „0 Treffer" wirklich „sauber" heißt.
+
+**Methode:** jede Regel gegen ein **konstruiertes Positivbeispiel**, das zwingend anschlagen muss, plus Lauf gegen den vollen Bestand. Ergebnis: **alle 21 feuern korrekt, alle melden 0.** Keine Regel ist im Sinne von „greift gar nicht" kaputt.
+
+**Aber die zweite Frage war die ergiebige: schluckt eine Regel über ihre Ausnahmeklausel echte Fälle?** Drei Sonden:
+
+1. `isLoanword()` — nur ein Gloss-Marker-Test, greift bei 36 von 3.780 Zeilen. Eng gefasst, keine Hintertür. ✅
+2. Regel 19s hartkodierte Ausnahmeliste — entschärft genau 2 Zeilen (`hethi`, `shah`), beide berechtigt. ✅ (Beantwortet nebenbei, ob `3976 shah` ein Defekt ist: nein, ein bewusst eingetragener Sonderfall.)
+3. **Die Konsonanten-Regeln 5–16 prüfen VORKOMMEN, nicht ANZAHL.** ❌ — das war der Fund.
+
+`/ح/.test(v.ar) && !/7/.test(v.tr)` schweigt, sobald irgendwo im Feld ein `7` steht. Bei Einzelwörtern egal, bei Sätzen ein Loch. `1649 hadh-dhert barsha 7ajet lil-7afla` hat 3 × ح und 2 × `7` — `7ajet` und `7afla` beruhigen die Regel, das falsch geschriebene erste Wort (`hadh-dhert` statt `7adhdhart`) sieht sie nie.
+
+**Erster Lauf des Anzahl-Vergleichs über 12 Buchstabenpaare: 11 Treffer, 10 echte Fehler, 1 Entscheidungsfall.** Praktisch keine Fehlalarme — nach der Faustregel in SKILL.md („nahe 0 % → gehört in `TRANSLIT_RULES`") ein Aufnahmekandidat.
+
+Gefundene Fehler: `nsalhu`→`nsalla7u` (1636), `hadh-dhert`→`7adhdhart` (1649, **fünfte** Zeile derselben `7adhdhar`-Familie), `rouhou`→`rou7ou` (2491), `yslah`→`ysla7` (3074), `t7iz`→`thiz` (1841), `t7abbel`→`thabbel` (3026), `dhahab`→`thahab` (1894), dazu ein doppeltes `arabic_script` (`حَلِّيت / حلَّيت`, 1362) und zwei unmarkierte Lehnwörter.
+
+**Lehre:** Ein Prüf-Tab auf 0 beweist nur, dass die Regeln in ihrer eigenen Formulierung zufrieden sind. Zusätzlich fragen: *was genau kann diese Regel bauartbedingt nicht sehen?* Bei Präsenz-Tests ist die Antwort fast immer „die zweite Instanz desselben Zeichens".
+
+## metrobbi — gleiches Arabisch, gegenteiliger Gloss (2026-09-12)
+
+Beim Abarbeiten des vokalisierungs-unabhängigen Duplikat-Checks fielen `2495 moush mutrubbi` („unerzogen / respektlos") und `2816 moush metrobbi` („nicht toxisch / gut erzogen") als ein Paar mit identischem Arabisch مش متربّي auf — mit **gegenteiliger Bedeutung**. Erste Einordnung war „Widerspruch, eine von beiden ist falsch". Die Quellenprüfung zeigte mehr:
+
+- **Peace Corps:** `POLITE` = `mutrubbi` / `mutrubbya` / `mutrubbin` — متربّي **ohne** Negation heißt „höflich"
+- **Derja Ninja:** مَهُوشْ مُتْرُبِّي `mahouwch moutroubbiy` = „impolite" — **mit** Negation heißt es „unhöflich"
+- Wurzel: ربّى „aufziehen, erziehen" (Peace Corps `BRING UP (to)` = `rabbi`)
+
+Damit war klar: 2495 ist richtig, **und es gab eine dritte Zeile** — `2815 wled metrobbi` („toxisch / schlecht erzogen"), die der Duplikat-Check gar nicht meldete, weil sie ohne مش steht. Beide Zeilen mit `metrobbi` trugen ihre Bedeutung **gespiegelt**: ولد متربّي heißt „ein wohlerzogener Junge", nicht das Gegenteil.
+
+Vermutete Ursache: das Wort „toxisch" im Gloss. Wer einmal `metrobbi = toxisch` gesetzt hat, leitet `moush metrobbi = nicht toxisch` logisch korrekt ab — nur ist die Ausgangsannahme invertiert. Sieht nach einem Social-Media-Import aus, bei dem die Bedeutung am falschen Pol festgemacht wurde.
+
+**Zwei Lehren:**
+
+1. **Gleiches Arabisch heißt nicht automatisch „Dublette".** Es kann auch heißen, dass eine der Zeilen inhaltlich falsch ist. Jede Gruppe gegen die Quellen prüfen, nicht nur die beiden Zeilen gegeneinander.
+2. **Bei einem Bedeutungsfehler die ganze Wortfamilie nachziehen.** Der Check meldete nur das negierte Paar; die bejahte Form mit demselben Fehler stand daneben und wäre stehen geblieben. Gleiche Lehre wie bei den unvokalisierten Verbgeschwistern.
+
+## Verwaiste ids in course_lessons.vocab_lesson_refs (gefunden 2026-09-12)
+
+Bei der Referenz-Kontrolle nach einer Merge-Runde: **11 ids in `vocab_lesson_refs` zeigen auf nicht mehr existierende Vokabelzeilen** (1470, 3672, 3725, 3778, 3814, 3942, 4020, 4313, 4450, 4451, 4452 in den Kurslektionen 2, 3, 5, 6, 7, 8, 9). Keine davon stammt aus den Merges dieser Sitzung — Altbestand.
+
+`parseCourseVocabRefs()` (trainer.html) baut daraus nur ein `Set` von ids; ein unbekanntes id matcht schlicht keine Zeile und wird **stillschweigend übersprungen**. Kein Absturz, aber die betroffene Lektion hat einen toten Vokabel-Slot: sie zeigt ein Wort weniger, als der Kurs vorsieht, und nichts weist darauf hin.
+
+**Deshalb nach jeder Merge-Runde gegenprüfen:**
+```sql
+WITH r AS (SELECT cl.id AS lektion,
+  unnest(string_to_array(split_part(replace(cl.vocab_lesson_refs,'ids:',''),'|',1), ','))::int AS vid
+  FROM course_lessons cl WHERE cl.vocab_lesson_refs LIKE 'ids:%')
+SELECT r.vid, string_agg(DISTINCT r.lektion::text, ',') AS lektionen FROM r
+WHERE NOT EXISTS (SELECT 1 FROM vocabulary v WHERE v.id = r.vid) GROUP BY r.vid ORDER BY r.vid;
+```
+
+## Zeichenreihenfolge im arabic_script — stille Regex-Falle (2026-09-12)
+
+Beim Prüfen der ya-Gemination ergab `arabic_script ~ 'يّ'` nur 7 Treffer, obwohl optisch in vielen Zeilen eine Schadda auf dem ya steht. Ursache: die Kombinationszeichen sind **Vokal vor Schadda** gespeichert (`طَيَّبِت` = `0637 064e 064a 064e 0651 …`), nicht in der kanonischen Unicode-Reihenfolge Schadda-vor-Vokal. Bestandsweit: **803 Zeilen Vokal-vor-Schadda, 16 andersherum.** Jede Regel `<Buchstabe>ّ` verfehlt damit fast den ganzen Bestand und meldet — genau wie `\b` statt `\y` — einfach nichts. Fix: `ي[ًٌٍَُِْٰ]*ّ`. Die erste, falsche Zählung hätte beinahe zu „يّ wird einfach `y` geschrieben" geführt; mit korrigierter Regex steht es **67 : 14 für `yy`**, und TUNICO wie Ninja bestätigen das mit 14/14.
+
+**Lehre:** Bei jeder neuen Regex auf `arabic_script` erst gegenprüfen, ob sie überhaupt greift — eine Trefferzahl, die plausibel niedrig aussieht, kann eine stumme Fehlregel sein. Der billigste Test: eine Zeile, von der man weiß, dass sie treffen muss, einzeln abfragen und die Codepoints ausgeben (`to_hex(ascii(ch))` über `regexp_split_to_array(arabic_script,'')`).
+
+## Waw-Gemination — erst offen gelassen, dann entschieden (2026-09-12)
+
+**Erste Runde, Fehlschluss:** Nachdem die ya-Regel (`yy`) dreifach belegt war, lag die Übertragung auf و nahe. Als Gegenbeleg schien zu sprechen, dass Ninja هُوَ als `houwa` mit einem `w` schreibt. Daraufhin wurde eine bereits ausgeführte Einzelkorrektur `3812 ahuwa`→`ahuwwa` **zurückgenommen** und die Frage offen gelassen.
+
+**Zweite Runde, Auflösung:** Der Gegenbeleg war keiner. In هُوَ steht **keine Schadda** — ein Waw-Buchstabe ergibt ein `w`. Die Systematik ist exakt symmetrisch zu ya (هِيَ → `hiya`, هِيَّ → `hiyya`; هُوَ → `houwa`, هُوَّ → `houwwa`). Der Bestand schreibt waw mit Schadda **40 : 4** als `ww`; die 4 Gegenbeispiele sind wortfinale Schadda und die bewusst kontrahierte `shnou`-Familie. Die Rücknahme von 3812 war also im Ergebnis falsch — richtig ist `ahouwwa` — aber **im Verfahren richtig**: die Zeile hätte als einzige gegen ihre Geschwister gestanden, und die Begründung, die das aufgelöst hat, lag zu dem Zeitpunkt nicht vor.
+
+**Lehre:** Ein einzelner Quellenbeleg widerlegt eine Regel nur, wenn er wirklich denselben Fall zeigt. „Ninja schreibt hier ein `w`" war erst dann aussagekräftig, als geprüft war, ob dort überhaupt eine Schadda steht. Vorher war es eine Beobachtung über ein anderes Wort.
+
+**Ausgeführt:** 11 Zeilen — die هو-Familie auf `houwwa` (493, 1445, 1782, 3339, 3747), `ahuwa`→`ahouwwa` (3812), die هي-Familie auf `hiyya` (1887, 3711; drei Zeilen schrieben es schon so), `taw`→`tawwa` (1661, 3197) und `melwen`→`mlawwen` (3163, dessen Parallelzeile 3710 `mlawwen` bereits schrieb).
 
 ## arabic_skeleton/translit_skeleton Herleitung — Rezept 4 (2026-09-05)
 

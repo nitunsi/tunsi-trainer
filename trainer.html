@@ -1377,6 +1377,12 @@ async function sbApiPaged(basePath, batchSize, onProgress){
       pages.forEach(p => { all = all.concat(p||[]); });
       if(onProgress) onProgress(all.length, total);
     }
+    // Pflichtabgleich gegen den count-Header: ein still unvollständig geladener Bestand
+    // verfälscht SRS-Queue, Duplikat-Check und Prüf-Tabs gleichermaßen und sieht dabei
+    // wie ein sauberes Ergebnis aus. Lieber hart scheitern als falsch weiterrechnen.
+    if(all.length !== total){
+      throw new Error('Unvollständig geladen: '+all.length+' von '+total+' Zeilen ('+basePath.split('?')[0]+') — bitte neu laden');
+    }
   } else if(firstPage.length === batchSize){
     // Fallback ohne count-Header (z.B. wenn Prefer ignoriert wird) → wie bisher sequenziell
     let offset = batchSize;
@@ -6160,7 +6166,9 @@ async function showNinjaCheckQueue(){
     const res = await sbApi(
       'vocabulary_review?select=vocabulary_id,arabic_script,darija,ninja_audio_url,ninja_audio_start,ninja_audio_end,change_reason,change_category,user_comment,' +
       'vocabulary(arabic_script,darija,german,ninja_audio_url,ninja_audio_start,ninja_audio_end,flagged,lessons(lesson_number))' +
-      '&change_category=in.(ninja_check_pending,ninja_check_kein_vorschlag)&order=vocabulary_id.asc'
+      // ninja_check_kommentiert muss mit rein: sonst verschwindet ein Eintrag, sobald man
+      // "💬 Erneut prüfen lassen" drückt, und der eigene Hinweis ist nie wieder sichtbar.
+      '&change_category=in.(ninja_check_pending,ninja_check_kein_vorschlag,ninja_check_kommentiert)&order=vocabulary_id.asc'
     );
     nqAllResults = res || [];
     renderNinjaCheckQueue();
@@ -6179,12 +6187,19 @@ function renderNinjaCheckQueue(){
   }
 
   const pendingCount = nqAllResults.filter(r => r.change_category === 'ninja_check_pending').length;
-  const noSuggCount = nqAllResults.length - pendingCount;
-  let h = '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.8rem">' + pendingCount + ' offene Vorschläge' + (noSuggCount ? ' · ' + noSuggCount + ' ohne Vorschlag' : '') + '</div>';
+  const kommentiertCount = nqAllResults.filter(r => r.change_category === 'ninja_check_kommentiert').length;
+  const noSuggCount = nqAllResults.length - pendingCount - kommentiertCount;
+  let h = '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.8rem">' + pendingCount + ' offene Vorschläge'
+        + (noSuggCount ? ' · ' + noSuggCount + ' ohne Vorschlag' : '')
+        + (kommentiertCount ? ' · <span style="color:var(--gold2)">' + kommentiertCount + ' mit Hinweis</span>' : '') + '</div>';
   h += '<div style="display:flex;flex-direction:column;gap:.6rem">';
 
   nqAllResults.forEach(row => {
     const orig = row.vocabulary || {};
+    // Kommentierte Eintraege sind ebenfalls "ohne Vorschlag" — sie stammen aus genau diesem
+    // Zweig und haben keine Ninja-Alternative, die man uebernehmen koennte.
+    const noSugg = row.change_category === 'ninja_check_kein_vorschlag' || row.change_category === 'ninja_check_kommentiert';
+    const isKommentiert = row.change_category === 'ninja_check_kommentiert';
     const ls = orig.lessons ? 'L' + orig.lessons.lesson_number : '?';
     const origAudio = orig.ninja_audio_url
       ? '<button onclick="playVocabAudio(\'' + orig.ninja_audio_url.replace(/'/g,"\\'") + '\',event,' + (orig.ninja_audio_start||0) + ',' + (orig.ninja_audio_end||0) + ')" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.1rem .4rem;cursor:pointer;border-radius:3px;vertical-align:middle;margin-left:.3rem">🔊</button>'
@@ -6193,10 +6208,10 @@ function renderNinjaCheckQueue(){
       ? '<div style="margin-top:.4rem;padding:.4rem .5rem;background:rgba(255,255,255,.04);border-left:2px solid var(--gold);border-radius:2px;font-size:.72rem;color:var(--muted)">💡 ' + row.change_reason + '</div>'
       : '';
 
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem' + (row.change_category==='ninja_check_kein_vorschlag' ? ';opacity:.75' : '') + '">';
-    h += '<div style="font-size:.7rem;color:var(--muted);margin-bottom:.4rem">' + ls + ' · ' + (orig.german||'') + (orig.flagged ? ' · 🚩 markiert' : '') + (row.change_category==='ninja_check_kein_vorschlag' ? ' · 🤷 kein Vorschlag' : '') + '</div>';
+    h += '<div style="background:var(--surface);border:1px solid ' + (isKommentiert ? 'var(--gold)' : 'var(--border)') + ';border-radius:6px;padding:.7rem .8rem' + (noSugg && !isKommentiert ? ';opacity:.75' : '') + '">';
+    h += '<div style="font-size:.7rem;color:var(--muted);margin-bottom:.4rem">' + ls + ' · ' + (orig.german||'') + (orig.flagged ? ' · 🚩 markiert' : '') + (isKommentiert ? ' · 💬 wartet auf erneute Prüfung' : (noSugg ? ' · 🤷 kein Vorschlag' : '')) + '</div>';
 
-    if(row.change_category === 'ninja_check_kein_vorschlag'){
+    if(noSugg){
       h += '<div style="min-width:0">';
       h += '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--border);margin-bottom:.2rem">Aktuell (unverändert)</div>';
       h += '<div style="font-family:\'Playfair Display\',serif;font-size:1.05rem;color:var(--muted);direction:rtl;text-align:right">' + (orig.arabic_script||'') + '</div>';
@@ -6390,6 +6405,12 @@ function dupeEntryHtml(v, extraActions){
 
 // Regeln f\u00fcr den Transliterations-Check \u2014 jede Regel liefert true bei einem Verstoss
 const isLoanword = v => /(frz\.|franz\.|ital\.|engl\.|lehnwort)/i.test(v.en||'');
+// Buchstabenpaare fuer den Anzahl-Gegencheck (Regel 22), einmal vorkompiliert statt je Zeile neu
+const CONSONANT_PAIRS = [
+  [/ح/g, /7/g], [/خ/g, /kh/gi], [/ع/g, /3/g], [/ش/g, /sh/gi], [/ض/g, /dh/gi],
+  [/ج/g, /j/gi], [/ز/g, /z/gi], [/غ/g, /gh?/gi], [/ق/g, /[qgk]/gi],
+  [/ه/g, /h/gi], [/س/g, /s/gi], [/[ظذ]/g, /th/gi],
+];
 const TRANSLIT_RULES = [
   { label: 'Verbotene Ziffern (2/5/9 statt Hamza weglassen / kh / q)',
     test: v => /[259]/.test(v.tr) },
@@ -6452,6 +6473,25 @@ const TRANSLIT_RULES = [
     } },
   { label: '"und" sollte immer als "w-" geschrieben werden, nicht als eigenständiges "wa"/"u"',
     test: v => /\b(wa|u)\b/.test(v.tr) && !/\bahla\s+wa\s+sahla\b/i.test(v.tr) },
+  // Plural يفعلوا wird -iw/-aw geschrieben, nie -iou/-eou/-aou (Konvention SKILL.md).
+  // Erster Lauf 2026-09-12: 13 Treffer, alle echt, keine Fehlalarme.
+  { label: 'Plural-Endung "-iou"/"-eou"/"-aou" statt "-iw"/"-aw"',
+    test: v => /(iou|eou|aou)(\b|$)/.test(v.tr) },
+  // Die Konsonanten-Regeln oben pruefen nur, OB der Gegenpart vorkommt. Sobald irgendwo im
+  // Feld ein "7" steht, schweigen sie — bei Saetzen verdeckt das einen Fehler in einem
+  // einzelnen Wort (1649 hatte 3x ح und 2x "7", das falsch geschriebene erste Wort blieb
+  // jahrelang unsichtbar). Dieser Check vergleicht die ANZAHL und ergaenzt sie dadurch:
+  // er greift nur, wenn beide Seiten mindestens einmal vorkommen, sonst hat die jeweilige
+  // Regel oben schon angeschlagen. Erster Lauf 2026-09-12: 11 Treffer, 10 echte Fehler.
+  { label: 'Konsonant im Arabischen h\u00e4ufiger als sein Gegenst\u00fcck in der Transliteration (Fehler in einem einzelnen Wort eines Satzes)',
+    test: v => {
+      if(!v.ar || !v.tr || isLoanword(v)) return false;
+      return CONSONANT_PAIRS.some(([reAr, reTr]) => {
+        const a = (v.ar.match(reAr) || []).length;
+        const t = (v.tr.match(reTr) || []).length;
+        return a > 0 && t > 0 && a > t;
+      });
+    } },
 ];
 
 // Zählt betroffene Vokabeln (distinct), für die Statistik-Kachel — reine Zahl, kein Rendering
@@ -6500,15 +6540,24 @@ function renderTranslitCheck(c){
     entries: ALL_VOCAB.filter(v => v.tr && r.test(v))
   })).filter(g => g.entries.length);
 
+  // Grundgesamtheit und Regelzahl immer mit ausgeben: "0 Treffer" ist ohne Nenner keine
+  // Aussage — ein halb geladener Bestand oder eine gekürzte Regelliste sähen genauso aus.
+  const geprueft = ALL_VOCAB.filter(v => v.tr).length;
+  const fuss = geprueft + ' von ' + ALL_VOCAB.length + ' Vokabeln gepr\u00fcft \u00b7 '
+             + TRANSLIT_RULES.length + ' Regeln';
+
   if(!groups.length){
-    c.innerHTML = '<div style="padding:2rem;text-align:center"><div style="font-size:2rem;margin-bottom:.8rem">\u2705</div><div style="color:var(--green);font-size:.9rem">Keine Transliterations-Auff\u00e4lligkeiten gefunden</div></div>';
+    c.innerHTML = '<div style="padding:2rem;text-align:center">'
+      + '<div style="font-size:2rem;margin-bottom:.8rem">\u2705</div>'
+      + '<div style="color:var(--green);font-size:.9rem">Keine Transliterations-Auff\u00e4lligkeiten gefunden</div>'
+      + '<div style="color:var(--muted);font-size:.72rem;margin-top:.6rem">'+fuss+'</div></div>';
     return;
   }
 
   const total = groups.reduce((s,g)=>s+g.entries.length,0);
   let html = '<div>'
     + '<div style="color:var(--gold2);font-size:1rem;font-weight:700;margin-bottom:.4rem">\ud83d\udd24 Transliterations-Pr\u00fcfung</div>'
-    + '<div style="color:var(--muted);font-size:.78rem;margin-bottom:1.2rem">'+total+' Auff\u00e4lligkeit'+(total!==1?'en':'')+' in '+groups.length+' Kategorie'+(groups.length!==1?'n':'')+'</div>';
+    + '<div style="color:var(--muted);font-size:.78rem;margin-bottom:1.2rem">'+total+' Auff\u00e4lligkeit'+(total!==1?'en':'')+' in '+groups.length+' Kategorie'+(groups.length!==1?'n':'')+' \u00b7 '+fuss+'</div>';
 
   groups.forEach(g => {
     html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;margin-bottom:1rem;overflow:hidden">'
