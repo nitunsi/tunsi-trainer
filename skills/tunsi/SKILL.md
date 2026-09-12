@@ -229,8 +229,18 @@ Gültige Topics — nur diese verwenden:
 | Reisen | 3 | Reisevokabular (Reisepass, Ticket, Gepäck…) — abzugrenzen von Transport (Verkehrsmittel selbst) |
 | Schule | 3 | Schulische Gegenstände/Einrichtungen außerhalb des reinen Klassenzimmers (Schultasche, Direktor…) |
 | Politik | – | Politische Ämter, Institutionen, Staatswesen |
+| Beispielsätze | 2 | Ganze Beispielsätze aus Quellen (82 Zeilen im Bestand) |
+| Gottesformeln | 2 | Segenswünsche und Gottesanrufungen — Lektion "Gottesformeln & Segenswünsche" (51) |
+| Sprichwörter | – | Sprichwörter — Lektion "Sprichwörter" (32); in IMPORTS.md ausdrücklich vorgeschrieben |
+| Länder | – | Ländernamen, abzugrenzen von Nationalitäten (13) |
+| Geografie | – | Geografische Begriffe, Himmelsrichtungen (11) |
+| Notfall | 1 | Hilferufe, Notfallsituationen — Lektion "Notfall & Sicherheit" (3) |
 
 Nie verwenden: Vokabeln, null, freie Texte außerhalb der Liste.
+
+**Die Liste wurde 2026-09-12 an den Bestand angeglichen.** Sechs Werte waren dort längst etabliert (teils mit eigener Lektion), standen aber nicht in der Liste — mit der Folge, dass ein regelkonformer Eintrag als Regelverstoß erschien und umgekehrt. `Sprichwörter` war sogar ein echter Selbstwiderspruch: IMPORTS.md schreibt ihn für Instagram-Sprichwörter ausdrücklich vor, SKILL.md verbot ihn.
+
+Weitere Ad-hoc-Werte im Bestand, **bewusst nicht aufgenommen** (je 2–5 Zeilen, gehen in bestehende Topics auf): `Gesellschaft`, `Bildung` (→ Schule), `Küche` (→ Essen/Wohnen), `Feiertage` (→ Zeit), `Glückwünsche` (→ Höflichkeit), `Komparativ` (→ Adjektive/Grammatik), `Schlafzimmer` (→ Wohnen), `Arbeit` (→ Berufe). Diese Zeilen werden nicht nachgepflegt (siehe Bestandspflege-Regel unten) — nur bei ohnehin fälliger Bearbeitung mitrichten.
 
 **Topic ist unkritisch, im Zweifel selbst entscheiden.** Anders als bei `lesson_id` darf Claude bei `topic` selbst das plausibelste Topic wählen und direkt setzen, ohne vorher nachzufragen. Kurz begründen, aber nicht als offene Frage stehen lassen.
 

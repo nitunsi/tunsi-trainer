@@ -193,7 +193,7 @@ Ausgeführt: **1118 behalten** (mehr Fortschritt), dabei `darija` → `yit3ashsh
 
 **Wichtig — keine globale Vereinheitlichung:** Die Endungen `-it` / `-et` / `-at` sind in den Tabellen vermutlich morphologisch bedingt (starke Verben `3amlit`, hohle `qalet`, defektive `qrat`), nicht zufällig inkonsistent. Verteilung über alle Tabellen: 293× `-it`, 238× `-et`, 115× `-at`. Eine Sammelkorrektur würde korrekte Formen kaputtmachen.
 
-### A6 · Phrase mit angehängter Verbtabelle (8)
+### ✅ A6 · Phrase mit angehängter Verbtabelle (8) — erledigt 2026-09-12
 
 Die Tabelle passt zum Verb *im Satz*, aber die Zeile ist eine Phrase oder Grußformel. Kein Fehler im engeren Sinn — der 🔠-Button zeigt hier eine Vollkonjugation auf einer Redewendung.
 
@@ -210,9 +210,13 @@ Die Tabelle passt zum Verb *im Satz*, aber die Zeile ist eine Phrase oder Grußf
 
 3383 und 3420 verstoßen zusätzlich gegen „Schrägstrich-Muster sofort aufteilen" — das sind zwei verschiedene Verben in einem Feld (siehe Liste D).
 
-**Empfehlung (noch nicht bestätigt): die vier `3ayyit`-Sätze behalten, die beiden `3ayshik`-Zeilen entkoppeln.** Bei „Ruf die Feuerwehr" ist `3ayyit` wirklich der Imperativ des Verbs — die Tabelle daneben hilft beim Lernen. `3ayshik` dagegen ist eine erstarrte Höflichkeitsformel („danke"), die mit „leben lassen" nur noch etymologisch zusammenhängt; eine Vollkonjugation darauf verwirrt mehr, als sie nützt. 3383/3420 fallen ohnehin unter Liste D2.
+✅ **Ausgeführt 2026-09-12: die vier `3ayyit`-Sätze behalten, die beiden `3ayshik`-Zeilen entkoppelt.** Bei „Ruf die Feuerwehr" ist `3ayyit` wirklich der Imperativ des Verbs — die Tabelle daneben hilft beim Lernen. `3ayshik` dagegen ist eine erstarrte Höflichkeitsformel („danke"), die mit „leben lassen" nur noch etymologisch zusammenhängt; eine Vollkonjugation darauf verwirrt mehr, als sie nützt. 3383/3420 fallen ohnehin unter Liste D2.
 
-Alle 8 dranzulassen ist ebenfalls vertretbar — SKILL.md sagt selbst, eine falsche Zuordnung „richtet keinen Schaden an", weil es reine Anzeigedaten sind und der SRS-Fortschritt unberührt bleibt.
+Umgesetzt wurde nur `conjugation = NULL` bei 851 und 1392 — **`tunico_verb_id` blieb stehen**, weil es von `trainer.html` gar nicht gelesen wird (0 Vorkommen im Code) und als Herkunftsinfo nützlich ist. Der 🔠-Button hängt allein an `conjugation`.
+
+3383/3420 (`qarra / 3allem`) blieben unangetastet — die fallen unter Liste D2.
+
+**Nebenbefund beim Topic-Setzen:** Ich hatte für „Ruf die Feuerwehr/Polizei" zunächst `Notfall` gesetzt — ein Wert, den die Topic-Liste in SKILL.md nicht kennt, den der Bestand aber längst führt (3 Zeilen, eigene Lektion „Notfall & Sicherheit"). Sofort auf `Kurzphrasen` korrigiert, passend zum Geschwister 1913 mit gleichem Satzbau. Die Nachprüfung ergab **14 etablierte Topics außerhalb der erlaubten Liste** (~219 Zeilen), darunter `Beispielsätze` (82), `Gottesformeln` (51) und `Sprichwörter` (32) — letzteres ein echter Selbstwiderspruch, weil IMPORTS.md diesen Wert ausdrücklich vorschreibt. Die Liste in SKILL.md wurde um die sechs gut belegten Werte ergänzt.
 
 ---
 
