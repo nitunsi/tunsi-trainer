@@ -575,3 +575,63 @@ Ausgeführt: 14 Zeilen (851 und 1438 waren bereits korrekt), alle 14 neuen Schre
 - Die Klammer-Hinweise `(a...)`/`(y...)`/`(b...)` in den `german`-Feldern von 1391 `aman` / 1392 `y3ayyshik` / 1393 `brabbi` sind **kein Import-Müll**, sondern die bewusste Unterscheidung dreier Synonyme für „bitte". Nur der `(b...)` im *arabischen* Feld von 1392 war echter Copy-Paste-Müll aus 1393. — Offen: **1113 `billehi`** heißt ebenfalls „bitte", hat aber keinen Hinweis-Zusatz und fällt damit aus dem Schema.
 - **1425 `yberik fik (y3ayyshik)`** „Danke (Antwort auf Glückwunsch)" und **1945 `ybarik fik y3ayyshik`** „Gott segne dich (Antwort auf Glückwunsch)" sind derselbe Satz in zwei Schreibungen (`yberik` / `ybarik`, arabisch يُبارِك / يْبَارِكْ) mit fast identischem Gloss — **Merge-Kandidat**. Beide haben jetzt denselben `translit_skeleton` `brkfk3shk`; vom `normKey()`-Duplikat-Check der App ist das nicht erfassbar, über den Skelett-Vergleich schon.
 - **1394 `tfadhal`** („Bitte sehr / Hier / Nach Ihnen") — `arabic_script` تْفَضَّل hat Schadda auf ض, die Transliteration nicht: `_translit_skeleton` = `tfdhl` gegen `_arabic_skeleton` = `tfdhdhl`. Richtig wäre `tfadhdhal`, wie es **2095 `itfadhdhal`** und **1916 `itfadhdhal oq3od`** bereits schreiben. Gleiche Fehlerklasse wie `7addhar`, nur ohne `ddh` — deshalb vom Digraph-Check nicht erfasst, wohl aber vom Schadda-Check (Liste C). Danach bleiben 1394 und 2095 zusätzlich Merge-Kandidaten (dasselbe Wort mit/ohne prothetisches Alif, überlappender Gloss).
+
+---
+
+## Runde 6 · Gruppe 2 — ausgeführt 2026-09-12 (31 Zeilen)
+
+**Neues Vorgehen:** Statt der Regex als Filter den Skelett-Vergleich benutzt — `public._translit_skeleton(darija)` gegen `public._arabic_skeleton(arabic_script)`. Der trennt Liste C deutlich sauberer: von 69 verbliebenen Verdachtszeilen waren 48 skelett-uneinig, 21 einig. Die 35 einwortigen unter den uneinigen wurden einzeln gegen Quellen und Geschwisterzeilen geprüft.
+
+### ✅ Block 1 — Gemination fehlte, Beleg vorhanden (22)
+
+`1295 nathfit`→`naththfit` · `1296 nathaft`→`naththaft` · `1335 nathmit`→`naththmit` · `1336 nathamt`→`naththamt` (TUNICO `naḏ̣ḏ̣af`/`naḏ̣ḏ̣am`, Bestand 1654 `naththaf` / 4250 `mnaththam`) · `1326 7adhert`→`7adhdhart` (Familie 1648/2218) · `2261 7aqaq`→`7aqqaq` · `2262 y7aqeq`→`y7aqqeq` (Ninja `7a99a9` حَقَّقْ) · `2840 qasher`→`qashsher` · `2848 yqasher`→`yqashsher` · `2484 7asham`→`7ashsham` (TUNICO `ḥaššām`) · `2082 moumathel`→`moumaththel` · `2609 yitza3ab`→`yitza33ab` · `2610 tza3ab`→`tza33ab` (Bestand 1911 `ta33abt`, Ninja `maja33id`) · `2860 nemousa`→`nemmousa` (Ninja `nammouwsa` نَمُّوسَةْ) · `1394 tfadhal`→`tfadhdhal` (Bestand 2095/1916) · `2708 litaw`→`littaw` · `3184 m3amra`→`m3ammra` · `3185 mshamra`→`mshammra` · `3301 msatek`→`msattek` · `3290 yitqla`→`yitqalla` · `2861 thbana`→`thibbana` · `2515 gleyeb`→`gleyyeb`
+
+**Bewusst nur die Gemination geändert, keine Vokale.** `nathfit` wurde `naththfit`, nicht `naththafit` — obwohl das `arabic_script` نَظَّفِت eine Fatha auf ظ zeigt. Ob der Stammvokal in der 3.-Person-f.-Vergangenheit erhalten bleibt oder ausfällt, ist eine eigene Frage; sie nebenbei mitzuentscheiden wäre derselbe Übergriff wie bei den `-ou`-Formen in Runde 5.
+
+### ✅ Block 2 — neue Fehlerklasse: `h` statt Verdopplung (4)
+
+`4207 yba7har`→`yba77ar` · `4383 ba7har`→`ba77ar` · `4578 ba7hart`→`ba77art` · `2083 moumathhla`→`moumaththla`
+
+`77` ist im Bestand 27× belegt (`sa77a`, `na77a`, `twa77ashtek`) und von Ninja bestätigt (`mouwa77da`, `titna77aa`). **Aber `7h`/`thh` sind nicht generell falsch:** `722 thhar` (ظهر, Rücken) und `4254 ythhar-li` (يظهرلي) sind echte ظ+ه-Folgen und bleiben unangetastet. Exakt dasselbe Muster wie bei `tth` — dieselbe Buchstabenfolge ist an einer Morphemgrenze korrekt und bei Schadda falsch, entschieden wird nur am Arabischen.
+
+### ✅ Block 3 — das `arabic_script` war falsch, nicht die Transliteration (2)
+
+| id | darija | arabic alt | arabic neu | Beleg |
+|---|---|---|---|---|
+| 3023 | `bnin` „lecker" | بَنِّين | بْنِين | TUNICO `bnīn` — langes ī, keine Gemination |
+| 1087 | `skhan` „heiß (Pl.)" | سَخَّان | سْخَان | سَخَّان heißt „Boiler"/„erhitzen" (TUNICO `saxxan`); Familie 587 `skhoun` / 653 `skhouna` |
+
+Ohne Quellenprüfung wären beide als fehlende Gemination „korrigiert" worden — das wäre genau falsch herum gewesen.
+
+### ✅ Block 4 — blinder Fleck der Prüfregel (4, eine davon schon in Block 2)
+
+Der Schadda-Check sieht nur Zeilen mit Vokalisierung. Diese vier tragen denselben Fehler, haben aber unvokalisiertes Arabisch und waren damit unsichtbar: `1167 ynathaf` (ينظف)→`ynaththaf` · `1831 tnathaf` (تنظف)→`tnaththaf` · `1274 n7adhar` (نحضر)→`n7adhdhar` · `4383 ba7har` (بحر)→`ba77ar`.
+
+Gefunden nur, weil zu jedem geänderten Verb die Geschwisterzeilen gesucht wurden. Gleiche Lücke wie bei `4444 marroukiya`. **Merkregel: nach jeder Verbkorrektur die ganze Wurzelfamilie durchsehen, nicht nur die gemeldete Zeile.**
+
+### Mitgezogen: 8 Konjugationstabellen
+
+`1274`, `1335`, `1336`, `1831`, `2262`, `4207`, `4383`, `4578` trugen die alte Schreibung in ihren `conjugation`-Feldern — auch in Formen, die gar keine eigene Vokabelzeile haben (`nathamna`, `nathmu`, `ba7hru`, `ba7hret`). Ohne diese Ersetzung hätte der Verb-Selbstcheck alle acht unmittelbar gemeldet. **Verb-Selbstcheck danach: 19 von 652 statt vorher 26.**
+
+Vorher geprüft und frei: Duplikat-Check für alle 29 neuen Schreibungen, Referenzen in `course_lessons.vocab_lesson_refs` (keine). `checkAnswer()` akzeptiert alle 29 Paare in beide Richtungen.
+
+### Stand Liste C danach
+
+69 → **42** (21 mehrwortig = Gruppe 4, 8 einwortig-uneinig = Block 5 unten, Rest skelett-einig).
+
+### 🚫 Block 5 — kein Geminationsproblem, nur gemeldet (8)
+
+| id | darija | Befund |
+|---|---|---|
+| 3673 | `el3ab` „spiel!" | `arabic_script` لّعَبْ ist kaputt — Schadda auf dem ersten Buchstaben ohne Träger. Sollte إلْعَبْ |
+| 1988 | `adh3af` „schwächer (Komp.)" | `arabic_script` ضَعِّفْ ist der Form-II-Imperativ „schwäche!", nicht der Komparativ أَضْعَف |
+| 2330 | `jneyni` „Gärtner" | `arabic_script` جَنَّانْ ist ein anderes Wort (`jannan`), nicht `jneyni` (جْنَيْنِي) |
+| 1141 | `maskha` „schmutzig (f.)" | `arabic_script` مسّخْ unvollständig (kein ة); Zeile 1655 schreibt `masskha` مسّخة |
+| 416 | `rouba` „Kleid" | frz. Lehnwort (robe) — braucht nur `(frz.)` im Gloss, dann fällt es aus dem Check |
+| 2068 | `bit-tabi3a` | korrekt (Sonnenbuchstaben-Assimilation), reiner Filter-Fehlalarm |
+| 2538 | `nifli` „Ich bin pleite" | `arabic_script` نِفْلِّي nicht eindeutig lesbar |
+| 3221 | `shrobtshi?` | `arabic_script` شُرِّبْتْشِي nicht eindeutig lesbar |
+
+### 🔸 Offen aus Block 4: vier unvokalisierte `arabic_script`
+
+Nach der Korrektur haben `1167` (ينظف), `1831` (تنظف), `1274` (نحضر), `4383` (بحر) ein auseinanderlaufendes Skelettpaar — nicht weil die Transliteration falsch wäre, sondern weil ihr Arabisch die Gemination gar nicht schreibt. Eine minimale Ergänzung (nur die Schadda: ينظّف, تنظّف, نحضّر, بحّر) wäre durch die Geschwisterzeilen 1654 نَظَّف, 1648 حَضَّر, 4578 بَحَّرْت und durch TUNICO gedeckt — also kein Raten. Nicht ausgeführt, weil nicht Teil der freigegebenen Blöcke.

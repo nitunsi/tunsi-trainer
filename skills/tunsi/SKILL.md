@@ -146,6 +146,8 @@ Keine Großbuchstaben in darija — weder als Emphase-Marker noch am Satzanfang.
 
 **Die `tth`-Treffer sind keine Gegenbeispiele** — das war der Denkfehler der ersten Zählung. Jeder einzelne davon (9 in TUNICO, 17 in Ninja, 2 im eigenen Bestand) ist ein **Morphemgrenzen-`t`** vor `th`, keine Gemination: TUNICO `tṯawwib`→`tthawwib`, `tḏ̣āṛif`→`ttharif`, `mutṯaqqaf`→`mutthaqqaf`; Ninja `تْذَكِّرْ`→`tthakkir`, `مِتْثَقِّفْ`→`mittha99if`; eigener Bestand `نِتْثَاوَب`→`netthaowb` (id 3042), `تَذْبَح`→`tthba7` (id 3073). Diese Zeilen sind korrekt und dürfen **nicht** zu `thth` "korrigiert" werden. Echte ذّ/ظّ-Gemination schreibt TUNICO in **14 von 14** Fällen voll: `ʕaḏḏib`→`3aththib`, `aḏḏin`→`aththin`, `kaḏḏāb`→`kaththab`, `baẓẓaʕ`→`baththa3`, `ḏḏakkiṛ`→`ththakkir`, `ḏḏall`→`ththall`, `ṭuẓẓīna`→`tuththina`, `mīẓẓu`→`miththu`.
 
+**Verwandte Fehlerklasse: `h` statt Verdopplung (gefunden 2026-09-12).** `7h` für geminiertes ح und `thh` für geminiertes ث/ذ/ظ. Richtig ist `77` (27× im Bestand: `sa77a`, `na77a`, `twa77ashtek`; Ninja `mouwa77da`, `titna77aa`) bzw. `thth`. Betroffen waren `yba7har`/`ba7har`/`ba7hart` (→ `ba77ar`-Familie) und `moumathhla` (→ `moumaththla`). **Aber `7h`/`thh` sind nicht per se falsch:** `722 thhar` (ظهر, Rücken) und `4254 ythhar-li` (يظهرلي) sind echte ظ+ه-Folgen und korrekt. Gleiche Logik wie bei `tth` — dieselbe Buchstabenfolge ist an einer Morphemgrenze richtig und bei Schadda falsch. Entschieden wird nur am `arabic_script`.
+
 Dazu zwei Argumente, die unabhängig von der Zählung gelten:
 
 - **Lautlehre:** `dh`/`th`/`sh`/`kh`/`gh` sind Digraphen für je **einen** Laut. `ddh` liest sich als /d/+/ð/ — und diese Folge kommt an Morphemgrenzen echt vor, `ddh` ist also nicht bloß ungewöhnlich, sondern **mehrdeutig**.
@@ -531,11 +533,23 @@ Restliche Fehlalarm-Muster (nicht weiter automatisierbar): Kontraktionsformen, b
 SELECT id, darija, arabic_script, german,
        public._translit_skeleton(darija) AS ts, public._arabic_skeleton(arabic_script) AS as_
 FROM vocabulary
-WHERE darija ~ '(ddh|tth|ssh|kkh|ggh)'
-  AND darija !~ '(dhdh|thth|shsh|khkh|ghgh)'
+WHERE darija ~ '(ddh|tth|ssh|kkh|ggh|7h|thh)'
+  AND darija !~ '(dhdh|thth|shsh|khkh|ghgh|77)'
 ORDER BY id;
 ```
 **Pflicht-Gegenprobe vor jeder Korrektur — `tth` ist fast immer ein Fehlalarm:** in TUNICO (9/9), Ninja (17/17) und im eigenen Bestand (2/2) war jedes `tth` ein Morphemgrenzen-`t` vor `th` (`netthaowb` ← نِتْثَاوَب, `tthba7` ← تَذْبَح), keine Gemination. Entscheidungskriterium ist nicht die Buchstabenfolge, sondern das Arabische: steht dort eine Schadda auf ذ/ظ, ist es Gemination; steht ein eigenes ت davor, ist die Zeile korrekt. Kürzester Selbsttest: `_translit_skeleton(darija)` gegen `_arabic_skeleton(arabic_script)` halten — bei echter Fehlschreibung laufen die beiden an genau dieser Stelle auseinander (`7addhar` → `7ddhr` vs. `7dhdhr`), bei einem Präfix-`t` stimmen sie dort überein. **Bei mehrwortigen Zeilen die Stelle vergleichen, nicht die ganzen Strings** — die können aus völlig anderen Gründen abweichen. Beispiel id 3073: `tthb7` steht in beiden Skeletten identisch (also korrektes Präfix-`t`), die Gesamt-Skelette unterscheiden sich trotzdem, weil in derselben Zeile zwei andere Fehler stecken (`essakina` statt `essakkina` zu السِّكِّينَة, `brrsha` statt `barsha` zu بَرْشَة).
+
+**Skelett-Vergleich als Vorfilter für Liste C (seit 2026-09-12).** `public._translit_skeleton(darija)` gegen `public._arabic_skeleton(arabic_script)` trennt die Schadda-Verdachtsliste viel schärfer als die Regex allein: bei 69 Verdachtszeilen waren 48 skelett-uneinig und 21 einig; unter den einwortig-uneinigen waren nach Prüfung 28 von 35 echte Fehler. Als erste Spalte in jede Verdachtsabfrage aufnehmen und nach `ts <> as_` sortieren.
+
+**Nach jeder Verbkorrektur die ganze Wurzelfamilie durchsehen (seit 2026-09-12).** Der Schadda-Check sieht nur vokalisierte Zeilen. Geschwisterformen mit unvokalisiertem `arabic_script` tragen denselben Fehler und bleiben unsichtbar — bei der `naththaf`/`7adhdhar`/`ba77ar`-Runde waren das 4 zusätzliche Zeilen (`ynathaf` ينظف, `tnathaf` تنظف, `n7adhar` نحضر, `ba7har` بحر), gefunden nur durch die gezielte Geschwistersuche. Gleicher blinder Fleck wie bei `4444 marroukiya`.
+
+**`conjugation` immer mitziehen (seit 2026-09-12).** Eine `darija`-Korrektur an einer Verbzeile muss dieselbe Ersetzung in `conjugation` machen — auch für Formen, die keine eigene Vokabelzeile haben (`nathamna`, `ba7hru`, `ba7hret`). Sonst steht das `darija` der Zeile nicht mehr in ihrer eigenen Tabelle und der Verb-Selbstcheck meldet sie sofort. In der Gruppe-2-Runde betraf das 8 von 31 geänderten Zeilen. Vorher prüfen:
+```sql
+SELECT id, darija FROM vocabulary WHERE conjugation::text ~ '<alte_schreibung>';
+```
+Ebenso `course_lessons.vocab_lesson_refs` gegen die alte Schreibung prüfen (`darija:`-Teil referenziert über den Wortlaut, nicht über die id).
+
+**Das `arabic_script` kann der Fehler sein, nicht die Transliteration (seit 2026-09-12).** Zwei Fälle aus Gruppe 2: `3023 bnin` „lecker" trug بَنِّين mit Schadda, TUNICO hat aber `bnīn` (langes ī, keine Gemination); `1087 skhan` „heiß (Pl.)" trug سَخَّان — das heißt „Boiler"/„erhitzen" (TUNICO `saxxan`), der Plural zu سْخُون ist سْخَان. Beide wären ohne Quellenprüfung als „fehlende Gemination" genau falsch herum korrigiert worden. Bei jedem Treffer, dessen Wurzel im Gloss nicht zum Arabischen passt, erst die Quelle fragen.
 
 **Bekannte Fehlalarm-Fallen bei diesen Checks (nicht blind fixen):**
 - Französische/italienische Lehnwörter — im `german`-Feld `(frz.)`/`(ital.)`/`(engl.)`/`(Lehnwort)` markieren statt Transliteration zu erzwingen
