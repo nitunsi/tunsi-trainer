@@ -218,6 +218,25 @@ Die Endung ist in **allen** 16 Zeilen `-ik`, nie `-ek`: jedes `arabic_script` ha
 
 **Nebenbefund, nicht angefasst:** die Klammer-Hinweise `(a...)`/`(y...)`/`(b...)` in den `german`-Feldern von 1391 `aman` / 1392 `y3ayyshik` / 1393 `brabbi` sind **kein Import-Müll**, sondern die bewusste Unterscheidung dreier Synonyme für „bitte" — nicht entfernen. Der `(b...)`-Rest im `arabic_script` von 1392 (`يْعَيِّشِك (b...)`, samt `arabic_skeleton` `3shk(b)`) war dagegen echter Copy-Paste-Müll aus 1393 und wurde entfernt. Offen: 1113 `billehi` heißt ebenfalls „bitte", hat aber keinen Hinweis-Zusatz.
 
+## Der Skill selbst war die Fehlerquelle (2026-09-13)
+
+Ein Prüfdurchgang aus einer anderen Sitzung meldete „**TRANSLIT_RULES (13 Regeln)** — null Treffer" und listete zusätzlich 26 `topic`-Befunde. Beides war nicht Nachlässigkeit des Prüfers, sondern **direkt aus SKILL.md ableitbar**:
+
+1. Der SQL-Block war überschrieben mit „Transliterations-Check — **konsolidiertes SQL (`TRANSLIT_RULES` in trainer.html)**" und gab sich damit als vollständiger Spiegel der Regeln aus. Tatsächlich deckte er die Konsonanten-Gegenchecks plus Ziffern/Wortanzahl/Artikel ab — rund **14 von 22**. Wer dem Skill folgte, prüfte einen Teil und durfte glauben, alles geprüft zu haben.
+2. Unter der Überschrift „Bestandspflege bei Topic ist kein eigenes Ziel" stand als Punkt 1 „**Pflichtfeld** bleibt bestehen" — gemeint für Neuanlagen. Der Prüfbericht machte daraus die Sektion „topic-Pflichtfeld" mit 26 Bestandszeilen, also genau das, was der Absatz darüber verbietet.
+
+**Behoben:** Überschrift sagt jetzt offen, welche Regeln das SQL abdeckt und welche nicht, mit Node-Harness-Aufruf als einzigem vollständigen Lauf; „Pflichtfeld" ist ausdrücklich auf neue Zeilen begrenzt, mit dem Zusatz, dass bestehende Legacy-Topics in keinen Prüfbericht gehören.
+
+**Lehre:** Wenn ein kompetenter Leser den Skill befolgt und trotzdem das Falsche tut, ist der Skill der Defekt. Bei jedem Befund aus einem fremden Lauf zuerst fragen: *konnte die Anweisung so gelesen werden?* — bevor man den Lauf für schlampig hält.
+
+## Harness-Export scheiterte still — Gateway Timeout als Array behandelt (2026-09-13)
+
+Direkt beim Nachprüfen des obigen Falls dieselbe Fehlerklasse im eigenen Werkzeug: der geblätterte REST-Export holt `vocabulary` in vier Seiten à 1000. Zwei Seiten kamen unter Last als `{"message":"Gateway Timeout"}` zurück. `[].concat(obj)` hängt ein Objekt klaglos als **ein** Element an — aus 3.780 Zeilen wurden 1.782, und der Regel-Lauf meldete brav „0 Treffer", nur eben über weniger als der Hälfte des Bestands. Kein Fehler, keine Warnung.
+
+**Fix:** `scratchpad/export.sh` prüft jede Seite auf führendes `[`, wiederholt bis zu viermal mit Backoff und bricht hart ab, wenn die Gesamtzahl nicht der erwarteten entspricht.
+
+**Lehre:** Ein Prüflauf, der „0" meldet, ist erst dann eine Aussage, wenn die Grundgesamtheit verifiziert ist. Bei jedem Harness-Lauf die Zeilenzahl mitloggen und gegen `count(*)` halten — eine Zahl, die niemand ausgibt, kann auch niemand als falsch erkennen.
+
 ## scratchpad/extract.js — Anker zum zweiten Mal zu unscharf (2026-09-12)
 
 Das Node-Harness zieht `normalize`/`checkAnswer`/`TRANSLIT_RULES` per Textanker aus `trainer.html`. Nachdem die erste Fassung an fest verdrahteten Zeilennummern zerbrochen war, lief sie über Inhaltsanker — der Endanker war aber schlicht `"\n];"`, also *die erste* Array-Schließung nach `const isLoanword`.

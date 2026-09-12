@@ -268,7 +268,7 @@ Weitere Ad-hoc-Werte im Bestand, **bewusst nicht aufgenommen** (je 2–5 Zeilen,
 
 **Bestandspflege bei Topic ist kein eigenes Ziel (Stand 2026-09-05).** Nils ist das Feld grundsätzlich nicht wichtig. Bestehende falsche/fehlende/inkonsistente Topics — auch systemische Muster wie die verbreiteten `"Wort (Lxx)"`-Suffixe oder reine `"(Lxx)"`-Tags ohne Themenwort — werden nicht von sich aus gesucht, geprüft oder als Fund gemeldet. Nur zwei Anlässe rechtfertigen ein Anfassen:
 
-1. **Neuanlage:** Pflichtfeld bleibt bestehen — bei jedem neuen INSERT `topic` korrekt setzen.
+1. **Neuanlage:** Pflichtfeld **nur hier** — bei jedem neuen INSERT `topic` korrekt setzen. Das Wort „Pflichtfeld" gilt ausschließlich für neue Zeilen; **bestehende Zeilen ohne oder mit Legacy-Topic sind kein Befund und gehören in keinen Prüfbericht.**
 2. **Ohnehin fällige Bearbeitung:** Wird eine bestehende Vokabel aus anderem Grund verändert (Korrektur, Update, Ninja-Abgleich…), das Topic bei der Gelegenheit gleich mitrichten, falls es falsch/fehlend/im Lxx-Suffix-Format ist.
 
 In beiden Fällen: wie genau (welches Topic, Suffix abschneiden oder ersetzen) nicht rückfragen — einfach entscheiden, wie schon oben beschrieben.
@@ -337,7 +337,28 @@ Das gilt auch dann, wenn die Neuanlage aus einem 🚩-Auftrag herausfällt — d
 
 Nicht nur nach einem frischen Import relevant — dieselben Checks eignen sich für jede Stichprobe/jeden Verdacht gegen den Bestand.
 
-**Transliterations-Check — konsolidiertes SQL (`TRANSLIT_RULES` in trainer.html):**
+**⚠️ Transliterations-Check — SQL deckt nur einen TEIL von `TRANSLIT_RULES` ab.** Das folgende SQL prüft die **Konsonanten-Gegenchecks (Regeln 5–16)** plus Ziffern/Großbuchstaben, Wortanzahl und Artikel — zusammen rund **14 der 22** Regeln. Es ist **kein** vollständiger Ersatz für den Prüf-Tab. Nicht enthalten: `ch` statt `sh` (2), Sonnenbuchstaben-Assimilation (4), unmarkiertes Femininum (19), `wa`/`u` statt `w-` (20), Plural `-iou` (21), Konsonanten-Anzahlvergleich (22).
+
+**Wer „alle Regeln geprüft" sagen will, muss die echten 22 laufen lassen** — per Node-Harness gegen `trainer.html`, nicht per SQL-Nachbau:
+
+```bash
+# scratchpad/extract.js zieht normalize/checkAnswer/TRANSLIT_RULES per Anker aus trainer.html
+node extract.js && node -e '
+const L=require("./lib.js"); const fs=require("fs");
+const rows=JSON.parse(fs.readFileSync("fresh_all.json","utf8"))
+  .map(r=>({id:r.id,tr:r.darija||"",ar:r.arabic_script||"",en:r.german||""}));
+const ids=new Set();
+L.TRANSLIT_RULES.forEach((r,i)=>{ const h=rows.filter(v=>{try{return r.test(v);}catch(e){return false;}});
+  h.forEach(x=>ids.add(x.id)); if(h.length) console.log("Regel "+(i+1)+": "+h.length+" — "+r.label); });
+console.log("betroffen: "+ids.size+" von "+rows.length+" ("+L.TRANSLIT_RULES.length+" Regeln)");
+'
+```
+**Zwei Pflicht-Plausibilitätsprüfungen bei jedem Harness-Lauf** — beide haben schon still versagt:
+
+1. **`L.TRANSLIT_RULES.length` mit ausgeben.** Fällt der Extraktor auf einen Teilblock zurück, prüft man stumm eine gekürzte Regelliste. Präzedenzfall: PRECEDENTS.md → `extract.js`.
+2. **Zeilenzahl des Exports gegen `SELECT count(*) FROM vocabulary` prüfen.** Der geblätterte REST-Export liefert bei Last `{"message":"Gateway Timeout"}` statt eines Arrays — `[].concat(fehlerobjekt)` hängt das klaglos als *ein* Element an, und der Lauf meldet „0 Treffer" über einem halben Bestand. Jede Seite auf `Array.isArray` prüfen, bei Fehlschlag wiederholen, und am Ende hart gegen die erwartete Zahl vergleichen statt weiterzurechnen.
+
+**Das SQL unten (Teilmenge, für schnelle Stichproben):**
 
 ```sql
 -- Ziffern 2/5/9, Großbuchstaben

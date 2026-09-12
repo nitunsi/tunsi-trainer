@@ -880,3 +880,37 @@ Der Bestand bestätigt das mit **40 : 4** (`sawwar`, `lawwej`, `rawwa7`, `dawwar
 ### Zur gestrigen Rücknahme von 3812
 
 Die war **im Ergebnis falsch** — `ahouwwa` ist richtig — **im Verfahren aber richtig**: Die Zeile hätte als einzige gegen ihre Geschwister gestanden, und die Begründung, die das auflöst, lag zu dem Zeitpunkt nicht vor. Lieber eine offene Frage als eine selbstgemachte Inkonsistenz; die Frage wurde dann eben beantwortet.
+
+---
+
+## Runde 11 · Externes Prüfprotokoll gegengeprüft (2026-09-13)
+
+Ein Prüfdurchgang aus einer anderen Sitzung (75 fällige Vokabeln) lag als Protokoll vor. Jeder Befund einzeln gegen die Quellen geprüft.
+
+### Bestätigt und ausgeführt (14 Zeilen)
+
+| id | Änderung | Beleg |
+|---|---|---|
+| 4422 | `hawwis` هوس → `7awwis` حَوِّس | Ninja `7awwis` حَوِّسْ · TUNICO `ḥawwis` · PC `STROLL (to) = Hawwis` |
+| **4341** | `yhawwis` → `y7awwis` يْحَوِّس | **Schwesterzeile, im Protokoll nicht erfasst** (war nicht in der Zielmenge) |
+| 3614 | `y7jem` يحجام → `y7ajjim` يْحَجِّم | Ninja `7ajjim` · TUNICO `ḥažžim` · PC `Hajjim` — alle mit `i`, nicht `e` |
+| 1574 | `7met` حماة → `7ma` حْمَى, english → „mother-in-law" | Ninja `7maa` · TUNICO `ḥmā`; „protectors" war die MSA-Lesart |
+| 1149 | `sweri` → `swari`, english → „shirts" | PC `SHIRT = su:riyya:/swa:ri:` — `swari` ist direkt belegt |
+| 4307 | جّو → جَوّ | Schadda auf dem ersten Buchstaben; **letzter Rest der Klasse, die bei 3673 begann** |
+| 3658 | سيكريتار → سِكْرِيتَارَة | Femininendung fehlte |
+| 4574 | german → „ich ließ fallen / ich warf um" | Ninja „to drop, throw down" · TUNICO „umwerfen" — transitiv |
+| **3748** | `heya mhish` → `hiyya mahish` | **Von mir selbst verursacht:** die waw-Runde zog 3747 auf `houwwa`, das Gegenstück blieb stehen |
+
+### Ein Befund stand genau falsch herum
+
+**`487 wsil`.** Das Protokoll wollte `wsel`/`wsal`, argumentiert von der Fatha im `arabic_script`. Aber **TUNICO `wṣil`** und **Peace Corps `ARRIVE (to) = wSil`** schreiben beide exakt unsere Transliteration. Nicht die darija war falsch, sondern die Vokalisierung → وْصَل auf وْصِل korrigiert. Der zweite Punkt stimmte: `english = „to send, take to"` ist `wassil` (Maß II) und wurde auf „to arrive" gesetzt.
+
+### Größer als gemeldet: die `khallas`-Familie
+
+Das Protokoll sah zwei vertauschte Zeilen. Tatsächlich teilen sich **vier** Zeilen (2123, 3189, 3409, 3446) **eine** Konjugationstabelle — und die kodierte die Vertauschung mit: Vergangenheit mit `e`, Präsens und Imperativ mit `a`. Das Arabische war überall richtig (Fatha in der Vergangenheit, Kasra in Präsens/Imperativ), nur `2123` hatte zusätzlich eine falsche Vokalisierung.
+
+Korrigiert: `3189 khallas`→`khallis` · `3409 khalles`→`khallas` · `3446 ykhallas`→`ykhallis` · `2123 nkhallas`→`nkhallis` (+ arabic نْخَلَّص→نْخَلِّص), dazu die geteilte Tabelle komplett neu (Vergangenheit `a`, Präsens/Imperativ `i`). `3409`/`4238 khallas` sind jetzt Transliterations-Homographen → beide `homonym_ok` (TUNICO führt `xallaṣ` und `xallāṣ` als getrennte Lexeme).
+
+### Nicht übernommen
+
+Die **26 `topic`-Befunde**. SKILL.md sagt ausdrücklich, dass bestehende Legacy-Topics nicht gesucht, geprüft oder gemeldet werden.
