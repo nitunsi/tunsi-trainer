@@ -790,3 +790,46 @@ Die Referenz-Kontrolle nach dem Merge zeigte 11 ids, die auf nicht mehr existier
 ### Stand danach
 
 Bestand **3.780**. `ar_key`-Gruppen mit korrigiertem Schlüssel 86 → **74** (die 12 abgearbeiteten). Verwaiste `course_exercises`: 0.
+
+---
+
+## Runde 9 · Audit der 21 Live-Prüfregeln (2026-09-12)
+
+Nach zwei stumm falschen Regeln an einem Tag habe ich die Regeln selbst geprüft, statt weiter ihre Ausgabe abzuarbeiten.
+
+**Teil 1 — feuert jede Regel überhaupt?** Jede der 21 gegen ein konstruiertes Positivbeispiel, das zwingend anschlagen muss. **Alle 21 feuern, alle melden 0.** Der Tab liest zu Recht sauber; keine Regel ist im Sinne von „greift gar nicht" kaputt.
+
+**Teil 2 — schluckt eine Regel über ihre Ausnahmeklausel echte Fälle?** Das war die ergiebige Frage.
+
+| Sonde | Ergebnis |
+|---|---|
+| `isLoanword()` | greift bei 36 von 3.780, reiner Gloss-Marker-Test — eng gefasst ✅ |
+| Regel 19, hartkodierte Ausnahmeliste | entschärft genau 2 Zeilen (`hethi`, `shah`), beide berechtigt ✅ |
+| **Regeln 5–16: Vorkommen statt Anzahl** | **❌ der Fund** |
+
+`/ح/.test(v.ar) && !/7/.test(v.tr)` schweigt, sobald **irgendwo** im Feld ein `7` steht. Bei Einzelwörtern egal, bei Sätzen ein Loch: `1649 hadh-dhert barsha 7ajet lil-7afla` hat 3 × ح und 2 × `7` — `7ajet` und `7afla` beruhigen die Regel, das falsch geschriebene erste Wort sieht sie nie.
+
+### ✅ Anzahl-Vergleich über 12 Buchstabenpaare: 11 Treffer, 10 echte Fehler
+
+| id | alt → neu | Befund |
+|---|---|---|
+| 1636 | `nsalhu` → `nsalla7u` | `h` statt ح **und** fehlende Gemination (نصلّحو) |
+| 1649 | `hadh-dhert` → `7adhdhart` | `h` statt ح + erfundener Bindestrich — **fünfte** Zeile der `7adhdhar`-Familie |
+| 2491 | `rouhou` → `rou7ou` | `h` statt ح in رُوحُو; Bestand schreibt sonst `rou7ek`/`rou7ik` |
+| 3074 | `yslah` → `ysla7` | `h` statt ح in يُصْلَحْ |
+| 1841 | `t7iz` → `thiz` | umgekehrt: `7` statt ه, das Arabische تهز hat ه |
+| 3026 | `t7abbel` → `thabbel` | dito, تَهَبَّل von `habbel` „verrückt machen" |
+| 1894 | `dhahab` → `thahab` | ذ ist ausnahmslos `th` (Regel seit 2026-08-07) |
+| 1362 | `arabic_script` حَلِّيت / حلَّيت → حَلِّيت | dasselbe Wort zweimal im Feld, mit Schrägstrich getrennt |
+| 3692 | `remise` → `roumiz` | Arabisch schreibt روميز arabisiert; Lehnwort-Hinweis ergänzt |
+| 2333, 1880 | Lehnwort-Markierung ergänzt | `taxi`/`taxist` waren unmarkiert, 940/2351 dagegen schon |
+
+**ت+ه an der Morphemgrenze ist keine offene Frage** — 6 der 8 Bestandszeilen schreiben es längst als `th` (`waqtha` وقتها, `shrobtha` شربتها, `mammethom`, `thimni` تْهِمِّني). Gleiche Lage wie `tth` und `thh`: dieselbe Buchstabenfolge, entschieden wird am Arabischen.
+
+**Lateinisches `x`** steckt in 5 Zeilen, alle französische Lehnwörter. Lösung ist nicht Umschrift zu `ks` (auch Tunesier schreiben `taxi`), sondern die Markierung im Gloss, damit `isLoanword()` greift.
+
+### 🔸 Offen nach dieser Runde
+
+- **3143** (Sprichwort „Wer die Kutteln nicht waschen kann…") — drei ذ als `d` statt `th` geschrieben: `dbi7a`→`thbi7a`, `makhedtha`→`makheththa`, `makhedtou`→`makhethtou`. Die mechanische Regel erzeugt hier mit `makheththa` etwas schwer Lesbares; das will ich nicht ohne dich entscheiden.
+- **1843 `tel3ab jeux vidéos`** — französischer Text samt Akzenten im `darija`-Feld, während das Arabische جو فيديو arabisiert schreibt. Vom Anzahl-Check nicht erfasst.
+- **Regel 22 für `TRANSLIT_RULES`?** Der Anzahl-Vergleich hat ~0 % Fehlalarme und erfüllt damit die Aufnahmeregel aus SKILL.md. Das wäre eine Code-Änderung an `trainer.html` und braucht Bestätigung.

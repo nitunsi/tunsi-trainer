@@ -218,6 +218,26 @@ Die Endung ist in **allen** 16 Zeilen `-ik`, nie `-ek`: jedes `arabic_script` ha
 
 **Nebenbefund, nicht angefasst:** die Klammer-Hinweise `(a...)`/`(y...)`/`(b...)` in den `german`-Feldern von 1391 `aman` / 1392 `y3ayyshik` / 1393 `brabbi` sind **kein Import-Müll**, sondern die bewusste Unterscheidung dreier Synonyme für „bitte" — nicht entfernen. Der `(b...)`-Rest im `arabic_script` von 1392 (`يْعَيِّشِك (b...)`, samt `arabic_skeleton` `3shk(b)`) war dagegen echter Copy-Paste-Müll aus 1393 und wurde entfernt. Offen: 1113 `billehi` heißt ebenfalls „bitte", hat aber keinen Hinweis-Zusatz.
 
+## Audit der 21 TRANSLIT_RULES — Vorkommen statt Anzahl (2026-09-12)
+
+Nach zwei stumm falschen Prüfregeln an einem Tag (`\b` statt `\y`, Zeichenreihenfolge im `arabic_script`) wurden die 21 Live-Regeln aus `trainer.html` selbst geprüft — der Tab, dessen Wert laut SKILL.md darin liegt, dass „0 Treffer" wirklich „sauber" heißt.
+
+**Methode:** jede Regel gegen ein **konstruiertes Positivbeispiel**, das zwingend anschlagen muss, plus Lauf gegen den vollen Bestand. Ergebnis: **alle 21 feuern korrekt, alle melden 0.** Keine Regel ist im Sinne von „greift gar nicht" kaputt.
+
+**Aber die zweite Frage war die ergiebige: schluckt eine Regel über ihre Ausnahmeklausel echte Fälle?** Drei Sonden:
+
+1. `isLoanword()` — nur ein Gloss-Marker-Test, greift bei 36 von 3.780 Zeilen. Eng gefasst, keine Hintertür. ✅
+2. Regel 19s hartkodierte Ausnahmeliste — entschärft genau 2 Zeilen (`hethi`, `shah`), beide berechtigt. ✅ (Beantwortet nebenbei, ob `3976 shah` ein Defekt ist: nein, ein bewusst eingetragener Sonderfall.)
+3. **Die Konsonanten-Regeln 5–16 prüfen VORKOMMEN, nicht ANZAHL.** ❌ — das war der Fund.
+
+`/ح/.test(v.ar) && !/7/.test(v.tr)` schweigt, sobald irgendwo im Feld ein `7` steht. Bei Einzelwörtern egal, bei Sätzen ein Loch. `1649 hadh-dhert barsha 7ajet lil-7afla` hat 3 × ح und 2 × `7` — `7ajet` und `7afla` beruhigen die Regel, das falsch geschriebene erste Wort (`hadh-dhert` statt `7adhdhart`) sieht sie nie.
+
+**Erster Lauf des Anzahl-Vergleichs über 12 Buchstabenpaare: 11 Treffer, 10 echte Fehler, 1 Entscheidungsfall.** Praktisch keine Fehlalarme — nach der Faustregel in SKILL.md („nahe 0 % → gehört in `TRANSLIT_RULES`") ein Aufnahmekandidat.
+
+Gefundene Fehler: `nsalhu`→`nsalla7u` (1636), `hadh-dhert`→`7adhdhart` (1649, **fünfte** Zeile derselben `7adhdhar`-Familie), `rouhou`→`rou7ou` (2491), `yslah`→`ysla7` (3074), `t7iz`→`thiz` (1841), `t7abbel`→`thabbel` (3026), `dhahab`→`thahab` (1894), dazu ein doppeltes `arabic_script` (`حَلِّيت / حلَّيت`, 1362) und zwei unmarkierte Lehnwörter.
+
+**Lehre:** Ein Prüf-Tab auf 0 beweist nur, dass die Regeln in ihrer eigenen Formulierung zufrieden sind. Zusätzlich fragen: *was genau kann diese Regel bauartbedingt nicht sehen?* Bei Präsenz-Tests ist die Antwort fast immer „die zweite Instanz desselben Zeichens".
+
 ## metrobbi — gleiches Arabisch, gegenteiliger Gloss (2026-09-12)
 
 Beim Abarbeiten des vokalisierungs-unabhängigen Duplikat-Checks fielen `2495 moush mutrubbi` („unerzogen / respektlos") und `2816 moush metrobbi` („nicht toxisch / gut erzogen") als ein Paar mit identischem Arabisch مش متربّي auf — mit **gegenteiliger Bedeutung**. Erste Einordnung war „Widerspruch, eine von beiden ist falsch". Die Quellenprüfung zeigte mehr:

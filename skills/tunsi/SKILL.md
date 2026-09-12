@@ -557,6 +557,28 @@ ORDER BY id;
 ```
 Restliche Fehlalarm-Muster (nicht weiter automatisierbar): Kontraktionsformen, bei denen das Arabische die volle Form schreibt (`shnoua` ← شْنُوَّا); mehrwortige Phrasen, bei denen die Schadda in einem anderen Wort sitzt; unmarkierte Fremdwörter (`rouba` ← رُوبَّا — mit `(frz.)` im Gloss automatisch ausgeschlossen). Zwei Gruppen im Ergebnis als Block entscheiden, nicht einzeln: Nationalitäten-Feminina auf ـِيَّة (8 Zeilen + 2 Plurale) und Form-II-Verbpaare (Präsens/Vergangenheit desselben Verbs, 10 Zeilen) — sonst laufen Geschwisterformen auseinander.
 
+**⚠️ Die Konsonanten-Regeln 5–16 in `TRANSLIT_RULES` prüfen VORKOMMEN, nicht ANZAHL (entdeckt 2026-09-12).** `v.ar && /ح/.test(v.ar) && !/7/.test(v.tr)` schweigt, sobald **irgendwo** im Feld ein `7` steht. Bei einwortigen Zeilen egal, bei Sätzen ein Loch: `hadh-dhert barsha 7ajet lil-7afla` (3 × ح, 2 × `7`) lief jahrelang als sauber durch, weil `7ajet` und `7afla` die Regel beruhigten — das falsch geschriebene erste Wort sah sie nie. Erster Lauf des Anzahl-Vergleichs: **11 Treffer, 10 echte Fehler, 1 Entscheidungsfall** — praktisch keine Fehlalarme.
+
+```sql
+-- Zaehlvergleich je Buchstabenpaar; in SQL umstaendlich, im Node-Harness natuerlicher.
+-- Paare: ح→7, خ→kh, ع→3, ش→sh, ض→dh, ج→j, ز→z, غ→gh?, ق→[qgk], ه→h, س→s, [ظذ]→th
+SELECT id, darija, arabic_script, german,
+       (length(arabic_script) - length(replace(arabic_script,'ح',''))) AS ar_n,
+       (length(darija)        - length(replace(darija,'7','')))        AS tr_n
+FROM vocabulary
+WHERE arabic_script LIKE '%ح%' AND darija LIKE '%7%'
+  AND german !~* '(frz\.|franz\.|ital\.|engl\.|lehnwort)'
+  AND (length(arabic_script) - length(replace(arabic_script,'ح','')))
+    > (length(darija) - length(replace(darija,'7','')))
+ORDER BY id;
+```
+
+**Diese Lücke betrifft nur mehrwortige Zeilen** — und dort fast immer eine `h`/`7`- oder `d`/`th`-Verwechslung in genau einem Wort. Gefundene Fehlerbilder: `nsalhu`→`nsalla7u`, `hadh-dhert`→`7adhdhart`, `rouhou`→`rou7ou`, `yslah`→`ysla7`, `t7iz`→`thiz`, `t7abbel`→`thabbel`, `dhahab`→`thahab`.
+
+**ت+ه an der Morphemgrenze wird `th` geschrieben — die Konvention existiert bereits.** 6 von 8 Bestandszeilen machen es so (`waqtha` وقتها, `shrobtha` شربتها, `mammethom`, `thimni` تْهِمِّني). Dass `th` auch der Digraph für ظ/ذ/ث ist, wird in Kauf genommen — gleiche Lage wie `tth` (Präfix-`t` vor `th`) und `thh` (`thhar` ظهر). Entschieden wird immer am `arabic_script`, nie an der Buchstabenfolge.
+
+**Lateinisches `x` gehört nicht ins Hausalphabet** — 5 Zeilen tragen es, alle französische Lehnwörter (`taxi`, `taxist`, `jeux vidéos`). Lösung ist **nicht** Umschrift zu `ks`, sondern die Lehnwort-Markierung im Gloss (`(frz.)`), damit `isLoanword()` greift. `taxi` wird auch von Tunesiern so geschrieben.
+
 **Halb verdoppelter Digraph (seit 2026-09-12).** Scharfer Zusatz-Check zum Gemination-Check darüber: findet `ddh`/`tth`/`ssh`/`kkh`/`ggh`, also Geminationen, bei denen nur der erste Buchstabe des Digraphen gedoppelt wurde. Begründung der Regel: SKILL.md → Digraph-Gemination, Historie: PRECEDENTS.md.
 ```sql
 SELECT id, darija, arabic_script, german,
