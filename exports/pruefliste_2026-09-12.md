@@ -682,3 +682,8 @@ Liste C **36 → 25**. Digraph-Check meldet 4 Zeilen, alle vier bekannt korrekt 
 2. **Restliche 25 Liste-C-Zeilen** — 21 mehrwortig, dort sitzt die Schadda meist in einem anderen Wort des Satzes.
 3. `1622 t3awinni` — `arabic_script` تعاوّني hat eine Schadda auf waw, die wie ein Tippfehler aussieht.
 4. `2538 nifli`, `1445`/`3339` siehe Punkt 1.
+
+### ✅ Nachträge erledigt (2026-09-12)
+
+- **`923 touwl` → `toul`** (طُولْ, „geradeaus"). TUNICO hat `tul`/`ṭūl`. `touwl` war **Ninjas eigene Konvention** (`ouw` für ū, wie in `nammouwsa`, `5ouwf`, `mouwsiy9iyya`) und ist bei einem Import 1:1 durchgerutscht — genau das, wovor IMPORTS.md warnt. Ninjas Transliterationsspalte nie ungeprüft übernehmen.
+- **`4444 marroukiya` → `marroukiyya`**, `arabic_script` مرّوكية → مرّوكيّة. Der Nachzügler aus Gruppe 1 (die vorhandene `rr`-Gemination hatte die fehlende `yy`-Gemination vor der Prüfregel versteckt). Im Gloss außerdem den Querverweis `[Synonym zu maghribiya]` auf `maghribiyya` nachgezogen — ein Bestandssweep über alle `german`-Felder zeigte, dass dies der einzige Verweis auf eine inzwischen geänderte Schreibung war.
