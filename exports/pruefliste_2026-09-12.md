@@ -546,7 +546,9 @@ Zwei Argumente unabhängig von der Statistik:
 
 `checkAnswer()` im Node-Harness gegengetestet: `7addhar` ↔ `7adhdhar` und `y7addhar` ↔ `y7adhdhar` werden in beide Richtungen akzeptiert. Kein Lerner-Nachteil, reine Datenqualität.
 
-**Offen — braucht ein Ja:** ids **1648 `7addhar` → `7adhdhar`** und **2218 `y7addhar` → `y7adhdhar`**. Beide Schreibungen sind kollisionsfrei geprüft. Die Änderung überschreibt bewusst die Entscheidung vom 2026-08-07; in PRECEDENTS.md ist die alte Stelle bereits mit Begründung entwertet.
+✅ **Ausgeführt 2026-09-12:** ids **1648 `7addhar` → `7adhdhar`** und **2218 `y7addhar` → `y7adhdhar`**, vorher kollisionsfrei geprüft. Die Änderung überschreibt bewusst die Entscheidung vom 2026-08-07; in PRECEDENTS.md ist die alte Stelle mit Begründung entwertet.
+
+Mitgezogen werden musste die **`conjugation` von 2218** — sie trug die alte Schreibung in allen vier Präsensformen (`n7addhar`/`t7addhar`/`t7addhar`/`y7addhar`). Ohne das hätte der Verb-Selbstcheck die Zeile direkt danach gemeldet. Danach: `_translit_skeleton` = `_arabic_skeleton` = `7dhdhr` bei beiden Zeilen, ض-Reihe im Bestand jetzt **11 : 0**, und der Digraph-Check meldet nur noch 3042/3073 (die bekannten korrekten Präfix-`t`-Zeilen). 1648 hat weiterhin gar keine `conjugation` — bekannter D4-Rückstand, kein neues Problem.
 
 **Nebenfund aus demselben Check:** id **3073** (`essakina ej-jdida madhya brrsha tthba7 thb7an`) hat zwei andere Fehler — `essakina` statt `essakkina` (السِّكِّينَة, Schadda auf س *und* ك) und `brrsha` statt `barsha` (بَرْشَة; dieselbe Zeile 3042 schreibt es korrekt). Nicht angefasst.
 

@@ -138,7 +138,7 @@ Keine Großbuchstaben in darija — weder als Emphase-Marker noch am Satzanfang.
 
 | Laut | richtig | falsch | eigener Bestand | Ninja | TUNICO |
 |---|---|---|---|---|---|
-| ضّ | `dhdh` | ~~`ddh`~~ | 9 : 2 | 70 : 2 | ض kommt in TUNICOs `chatalpha` nicht als `dh` vor |
+| ضّ | `dhdh` | ~~`ddh`~~ | 11 : 0 | 70 : 2 | ض kommt in TUNICOs `chatalpha` nicht als `dh` vor |
 | ظّ/ذّ | `thth` | ~~`tth`~~ | 6 : 0 | 34 : 0 | 40 : 0 |
 | شّ | `shsh` | ~~`ssh`~~ | 11 : 0 | 2 : 0 (Ninja schreibt `ch`) | 35 : 0 |
 | خّ | `khkh` | ~~`kkh`~~ | 7 : 0 | – (Ninja schreibt `5`) | 21 : 0 |
@@ -151,7 +151,7 @@ Dazu zwei Argumente, die unabhängig von der Zählung gelten:
 - **Lautlehre:** `dh`/`th`/`sh`/`kh`/`gh` sind Digraphen für je **einen** Laut. `ddh` liest sich als /d/+/ð/ — und diese Folge kommt an Morphemgrenzen echt vor, `ddh` ist also nicht bloß ungewöhnlich, sondern **mehrdeutig**.
 - **Maschinell nachweisbar:** `public._translit_skeleton('7addhar')` = `7ddhr`, aber `public._arabic_skeleton('حَضَّر')` = `7dhdhr`. Die beiden Skelett-Spalten derselben Zeile widersprechen sich, d.h. Duplikat- und Cross-Source-Abgleich sehen zwei verschiedene Wörter. Mit `7adhdhar` ergeben beide Funktionen `7dhdhr`. Das ist der schnellste Selbsttest für jede vermutete Digraph-Gemination: **stimmen `_translit_skeleton(darija)` und `_arabic_skeleton(arabic_script)` nicht überein, ist die Transliteration falsch, nicht das Arabische.**
 
-**Überschreibt eine frühere Entscheidung:** PRECEDENTS.md → Verben hatte für 2026-08-07 `7adhar`→`7addhar` (plus `y7adhar`→`y7addhar`) mit `ddh` festgehalten. Das ist widerlegt; richtig ist `7adhdhar`/`y7adhdhar`. Details und Begründung: PRECEDENTS.md → Digraph-Gemination.
+**Überschrieb eine frühere Entscheidung:** PRECEDENTS.md → Verben hatte für 2026-08-07 `7adhar`→`7addhar` (plus `y7adhar`→`y7addhar`) mit `ddh` festgehalten. Widerlegt und am 2026-09-12 korrigiert (ids 1648, 2218 → `7adhdhar`/`y7adhdhar`, inkl. der vier Formen in der `conjugation` von 2218). Damit hat der Bestand in **allen fünf Reihen null echte Gegenbeispiele**. Details: PRECEDENTS.md → Digraph-Gemination.
 
 ### Vokale & häufige Wörter
 

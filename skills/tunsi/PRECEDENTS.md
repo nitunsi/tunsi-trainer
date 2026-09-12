@@ -198,6 +198,8 @@ Anlass: die Konventionstabelle in SKILL.md war aus dem eigenen Bestand abgeleite
 
 **Kein Lerner-Nachteil:** `checkAnswer()` im Node-Harness gegen beide Schreibungen getestet, in beide Richtungen akzeptiert (`7addhar` ↔ `7adhdhar`, `y7addhar` ↔ `y7adhdhar`). Die Umstellung ist reine Datenqualität, kein Eingriff in bereits Gelerntes.
 
+**Ausgeführt 2026-09-12** (ids 1648, 2218). **Dabei nicht vergessen: die `conjugation` mitziehen** — 2218 trug die alte Schreibung in allen vier Präsensformen (`n7addhar`, `t7addhar`, `t7addhar`, `y7addhar`); ohne diese Ersetzung hätte der Verb-Selbstcheck die Zeile unmittelbar nach der Korrektur gemeldet, weil ihr `darija` nicht mehr in der eigenen Tabelle steht. Danach `_translit_skeleton` = `_arabic_skeleton` = `7dhdhr` für beide Zeilen, und der Digraph-Check meldet im ganzen Bestand nur noch die zwei bekannten Präfix-`t`-Zeilen (3042, 3073).
+
 ## 3ayshik / y3ayyshik — zwei Schreibungen sind hier richtig (2026-09-12)
 
 17 Zeilen der Höflichkeitsfloskel („danke"/„bitte") trugen fünf verschiedene Schreibungen: `3ayshik`, `3ayshek`, `y3ayshek`, `y3ayshik`, `y3ayyshik`. Naheliegend, aber falsch wäre gewesen, alles auf **eine** Form zu ziehen. Ninja führt zwei **getrennte Lemmata**:
