@@ -18,6 +18,7 @@ Fokus dieser Datei: bestehende Trainer-Vokabeln prüfen, neue Vokabeln nachschla
 | Nutzer hat Vokabeln mit 🚩 markiert | Workflow: Geflaggte Vokabeln (🚩) live gegen Derja Ninja prüfen |
 | Frischer Batch soll automatisch geprüft werden | Workflow: Frisch importierte Batch-Vokabeln flaggen + verifizieren |
 | Neue Vokabel(n) schreiben | Kern-Workflow: neue Vokabel(n) verarbeiten → Transliteration — Ziel-Konvention → Topic-Pflichtfeld |
+| Vokabel ist ein Verb (prüfen ODER anlegen) | Verben → Verb-Konjugationsmodell (3-Zeilen-Ziel, `conjugation`, `conj_rotate`) — gilt auch bei geflaggten Einzelformen |
 | Was ist von früher noch unerledigt? | Offene Punkte (direkt unten) |
 | PDF/Foto-Quelle auswerten, neue Quelle importieren | IMPORTS.md |
 | Kurs-Modus (course_lessons/course_exercises) oder Code-Änderung an trainer.html | COURSE_MODE.md |
@@ -256,6 +257,12 @@ In beiden Fällen: wie genau (welches Topic, Suffix abschneiden oder ersetzen) n
 
 **Pflicht-Suchschritt vor jeder Verb-Ergänzung: bestehende Zeilen desselben Verbs auch unter Alt-Topics finden.** Eine Suche nur mit `topic IN ('Verben-Konjugation','Vergangenheit','Verben')` übersieht Zeilen mit Legacy-Topics wie `(L14)`, `(L18)` oder `NULL` — Präzedenzfall 2026-09-06: `yakol`/`er isst` hatte `topic=" (L14)"` und wurde dadurch komplett übersehen, obwohl das Verb (`kla`/essen) sonst als "nur 1 Zeile vorhanden" durchgegangen wäre. Immer den **ganzen** Bestand per Konsonantenskelett gegenchecken (auch über Gemination/Vokal-Abweichungen hinweg, s.o.), nicht nur die Standard-Verb-Topics.
 
+**Fehlende Zielzeilen nachlegen — zwei getrennte Rückfragen (Stand 2026-09-12).** Neue Zeilen anzulegen, wenn Formen fehlen, ist grundsätzlich in Ordnung. Aber:
+1. **Erst fragen, ob angelegt werden soll** — mit der konkreten Liste (darija, arabic_script, german, topic, lesson_id), nicht pauschal.
+2. **Danach getrennt fragen, ob die neuen Zeilen fällig gesetzt werden sollen.** Nicht mit Frage 1 zusammenziehen und nicht automatisch `next_review = now()` setzen: Nils aktiviert neue Vokabeln bewusst selbst, damit die Queue nicht unkontrolliert wächst. Ohne ausdrückliches Ja wird die `progress`-Zeile entweder gar nicht angelegt oder mit `next_review = NULL`.
+
+Das gilt auch dann, wenn die Neuanlage aus einem 🚩-Auftrag herausfällt — der Auftrag lautet „prüf dieses Wort", nicht „leg neue Wörter an". Ausnahme bleibt der ausdrückliche Import-Batch-Workflow, bei dem Nils die Neuanlage selbst angestoßen hat.
+
 **Bestandspflege (Stand 2026-09-06): nur ergänzen, nicht kürzen.** Verben mit mehr als 3 vorhandenen Zeilen (volle/teilweise Personal-Paradigmen aus früheren Sessions) werden NICHT gekürzt/gelöscht — das wird auf einen späteren, gezielten Vokabel-Check verschoben. Bei diesem künftigen Check: pro Verb auf die 3 Ziel-Slots konsolidieren (Präsens+Vergangenheit+eine Person behalten, Rest als Kandidat für Löschung markieren, nicht automatisch löschen — erst zeigen, dann auf Bestätigung warten wie immer). Bis dahin: überzählige Zeilen einfach so stehen lassen.
 
 **Aber: `tunico_verb_id`+`conjugation` trotzdem an ALLEN vorhandenen Zeilen eines Verbs setzen, nicht nur an den 3 Ziel-Slots.** Auch überzählige/nicht ins 3er-Schema passende Zeilen (z.B. Imperativ-Varianten, weitere Personen aus alten Batches) bekommen die Verknüpfung + volle Tabelle, damit der 🔠-Button überall verfügbar ist. Eine falsche Zuordnung richtet dabei keinen Schaden an — sie fällt beim Lernen auf und wird dann korrigiert (SRS-Progress bleibt unberührt, nur Anzeige-Zusatzdaten).
@@ -365,6 +372,57 @@ GROUP BY en_key HAVING count(*) > 1
 ORDER BY field, key;
 ```
 
+**Verb-Selbstcheck: Zeile gegen die eigene `conjugation`-Tabelle (seit 2026-09-12).** Eine feste Verb-Zeile mit Konjugationstabelle muss ihre eigene `darija`-Form in einer Zelle dieser Tabelle wiederfinden — sonst lehrt die Karteikarte eine andere Schreibung, als das 🔠-Blatt daneben zeigt. Rein interner Vergleich, keine externe Quelle nötig, **keine Fehlalarme möglich**. Deshalb vor jedem externen Abgleich laufen lassen, nicht danach.
+
+```sql
+SELECT v.id, v.darija, v.german, v.topic
+FROM vocabulary v
+WHERE v.conjugation IS NOT NULL AND NOT v.conj_rotate
+  AND NOT EXISTS (
+    SELECT 1 FROM jsonb_each(v.conjugation) b(bn,bv), jsonb_each(bv) s(sn,cell)
+    WHERE jsonb_typeof(bv)='object'
+      AND lower(btrim(cell->>'darija')) = lower(btrim(v.darija)))
+ORDER BY v.id;
+```
+
+`conj_rotate=true` ist ausgenommen — dort ist der Zeilenwert bewusst nur ein Anzeigewert und muss nicht in der Tabelle stehen. Erster Lauf 2026-09-12: 49 Treffer von 670 Zeilen, vollständig klassifiziert in `exports/pruefliste_2026-09-12.md`. Die Treffer zerfallen in sechs Klassen — Plural-`-ou`, Klammer-Zusatz im `darija`-Feld, Vokal-/Imala-Abweichung, fehlende Gemination, Vergangenheits-Endung, Phrase-mit-Verbtabelle. **Nur die ersten beiden sind mechanisch entscheidbar**, bei den übrigen steht Hausschreibung gegen TUNICO-Übernahme und es braucht Einzelprüfung.
+
+Ergänzende Struktur-Checks am selben Datenbestand (Zahlen vom 2026-09-12):
+```sql
+-- Verbgruppen: 3-Zeilen-Ziel, rotierende Zeile, Tabellen-Synchronität
+WITH c AS (SELECT id, darija, conjugation, conj_rotate, tunico_verb_id
+           FROM vocabulary WHERE conjugation IS NOT NULL),
+grp AS (
+  SELECT COALESCE(tunico_verb_id::text,
+                  'skel:'||regexp_replace(lower(regexp_replace(darija,'[^a-z0-9]','','g')),'[aeiou]','','g')) AS verb_key,
+         count(*) AS zeilen,
+         count(*) FILTER (WHERE conj_rotate) AS rotierend,
+         count(DISTINCT conjugation::text) AS versch_tabellen,
+         string_agg(id::text||':'||darija, ' | ' ORDER BY id) AS formen
+  FROM c GROUP BY 1)
+SELECT * FROM grp WHERE zeilen <> 3 OR rotierend <> 1 OR versch_tabellen > 1 ORDER BY zeilen, verb_key;
+```
+Stand 2026-09-12: 181 Gruppen, davon 87 auf dem 3-Zeilen-Ziel, 22 mit nur einer Zeile, 68 mit Altbestand > 3 Zeilen (bleiben laut Bestandspflege-Regel unangetastet), 88 ohne rotierende Zeile (davon 62 mit ≥3 Zeilen — dort reicht ein `conj_rotate`-Flag auf einer vorhandenen Zeile, keine Neuanlage), 3 mit auseinandergelaufenen Tabellen, 35 Zeilen mit unvollständiger Tabelle. Zusätzlich 169 Verb-Zeilen ganz ohne `conjugation` — ob das Modell auf die ausgeweitet wird, ist offen.
+
+**Plural-Endung `-iou`/`-eou`/`-aou` (seit 2026-09-12, auch als Regel 21 in `TRANSLIT_RULES`).** Die Hausregel „Plural يفعلوا → `-iw`" stand bisher ohne Prüfung in der Konventionstabelle. Erster Lauf: 13 Treffer, alle echt, keine Fehlalarme.
+```sql
+SELECT id, darija, german FROM vocabulary WHERE darija ~ '(iou|eou|aou)(\y|$)';
+```
+Bei mehrwortigen Einträgen steht die Endung teils mehrfach im Feld — jedes Vorkommen prüfen, nicht nur das erste.
+
+**Gemination: Schadda im Arabischen, aber kein Doppelbuchstabe in `darija` (Kandidat, seit 2026-09-12).** Setzt Lautlehre-Regel 2 um. **Verdachtsliste, keine Fehlerliste** — Stichprobe 16 von 93 Treffern: 11 echt, 5 Fehlalarme (~15 %). Deshalb bewusst NICHT in `TRANSLIT_RULES` übernommen, sonst stünde der Prüf-Tab dauerhaft auf ~93 statt auf 0.
+```sql
+SELECT id, arabic_script, darija, german FROM vocabulary
+WHERE arabic_script ~ 'ّ'
+  AND regexp_replace(lower(darija),'(sh|th|kh|gh|ch|dh)','#','g') !~ '([a-z0-9#])\1'   -- Digraphen als Einheit
+  AND lower(darija) !~ '\y(w-)?(l|b|f|m)?(el|il|le|li|es|esh|et|eth|ej|ed|en|er|ez)-' -- Artikel, auch nach Präposition
+  AND regexp_replace(arabic_script,'[ً-ٰٟ]','','g') !~ '(^|\s)ال'
+  AND german !~* '(frz\.|franz\.|ital\.|engl\.|lehnwort)'
+  AND regexp_replace(arabic_script,'[ًٌٍَُِْٰٟ]','','g') !~ 'ّ\s*$'                     -- wortfinale Schadda
+ORDER BY id;
+```
+Restliche Fehlalarm-Muster (nicht weiter automatisierbar): Kontraktionsformen, bei denen das Arabische die volle Form schreibt (`shnoua` ← شْنُوَّا); mehrwortige Phrasen, bei denen die Schadda in einem anderen Wort sitzt; unmarkierte Fremdwörter (`rouba` ← رُوبَّا — mit `(frz.)` im Gloss automatisch ausgeschlossen). Zwei Gruppen im Ergebnis als Block entscheiden, nicht einzeln: Nationalitäten-Feminina auf ـِيَّة (8 Zeilen + 2 Plurale) und Form-II-Verbpaare (Präsens/Vergangenheit desselben Verbs, 10 Zeilen) — sonst laufen Geschwisterformen auseinander.
+
 **Bekannte Fehlalarm-Fallen bei diesen Checks (nicht blind fixen):**
 - Französische/italienische Lehnwörter — im `german`-Feld `(frz.)`/`(ital.)`/`(engl.)`/`(Lehnwort)` markieren statt Transliteration zu erzwingen
 - غ/ق können dialektal zu "g"/"k" verschoben sein (ngammed, bargouth, bgar, maktou3) — kein Fehler, Regel akzeptiert das bereits
@@ -374,7 +432,9 @@ ORDER BY field, key;
 
 **Konsonanten-Gegenchecks ج/ز/ه/س** sind mit im SQL oben — Details zum ersten Testlauf (8 echte Bestandsfehler, u.a. systematische ه→7-Verwechslung): PRECEDENTS.md → Prüfungen nach jedem Import.
 
-**Neue Checks aus Kurs-Grammatiknotizen ableiten — wiederkehrende Praxis, nicht einmalig.** `grammar_notes` in `course_lessons` (siehe COURSE_MODE.md) enthalten viele Regeln — nur solche aufnehmen, die rein aus `darija`/`german`/`arabic_script` ableitbar sind, OHNE Wortart-Wissen/Kontext (wie die Sonnenbuchstaben-Regel). Bei jeder neuen/überarbeiteten Lektion erneut versuchen. **Immer erst gegen den Bestand testen (Fehlalarmquote) und zeigen, bevor eine Regel dauerhaft in `TRANSLIT_RULES` übernommen wird.** Bisher 4 Kandidaten getestet, 2 bestanden (unmarkierte Feminina, "und"=immer "w-"), 2 verworfen (Verb-Personalpräfix, m/f-Adjektivpaare=masc+"a" — beide an Dialekt-Realität gescheitert, Details: PRECEDENTS.md → Prüfungen nach jedem Import).
+**Neue Checks aus Kurs-Grammatiknotizen ableiten — wiederkehrende Praxis, nicht einmalig.** `grammar_notes` in `course_lessons` (siehe COURSE_MODE.md) enthalten viele Regeln — nur solche aufnehmen, die rein aus `darija`/`german`/`arabic_script` ableitbar sind, OHNE Wortart-Wissen/Kontext (wie die Sonnenbuchstaben-Regel). Bei jeder neuen/überarbeiteten Lektion erneut versuchen. **Immer erst gegen den Bestand testen (Fehlalarmquote) und zeigen, bevor eine Regel dauerhaft in `TRANSLIT_RULES` übernommen wird.** Bisher 7 Kandidaten getestet, 3 in `TRANSLIT_RULES` übernommen (unmarkierte Feminina, "und"=immer "w-", Plural-Endung `-iou`), 2 verworfen (Verb-Personalpräfix, m/f-Adjektivpaare=masc+"a" — beide an Dialekt-Realität gescheitert, Details: PRECEDENTS.md → Prüfungen nach jedem Import), 2 bewusst nur als SQL im Skill (Verb-Selbstcheck: gehört in den Prüfablauf, nicht in den Transliterations-Tab; Gemination: ~15 % Fehlalarme, würde den Tab dauerhaft rot halten).
+
+**Faustregel aus diesen 7 Läufen:** Eine Regel gehört nur dann in `TRANSLIT_RULES`, wenn sie nahe an 0 % Fehlalarme liegt — der Wert der beiden Prüf-Tabs liegt darin, dass „0 Treffer" wirklich „sauber" heißt. Alles mit Restunschärfe bleibt SQL im Skill und wird als Verdachtsliste abgearbeitet.
 
 ## Workflow: Geflaggte Vokabeln (🚩) live gegen Derja Ninja prüfen
 
@@ -390,7 +450,19 @@ Auslöser: "Ich habe Vokabeln markiert" → `SELECT * FROM vocabulary WHERE flag
    - Ziffern (2/5/9) oder Großbuchstaben in `darija`
    - Wortanzahl-Abgleich arabic_script vs. darija (Hinweis auf fehlende/zusätzliche Wörter)
    - "/" im `german`-Feld: echte Synonyme vs. Bedeutungskollision (sollte `;` sein) — Testkriterium siehe Duplikat-Check-Regeln oben
+   - "/" im `darija`- oder `arabic_script`-Feld: Schrägstrich-Muster gehört aufgeteilt (siehe Verben-Regeln) — der Duplikat-Check normalisiert den ganzen String inkl. "/" zu einem Key und übersieht dadurch bestehende Einzelform-Einträge
+   - Präsens-Verb mit Infinitiv-Gloss statt 3. Person Singular
+   - Plural-Endung `-iou`/`-eou`/`-aou` statt `-iw`/`-aw`
+   - Gemination: Schadda im Arabischen ohne Doppelbuchstaben in `darija` (Verdachtsliste, ~15 % Fehlalarme)
    Funde hier vor Schritt 6 mit korrigieren, nicht getrennt von den Ninja-Funden behandeln.
+
+0b. **Wenn die geflaggte Vokabel ein Verb ist, zusätzlich das 3-Zeilen-Modell prüfen** (Details: "Verb-Konjugationsmodell" oben). Eine einzelne geflaggte Verbform sagt nichts darüber, ob die anderen beiden Zielzeilen existieren — Präzedenzfall 2026-09-12: `y7jem` (id 3614) war als „eine Zeile, Tabelle dran, fertig" durchgegangen, tatsächlich fehlten 2 von 3 Zeilen und die Tabelle hatte weder `past` noch `imperative`.
+   - **Verb-Selbstcheck zuerst** (SQL oben): steht die eigene `darija`-Form in der eigenen `conjugation`-Tabelle? Das ist der billigste Test und fängt falsch zugeordnete Tabellen, Klammer-Zusätze im Feld und Schreibkonflikte in einem Durchgang.
+   - Bestand nach Präsens-Grundform UND Vergangenheit-Grundform desselben Verbs durchsuchen — **auch unter Alt-Topics und `topic IS NULL`**, per Konsonantenskelett (Pflicht-Suchschritt im Verb-Konjugationsmodell).
+   - Prüfen, ob eine dritte rotierende Zeile (`conj_rotate=true`) existiert. Fehlt sie, aber es gibt bereits ≥3 Zeilen, reicht ein Flag auf einer vorhandenen Zeile — keine Neuanlage.
+   - `tunico_verb_id` gegen `tunico_corpus_verbs` prüfen (Konsonantenskelett gegen `forms_chatalpha[]`) und verknüpfen, falls dort gelistet. **Kein Treffer ist kein Mangel:** die Korpustabelle enthält nur die 300 häufigsten Verben, ein reguläres Lexikon-Verb aus `tunico_import` steht dort nicht und behält korrekt `tunico_verb_id = NULL`.
+   - `conjugation` an allen Zeilen des Verbs synchron halten — Stand 2026-09-12 sind 3 Gruppen bereits auseinandergelaufen.
+   - **Fehlende Zielzeilen werden als Vorschlagsliste gezeigt, nicht direkt geschrieben** (siehe Neuanlage-Regel im Verb-Konjugationsmodell).
 1. **Offline-Quellen zuerst, in dieser Reihenfolge — alle drei, nicht nur die erste** (Details zu jeder Tabelle: IMPORTS.md):
    1. `derja_ninja_entries` — schnell, aber ein Snapshot (2026-08-17), kann bei mehrteiligen Begriffen unvollständig sein.
    2. `tunico_import` (Englisch-Übersetzung als Suchschlüssel gegen `senses`/`de_gloss`) — liefert oft das komplette Bedeutungsspektrum eines mehrdeutigen Worts, wo ein einzelner Ninja-Treffer nur eine Facette zeigt.
@@ -403,7 +475,24 @@ Auslöser: "Ich habe Vokabeln markiert" → `SELECT * FROM vocabulary WHERE flag
    - arabic_script oder Bedeutung weicht ab → Korrektur mit Begründung vorschlagen
    - Kein eigener Treffer, aber in Beispielsätzen anderer Einträge bestätigt → Bedeutung gilt als bestätigt, kein Audio → `ninja_check_kein_vorschlag`
    - Gar kein Treffer → ebenfalls `ninja_check_kein_vorschlag`, im `change_reason` transparent machen
-   - **Nur diese zwei exakten Strings für `change_category`:** `ninja_check_pending` und `ninja_check_kein_vorschlag`. Keine eigenen Varianten — die App filtert im Ninja-Check-Tab hart auf genau diese zwei Werte.
+   - **Nur diese zwei exakten Strings für `change_category` beim Schreiben:** `ninja_check_pending` und `ninja_check_kein_vorschlag`. Keine eigenen Varianten — die App filtert im Ninja-Check-Tab hart auf diese Werte.
+   - **Die App schreibt vier weitere Werte zurück** (nie selbst setzen, aber beim Lesen kennen — sie sagen, was mit einem früheren Vorschlag passiert ist):
+
+     | Wert | Von wem | Bedeutung |
+     |---|---|---|
+     | `ninja_check_uebernommen` | ✅-Knopf | Vorschlag übernommen, `vocabulary` ist aktualisiert |
+     | `ninja_check_ignoriert` | 🚫-Knopf | Vorschlag abgelehnt — **nicht erneut denselben Vorschlag machen** |
+     | `ninja_check_kein_vorschlag_bestaetigt` | 👍-Knopf | „keine Quelle gefunden" zur Kenntnis genommen |
+     | `ninja_check_kommentiert` | 💬-Knopf | **Nils hat einen Hinweis hinterlassen — das ist ein Auftrag, siehe unten** |
+
+   - **`ninja_check_kommentiert` ist die wichtigste dieser vier.** Der 💬-Knopf („Erneut prüfen lassen") schreibt einen Freitext nach `vocabulary_review.user_comment` und setzt `reviewed=false`. Das ist der einzige Rückkanal von Nils zur nächsten Session: Kontext, Vermutung oder ein alternativer Suchbegriff zu einer Vokabel, die beim ersten Anlauf nicht auffindbar war. **Bei jedem 🚩-Durchgang mitabfragen**, nicht nur `flagged`:
+
+     ```sql
+     SELECT vocabulary_id, user_comment, change_reason
+     FROM vocabulary_review
+     WHERE change_category = 'ninja_check_kommentiert' AND NOT reviewed;
+     ```
+     Mit dem Hinweis erneut suchen und das Ergebnis wieder als `ninja_check_pending`/`ninja_check_kein_vorschlag` schreiben, damit es im Tab wieder sichtbar wird.
 5. **Vor dem Schreiben:** bestehende `vocabulary_review`-Zeilen prüfen (idealerweise schon als Sammelabfrage am Anfang, siehe oben) — auch mit `change_category IS NULL` (für Nils im Tab unsichtbare Altlasten).
    - **Technischer Zwang:** `vocabulary_review.vocabulary_id` hat UNIQUE-Constraint. Zweiter INSERT crasht mit `23505 duplicate key` — immer erst SELECT, dann UPDATE statt INSERT wenn schon eine Zeile existiert.
    - **Konflikt-Check:** bestehende Zeile mit abweichendem Vorschlag (z.B. `partner_status='pending'` mit anderem Wort) → nie stillschweigend überschreiben, beide Versionen zeigen, Nils entscheiden lassen.

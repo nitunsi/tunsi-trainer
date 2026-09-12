@@ -6160,7 +6160,9 @@ async function showNinjaCheckQueue(){
     const res = await sbApi(
       'vocabulary_review?select=vocabulary_id,arabic_script,darija,ninja_audio_url,ninja_audio_start,ninja_audio_end,change_reason,change_category,user_comment,' +
       'vocabulary(arabic_script,darija,german,ninja_audio_url,ninja_audio_start,ninja_audio_end,flagged,lessons(lesson_number))' +
-      '&change_category=in.(ninja_check_pending,ninja_check_kein_vorschlag)&order=vocabulary_id.asc'
+      // ninja_check_kommentiert muss mit rein: sonst verschwindet ein Eintrag, sobald man
+      // "💬 Erneut prüfen lassen" drückt, und der eigene Hinweis ist nie wieder sichtbar.
+      '&change_category=in.(ninja_check_pending,ninja_check_kein_vorschlag,ninja_check_kommentiert)&order=vocabulary_id.asc'
     );
     nqAllResults = res || [];
     renderNinjaCheckQueue();
@@ -6179,12 +6181,19 @@ function renderNinjaCheckQueue(){
   }
 
   const pendingCount = nqAllResults.filter(r => r.change_category === 'ninja_check_pending').length;
-  const noSuggCount = nqAllResults.length - pendingCount;
-  let h = '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.8rem">' + pendingCount + ' offene Vorschläge' + (noSuggCount ? ' · ' + noSuggCount + ' ohne Vorschlag' : '') + '</div>';
+  const kommentiertCount = nqAllResults.filter(r => r.change_category === 'ninja_check_kommentiert').length;
+  const noSuggCount = nqAllResults.length - pendingCount - kommentiertCount;
+  let h = '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.8rem">' + pendingCount + ' offene Vorschläge'
+        + (noSuggCount ? ' · ' + noSuggCount + ' ohne Vorschlag' : '')
+        + (kommentiertCount ? ' · <span style="color:var(--gold2)">' + kommentiertCount + ' mit Hinweis</span>' : '') + '</div>';
   h += '<div style="display:flex;flex-direction:column;gap:.6rem">';
 
   nqAllResults.forEach(row => {
     const orig = row.vocabulary || {};
+    // Kommentierte Eintraege sind ebenfalls "ohne Vorschlag" — sie stammen aus genau diesem
+    // Zweig und haben keine Ninja-Alternative, die man uebernehmen koennte.
+    const noSugg = row.change_category === 'ninja_check_kein_vorschlag' || row.change_category === 'ninja_check_kommentiert';
+    const isKommentiert = row.change_category === 'ninja_check_kommentiert';
     const ls = orig.lessons ? 'L' + orig.lessons.lesson_number : '?';
     const origAudio = orig.ninja_audio_url
       ? '<button onclick="playVocabAudio(\'' + orig.ninja_audio_url.replace(/'/g,"\\'") + '\',event,' + (orig.ninja_audio_start||0) + ',' + (orig.ninja_audio_end||0) + ')" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.1rem .4rem;cursor:pointer;border-radius:3px;vertical-align:middle;margin-left:.3rem">🔊</button>'
@@ -6193,10 +6202,10 @@ function renderNinjaCheckQueue(){
       ? '<div style="margin-top:.4rem;padding:.4rem .5rem;background:rgba(255,255,255,.04);border-left:2px solid var(--gold);border-radius:2px;font-size:.72rem;color:var(--muted)">💡 ' + row.change_reason + '</div>'
       : '';
 
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem' + (row.change_category==='ninja_check_kein_vorschlag' ? ';opacity:.75' : '') + '">';
-    h += '<div style="font-size:.7rem;color:var(--muted);margin-bottom:.4rem">' + ls + ' · ' + (orig.german||'') + (orig.flagged ? ' · 🚩 markiert' : '') + (row.change_category==='ninja_check_kein_vorschlag' ? ' · 🤷 kein Vorschlag' : '') + '</div>';
+    h += '<div style="background:var(--surface);border:1px solid ' + (isKommentiert ? 'var(--gold)' : 'var(--border)') + ';border-radius:6px;padding:.7rem .8rem' + (noSugg && !isKommentiert ? ';opacity:.75' : '') + '">';
+    h += '<div style="font-size:.7rem;color:var(--muted);margin-bottom:.4rem">' + ls + ' · ' + (orig.german||'') + (orig.flagged ? ' · 🚩 markiert' : '') + (isKommentiert ? ' · 💬 wartet auf erneute Prüfung' : (noSugg ? ' · 🤷 kein Vorschlag' : '')) + '</div>';
 
-    if(row.change_category === 'ninja_check_kein_vorschlag'){
+    if(noSugg){
       h += '<div style="min-width:0">';
       h += '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--border);margin-bottom:.2rem">Aktuell (unverändert)</div>';
       h += '<div style="font-family:\'Playfair Display\',serif;font-size:1.05rem;color:var(--muted);direction:rtl;text-align:right">' + (orig.arabic_script||'') + '</div>';
@@ -6452,6 +6461,10 @@ const TRANSLIT_RULES = [
     } },
   { label: '"und" sollte immer als "w-" geschrieben werden, nicht als eigenständiges "wa"/"u"',
     test: v => /\b(wa|u)\b/.test(v.tr) && !/\bahla\s+wa\s+sahla\b/i.test(v.tr) },
+  // Plural يفعلوا wird -iw/-aw geschrieben, nie -iou/-eou/-aou (Konvention SKILL.md).
+  // Erster Lauf 2026-09-12: 13 Treffer, alle echt, keine Fehlalarme.
+  { label: 'Plural-Endung "-iou"/"-eou"/"-aou" statt "-iw"/"-aw"',
+    test: v => /(iou|eou|aou)(\b|$)/.test(v.tr) },
 ];
 
 // Zählt betroffene Vokabeln (distinct), für die Statistik-Kachel — reine Zahl, kein Rendering
