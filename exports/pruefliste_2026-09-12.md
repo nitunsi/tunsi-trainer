@@ -981,3 +981,36 @@ Drei Dinge sieht der Filter nicht und mussten von Hand raus: `4401 tfahim` (Ninj
 Die Ninja-Route ist damit weitgehend ausgeschöpft. Für die restlichen 506 Einzelwörter bleiben: **164 mit vokalisiertem Geschwister im Bestand** (gleiches Skelett — strukturell sicherer, weil dieselbe Wortfamilie), der Rest von Hand oder aus TUNICO. Kein Bulk-Job.
 
 **Vorgemerkt, nicht vergessen:** die 6 Trenner-Fälle aus dem externen Protokoll. `checkAnswer()` akzeptiert bei `/` jede Teilantwort — bei `4465 katib` „Schriftsteller / Sekretär" zählt „Sekretär" als richtig, wenn „Schriftsteller" gemeint war. Das verfälscht direkt den Lernfortschritt und ist **kein** Kosmetikpunkt.
+
+### 🚫 Die 6 Trenner-Fälle: nicht ausgeführt, Protokoll wandte den falschen Test an
+
+Das dokumentierte Kriterium lautet ausdrücklich *nicht* „sehen die Formulierungen unterschiedlich aus", sondern „wäre bei isolierter Abfrage dieses Worts **jede** der Antworten korrekt".
+
+| id | Gloss | Prüfung |
+|---|---|---|
+| 4465 `katib` كَاتِب | Schriftsteller / Sekretär | كاتب heißt beides → „/" korrekt |
+| 3399 `tlab` طْلَبْ | er forderte / er bat / er bestellte | طلب heißt alle drei → „/" korrekt |
+| 4186 `numru` | Nummer / Größe / Type | ein Lehnwort (numéro) → „/" korrekt |
+| 3210 `makhkhir` | zu spät / verspätet / wer zu spät kommt | ein Wort → „/" korrekt |
+| 2811 `rwayyeq` | Unsinn / Ausreden / Blödsinn | ein Wort → „/" korrekt |
+| 4014 `mastin` | fad (Essen) / fad (Person) | ein Wort, Klammern disambiguieren → „/" korrekt |
+
+Das Protokoll argumentierte durchgehend mit „zwei verschiedene Berufe", „drei verschiedene Sprechakte" — genau der Test, den die Regel verwirft. Der Bug, vor dem sie schützt, ist ein anderer: **zwei verschiedene Wörter** hinter einer darija-Schreibung („er flog / er rasierte"). Polysemie eines Wortes ist der gewollte Fall.
+
+PRECEDENTS.md hält fest, dass diese Überkorrektur schon einmal lief: 108 Zeilen auf „;" umgestellt, **82 wieder zurück**. Nichts geändert.
+
+## Runde 14 · Geschwister-Route zur Vokalisierung — verworfen (2026-09-13)
+
+Die 164 Zeilen mit „vokalisiertem Geschwister" sahen nach der besseren Quelle aus als Ninja. Sie sind es nicht — und zwar **strukturell**: im Arabischen teilt die ganze Ableitungsfamilie dasselbe Konsonantengerüst, und die Vokalisierung ist genau das, was die Wörter trennt.
+
+| unvokalisiert | „Geschwister" | tatsächlich |
+|---|---|---|
+| `sfer` „null" صفر | `sfor` „gelb (Pl.)" | zwei Wörter |
+| `ktob` „Bücher" كتب | `ktib` „er schrieb" | Nomen vs. Verb |
+| `b7ar` „Meer" بحر | `ba77ar` „er ging ans Meer" | Nomen vs. Verb Maß II |
+| `qra` „er las" قرى | `qarra` „er lehrte" | Maß I vs. Maß II |
+| `bra` „genas" برا | `barra` „draußen" | zwei Wörter |
+
+Der Buchstaben-Identitätsfilter, der die Ninja-Route rettet, ist hier **per Konstruktion erfüllt** und hilft deshalb nicht. Von 29 Paaren blieben **2** — nur die, bei denen auch die `darija` identisch ist: `652 maqfoul` (← 2296) und `4410 tsa77ar` (← 4295). Beide ausgeführt.
+
+**Konsequenz:** Der Vokalisierungs-Rückstand ist **keine Kampagne**. Ninja gibt nach Filter ~20, die Geschwister praktisch nichts. Richtig ist die Regel „ohnehin fällige Bearbeitung" — beim Anfassen einer Zeile die Vokalisierung mitziehen. Stand: **746 unvokalisiert, davon 504 Einzelwörter.**

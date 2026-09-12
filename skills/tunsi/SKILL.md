@@ -765,6 +765,22 @@ Das erschlägt alle Kollisionen und zusätzlich die Numerus-/Genus-Fälle (Ninja
 
 **Danach trotzdem drei Dinge von Hand prüfen**, die der Filter nicht sieht: (1) ob Ninjas Eintrag dieselbe **Wortart** ist (`tfahim` „er einigte sich" gegen Ninjas تَفَاهُمْ, das Nomen „understanding" — buchstabenidentisch, anderes Wort); (2) ob Ninjas Vokalisierung der eigenen `darija` widerspricht (`toshrob` gegen تِشْرَبْ = `tishrab`); (3) ob Ninjas Fassung überhaupt vokalisiert ist — bei `intikhabat` und `amriken` ist sie es nicht, da gibt es nichts zu übernehmen.
 
+**Vokalisierung NICHT von einer Geschwisterzeile übernehmen (belegt 2026-09-13).** Naheliegend, aber systematisch falsch: im Arabischen teilt die ganze Ableitungsfamilie dasselbe Konsonantengerüst, und **die Vokalisierung ist genau das, was die Wörter unterscheidet**. Ein Skelett-Match innerhalb des Bestands findet deshalb bevorzugt *andere* Wörter derselben Wurzel:
+
+| unvokalisiert | „Geschwister" mit gleichen Buchstaben | tatsächlich |
+|---|---|---|
+| `sfer` „null" صفر | `sfor` „gelb (Pl.)" صْفُر | zwei Wörter |
+| `ktob` „Bücher" كتب | `ktib` „er schrieb" كتِب | Nomen vs. Verb |
+| `b7ar` „Meer" بحر | `ba77ar` „er ging ans Meer" بحّر | Nomen vs. Verb Maß II |
+| `qra` „er las" قرى | `qarra` „er lehrte" قَرَّى | Maß I vs. Maß II |
+| `bra` „genas" برا | `barra` „draußen" بَرَّا | zwei Wörter |
+
+Der Buchstaben-Identitätsfilter, der die Ninja-Route rettet, **hilft hier nicht** — er ist per Konstruktion erfüllt. Von 29 Paaren blieben 2 brauchbar, und zwar nur die, bei denen **auch die `darija` identisch** ist (echte Homonympaare, bei denen wirklich nur Harakat fehlen): 652/2296 `maqfoul`, 4410/4295 `tsa77ar`.
+
+**Regel:** Vokalisierung aus dem Bestand nur übernehmen, wenn `darija` **und** Buchstaben übereinstimmen. Alles andere braucht eine lexem-gebundene Quelle oder Handarbeit.
+
+**Konsequenz für die Planung:** Der Vokalisierungs-Rückstand (Stand 2026-09-13: 746 Zeilen, davon 504 Einzelwörter) ist **nicht als Kampagne abarbeitbar**. Ninja liefert nach Filter ~20 pro Durchgang, die Geschwister-Route praktisch nichts. Sinnvoll ist die Regel „ohnehin fällige Bearbeitung": wird eine Zeile aus anderem Grund angefasst, die Vokalisierung bei der Gelegenheit mitziehen.
+
 **Nie blind über `translit_skeleton`/`arabic_skeleton` joinen — kurze Skelette (≤3 Konsonanten) kollidieren zufällig** (Präzedenzfall: PRECEDENTS.md → vocab_lookup). `english_key` ist die primäre, zuverlässige Achse; Skeleton-Treffer nur separat markiert und mit `length(...) >= 4` gefiltert.
 
 **`vocabulary.english` (seit 2026-09-05, 2.086/3.698 befüllt) ist nur ein Such-Schlüssel für den Quellenabgleich, keine geprüfte Übersetzung** — muss nicht nuanciert sein, nur treffend genug für den `english_key`-Join. Befüllt über vier Wege, absteigend nach Zuverlässigkeit: (1) exakter `ninja_audio_url`-Match — dieselbe Ninja-Zeile, die schon das Audio geliefert hat, `english` direkt übernommen (676 Zeilen); (2) exakter `arabic_script`-Match gegen Ninja (295 Zeilen); (3) exakter Deutsch-Text-Match gegen `tunico_import.senses[].de` — TUNICO liefert Deutsch UND Englisch im selben Sinne, ein Treffer auf `german` liefert das passende Englisch direkt mit, nur wenige deutsche Homonym-Kollisionen ausgenommen (`heller`/„Heller"-Münze, `zu`=nach/geschlossen) (219 Zeilen); (4) Skelett-Match gegen `vocab_lookup` mit manueller Deutsch/Englisch-Plausibilitätsprüfung, Skelett-Treffer allein reicht nicht (585 Zeilen). Details/Fehlerbilder: PRECEDENTS.md → vocabulary.english Backfill. Bei neuen Vokabeln `english` gleich mitpflegen, dann ist der Abgleich sofort ohne Nachbearbeitung nutzbar.
