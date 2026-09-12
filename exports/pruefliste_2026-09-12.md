@@ -914,3 +914,32 @@ Korrigiert: `3189 khallas`→`khallis` · `3409 khalles`→`khallas` · `3446 yk
 ### Nicht übernommen
 
 Die **26 `topic`-Befunde**. SKILL.md sagt ausdrücklich, dass bestehende Legacy-Topics nicht gesucht, geprüft oder gemeldet werden.
+
+---
+
+## Runde 12 · Skill- und Trainer-Audit (2026-09-13)
+
+### Skill: die zwei bekannten Fallen sind sauber
+
+- **`\b` statt `\y`:** kein einziges Vorkommen in irgendeinem SQL der drei Skill-Dateien.
+- **Zeichenreihenfolge:** die einzige `<Buchstabe>ّ`-Regex ohne Vokaltoleranz steht im eigenen „FALSCH:"-Gegenbeispiel. `arabic_script ~ 'ّ'` allein ist reihenfolge-unabhängig.
+
+### Skill: alle Checks laufen und melden Plausibles
+
+| Check | Treffer | Einordnung |
+|---|---|---|
+| Konsonanten-Gegencheck | 0 | sauber |
+| Plural `-iou` | 0 | sauber |
+| Schadda auf erstem Buchstaben | 0 | nach 3673 + 4307 erledigt |
+| Halb verdoppelter Digraph | 4 | bekannte korrekte Präfix-`t`/`thh`-Zeilen |
+| ya-Gemination ohne `yy` | 11 | dokumentierte Ausnahmen |
+| waw-Gemination ohne `ww` | 11 | dokumentierte Ausnahmen |
+| Verb-Selbstcheck | 19 | D4-Rückstand |
+| Liste C | 21 | mehrwortige Reste |
+
+### Trainer: zwei Härtungen
+
+1. **`sbApiPaged()` vergleicht jetzt gegen den `count`-Header.** Die Funktion kannte `total` und hat es nie geprüft. Ein still unvollständig geladener `ALL_VOCAB` verfälscht SRS-Queue, Duplikat-Check und beide Prüf-Tabs — und sieht dabei wie ein sauberes Ergebnis aus. Jetzt harter Abbruch mit Zeilenzahl statt falsch weiterrechnen.
+2. **Der Transliterations-Tab nennt die Grundgesamtheit:** „N von M Vokabeln geprüft · R Regeln", im Erfolgs- wie im Trefferfall. Dieselbe Lehre wie beim Harness-Export — eine Null ohne Nenner ist keine Aussage.
+
+**Geprüft und in Ordnung:** Das Feld-Mapping (`ar: v.arabic_script`, `tr: v.darija`, `en: v.german`) passt zu dem, was die Regeln erwarten — die Konsonantenregeln schauen also wirklich ins Arabische. `sbApi()` wirft bei `!r.ok`, ein Gateway Timeout lässt den Ladevorgang sichtbar scheitern statt ihn stumm zu kürzen. Zähl- und Render-Funktion des Tabs filtern identisch.

@@ -1377,6 +1377,12 @@ async function sbApiPaged(basePath, batchSize, onProgress){
       pages.forEach(p => { all = all.concat(p||[]); });
       if(onProgress) onProgress(all.length, total);
     }
+    // Pflichtabgleich gegen den count-Header: ein still unvollständig geladener Bestand
+    // verfälscht SRS-Queue, Duplikat-Check und Prüf-Tabs gleichermaßen und sieht dabei
+    // wie ein sauberes Ergebnis aus. Lieber hart scheitern als falsch weiterrechnen.
+    if(all.length !== total){
+      throw new Error('Unvollständig geladen: '+all.length+' von '+total+' Zeilen ('+basePath.split('?')[0]+') — bitte neu laden');
+    }
   } else if(firstPage.length === batchSize){
     // Fallback ohne count-Header (z.B. wenn Prefer ignoriert wird) → wie bisher sequenziell
     let offset = batchSize;
@@ -6534,15 +6540,24 @@ function renderTranslitCheck(c){
     entries: ALL_VOCAB.filter(v => v.tr && r.test(v))
   })).filter(g => g.entries.length);
 
+  // Grundgesamtheit und Regelzahl immer mit ausgeben: "0 Treffer" ist ohne Nenner keine
+  // Aussage — ein halb geladener Bestand oder eine gekürzte Regelliste sähen genauso aus.
+  const geprueft = ALL_VOCAB.filter(v => v.tr).length;
+  const fuss = geprueft + ' von ' + ALL_VOCAB.length + ' Vokabeln gepr\u00fcft \u00b7 '
+             + TRANSLIT_RULES.length + ' Regeln';
+
   if(!groups.length){
-    c.innerHTML = '<div style="padding:2rem;text-align:center"><div style="font-size:2rem;margin-bottom:.8rem">\u2705</div><div style="color:var(--green);font-size:.9rem">Keine Transliterations-Auff\u00e4lligkeiten gefunden</div></div>';
+    c.innerHTML = '<div style="padding:2rem;text-align:center">'
+      + '<div style="font-size:2rem;margin-bottom:.8rem">\u2705</div>'
+      + '<div style="color:var(--green);font-size:.9rem">Keine Transliterations-Auff\u00e4lligkeiten gefunden</div>'
+      + '<div style="color:var(--muted);font-size:.72rem;margin-top:.6rem">'+fuss+'</div></div>';
     return;
   }
 
   const total = groups.reduce((s,g)=>s+g.entries.length,0);
   let html = '<div>'
     + '<div style="color:var(--gold2);font-size:1rem;font-weight:700;margin-bottom:.4rem">\ud83d\udd24 Transliterations-Pr\u00fcfung</div>'
-    + '<div style="color:var(--muted);font-size:.78rem;margin-bottom:1.2rem">'+total+' Auff\u00e4lligkeit'+(total!==1?'en':'')+' in '+groups.length+' Kategorie'+(groups.length!==1?'n':'')+'</div>';
+    + '<div style="color:var(--muted);font-size:.78rem;margin-bottom:1.2rem">'+total+' Auff\u00e4lligkeit'+(total!==1?'en':'')+' in '+groups.length+' Kategorie'+(groups.length!==1?'n':'')+' \u00b7 '+fuss+'</div>';
 
   groups.forEach(g => {
     html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;margin-bottom:1rem;overflow:hidden">'
