@@ -14,6 +14,7 @@ Die drei SQL-Abfragen dazu stehen in `skills/tunsi/SKILL.md` → „Datenqualit�
 | B — Plural-Endung `-iou`/`-eou`/`-aou` statt `-iw`/`-aw` | 13 → **0** | 0 % (13/13 echt) | ✅ erledigt 2026-09-12 |
 | C — Schadda im Arabischen ohne Gemination in `darija` | 93 | ~15 % (Stichprobe 16 → 11 echt) | Verdachtsliste, Einzelprüfung nötig |
 | D — Nebenfunde beim Erstellen der Listen | 51 | — | siehe unten |
+| E — Vokal-Dubletten im Bestand | 177 → **10** brauchbar | 20 % (8 von 10 echt) | offen, siehe unten |
 
 ---
 
@@ -373,3 +374,38 @@ Runden 1–3 sind zusammen 21 Zeilen und ohne weitere Rückfrage sauber abzuarbe
 5. **Form-II-Stammvokal** (`-a-` 51 / `-e-` 27 / `-i-` 20) — eigene, große Entscheidung; bisher bewusst nicht angefasst.
 
 Neue Vokabelzeilen (48 fehlende Verbformen) sind laut Absprache in Ordnung, aber **vorher fragen** — und getrennt davon fragen, **ob sie fällig gesetzt** werden sollen.
+
+
+---
+
+## E · Vokal-Dubletten im Bestand (neu 2026-09-12)
+
+`normKey()` faltet keine Vokale — Schreibvarianten desselben Worts sind für den Duplikat-Check der App deshalb **grundsätzlich unsichtbar**. Der bestehende Skelett-Check in SKILL.md braucht eine Batch-Grenze und findet nur Dubletten *innerhalb eines frischen Imports*; über Jahre gewachsene Varianten fallen durch.
+
+Der neue bestandsweite Check (SQL in SKILL.md → Datenqualitäts-Checks) liefert roh **177 Verdachtspaare**. Nach Filterung der Fehlalarm-Muster bleiben 71 — aber nur die Teilmenge mit **identischem `arabic_script`** ist brauchbar.
+
+**Wichtig, damit das niemand nochmal aufrollt:** Die 61 Paare mit *unterschiedlichem* Arabisch sind fast ausnahmslos korrekte Morphologie (`khamsa`/`khams` fünf/fünfter, `3ashra`/`3shour` zehn/zehnter, `khobz`/`khobza` Brot/ein Brot, `qrib`/`qriba` nah m./f., `forshita`/`frashit` Gabel Sg/Pl). Viele tragen gar keinen Marker im Gloss und sind durch keinen Filter trennbar. Die Rohzahl 177 überzeichnet den Fund um mehr als das Zehnfache.
+
+### Die brauchbare Liste: 10 Paare mit identischem `arabic_script`
+
+8 davon sind echte Dubletten, alle von Hand geprüft. Empfehlung jeweils: die Zeile mit mehr Lernfortschritt behalten.
+
+| behalten | löschen | Bedeutung | Anmerkung |
+|---|---|---|---|
+| **413** `maryoul` · L6 | 4213 `maryul` · L4 | T-Shirt | Gloss zu „T-Shirt / Pullover" zusammenführen |
+| **619** `djeja` · L6 | 3475 `djaja` · L6 | Huhn | Gleichstand — ältere ID, reicherer Gloss |
+| **961** `behya` · L6 | 4108 `bahya` · – | gut (f.) | |
+| **1008** `mokhdda` · L5 | 4270 `mkhadda` · – | Kissen | um „Polster" ergänzen |
+| **1247** `t3adda` · L0 | 2822 `ta3adda` · – | er ging vorbei | 1247 ist ein Leech (32× falsch) |
+| **1261** `ghodwa` · L6 | 3775 `ghudwa` · L5 | morgen | |
+| **2194** `bnayya` · L6 | 3378 `bniyya` · – | Mädchen | |
+| **2922** `neyy` · L5 | 4375 `nayy` · – | roh | |
+
+**Nicht mergen — zwei Fehlalarme in derselben Teilmenge:**
+
+| Paar | warum kein Duplikat |
+|---|---|
+| `385 brika` (Brik-Gebäck mit Ei) / `2142 brik` (Brik-Teigblatt) | verwandt, aber zwei verschiedene Dinge |
+| `2632 rmal` (Sand) / `2656 ramla` (Sand (f.)) | Kollektiv vs. Nomen unitatis |
+
+**Status:** noch nicht ausgeführt, wartet auf Bestätigung. Vor jedem Löschen wie üblich Kurs-Übungen und `vocab_lesson_refs` der zu löschenden Zeile prüfen (`course_exercises.vocabulary_id` ist `NO ACTION` — ein DELETE scheitert sonst).

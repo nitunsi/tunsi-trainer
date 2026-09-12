@@ -409,6 +409,20 @@ Erster Lauf 2026-09-12: **177 Verdachtspaare**, davon 166 in Zeilen ohne `conjug
 
 Diese Paare sind **korrekt und dürfen nicht zusammengelegt werden** — bei Imperativ/Vergangenheit ggf. `homonym_ok=true` setzen, wenn die Schreibung wirklich identisch wird.
 
+**Filter-Feinheit, die zählt (2026-09-12 durchgemessen):** Ein `(f.)`-Marker auf *einer* Seite ist KEIN Ausschlusskriterium — das killt echte Dubletten (`djeja` „Henne / Huhn (f.)" ↔ `djaja` „Huhn", `neyy` „roh (m.)" ↔ `nayy` „roh"). Ausschließen nur, wenn **beide** Seiten gegensätzliche Marker tragen:
+
+```sql
+  AND NOT ((a.m AND b.f) OR (a.f AND b.m))   -- echtes m/f-Paar
+  AND NOT (a.pl <> b.pl) AND NOT (a.sg <> b.sg)  -- Numerus-Paar
+  AND NOT (a.imp <> b.imp)                   -- Imperativ vs. andere Form
+  AND NOT (a.part <> b.part)                 -- Partizip vs. andere Form
+```
+Gegen eine Kontrollmenge von 14 handgeprüften Paaren validiert: alle 8 echten überleben, 4 von 6 Fehlalarmen fallen raus.
+
+**Wichtigste Lehre — nur `gleiches_arabisch = true` ist eine Arbeitsliste.** Roh 177 Paare, nach allen Filtern 71. Von den 61 Paaren mit *unterschiedlichem* `arabic_script` ist praktisch keines eine Dublette, sondern korrekte Morphologie: `khamsa`/`khams` (fünf/fünfter), `3ashra`/`3shour` (zehn/zehnter), `khobz`/`khobza` (Brot / ein Brot), `qrib`/`qriba` (nah m./f.), `forshita`/`frashit` (Gabel Sg/Pl). Viele davon tragen **gar keinen Marker im Gloss**, sind also durch keinen Filter aussortierbar. Die 10 Paare mit identischem Arabisch enthielten dagegen 8 echte Dubletten.
+
+→ **Beim nächsten Lauf nur die `gleiches_arabisch`-Teilmenge vorlegen.** Den Rest nicht aufrollen — das war der Irrweg, den dieser Durchgang einmal gegangen ist.
+
 **Duplikat-Prüfung nach `normKey()`-Logik (App-Tab „🔍 Duplikat-Prüfung" 1:1 nachgebaut):**
 ```sql
 WITH norm AS (
