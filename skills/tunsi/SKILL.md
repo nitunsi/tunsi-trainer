@@ -477,6 +477,35 @@ GROUP BY en_key HAVING count(*) > 1
 ORDER BY field, key;
 ```
 
+⚠️ **Der `ar_key` oben ist diakritika-empfindlich — das ist Absicht (er bildet die App nach), aber als Duplikat-Prüfung ist er blind.** Zwei Zeilen mit demselben arabischen Wort sind für ihn verschiedene Wörter, sobald sie unterschiedlich vokalisiert sind: **6 Gruppen** gegen **86** mit gestripptem Vokal. Den folgenden Check deshalb **zusätzlich** laufen lassen — er geht bewusst über das hinaus, was der App-Tab kann.
+
+**Arabischer Duplikat-Check, vokalisierungs-unabhängig (seit 2026-09-12).**
+```sql
+WITH v AS (
+  SELECT id, darija, german, homonym_ok,
+    lower(regexp_replace(regexp_replace(arabic_script,'[ًٌٍَُِْٰٟ]','','g'),
+                         E'[\\s.,;:!?()/\\\\''"«» -]+','','g')) AS k
+  FROM vocabulary WHERE arabic_script IS NOT NULL AND length(arabic_script) > 2
+)
+SELECT k, count(*) AS n, bool_or(homonym_ok) AS hom,
+       string_agg(id||' '||darija||' = '||left(german,40), '  ||  ' ORDER BY id) AS zeilen
+FROM v GROUP BY k HAVING count(*) > 1 ORDER BY n DESC, k;
+```
+
+**Die Schadda gehört NICHT in die Stripliste.** Sie ist ein Konsonantenverdopplungszeichen, kein Vokalzeichen — sie mitzustrippen verschmilzt Form I und Form II (حَضَر „er nahm teil" gegen حَضَّر „er bereitete vor") und erzeugt 40 Scheingruppen. 126 Gruppen mit Schadda gestrippt gegen 86 ohne; die Differenz sind genau diese Paare.
+
+**Fehlalarm-Profil (erster vollständiger Lauf, 86 Gruppen):**
+
+| Muster | Gruppen | |
+|---|---|---|
+| `-it`/`-t`-Verbpaar (3. Pers. f. gegen 1. Pers. Vergangenheit) | 21 | strukturell, der Bestand legt es für jedes Verb an |
+| bereits `homonym_ok` | 17 | Check arbeitet korrekt |
+| echt verschiedene Wörter mit gleichem Gerüst | ~30 | `morra`/`marra`, `ktob`/`ktib`, `3irq`/`3araq`, `jomal`/`jmal` |
+| Imperativ/Vergangenheit derselben Wurzel | ~5 | kein Duplikat, aber `homonym_ok`-Kandidaten |
+| **echte Funde** | **17** | ~20 % Trefferquote |
+
+**Beim Prüfen nicht auf „Dublette ja/nein" verengen.** Gleiches Arabisch kann auch heißen, dass eine der beiden Zeilen inhaltlich falsch ist. Präzedenzfall `metrobbi` (PRECEDENTS.md): zwei Zeilen mit identischem Arabisch trugen **gegenteilige** Glosse, und die Quellenprüfung zeigte, dass nicht die eine die Dublette der anderen war, sondern beide Glosse invertiert. Jede Gruppe gegen Ninja/TUNICO/Peace Corps prüfen, nicht nur gegeneinander.
+
 **Verb-Selbstcheck: Zeile gegen die eigene `conjugation`-Tabelle (seit 2026-09-12).** Eine feste Verb-Zeile mit Konjugationstabelle muss ihre eigene `darija`-Form in einer Zelle dieser Tabelle wiederfinden — sonst lehrt die Karteikarte eine andere Schreibung, als das 🔠-Blatt daneben zeigt. Rein interner Vergleich, keine externe Quelle nötig, **keine Fehlalarme möglich**. Deshalb vor jedem externen Abgleich laufen lassen, nicht danach.
 
 ```sql

@@ -218,6 +218,38 @@ Die Endung ist in **allen** 16 Zeilen `-ik`, nie `-ek`: jedes `arabic_script` ha
 
 **Nebenbefund, nicht angefasst:** die Klammer-Hinweise `(a...)`/`(y...)`/`(b...)` in den `german`-Feldern von 1391 `aman` / 1392 `y3ayyshik` / 1393 `brabbi` sind **kein Import-Müll**, sondern die bewusste Unterscheidung dreier Synonyme für „bitte" — nicht entfernen. Der `(b...)`-Rest im `arabic_script` von 1392 (`يْعَيِّشِك (b...)`, samt `arabic_skeleton` `3shk(b)`) war dagegen echter Copy-Paste-Müll aus 1393 und wurde entfernt. Offen: 1113 `billehi` heißt ebenfalls „bitte", hat aber keinen Hinweis-Zusatz.
 
+## metrobbi — gleiches Arabisch, gegenteiliger Gloss (2026-09-12)
+
+Beim Abarbeiten des vokalisierungs-unabhängigen Duplikat-Checks fielen `2495 moush mutrubbi` („unerzogen / respektlos") und `2816 moush metrobbi` („nicht toxisch / gut erzogen") als ein Paar mit identischem Arabisch مش متربّي auf — mit **gegenteiliger Bedeutung**. Erste Einordnung war „Widerspruch, eine von beiden ist falsch". Die Quellenprüfung zeigte mehr:
+
+- **Peace Corps:** `POLITE` = `mutrubbi` / `mutrubbya` / `mutrubbin` — متربّي **ohne** Negation heißt „höflich"
+- **Derja Ninja:** مَهُوشْ مُتْرُبِّي `mahouwch moutroubbiy` = „impolite" — **mit** Negation heißt es „unhöflich"
+- Wurzel: ربّى „aufziehen, erziehen" (Peace Corps `BRING UP (to)` = `rabbi`)
+
+Damit war klar: 2495 ist richtig, **und es gab eine dritte Zeile** — `2815 wled metrobbi` („toxisch / schlecht erzogen"), die der Duplikat-Check gar nicht meldete, weil sie ohne مش steht. Beide Zeilen mit `metrobbi` trugen ihre Bedeutung **gespiegelt**: ولد متربّي heißt „ein wohlerzogener Junge", nicht das Gegenteil.
+
+Vermutete Ursache: das Wort „toxisch" im Gloss. Wer einmal `metrobbi = toxisch` gesetzt hat, leitet `moush metrobbi = nicht toxisch` logisch korrekt ab — nur ist die Ausgangsannahme invertiert. Sieht nach einem Social-Media-Import aus, bei dem die Bedeutung am falschen Pol festgemacht wurde.
+
+**Zwei Lehren:**
+
+1. **Gleiches Arabisch heißt nicht automatisch „Dublette".** Es kann auch heißen, dass eine der Zeilen inhaltlich falsch ist. Jede Gruppe gegen die Quellen prüfen, nicht nur die beiden Zeilen gegeneinander.
+2. **Bei einem Bedeutungsfehler die ganze Wortfamilie nachziehen.** Der Check meldete nur das negierte Paar; die bejahte Form mit demselben Fehler stand daneben und wäre stehen geblieben. Gleiche Lehre wie bei den unvokalisierten Verbgeschwistern.
+
+## Verwaiste ids in course_lessons.vocab_lesson_refs (gefunden 2026-09-12)
+
+Bei der Referenz-Kontrolle nach einer Merge-Runde: **11 ids in `vocab_lesson_refs` zeigen auf nicht mehr existierende Vokabelzeilen** (1470, 3672, 3725, 3778, 3814, 3942, 4020, 4313, 4450, 4451, 4452 in den Kurslektionen 2, 3, 5, 6, 7, 8, 9). Keine davon stammt aus den Merges dieser Sitzung — Altbestand.
+
+`parseCourseVocabRefs()` (trainer.html) baut daraus nur ein `Set` von ids; ein unbekanntes id matcht schlicht keine Zeile und wird **stillschweigend übersprungen**. Kein Absturz, aber die betroffene Lektion hat einen toten Vokabel-Slot: sie zeigt ein Wort weniger, als der Kurs vorsieht, und nichts weist darauf hin.
+
+**Deshalb nach jeder Merge-Runde gegenprüfen:**
+```sql
+WITH r AS (SELECT cl.id AS lektion,
+  unnest(string_to_array(split_part(replace(cl.vocab_lesson_refs,'ids:',''),'|',1), ','))::int AS vid
+  FROM course_lessons cl WHERE cl.vocab_lesson_refs LIKE 'ids:%')
+SELECT r.vid, string_agg(DISTINCT r.lektion::text, ',') AS lektionen FROM r
+WHERE NOT EXISTS (SELECT 1 FROM vocabulary v WHERE v.id = r.vid) GROUP BY r.vid ORDER BY r.vid;
+```
+
 ## Zeichenreihenfolge im arabic_script — stille Regex-Falle (2026-09-12)
 
 Beim Prüfen der ya-Gemination ergab `arabic_script ~ 'يّ'` nur 7 Treffer, obwohl optisch in vielen Zeilen eine Schadda auf dem ya steht. Ursache: die Kombinationszeichen sind **Vokal vor Schadda** gespeichert (`طَيَّبِت` = `0637 064e 064a 064e 0651 …`), nicht in der kanonischen Unicode-Reihenfolge Schadda-vor-Vokal. Bestandsweit: **803 Zeilen Vokal-vor-Schadda, 16 andersherum.** Jede Regel `<Buchstabe>ّ` verfehlt damit fast den ganzen Bestand und meldet — genau wie `\b` statt `\y` — einfach nichts. Fix: `ي[ًٌٍَُِْٰ]*ّ`. Die erste, falsche Zählung hätte beinahe zu „يّ wird einfach `y` geschrieben" geführt; mit korrigierter Regex steht es **67 : 14 für `yy`**, und TUNICO wie Ninja bestätigen das mit 14/14.

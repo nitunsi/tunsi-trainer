@@ -746,3 +746,47 @@ Ein Sweep über alle Zeilen mit `(f.)` im Gloss und ohne ة/ا/ى am Wortende fa
 `1325 7adhrit` „sie bereitete vor" trug حَضْرِتْ **ganz ohne Schadda** und stand damit bei der Form-I-Familie (`1337 7adhirt`/`1338 7dhart` = „teilnehmen"), obwohl das Gloss Form II ist. → `7adhdhrit`, حَضَّرِت. Die vierte Zeile der `7adhdhar`-Familie, die alle bisherigen Runden übersehen hatten.
 
 **Nebenbefund, nicht angefasst:** `1337 7adhirt` ist als „sie nahm teil" glossiert, hat aber die Vokalstellung der 1. Person. Alle Parallelzeilen benutzen `-it` für die 3. Pers. f. (`3arfit`, `ghaslit`, `qeblit`) — `7adhrit` wäre das Muster. Eigene Frage, nicht mit der Gemination vermischt.
+
+### ✅ Merge-Runde ausgeführt (2026-09-12) — 3.790 → 3.780
+
+Jede Gruppe vorher einzeln gegen Ninja, TUNICO und Peace Corps geprüft, nicht nur gegeneinander.
+
+**Sieben Merges mit eindeutigem Quellenbeleg:**
+
+| bleibt | neue Schreibung | gelöscht | Beleg |
+|---|---|---|---|
+| 3063 | `yibra` | 4221 `ybra` | beide hatten يِبْرَا, **keine** der zwei Schreibungen passte dazu; TUNICO `bṛā` „genesen" |
+| 3449 | `yitwaffa` + يِتْوَفَّى | 4292 | TUNICO `twaffa`; 3449 trug die MSA-Vokalisierung يَتَوَفَّى |
+| 2278 | `barnamij` | 4293 | Ninja, TUNICO **und** Peace Corps schreiben alle `barnamij` |
+| 2544 | `shayekh` | 2978 | identisches Arabisch شَايِخ; Ninja `chayi5` = „excited, having a good time" — also 2978s Gloss, nicht 2544s |
+| 1119 | `7wayij` + حْوَايِجْ | 4340 | Ninja + Peace Corps `7wayij` gegen TUNICO `7wayj` (2:1) |
+| 2994 | `ma7la dha7ketek` | 3011 | identisches Arabisch; **jede Zeile hatte ein Wort richtig** — 2994 `mahla` mit `h` statt ح, 3011 `dh7ketek` statt `dha7ketek` |
+| 1425 | `ybarik fik (y3ayyshik)` | 1945 | TUNICO `bārik` „segnen" stützt `barik`, nicht `berik` |
+
+**Zwei Merges mit benannter Restunsicherheit:**
+
+- `3679 yib3id` ← `4345 yib3ad`. Vokalfrage offen: Bestand neigt zu Kasra (3679 يِبْعِد, 4424 بْعِد), Form-I-Bildung eher zu `yib3ad`. 3679 behalten, weil es an einer Kursübung hängt. Bei der Gelegenheit den Infinitiv-Gloss („weggehen, sich entfernen") auf Personalform gebracht — **ein Punkt aus Liste D1 nebenbei erledigt.**
+- `3899 ghrib` ← `1939 ghriyb`. Gestrige Einschätzung („trennen") revidiert: Peace Corps führt `STRANGE` = `ghri:b`/`ghri:ba:` mit Beispielsatz, und 1939s Arabisch غْرِيب trifft das exakt; für ein eigenständiges `gharib` „Fremder" gibt es keine Stütze (Peace Corps `FOREIGN` = `ajnabi`/`barrani`). `ghriyb` war wieder Ninjas `iy`-Konvention wie bei `touwl`.
+
+**Bedeutungsfehler (siehe PRECEDENTS.md → metrobbi):** `2815` Gloss entspiegelt zu „wohlerzogener Junge / gut erzogen (Person)" und auf `wled mutrubbi` / وَلَد مُتْرَبِّي angeglichen; `2816` gelöscht (Dublette zu 2495 mit invertiertem Gloss).
+
+**Echtes Homonym:** `3521`/`3598` beide auf `y7alliq` + يْحَلِّق, bei beiden `homonym_ok`. Zwei reale Bedeutungen (kreisen / rasieren-MSA); das Vergangenheitspaar 3597/4122 trug das Flag schon. Dass „rasieren" im Tunesischen `y7jem` ist (Peace Corps `SHAVE` = `7jama`, Zeile 3614 mit 28 Wiederholungen), bestätigt das MSA-Label.
+
+### 🔄 Korrektur meiner eigenen Einschätzung: die `m3allem`-Gruppe
+
+Ich hatte sie als „Block-Entscheidung wie `3ayshik`" eingestuft — **falsch.** TUNICO führt zwei getrennte Lemmata:
+
+- `mʕallim` → `m3allim` = „Chef, Vorgesetzter; Meister, Handwerkermeister"
+- `muʕallim` → `mu3allim` = „(Volksschul-)Lehrer"
+
+Ninja bestätigt beides (`mou3allim` مُعَلِّمْ = teacher, `m3allim kbiyr` = professional). **Die Vokalisierung *ist* die Bedeutungsunterscheidung**, und alle vier Zeilen kodieren sie bereits korrekt: 2331 مُعَلِّم Lehrer · 3731 مُعَلِّمَة Lehrerin · 3729 مْعَلِّم Chef · 3730 مْعَلِّمَة Chefin. Nichts geändert. Was ich für Schlamperei hielt, war Präzision.
+
+### 🔸 Neuer Befund: 11 verwaiste ids in `course_lessons.vocab_lesson_refs`
+
+Die Referenz-Kontrolle nach dem Merge zeigte 11 ids, die auf nicht mehr existierende Vokabelzeilen zeigen: **1470, 3672, 3725, 3778, 3814, 3942, 4020, 4313, 4450, 4451, 4452** in den Kurslektionen 2, 3, 5, 6, 7, 8, 9. **Keine davon stammt aus dieser Sitzung** — Altbestand.
+
+`parseCourseVocabRefs()` baut daraus nur ein `Set`; ein unbekanntes id matcht keine Zeile und wird stillschweigend übersprungen. Kein Absturz, aber jede betroffene Lektion hat einen toten Vokabel-Slot und zeigt ein Wort weniger, als der Kurs vorsieht. Nicht angefasst — ob die Zeilen neu angelegt oder die Referenzen entfernt gehören, ist eine eigene Entscheidung.
+
+### Stand danach
+
+Bestand **3.780**. `ar_key`-Gruppen mit korrigiertem Schlüssel 86 → **74** (die 12 abgearbeiteten). Verwaiste `course_exercises`: 0.
