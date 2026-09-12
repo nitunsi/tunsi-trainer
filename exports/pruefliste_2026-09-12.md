@@ -2,9 +2,9 @@
 
 Ergebnis von Etappe 1 des Prüfplans, seit 2026-09-12 teilweise abgearbeitet.
 
-> **Stand:** ✅ **Runden 1–4 und Liste E ausgeführt.** Offen: A5 (4 Zeilen), A6 (8 Zeilen), Runde 5 (D2-Splits) und Runde 6 (Gemination, 93).
+> **Stand:** ✅ **Klasse A ist komplett** (A1–A6), dazu Liste E. Offen: Runde 5 (D2-Splits) und Runde 6 (Gemination, 93).
 >
-> Bestand: **3.789 Vokabeln** (vorher 3.812, 23 Dubletten zusammengelegt). Verb-Selbstcheck **26** (vorher 49). Regel 21 (`-iou`): **0** (vorher 13). Vokal-Dubletten Stufe A: **2** (vorher 10, beide bewusste Fehlalarme). Duplikat-Check: 0.
+> Bestand: **3.788 Vokabeln** (vorher 3.812, 24 Dubletten zusammengelegt). Verb-Selbstcheck **26** (vorher 49). Regel 21 (`-iou`): **0** (vorher 13). Vokal-Dubletten Stufe A: **2** (vorher 10, beide bewusste Fehlalarme). Duplikat-Check: 0.
 
 Die drei SQL-Abfragen dazu stehen in `skills/tunsi/SKILL.md` → „Datenqualitäts-Checks (SQL)" und lassen sich jederzeit neu laufen lassen.
 
@@ -182,7 +182,7 @@ Ausgeführt: **1118 behalten** (mehr Fortschritt), dabei `darija` → `yit3ashsh
 
 **Lehre für den Prüfablauf:** Eine Gemination-Korrektur ist nie „nur eine Schreibkorrektur". Vor jedem Ändern von `darija` prüfen, ob die *korrigierte* Schreibung im Bestand schon existiert — sonst entsteht aus einer Reparatur eine Dublette.
 
-### ⚠️ A5 · Vergangenheits-Endung und Personalform (4) — 3 erledigt, 1376 ist ein Merge
+### ✅ A5 · Vergangenheits-Endung und Personalform (4) — erledigt 2026-09-12
 
 | ID | Zeile | Tabelle | Bedeutung |
 |---|---|---|---|
@@ -203,14 +203,14 @@ Ausgeführt: **1118 behalten** (mehr Fortschritt), dabei `darija` → `yit3ashsh
 
 Bei **1383** standen sich Einzelbeleg und Systematik im Weg: Das Arabische trägt Kasra (`-it`), aber `qal` ist ein hohles Verb, und alle 9 schwachen Verben im Bestand nehmen `-et`. Entschieden zugunsten des konkreten Belegs und der eingeschliffenen Form — die Imala schwankt an dieser Stelle real (Lautlehre-Regel 1).
 
-🚫 **1376 ist kein Schreibfehler, sondern eine Dublette.** Die Korrektur `qa3dt` → `q3adt` trifft die bestehende Zeile **1241 `q3adt` „ich blieb"**. Der neue Pflicht-Check vor `darija`-Korrekturen hat das gefangen — inzwischen der dritte Fall dieser Art.
+✅ **1376 war kein Schreibfehler, sondern eine Dublette — gemergt 2026-09-12.** Die Korrektur `qa3dt` → `q3adt` trifft die bestehende Zeile **1241 `q3adt` „ich blieb"**. Der neue Pflicht-Check vor `darija`-Korrekturen hat das gefangen — inzwischen der dritte Fall dieser Art.
 
 | | ID | darija | german | arabic_script | Level | Versuche |
 |---|---|---|---|---|---|---|
 | **behalten?** | 1241 | `q3adt` | ich blieb | قعدت *(unvokalisiert)* | **6** | **30** (15 falsch) |
 | **löschen?** | 1376 | `qa3dt` | ich blieb / ich saß | قْعَدْت *(vokalisiert)* | 0 | 0 |
 
-Vorschlag: **1241 behalten** (der ganze Lernfortschritt hängt dort), dabei das vokalisierte `arabic_script` und den reicheren Gloss „ich blieb / ich saß" von 1376 übernehmen sowie das Legacy-Topic `" (L18)"` auf `Vergangenheit` setzen, danach 1376 löschen. **Noch nicht ausgeführt.**
+Ausgeführt: **1241 behalten** (der ganze Lernfortschritt hängt dort), dabei das vokalisierte `arabic_script` قْعَدْت und den reicheren Gloss „ich blieb / ich saß" von 1376 übernommen, Legacy-Topic `" (L18)"` → `Vergangenheit`, `arabic_skeleton` neu berechnet. 1376 gelöscht. Es hingen weder Kurs-Übungen noch `vocab_lesson_refs` daran.
 
 Nicht betroffen: **1375 `qa3dit` „sie blieb"** ist die 3. Person feminin, eine eigene Form — bleibt.
 
