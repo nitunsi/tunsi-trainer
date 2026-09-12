@@ -694,6 +694,10 @@ WHERE arabic_script ~ 'ي[ًٌٍَُِْٰ]*ّ'
 
 **Skelett-Vergleich als Vorfilter für Liste C (seit 2026-09-12).** `public._translit_skeleton(darija)` gegen `public._arabic_skeleton(arabic_script)` trennt die Schadda-Verdachtsliste viel schärfer als die Regex allein: bei 69 Verdachtszeilen waren 48 skelett-uneinig und 21 einig; unter den einwortig-uneinigen waren nach Prüfung 28 von 35 echte Fehler. Als erste Spalte in jede Verdachtsabfrage aufnehmen und nach `ts <> as_` sortieren.
 
+⚠️ **Systematischer Fehlalarm: der Artikel (gemessen 2026-09-13).** Von 646 Zeilen mit uneinigen Skeletten tragen **190 (29 %)** einen Artikel im `darija`. Die beiden Funktionen behandeln ihn unterschiedlich: `el-manshir` → `lmnshr`, aber المنشير → `mnshr`; `f-ed-dar` → `fddr`, aber في الدار → `fldr`. **Kein Datenfehler, ein Artefakt der beiden Skelett-Formeln.** Bei jedem Skelett-Treffer mit `el-`/`ed-`/`es-`… im `darija` zuerst prüfen, ob die Differenz nur an dieser Stelle sitzt — dann verwerfen. In einer Stichprobe von 10 fälligen Vokabeln waren **beide** Skelett-Treffer von dieser Art.
+
+⚠️ **Blind für Halbvokale.** Beide Formeln streichen ا/و/ي. Ein fehlender oder überzähliger Langvokal im `arabic_script` ist für den Vergleich unsichtbar — `سكاكن` und `سكاكين` ergeben beide `skkn`. Diese Fehlerklasse findet nur der Quellenabgleich.
+
 **Nach jeder Verbkorrektur die ganze Wurzelfamilie durchsehen (seit 2026-09-12).** Der Schadda-Check sieht nur vokalisierte Zeilen. Geschwisterformen mit unvokalisiertem `arabic_script` tragen denselben Fehler und bleiben unsichtbar — bei der `naththaf`/`7adhdhar`/`ba77ar`-Runde waren das 4 zusätzliche Zeilen (`ynathaf` ينظف, `tnathaf` تنظف, `n7adhar` نحضر, `ba7har` بحر), gefunden nur durch die gezielte Geschwistersuche. Gleicher blinder Fleck wie bei `4444 marroukiya`.
 
 **`conjugation` immer mitziehen (seit 2026-09-12).** Eine `darija`-Korrektur an einer Verbzeile muss dieselbe Ersetzung in `conjugation` machen — auch für Formen, die keine eigene Vokabelzeile haben (`nathamna`, `ba7hru`, `ba7hret`). Sonst steht das `darija` der Zeile nicht mehr in ihrer eigenen Tabelle und der Verb-Selbstcheck meldet sie sofort. In der Gruppe-2-Runde betraf das 8 von 31 geänderten Zeilen. Vorher prüfen:
@@ -730,7 +734,7 @@ Es gibt **einen** Prüfprozess. Was von Fall zu Fall wechselt, ist die **Auswahl
 | „Ich habe Vokabeln markiert" | `WHERE flagged = true` |
 | **eine einzelne Vokabel** | `WHERE id = <id>` — genauso gültig wie ein Batch, kein Sonderweg |
 | frisch importierter Batch | die ids des Batches |
-| „prüf die fälligen" | über `progress.next_review` |
+| „prüf die fälligen" | `progress.next_review` — **das Fenster läuft von 03:00 Berlin bis 03:00 des Folgetags** (`nextReviewDE()`), nicht von Mitternacht:<br>`WHERE p.next_review >= timestamp '<tag> 03:00' AND p.next_review < timestamp '<tag+1> 03:00'` |
 | Bestandsaudit | eine Verdachtsliste aus **Datenqualitäts-Checks (SQL)** |
 
 **Immer mit dabei, unabhängig von der Auswahl** — als EINE Sammelabfrage am Anfang, bevor ein Korrekturplan gebaut wird:
@@ -747,6 +751,8 @@ Die Checks aus **Datenqualitäts-Checks (SQL)**, auf die Auswahl eingeschränkt.
 Ist die Vokabel ein **Verb**, zusätzlich das 3-Zeilen-Modell (siehe „Verb-Konjugationsmodell"): Verb-Selbstcheck zuerst, dann den Bestand per Konsonantenskelett nach Präsens- UND Vergangenheits-Grundform durchsuchen — auch unter Alt-Topics und `topic IS NULL`. Präzedenzfall 2026-09-12: `y7jem` (3614) galt als „eine Zeile, Tabelle dran, fertig"; tatsächlich fehlten 2 von 3 Zeilen. Fehlende Zielzeilen werden **als Vorschlagsliste gezeigt, nicht geschrieben**.
 
 ### Schritt 3 — Extern prüfen: alle drei Quellen, nicht nur die erste
+
+**Nicht überspringen, auch wenn Schritt 2 sauber war.** Die internen Checks vergleichen `darija` gegen `arabic_script` — sie können prinzipbedingt nicht sehen, ob die **Bedeutung** stimmt. Eine Zeile kann durch jeden A- und B-Check laufen und trotzdem das Falsche lehren. Präzedenzfall aus dem Stichprobentest 2026-09-13: `710 el-manshir` ist als „Korridor / Flur" glossiert, TUNICO hat `manšiṛ` = „Platz zum Wäscheaufhängen, Hof im Küchenflügel" — alle internen Checks sauber, 4 richtige gegen 15 falsche Antworten im Lernverlauf.
 
 1. `derja_ninja_entries` — schnell, aber ein Snapshot (2026-08-17), bei mehrteiligen Begriffen oft unvollständig
 2. `tunico_import` — liefert das volle Bedeutungsspektrum, wo Ninja nur eine Facette zeigt

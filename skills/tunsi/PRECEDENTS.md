@@ -218,6 +218,22 @@ Die Endung ist in **allen** 16 Zeilen `-ik`, nie `-ek`: jedes `arabic_script` ha
 
 **Nebenbefund, nicht angefasst:** die Klammer-Hinweise `(a...)`/`(y...)`/`(b...)` in den `german`-Feldern von 1391 `aman` / 1392 `y3ayyshik` / 1393 `brabbi` sind **kein Import-Müll**, sondern die bewusste Unterscheidung dreier Synonyme für „bitte" — nicht entfernen. Der `(b...)`-Rest im `arabic_script` von 1392 (`يْعَيِّشِك (b...)`, samt `arabic_skeleton` `3shk(b)`) war dagegen echter Copy-Paste-Müll aus 1393 und wurde entfernt. Offen: 1113 `billehi` heißt ebenfalls „bitte", hat aber keinen Hinweis-Zusatz.
 
+## Skill-Test an 10 fälligen Vokabeln (2026-09-13)
+
+Der umgebaute Skill wurde end-to-end an 10 übermorgen fälligen Vokabeln durchgespielt, um die Frage „wird wirklich alles geprüft?" zu beantworten. **Nein** — der Test legte drei Lücken offen, alle inzwischen geschlossen.
+
+**Was trug:** Gruppe A lief komplett sauber (7 Checks, 0 Treffer). Die Pflicht-Sammelabfrage auf `vocabulary_review` in Schritt 1 zahlte sich sofort aus: 4 der 10 Zeilen hatten offene Review-Einträge mit `change_category IS NULL` (im Tab unsichtbare Altlasten), eine (`710`) sogar `partner_status='pending'` — ein Konflikt nach Regel 5, den man ohne diesen Schritt beim Schreiben überfahren hätte.
+
+**Lücke 1 — die Auswahl „fällige" hatte kein SQL.** Die Tabelle in Schritt 1 sagte nur „über `progress.next_review`". Jede andere Auswahl dort ist direkt hinschreibbar; diese verlangt zu wissen, dass das Fenster bei 03:00 Berlin beginnt (`nextReviewDE()`), nicht um Mitternacht. Ergänzt.
+
+**Lücke 2 — der Skelett-Vergleich hat einen systematischen Artikel-Fehlalarm.** In der Stichprobe waren **beide** Treffer davon: `el-manshir` → `lmnshr` gegen المنشير → `mnshr`; `f-ed-dar` → `fddr` gegen في الدار → `fldr`. Die beiden Formeln behandeln den Artikel unterschiedlich. Bestandsweit gemessen: von 646 Zeilen mit uneinigen Skeletten tragen **190 (29 %)** einen Artikel. Dokumentiert.
+
+Dabei fiel eine zweite Blindheit derselben Formeln auf: sie streichen ا/و/ي, ein fehlender Langvokal im `arabic_script` ist für sie unsichtbar (`سكاكن` und `سكاكين` ergeben beide `skkn`). Ebenfalls dokumentiert.
+
+**Lücke 3 — Schritt 3 war als „externe Bestätigung" beschrieben, nicht als das, was er ist.** Die internen Checks vergleichen `darija` gegen `arabic_script`; sie können prinzipbedingt nicht sehen, ob die **Bedeutung** stimmt. Der Test lieferte den Beleg: `710 el-manshir` ist als „Korridor / Flur" glossiert, TUNICO hat `manšiṛ` = „Platz zum Wäscheaufhängen, Hof im Küchenflügel". Jeder A- und B-Check meldet die Zeile sauber — und der Lernverlauf zeigt 4 richtige gegen **15 falsche** Antworten. Schritt 3 trägt jetzt den ausdrücklichen Hinweis „nicht überspringen, auch wenn Schritt 2 sauber war".
+
+**Ein Verdacht von mir war unbegründet**, und das gehört zum Ergebnis: Bei `586 skekin` سكاكن hielt ich das Arabische für unvollständig (erwartet سكاكين). Gegenprobe: TUNICO führt den Plural als `skākin`, Peace Corps als `ska:kin` — das lange ā ist ein Alif, kein Ya. **Das Arabische ist korrekt.** Ohne die Quellenprüfung hätte ich eine richtige Zeile „korrigiert" — dieselbe Falle wie bei `bnin` und `skhan`.
+
 ## Checks nach Verbindlichkeit sortiert, nicht nach Thema (2026-09-13)
 
 `Datenqualitäts-Checks (SQL)` war mit 340 von 899 Zeilen der größte Abschnitt des Skills und rein chronologisch gewachsen — jeder neue Check kam unten dran. Ein Leser sah 39 Blöcke in loser Folge und konnte einem Treffer nicht ansehen, **was er bedeutet**: ein Fehler oder ein Kandidat mit 80 % Fehlalarmquote.
