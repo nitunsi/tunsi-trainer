@@ -2,9 +2,9 @@
 
 Ergebnis von Etappe 1 des Prüfplans, seit 2026-09-12 teilweise abgearbeitet.
 
-> **Stand:** ✅ **Runden 1–4 sind vollständig ausgeführt.** Klasse A ist damit bis auf A5 (4 Zeilen) und A6 (8 Zeilen) erledigt. Offen: Runde 5 und 6.
+> **Stand:** ✅ **Runden 1–4 und Liste E ausgeführt.** Offen: A5 (4 Zeilen), A6 (8 Zeilen), Runde 5 (D2-Splits) und Runde 6 (Gemination, 93).
 >
-> Bestand: **3.797 Vokabeln** (vorher 3.812). Verb-Selbstcheck **26** (vorher 49). Regel 21 (`-iou`): **0** (vorher 13). Klammern in `darija`: **12** (vorher 17). Duplikat-Check: 0.
+> Bestand: **3.789 Vokabeln** (vorher 3.812, 23 Dubletten zusammengelegt). Verb-Selbstcheck **26** (vorher 49). Regel 21 (`-iou`): **0** (vorher 13). Vokal-Dubletten Stufe A: **2** (vorher 10, beide bewusste Fehlalarme). Duplikat-Check: 0.
 
 Die drei SQL-Abfragen dazu stehen in `skills/tunsi/SKILL.md` → „Datenqualitäts-Checks (SQL)" und lassen sich jederzeit neu laufen lassen.
 
@@ -14,7 +14,7 @@ Die drei SQL-Abfragen dazu stehen in `skills/tunsi/SKILL.md` → „Datenqualit�
 | B — Plural-Endung `-iou`/`-eou`/`-aou` statt `-iw`/`-aw` | 13 → **0** | 0 % (13/13 echt) | ✅ erledigt 2026-09-12 |
 | C — Schadda im Arabischen ohne Gemination in `darija` | 93 | ~15 % (Stichprobe 16 → 11 echt) | Verdachtsliste, Einzelprüfung nötig |
 | D — Nebenfunde beim Erstellen der Listen | 51 | — | siehe unten |
-| E — Vokal-Dubletten im Bestand | 177 → **10** brauchbar | 20 % (8 von 10 echt) | offen, siehe unten |
+| E — Vokal-Dubletten im Bestand | 177 → **10** brauchbar | 20 % (8 von 10 echt) | ✅ erledigt 2026-09-12 |
 
 ---
 
@@ -386,9 +386,9 @@ Der neue bestandsweite Check (SQL in SKILL.md → Datenqualitäts-Checks) liefer
 
 **Wichtig, damit das niemand nochmal aufrollt:** Die 61 Paare mit *unterschiedlichem* Arabisch sind fast ausnahmslos korrekte Morphologie (`khamsa`/`khams` fünf/fünfter, `3ashra`/`3shour` zehn/zehnter, `khobz`/`khobza` Brot/ein Brot, `qrib`/`qriba` nah m./f., `forshita`/`frashit` Gabel Sg/Pl). Viele tragen gar keinen Marker im Gloss und sind durch keinen Filter trennbar. Die Rohzahl 177 überzeichnet den Fund um mehr als das Zehnfache.
 
-### Die brauchbare Liste: 10 Paare mit identischem `arabic_script`
+### ✅ Die brauchbare Liste: 10 Paare mit identischem `arabic_script` — ausgeführt 2026-09-12
 
-8 davon sind echte Dubletten, alle von Hand geprüft. Empfehlung jeweils: die Zeile mit mehr Lernfortschritt behalten.
+8 davon waren echte Dubletten, alle von Hand geprüft. Jeweils die Zeile mit mehr Lernfortschritt behalten.
 
 | behalten | löschen | Bedeutung | Anmerkung |
 |---|---|---|---|
@@ -408,4 +408,8 @@ Der neue bestandsweite Check (SQL in SKILL.md → Datenqualitäts-Checks) liefer
 | `385 brika` (Brik-Gebäck mit Ei) / `2142 brik` (Brik-Teigblatt) | verwandt, aber zwei verschiedene Dinge |
 | `2632 rmal` (Sand) / `2656 ramla` (Sand (f.)) | Kollektiv vs. Nomen unitatis |
 
-**Status:** noch nicht ausgeführt, wartet auf Bestätigung. Vor jedem Löschen wie üblich Kurs-Übungen und `vocab_lesson_refs` der zu löschenden Zeile prüfen (`course_exercises.vocabulary_id` ist `NO ACTION` — ein DELETE scheitert sonst).
+**Ausgeführt am 2026-09-12.** Ablauf: Vorprüfung ergab **keine** Kurs-Übungen an den zu löschenden Zeilen und keine Überschneidung in den `vocab_lesson_refs` — daher überall einfaches Ersetzen statt Entfernen. Dann zwei Gloss-Zusammenführungen (413 → „T-Shirt / Pullover", 1008 → „Kissen / Polster"), 8 Verweise in 6 Lektionen umgebogen, zuletzt die 8 DELETE.
+
+Bei der Gelegenheit vier Legacy-Topics mitgerichtet, wie es die Regel für ohnehin angefasste Zeilen vorsieht: 413 `" (L16)"` → Kleidung, 619 `" (L23)"` → Tiere, 1261 `" (L18)"` → Zeit, 2922 `"Kurzphrasen"` → Adjektive (ist ein Adjektiv, kein Phrasen-Eintrag).
+
+Verifiziert: **3.797 → 3.789 Vokabeln**, 0 Restverweise, 0 tote `vocabulary_id` in Kurs-Übungen, 0 doppelte IDs in den refs-Listen, Duplikat-Check nach `normKey` weiterhin 0. **Stufe A steht jetzt bei 2** — genau die beiden bekannten Fehlalarme, die stehen bleiben sollen.
