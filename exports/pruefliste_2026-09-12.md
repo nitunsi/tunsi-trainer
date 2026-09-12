@@ -2,9 +2,9 @@
 
 Ergebnis von Etappe 1 des Prüfplans, seit 2026-09-12 teilweise abgearbeitet.
 
-> **Stand:** ✅ **Klasse A ist komplett** (A1–A6), dazu Liste E. Offen: Runde 5 (D2-Splits) und Runde 6 (Gemination, 93).
+> **Stand:** ✅ **Klasse A komplett** (A1–A6), **Liste E**, **Runde 5 (D2)** bis auf einen zurückgestellten Fall. Offen: Runde 6 (Gemination, 93) und zwei Nachträge, siehe unten.
 >
-> Bestand: **3.788 Vokabeln** (vorher 3.812, 24 Dubletten zusammengelegt). Verb-Selbstcheck **26** (vorher 49). Regel 21 (`-iou`): **0** (vorher 13). Vokal-Dubletten Stufe A: **2** (vorher 10, beide bewusste Fehlalarme). Duplikat-Check: 0.
+> Bestand: **3.790 Vokabeln** (3.812 minus 24 Dubletten, plus 2 aus Aufteilungen). Verb-Selbstcheck **26** (vorher 49). Regel 21 (`-iou`): **0** (vorher 13). Vokal-Dubletten Stufe A: **2** (vorher 10, beide bewusste Fehlalarme). Duplikat-Check: 0.
 
 Die drei SQL-Abfragen dazu stehen in `skills/tunsi/SKILL.md` → „Datenqualitäts-Checks (SQL)" und lassen sich jederzeit neu laufen lassen.
 
@@ -438,3 +438,56 @@ Der neue bestandsweite Check (SQL in SKILL.md → Datenqualitäts-Checks) liefer
 Bei der Gelegenheit vier Legacy-Topics mitgerichtet, wie es die Regel für ohnehin angefasste Zeilen vorsieht: 413 `" (L16)"` → Kleidung, 619 `" (L23)"` → Tiere, 1261 `" (L18)"` → Zeit, 2922 `"Kurzphrasen"` → Adjektive (ist ein Adjektiv, kein Phrasen-Eintrag).
 
 Verifiziert: **3.797 → 3.789 Vokabeln**, 0 Restverweise, 0 tote `vocabulary_id` in Kurs-Übungen, 0 doppelte IDs in den refs-Listen, Duplikat-Check nach `normKey` weiterhin 0. **Stufe A steht jetzt bei 2** — genau die beiden bekannten Fehlalarme, die stehen bleiben sollen.
+
+
+---
+
+## Runde 5 · D2-Aufteilungen — ausgeführt 2026-09-12
+
+Vier der fünf vorgeschlagenen Aufteilungen ausgeführt. Dabei kamen drei Dinge heraus, die die Planung geändert haben:
+
+### ✅ 2731 — Aufteilung war gar keine nötig
+
+`emshi lqoddem / toul` → **`emshi lqoddem` „fahr vorwärts"**. Der zweite Teil brauchte keine neue Zeile: **`toul` existiert längst als `923 touwl` „geradeaus"**. Die Vorprüfung hatte exakt auf `toul` gesucht und ihn nicht gefunden, weil der Bestand die Ninja-Schreibung `touwl` führt.
+
+→ **Nachtrag (offen):** `923 touwl` verstößt gegen die Hausschreibung — `uw` ist Ninjas Notation für Damma, unsere ist `ou`. Müsste `toul` heißen. Nicht angefasst, weil es ein eigener Fall ist.
+
+### ✅ 3383 / 3420 — aufgeteilt, mit `homonym_ok` statt erfundener Bedeutungsunterschiede
+
+| ID | vorher | nachher |
+|---|---|---|
+| 3383 | `qarra / 3allem` | `qarra` — er lehrte / er unterrichtete |
+| **4593** (neu) | — | `3allem` — er lehrte / er unterrichtete |
+| 3420 | `yqarri / y3allem` | `yqarri` — er lehrt / er unterrichtet |
+| **4594** (neu) | — | `y3allem` — er lehrt / er unterrichtet |
+
+**Warum identische Glosse:** TUNICO gibt für beide Verben praktisch dieselbe Bedeutung an (`qarra`: lehren, lesen lehren, unterrichten · `3allim`: lehren, unterrichten, ausbilden, instruieren). Einen Unterschied zu erfinden wäre Quellenfälschung. Stattdessen tragen alle vier Zeilen **`homonym_ok=true`** — damit greift `synonymNote()` im Trainer und blendet bei der Abfrage ein „für X gibt es noch eine andere Übersetzung" ein. Das ist genau der Zweck der Funktion.
+
+Die neuen Zeilen bekamen bewusst **keine `conjugation`** (die im Original hängende Tabelle gehört zu `qarra`, nicht zu `3allem`) und **kein Audio** (die Aufnahme an 3383 ist die von `qarra`). Beides ist ein offener Nachtrag.
+
+**Nicht fällig gesetzt** — beide neuen Zeilen haben keine `progress`-Zeile und kommen über den Aktivierungsmodus, wie abgesprochen.
+
+### 🚫 1460 zurückgestellt — überschneidet sich mit einem anderen Schrägstrich-Eintrag
+
+`berk allah fik / yer7am weldik` sollte aufgeteilt werden. Beim Prüfen fiel auf: **`465 ybarik fik / baraka allahou fik` „Gott segne dich"** enthält dieselbe Formel — `berk allah fik` und `baraka allahou fik` haben das identische Konsonantenskelett `brkllhfk`.
+
+Das ist exakt die in SKILL.md dokumentierte Falle: Der Duplikat-Check normalisiert den ganzen String inklusive „/" zu einem Key und übersieht deshalb, dass ein *Teil* eines Schrägstrich-Eintrags anderswo schon existiert. 465 steht auf der „bleibt stehen"-Liste der 14 Synonympaare — die beiden Einträge müssen gemeinsam betrachtet werden, nicht einzeln aufgeteilt.
+
+### 🚫 2179 zurückgestellt (auf Ansage)
+
+`itwi / tabbaq` — zwei verschiedene Wurzeln (ط-و-ي vs. ط-ب-ق) in zwei verschiedenen Formen (Imperativ vs. Form-II-Vergangenheit), dazu ein Infinitiv-Gloss. Braucht Klärung, welche Bedeutung zu welcher Form gehört. Kein Lernfortschritt, drängt nicht.
+
+---
+
+## Gefundener Bug: zwei kaputte ID-Sequenzen (behoben 2026-09-12)
+
+Beim ersten INSERT-Versuch schlug die Aufteilung mit `23505 duplicate key value violates unique constraint "vocabulary_pkey"` fehl. Ursache: Die ID-Sequenzen waren aus dem Tritt — vermutlich durch die Bulk-Importe, bei denen IDs explizit vergeben wurden.
+
+| Sequenz | stand auf | höchste vergebene ID | blockierte IDs |
+|---|---|---|---|
+| `vocabulary_id_seq` | 4501 | 4592 | 87 |
+| `lessons_id_seq` | 29 | 53 | 24 |
+
+**Das war ein echter, nutzersichtbarer Bug**, unabhängig von diesem Prüfdurchgang: Jeder Anlegeversuch in der App wäre gescheitert — „➕ Neue Vokabel" (`saveNewVocab`), „➕ Neu anlegen" im TUNICO-Tab (`_tnAddNew`), Semias Vorschlagsformular (`partnerSubmitSuggestion`) und „Neue Lektion" (`saveNewLesson`).
+
+Behoben per `setval()` auf den jeweiligen `max(id)`. `course_exercises`, `progress` und `review_log` waren in Ordnung. **Empfehlung: nach jedem größeren Bulk-Import mit expliziten IDs die Sequenz mitziehen** — gehört als Schritt in die Bulk-Insert-Anleitung in IMPORTS.md.
