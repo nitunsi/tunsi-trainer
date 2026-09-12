@@ -2,15 +2,15 @@
 
 Ergebnis von Etappe 1 des Prüfplans, seit 2026-09-12 teilweise abgearbeitet.
 
-> **Stand:** ✅ **Runden 1, 2 und 4 sind ausgeführt**, Runde 3 zur Hälfte. Offen: ein neu aufgetauchter Merge (1118/4029, siehe A4), Runde 5 und 6.
+> **Stand:** ✅ **Runden 1–4 sind vollständig ausgeführt.** Klasse A ist damit bis auf A5 (4 Zeilen) und A6 (8 Zeilen) erledigt. Offen: Runde 5 und 6.
 >
-> Bestand: **3.798 Vokabeln** (vorher 3.812), **2.105 progress-Zeilen**. Verb-Selbstcheck **27** (vorher 49). Regel 21 (`-iou`): **0** (vorher 13). Klammern in `darija`: **12** (vorher 17). Duplikat-Check: 0.
+> Bestand: **3.797 Vokabeln** (vorher 3.812). Verb-Selbstcheck **26** (vorher 49). Regel 21 (`-iou`): **0** (vorher 13). Klammern in `darija`: **12** (vorher 17). Duplikat-Check: 0.
 
 Die drei SQL-Abfragen dazu stehen in `skills/tunsi/SKILL.md` → „Datenqualitäts-Checks (SQL)" und lassen sich jederzeit neu laufen lassen.
 
 | Liste | Treffer | Fehlalarmquote | Status |
 |---|---|---|---|
-| A — Verb-Selbstcheck (Zeile ≠ eigene `conjugation`-Tabelle) | 49 → **27** | 0 % (rein interner Vergleich) | A1–A4 erledigt, A5/A6 offen |
+| A — Verb-Selbstcheck (Zeile ≠ eigene `conjugation`-Tabelle) | 49 → **26** | 0 % (rein interner Vergleich) | A1–A4 erledigt, A5/A6 offen |
 | B — Plural-Endung `-iou`/`-eou`/`-aou` statt `-iw`/`-aw` | 13 → **0** | 0 % (13/13 echt) | ✅ erledigt 2026-09-12 |
 | C — Schadda im Arabischen ohne Gemination in `darija` | 93 | ~15 % (Stichprobe 16 → 11 echt) | Verdachtsliste, Einzelprüfung nötig |
 | D — Nebenfunde beim Erstellen der Listen | 51 | — | siehe unten |
@@ -158,7 +158,7 @@ Hier steht Hausschreibung gegen TUNICO-Übernahme. SKILL.md warnt ausdrücklich,
 
 Bei `3781 y7ib` und `4028 ytayyib` nennt SKILL.md die Tabellenform (`y7eb`, `ytayyeb`) ausdrücklich als die unsrige — dort ist die Zeile zu korrigieren.
 
-### ⚠️ A4 · Fehlende Gemination in der Zeile (3) — 2 von 3 erledigt
+### ✅ A4 · Fehlende Gemination in der Zeile (3) — erledigt 2026-09-12
 
 | ID | Zeile | Tabelle | Bedeutung |
 |---|---|---|---|
@@ -170,14 +170,16 @@ Dreimal dasselbe Verb تْعَشَّى — die Gemination fehlt durchgängig in 
 
 ✅ **1319 → `t3ashshat`** und **1839 → `tit3ashsha`** erledigt am 2026-09-12.
 
-🚫 **1118 blockiert — die Korrektur würde eine Dublette erzeugen.** `yit3asha` → `yit3ashsha` kollidiert mit der bestehenden Zeile **4029 `yit3ashsha` „er isst zu Abend"**. Das ist derselbe Fall wie in PRECEDENTS.md → `yisma7`/`yisma3`: erst prüfen, ob die *korrigierte* Schreibung schon existiert.
+✅ **1118 — war ein verdeckter Merge, ausgeführt 2026-09-12.** Die Korrektur hätte eine Dublette erzeugt: `yit3asha` → `yit3ashsha` kollidiert mit der bestehenden Zeile **4029 `yit3ashsha` „er isst zu Abend"**. Das ist derselbe Fall wie in PRECEDENTS.md → `yisma7`/`yisma3`: erst prüfen, ob die *korrigierte* Schreibung schon existiert.
 
 | | ID | darija | german | arabic_script | Level | Versuche |
 |---|---|---|---|---|---|---|
 | **behalten?** | 1118 | `yit3asha` | Er ist zu abend | يتعشى *(unvokalisiert)* | **6** | **16** |
 | **löschen?** | 4029 | `yit3ashsha` | er isst zu Abend | يِتْعَشَّى *(vokalisiert)* | 5 | 5 |
 
-Vorschlag: **1118 behalten** (mehr Fortschritt), dabei `darija` → `yit3ashsha`, `german` → „er isst zu Abend" und das **bessere `arabic_script` von 4029 übernehmen** (يِتْعَشَّى), danach 4029 löschen. Vorher wie immer die Kurs-Verweise von 4029 prüfen. **Noch nicht ausgeführt — wartet auf Bestätigung.**
+Ausgeführt: **1118 behalten** (mehr Fortschritt), dabei `darija` → `yit3ashsha`, `german` → „er isst zu Abend", das **bessere vokalisierte `arabic_script` von 4029 übernommen** (يِتْعَشَّى), dazu `english='to dine'` (fehlte bei 1118) und das Legacy-Topic `" (L14)"` auf `Verben-Konjugation` gesetzt. Skelette neu berechnet. Der einzige Verweis auf 4029 (Lektion 7) wurde auf 1118 umgebogen — Kurs-Übungen hingen keine daran. Danach 4029 gelöscht.
+
+**Lehre für den Prüfablauf:** Eine Gemination-Korrektur ist nie „nur eine Schreibkorrektur". Vor jedem Ändern von `darija` prüfen, ob die *korrigierte* Schreibung im Bestand schon existiert — sonst entsteht aus einer Reparatur eine Dublette.
 
 ### A5 · Vergangenheits-Endung und Personalform (4)
 
@@ -354,7 +356,7 @@ Nach Fehlerart statt nach ID — pro Runde **eine** Entscheidung statt vieler ei
 |---|---|---|---|
 | 1 | **B + A1** — Plural-Endungen | 13 (6 davon aus A1) | ✅ ausgeführt 2026-09-12 |
 | 2 | **A2** — Klammer-Zusätze im `darija`-Feld | 5 | ✅ ausgeführt 2026-09-12 |
-| 3 | **A4** — Gemination bei تْعَشَّى | 3 | ⚠️ 2 erledigt, 1118 wartet (neuer Merge) |
+| 3 | **A4** — Gemination bei تْعَشَّى | 3 (+1 Merge) | ✅ ausgeführt 2026-09-12 |
 | 4 | **A3-Merges** — 14 Dubletten-Paare | 28 → 14 | ✅ ausgeführt 2026-09-12 |
 | 5 | **D2-Splits** (5) + **A6-Entkopplungen** (2) | 7 | ja |
 | 6 | **C** — Gemination | 93 | ja, in Häppchen à ~20 (~15 % Fehlalarme) |
