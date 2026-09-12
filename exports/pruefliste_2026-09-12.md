@@ -182,7 +182,7 @@ Ausgeführt: **1118 behalten** (mehr Fortschritt), dabei `darija` → `yit3ashsh
 
 **Lehre für den Prüfablauf:** Eine Gemination-Korrektur ist nie „nur eine Schreibkorrektur". Vor jedem Ändern von `darija` prüfen, ob die *korrigierte* Schreibung im Bestand schon existiert — sonst entsteht aus einer Reparatur eine Dublette.
 
-### A5 · Vergangenheits-Endung und Personalform (4)
+### ⚠️ A5 · Vergangenheits-Endung und Personalform (4) — 3 erledigt, 1376 ist ein Merge
 
 | ID | Zeile | Tabelle | Bedeutung |
 |---|---|---|---|
@@ -191,7 +191,28 @@ Ausgeführt: **1118 behalten** (mehr Fortschritt), dabei `darija` → `yit3ashsh
 | 1376 | `qa3dt` | `q3adt` (1sg) | ich blieb / ich saß |
 | 1385 | `ista3mlit` | `ista3mil` (3sg m) | sie benutzte |
 
-**Wichtig — keine globale Vereinheitlichung:** Die Endungen `-it` / `-et` / `-at` sind in den Tabellen vermutlich morphologisch bedingt (starke Verben `3amlit`, hohle `qalet`, defektive `qrat`), nicht zufällig inkonsistent. Verteilung über alle Tabellen: 293× `-it`, 238× `-et`, 115× `-at`. Eine Sammelkorrektur würde korrekte Formen kaputtmachen.
+**Die Vermutung „morphologisch bedingt" ist am 2026-09-12 belegt worden.** Auszählung der „sie …"-Vergangenheitsformen im Bestand: **36× `-it`, ausnahmslos starke Verben** (`3amlit`, `3arfit`, `7adhrit`, `baddlit`, `dakhlit`, `ghaslit`) gegen **9× `-et`, ausnahmslos schwache Verben** — hohl, defektiv oder geminiert (`qamet`, `jet`, `mshet`, `bdet`, `hazzet`, `wallet`). Kein einziger Gegenbeleg. Eine Sammelkorrektur hätte also korrekte Formen zerstört.
+
+✅ **Drei Zeilen erledigt, jeweils nach der Regel „`arabic_script` schlägt die Tabelle":**
+
+| ID | Beleg | Ergebnis |
+|---|---|---|
+| 1385 | إِسْتَعْمِلِت — Kasra auf م *und* ل | Zeile → `ista3milit` (Tabelle hatte recht) |
+| 1315 | تْفَرَّجِت — Kasra; `tfarraj` ist ein starkes Verb | Tabelle → `tfarrjit` (Zeile hatte recht) |
+| 1383 | قالِتْ — Kasra; Zeile ist Level 6 mit 16 Versuchen | Tabelle → `qalit` (Zeile hatte recht) |
+
+Bei **1383** standen sich Einzelbeleg und Systematik im Weg: Das Arabische trägt Kasra (`-it`), aber `qal` ist ein hohles Verb, und alle 9 schwachen Verben im Bestand nehmen `-et`. Entschieden zugunsten des konkreten Belegs und der eingeschliffenen Form — die Imala schwankt an dieser Stelle real (Lautlehre-Regel 1).
+
+🚫 **1376 ist kein Schreibfehler, sondern eine Dublette.** Die Korrektur `qa3dt` → `q3adt` trifft die bestehende Zeile **1241 `q3adt` „ich blieb"**. Der neue Pflicht-Check vor `darija`-Korrekturen hat das gefangen — inzwischen der dritte Fall dieser Art.
+
+| | ID | darija | german | arabic_script | Level | Versuche |
+|---|---|---|---|---|---|---|
+| **behalten?** | 1241 | `q3adt` | ich blieb | قعدت *(unvokalisiert)* | **6** | **30** (15 falsch) |
+| **löschen?** | 1376 | `qa3dt` | ich blieb / ich saß | قْعَدْت *(vokalisiert)* | 0 | 0 |
+
+Vorschlag: **1241 behalten** (der ganze Lernfortschritt hängt dort), dabei das vokalisierte `arabic_script` und den reicheren Gloss „ich blieb / ich saß" von 1376 übernehmen sowie das Legacy-Topic `" (L18)"` auf `Vergangenheit` setzen, danach 1376 löschen. **Noch nicht ausgeführt.**
+
+Nicht betroffen: **1375 `qa3dit` „sie blieb"** ist die 3. Person feminin, eine eigene Form — bleibt.
 
 ### ✅ A6 · Phrase mit angehängter Verbtabelle (8) — erledigt 2026-09-12
 
