@@ -2113,3 +2113,74 @@ Vokalisierung (`دَار` / `دَارْ`, `حَلّ` / `حلّ`, `وَلَّى` 
 | 2193 `mamet` / 3017 `nna` | ة am Wortende als `-et` bzw. Anfangs-Schadda — beides Lautlehre-Fragen |
 | 3271 `badhdrout` | `dhdh` in der `darija`, nur ein ض im Arabischen |
 | 2641 | Gloss „atmen" ist Infinitiv statt „er atmet" |
+
+---
+
+## Runde 33 (2026-09-13) — die zwei Meldungen aus dem Trainer
+
+### 1. „🥷 Ninja-Check: ?" — kein Datenfehler, ein Deployment-Rückstand
+
+Die Kachel steht auf `?`, weil die **deployte** Fassung (main) die Tabelle `vocabulary_review` noch an
+**8 Stellen** abfragt. Die Tabelle wurde am 2026-09-13 entfernt, die Abfrage läuft ins Leere.
+
+Auf dem Arbeitsbranch ist der ganze Ninja-Check-Block bereits raus (0 Treffer für
+`vocabulary_review`, die einzige verbleibende Erwähnung von „Ninja-Check" steht in einem
+TUNICO-Hilfetext). **Es fehlt nur das Deployment** — Code-Änderung nicht nötig.
+
+### 2. Die angezeigte Dublette — von meinem eigenen Tippfehler-Fix ausgelöst
+
+Der Duplikat-Manager gruppiert über `normKey` auf allen drei Feldern. `1681 qas` und `4544 qass`
+hatten bis heute **verschiedene** deutsche Glossen („er schnit" / „er schnitt") und fielen deshalb
+nicht auf. Mit der Tippfehler-Korrektur aus Runde 32 kollidierten sie — der Trainer hat sofort
+gemeldet, was Check 10 seit jeher übersieht (Byte-Vergleich, قصّ ≠ قَصّ).
+
+**Die Verbgruppe قصص, vollständig:**
+
+| id | darija | Rolle | Tabelle | Fortschritt |
+|---|---|---|---|---|
+| 463 | `yqoss` | Präsens | ✓ | 1 |
+| 3319 | `qoss` | Imperativ | ✓ | 1 |
+| 4544 | `qass` | Vergangenheit | ✓ | — |
+| 4545 | `qassit` | Vergangenheit, rotierend | ✓ | — |
+| **1681** | `qas` | **doppelt**, topic „Verben-Infinitiv (L25)" | — | **1** |
+
+`1681` war die Altzeile; das 3-Zeilen-Modell stand längst.
+
+**Merge ausgeführt:** `1681` behalten (trägt den Lernfortschritt 6/2, 10 Wiederholungen), von `4544`
+übernommen: `arabic_script` قَصّ, `topic` „Vergangenheit" und die **vollständige
+`conjugation`-Tabelle** (past/present/imperative, 16 Formen). `darija` → `qass` (TUNICO `qaṣṣ`, und
+die Tabelle selbst führt `3sg_m = qass`). `4544` gelöscht.
+
+**`homonym_ok` bleibt auf `true`** — und zwar zu Recht: der Partner ist `4396 qas` قَاسْ „er maß /
+probierte an", ein echtes Homonym in der `darija` aus einer anderen Wurzel (قيس). Das Flag war nie
+verwaist, es war nur im Byte-Vergleich unsichtbar.
+
+**Sicherung der gelöschten Zeile:**
+
+```json
+{"id":4544,"darija":"qass","arabic_script":"قَصّ","german":"er schnitt","topic":"Vergangenheit",
+ "lesson_id":47,"homonym_ok":false,"conj_rotate":false,"progress":0,"course_refs":0,
+ "conjugation":{"past":{"1sg":"qassit/ich schnitt","2sg":"qassit/du schnittest","3sg_m":"qass/er schnitt",
+ "3sg_f":"qasset/sie schnitt","1pl":"qassina/wir schnitten","2pl":"qassitu/ihr schnittet","3pl":"qassu/sie schnitten"},
+ "present":{"1sg":"nquss","2sg":"tquss","3sg_m":"yqoss","3sg_f":"tquss","1pl":"nqussu","2pl":"tqussu","3pl":"yqussu"},
+ "imperative":{"sg":"qoss/schneid!","pl":"qussu/schneidet!"}}}
+```
+
+### Gegenprobe an beiden Trainer-Tabs
+
+Mit den echten Funktionen aus `trainer.html` gegen den Live-Bestand, inklusive der beiden
+Pflicht-Plausibilitätsprüfungen:
+
+| Tab | Ergebnis |
+|---|---|
+| 🔁 Duplikate | **0 Gruppen** von 3.779 Zeilen (`count`-Header 3.779 — Export vollständig) |
+| 🔤 Transliteration | **0 Auffällige** von 3.779, **23 Regeln** geladen |
+
+### Was das methodisch zeigt
+
+Der Trainer hat die Dublette gefunden, weil er `normKey` auf **alle drei Felder** anwendet — auch auf
+das Deutsche. Check 10 vergleicht nur `arabic_script`, und das byteweise. **Zwei Zeilen mit
+verschiedener Vokalisierung und verschiedenem Gloss sind für ihn zweimal unsichtbar.** Erst die
+Korrektur eines Tippfehlers im Deutschen hat sie sichtbar gemacht — durch Zufall, nicht durch Prüfung.
+Check 31 (`ar_key`, 87 Gruppen) schließt die eine Hälfte davon; die deutsche Achse deckt bisher nur
+der Trainer selbst ab.
