@@ -774,12 +774,15 @@ Es gibt **einen** Prüfprozess. Was von Fall zu Fall wechselt, ist die **Auswahl
 | „prüf die fälligen" | `progress.next_review` — **das Fenster läuft von 03:00 Berlin bis 03:00 des Folgetags** (`nextReviewDE()`), nicht von Mitternacht:<br>`WHERE p.next_review >= timestamp '<tag> 03:00' AND p.next_review < timestamp '<tag+1> 03:00'` |
 | Bestandsaudit | eine Verdachtsliste aus **Datenqualitäts-Checks (SQL)** |
 
-**Immer mit dabei, unabhängig von der Auswahl** — als EINE Sammelabfrage am Anfang, bevor ein Korrekturplan gebaut wird:
+**Immer mit dabei, unabhängig von der Auswahl** — als EINE Sammelabfrage am Anfang, bevor ein Korrekturplan gebaut wird. Sie beantwortet „was weiß ich über diese Zeilen schon?", und zwar bevor ich etwas vorschlage:
 ```sql
-SELECT * FROM vocabulary_review WHERE vocabulary_id IN (<alle ids>);
-SELECT vocabulary_id, user_comment, change_reason FROM vocabulary_review
-WHERE change_category = 'ninja_check_kommentiert' AND NOT reviewed;   -- Nils' Rückkanal, siehe Schritt 5
+SELECT id, darija, german, flagged, partner_status, partner_comment, internal_note, ninja_checked_at
+FROM vocabulary WHERE id IN (<alle ids>);
 ```
+Drei Dinge daraus ernst nehmen:
+- **`internal_note`** hält fest, was frühere Sitzungen an dieser Zeile schon geprüft haben — inklusive der übernommenen Ninja-Check-Begründungen (`[Ninja-Check <datum>] …`). Ein „kein Quellentreffer, zur Kenntnis genommen" heißt: **nicht nochmal suchen**, das ist erledigt.
+- **`partner_status`** ist Semias Spur. `pending` heißt: von ihr **nie bestätigt** — bei einem Bedeutungszweifel das stärkste Signal im Datensatz (Präzedenzfall `710 el-manshir`). `approved` heißt: von ihr bestätigt, eine Bedeutungsänderung braucht dann einen sehr guten Grund.
+- **`partner_comment`** ist ihr Freitext.
 
 ### Schritt 2 — Intern prüfen (kostenlos, kein Netz)
 
@@ -806,27 +809,28 @@ Drei Fallen, jede schon einmal zugeschlagen:
 
 Immer, ausnahmslos, vor jedem Schreiben: betroffene Zeilen mit Ist-Wert, Soll-Wert und Beleg. Bei Unsicherheit `AskUserQuestion` statt raten.
 
-### Schritt 5 — Schreiben: genau eine Entscheidung
+### Schritt 5 — Schreiben
 
-**War die Zeile geflaggt?**
+**Ein Pfad: `UPDATE vocabulary`.** Hier standen früher zwei — geflaggte Zeilen gingen als Vorschlag in eine eigene Tabelle `vocabulary_review`, alle anderen direkt. Die Tabelle wurde am 2026-09-13 entfernt (Begründung und Bilanz: PRECEDENTS.md → „vocabulary_review abgeschafft"). Es gibt keinen zweiten Schreibpfad mehr und keinen Vorschlags-Zwischenspeicher: **was in Schritt 4 gezeigt und bestätigt wurde, wird direkt geschrieben.**
 
-- **Ja** → `vocabulary_review`. Nils will im Ninja-Check-Tab selbst entscheiden. `change_category` nur `ninja_check_pending` oder `ninja_check_kein_vorschlag` (die App filtert hart darauf), `reviewed=false`, `change_reason` kurzer Klartext. `flagged` bleibt `true`, solange ein Vorschlag offen ist. **Ausnahme:** Eintrag ist zweifelsfrei schon korrekt → direkt `flagged=false`, ganz ohne `vocabulary_review`.
-- **Nein** → direkt `UPDATE vocabulary`. Bei frisch importierten Zeilen zusätzlich `flagged=false, ninja_checked_at=now()`.
+War die Zeile **geflaggt** (🚩 von Nils beim Lernen), gehört zum Schreiben zusätzlich:
+- `flagged = false` — der Auftrag ist erledigt
+- `ninja_checked_at = now()`, wenn extern gegengeprüft wurde
+- **die Begründung angehängt** an `internal_note` — nie überschreiben, immer `concat_ws(' ', internal_note, '<neue Zeile>')`. Das ist jetzt das Gedächtnis, das vorher `change_reason` war.
 
-**Technischer Zwang:** `vocabulary_review.vocabulary_id` hat einen UNIQUE-Constraint — ein zweiter INSERT crasht mit `23505`. Immer erst SELECT, dann UPDATE statt INSERT.
+Gleiches gilt für frisch importierte Zeilen.
 
-**Konflikt:** bestehende Zeile mit abweichendem Vorschlag → nie stillschweigend überschreiben, beide Versionen zeigen. **Ausnahme „erkennbare Altlast":** überschreibbar nur, wenn kein `change_reason`/`change_category` **und** der aktuelle `vocabulary`-Wert bereits sichtbar abweicht. Nur eines davon erfüllt → Konflikt.
+**Was in `internal_note` gehört**, kurz und in dieser Reihenfolge: Datum, was entschieden wurde, woher der Beleg kommt, und ausdrücklich **was Beleg und was Ableitung ist**. Beispiel aus der Praxis:
 
-**Diese vier Werte schreibt die App zurück** — nie selbst setzen, aber beim Lesen kennen:
+> `2026-09-13: arabic_script gesetzt — "babab" = بَابَابْ ist von Derja Ninja belegt (INTERJ). Das vorangestellte "aba" hat in KEINER der drei Quellen einen Beleg und ist als أَبَا abgeleitet, nicht belegt.`
 
-| Wert | Von wem | Bedeutung |
-|---|---|---|
-| `ninja_check_uebernommen` | ✅-Knopf | Vorschlag übernommen, `vocabulary` ist aktualisiert |
-| `ninja_check_ignoriert` | 🚫-Knopf | Vorschlag abgelehnt — **nicht erneut denselben Vorschlag machen** |
-| `ninja_check_kein_vorschlag_bestaetigt` | 👍-Knopf | „keine Quelle gefunden" zur Kenntnis genommen |
-| `ninja_check_kommentiert` | 💬-Knopf | **Nils hat einen Hinweis hinterlassen — das ist ein Auftrag, siehe unten** |
+**Wenn keine Quelle etwas hergibt**, ist das ein Ergebnis und kein Versäumnis — als solches festhalten, damit die nächste Sitzung nicht dieselbe Suche wiederholt:
 
-**`ninja_check_kommentiert` ist der wichtigste davon.** Der 💬-Knopf schreibt Freitext nach `user_comment` und setzt `reviewed=false` — der einzige Rückkanal von Nils zur nächsten Sitzung. Mit dem Hinweis erneut suchen und das Ergebnis wieder als `ninja_check_pending`/`ninja_check_kein_vorschlag` schreiben, damit es im Tab sichtbar wird.
+> `2026-09-13: keine Treffer in allen drei Quellen — Negationsform, Grammatik-Paradigma. Ninja ist ein Wörterbuch, erwartbar kein Eintrag. Nicht erneut suchen.`
+
+**Was NICHT geschrieben wird, sondern gefragt:** eine Bedeutungsänderung an einer Zeile mit `partner_status = 'approved'`; das Anlegen neuer Zeilen (zwei getrennte Fragen, siehe „Fehlende Zielzeilen nachlegen"); alles, wo Schritt 3 keine eindeutige Quellenlage ergeben hat.
+
+**Der Rückkanal von Nils** läuft über `vocabulary.partner_comment` und `partner_status` (Semias Prüfmodus im Trainer) — nicht mehr über eine eigene Tabelle. In Schritt 1 wird beides mitgelesen.
 
 ## vocab_lookup — Cross-Source-Abgleich (seit 2026-09-05)
 

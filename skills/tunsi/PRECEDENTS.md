@@ -222,7 +222,7 @@ Die Endung ist in **allen** 16 Zeilen `-ik`, nie `-ek`: jedes `arabic_script` ha
 
 Der umgebaute Skill wurde end-to-end an 10 übermorgen fälligen Vokabeln durchgespielt, um die Frage „wird wirklich alles geprüft?" zu beantworten. **Nein** — der Test legte drei Lücken offen, alle inzwischen geschlossen.
 
-**Was trug:** Gruppe A lief komplett sauber (7 Checks, 0 Treffer). Die Pflicht-Sammelabfrage auf `vocabulary_review` in Schritt 1 zahlte sich sofort aus: 4 der 10 Zeilen hatten offene Review-Einträge mit `change_category IS NULL` (im Tab unsichtbare Altlasten), eine (`710`) sogar `partner_status='pending'` — ein Konflikt nach Regel 5, den man ohne diesen Schritt beim Schreiben überfahren hätte.
+**Was trug:** Gruppe A lief komplett sauber (7 Checks, 0 Treffer). Die Pflicht-Sammelabfrage in Schritt 1 (damals noch auf `vocabulary_review`, die Tabelle gibt es seit dem 2026-09-13 nicht mehr) zahlte sich sofort aus: 4 der 10 Zeilen hatten offene Review-Einträge mit `change_category IS NULL` (im Tab unsichtbare Altlasten), eine (`710`) sogar `partner_status='pending'` — ein Konflikt nach Regel 5, den man ohne diesen Schritt beim Schreiben überfahren hätte.
 
 **Lücke 1 — die Auswahl „fällige" hatte kein SQL.** Die Tabelle in Schritt 1 sagte nur „über `progress.next_review`". Jede andere Auswahl dort ist direkt hinschreibbar; diese verlangt zu wissen, dass das Fenster bei 03:00 Berlin beginnt (`nextReviewDE()`), nicht um Mitternacht. Ergänzt.
 
@@ -241,6 +241,35 @@ Zwei unabhängige Stützen kamen dazu: **die Wurzel** ن-ش-ر „ausbreiten/auf
 Nach Nils' Freigabe umgestellt auf „der Hof zum Wäscheaufhängen (im Haus)", `topic` „(L20)" → „Wohnen", Herkunft in `internal_note`. `partner_status` bleibt `pending`: die Zeile war von Semia **nie** bestätigt — das war rückblickend das stärkste Signal und stand die ganze Zeit in der Zeile.
 
 **Nebenbefund, nicht angefasst:** `3710` übersetzt `fi el qe3a` (في القاعة) mit „im Flur". قاعة ist Saal/großer Raum; Ninja führt `9a3a` als „hall". Kandidat für eine spätere Runde.
+
+## vocabulary_review abgeschafft (2026-09-13)
+
+Nils' Entscheidung, nach zweimaligem Nachhaken („Ist die Tabelle überhaupt so sinnvoll? Wenn sie so oft Probleme auslöst?"). Seine Begründung traf den Kern: **„Ein Sinn war ja auch die letzten Abfragen zu dokumentieren. […] Ging darum die Abfragen bei Ninja nicht immer online machen zu müssen."** Mit 17.335 Ninja-Zeilen, 7.543 TUNICO- und 5.070 Peace-Corps-Zeilen offline ist genau dieser Zweck weg.
+
+**Die Bilanz, die zur Entscheidung führte** (3.181 Zeilen, 28 Kategorien, 23 Spalten):
+
+| | |
+|---|---|
+| Entscheidungen von Nils darin | **61** (32 ✅, 29 👍) |
+| Freitext-Rückmeldungen | **1** |
+| offene Vorschläge zum Zeitpunkt der Abschaffung | **0** |
+| Backup-Zeilen vom 25.07., die wie Vorschläge aussahen | 1.533 |
+| Zeilen in Kategorien, die niemand las | 1.587 |
+
+**Derselbe Kanal existierte doppelt.** Direkt auf `vocabulary` (`partner_status`/`partner_comment`, Semias Prüfmodus): **326** Entscheidungen. Über `vocabulary_review`: 61. Ich hatte zuvor argumentiert, die Tabelle müsse bleiben, weil der 💬-Rückkanal ersatzlos sei — **das war falsch**, er existierte zweimal und war in beiden Varianten praktisch ungenutzt (1 bzw. 0 Einträge). Erst das Nachmessen hat es gezeigt; das Argument stammte aus meiner Erinnerung an den Skill, nicht aus den Daten.
+
+**Auch die Backup-Rolle war schon redundant.** Beim Auflisten der Tabellen kamen `vocabulary_backup_2026_07_25` (3.193 Zeilen) und `vocabulary_backup_2026_08_02` (3.274 Zeilen) zum Vorschein — die echte Sicherung desselben Tages war sogar vollständiger als die 1.533 Zeilen in der Review-Tabelle.
+
+**Drei Konstruktionsfehler, die die Fehlerbilder erzeugten:**
+1. **`UNIQUE(vocabulary_id)` vermischte „offener Vorschlag" mit „Entscheidungsprotokoll".** Eine Zeile pro Vokabel für immer heißt: jeder neue Vorschlag überschreibt die vorige Entscheidung. Der Skill verließ sich darauf, dass `ninja_check_ignoriert` „schlag das nie wieder vor" bedeutet — dieser Wert kam in 3.181 Zeilen **null Mal** vor. Die Schutzfunktion war nie getestet.
+2. **Die Tabelle war eine Vollkopie der Vokabelzeile.** Ein Vorschlag wurde als komplettes Duplikat ausgedrückt — deshalb war ein Backup von einem Vorschlag nicht unterscheidbar, und deshalb las ich `710` im Skill-Test als Konflikt.
+3. **28 Kategorien, die App kannte 7.** Die übrigen 21 waren Etiketten, die frühere Sitzungen erfunden hatten. Reiner Rückstand.
+
+**Ablauf (alles gezeigt und einzeln freigegeben):** Backup von neun Tabellen nach `exports/backup_2026-09-13/` (Zeilenzahlen gegen die DB abgeglichen, alle acht live gezogenen stimmten exakt) → die 61 echten Begründungen nach `vocabulary.internal_note` übernommen → 202 Zeilen aus `trainer.html` entfernt (Nav-Button, Dispatch, Dashboard-Kachel, Löschpfad, Zustandsvariable, fünf Funktionen, `goToCheck`-Zweig; `node vm.Script()` sauber) → `DROP TABLE` ohne CASCADE → Skill nachgezogen.
+
+**Lehre über die Tabelle hinaus:** eine Struktur, die drei Jobs gleichzeitig macht (Warteschlange, Protokoll, Backup) und deren Constraint nur zu einem davon passt, produziert Fehlalarme, die wie Datenfehler aussehen. Der Fehler war nicht der Inhalt, sondern dass drei Bedeutungen im selben Feld unterscheidbar sein mussten und es nicht waren. **Vor „warum ist dieser Datensatz falsch?" die Frage stellen: wofür ist diese Tabelle eigentlich gebaut, und wird sie noch so benutzt?**
+
+**Warnung, die dabei auffiel:** der Löschschutz `trg_prevent_mass_delete` (max. 10 Zeilen pro Statement) prüft `current_user NOT IN ('anon','authenticated') → RETURN NULL`. Die MCP-Verbindung läuft als `postgres` — **der Schutz greift bei Claude nicht.** Massenoperationen hängen allein an der Vorlage-vor-Schreiben-Regel.
 
 ## Quell-Konventionen waren an sechs Stellen verstreut (2026-09-13)
 

@@ -179,7 +179,7 @@ Zwei Supabase-Tabellen, Rohextrakt aus dem "Peace Corps English-Tunisian Arabic 
 
 **Lautschrift lesen:** `forms_phonetic` benutzt Großbuchstaben für die Emphatika (`H`/`S`/`T` = ح/ص/ط), `x` für خ (nicht `kh`) und `:` für Langvokale (`thla:tha`); ذ/ظ fallen dort ausnahmslos auf `dh` zusammen. Vollständig neben den beiden anderen Quellen: `SKILL.md` → Quell-Konventionen.
 
-**Nutzen für den Ninja-Check-Workflow:** dritte Offline-Quelle im 🚩-Workflow (siehe SKILL.md) — nach `derja_ninja_entries` und `tunico_import` durchsuchen, v.a. bei älterem/ungewöhnlichem Lehrbuchvokabular.
+**Nutzen beim Prüfen:** dritte Offline-Quelle in Schritt 3 (siehe SKILL.md → Vokabeln prüfen) — nach `derja_ninja_entries` und `tunico_import` durchsuchen, v.a. bei älterem/ungewöhnlichem Lehrbuchvokabular.
 
 ### uniwien_source_pages
 

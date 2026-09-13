@@ -1167,3 +1167,27 @@ Danach: ~61 Zeilen echte Historie, 13 Spalten, **keine Änderung an `trainer.htm
 ### Warnung zum Löschschutz
 
 Der Trigger `trg_prevent_mass_delete` (max. 10 Zeilen pro Statement) prüft `current_user NOT IN ('anon','authenticated') → RETURN NULL`. Meine MCP-Verbindung läuft als `postgres`. **Der Schutz greift bei mir nicht.** Bei Massenoperationen hängt alles an der Vorlage-vor-Schreiben-Regel, nicht an der Datenbank.
+
+## Runde 18 · `vocabulary_review` entfernt (2026-09-13)
+
+Nils' Entscheidung, mit der Begründung, die den Kern traf: *„Ein Sinn war ja auch die letzten Abfragen zu dokumentieren. […] Ging darum die Abfragen bei Ninja nicht immer online machen zu müssen."* Mit 17.335 Ninja-, 7.543 TUNICO- und 5.070 Peace-Corps-Zeilen offline ist genau dieser Zweck erledigt.
+
+**Ausgeführt in vier Schritten, jeder einzeln gezeigt:**
+
+| # | Was | Ergebnis |
+|---|---|---|
+| 0 | Backup von neun Tabellen nach `exports/backup_2026-09-13/` | 936 KB, alle acht live gezogenen Zeilenzahlen exakt gegen die DB abgeglichen, jede Datei nach dem Packen wieder aufgemacht und geparst |
+| 1 | 61 echte Begründungen nach `vocabulary.internal_note` | gerettet, Nils' eigene Notizen stehen weiter davor (`730`: „Sadie- so klingt das audio") |
+| 2 | `trainer.html` bereinigt | **202 Zeilen weg** (7.951 → 7.749), null Restvorkommen, `node vm.Script()` sauber, alle onclick-Handler lösen auf |
+| 3 | `DROP TABLE public.vocabulary_review` | ohne CASCADE — hätte doch etwas daran gehangen, wäre es gescheitert |
+| 4 | Skill nachgezogen | Schritt 1 und Schritt 5 neu, IMPORTS.md-Verweis, PRECEDENTS-Eintrag |
+
+**Was der Skill jetzt anders sagt:**
+
+- **Schritt 1** liest statt der Review-Tabelle `vocabulary` selbst: `internal_note` (was frühere Sitzungen geprüft haben, inkl. der geretteten Ninja-Begründungen), `partner_status` (Semias Spur — `pending` heißt *nie bestätigt*, das war bei `710` das stärkste Signal im Datensatz) und `partner_comment`.
+- **Schritt 5** hat nur noch einen Pfad: `UPDATE vocabulary`. Geflaggte Zeilen bekommen zusätzlich `flagged=false`, `ninja_checked_at` und die **angehängte** Begründung in `internal_note` — nie überschreiben. Mit zwei ausformulierten Beispielen, darunter das für „keine Quelle gefunden", damit die nächste Sitzung nicht dieselbe Suche wiederholt.
+
+**Zwei Nebenbefunde:**
+
+1. Es gab längst richtige Backup-Tabellen — `vocabulary_backup_2026_07_25` (3.193 Zeilen) und `_2026_08_02` (3.274). Die 1.533 Spiegelzeilen in der Review-Tabelle waren also von Anfang an redundant, und die echte Sicherung desselben Tages ist sogar vollständiger.
+2. Eine Toast-Meldung im TUNICO-Flow („geflaggt für Ninja-Check") zeigte auf den entfernten Tab — auf „geflaggt zum Prüfen" geändert. Das Flag selbst bleibt: 🚩 heißt weiterhin „muss geprüft werden", nur der Vorschlags-Zwischenspeicher ist weg.
