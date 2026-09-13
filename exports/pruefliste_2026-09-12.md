@@ -2254,3 +2254,60 @@ Drei Möglichkeiten: (a) `837` ist die belegte Form `shnuwwa`, `476` die Variant
 sind beide Glossen falsch; (b) beide sind dasselbe Wort → Merge; (c) Semia bestätigt die
 Genus-Unterscheidung als Dialektrealität. Für (a) und (b) brauche ich dein Wort, (c) wäre eine Frage
 an sie.
+
+---
+
+## Runde 35 (2026-09-13) — die `shnou`-Familie aufgelöst
+
+Entscheidung Nils: **Option (a)** — die m./f.-Systematik ist falsch, es sind zwei belegte Varianten.
+
+Der Blick auf die ganze Familie fand eine **dritte** Zeile, die in Check 31 gar nicht auftauchte:
+
+| id | darija | arabic | deutsch | |
+|---|---|---|---|---|
+| 476 | `shnwa` | شنوا | was? (m.) | Kurs-Verweis, Fortschritt |
+| 837 | `shnoua?` | شْنُوَّا | was (betonte, feminine Frageform) | Fortschritt |
+| **1205** | `shniyyaa` | شْنِيَّا | was? (f.) | Fortschritt |
+
+`شنوا` ist die unvokalisierte Schreibung von `شْنُوَّا` — `476` und `837` sind **dasselbe Wort**.
+`1205` ist die zweite belegte Variante.
+
+**Quellenlage, einstimmig ohne Genus:** TUNICO `šnuwwa` und `šniyya`, Peace Corps `shnuwwa` (5×),
+Ninja شنوا / أشْنِيَّا / أشنُوّا.
+
+**Geschrieben:**
+
+| id | vorher → nachher |
+|---|---|
+| 476 | `shnwa` → **`shnuwwa`**, شنوا → شْنُوَّا, „was? (m.)" → **„was?"**, `homonym_ok` gesetzt |
+| 1205 | `shniyyaa` → **`shniyya`**, „was? (f.)" → **„was?"**, `homonym_ok` gesetzt |
+| 837 | **gelöscht** (Merge in 476 — dort der Kurs-Verweis) |
+
+`homonym_ok` auf beiden ist hier kein Ausschalter, sondern der **Anschalter für `synonymNote()`**: der
+Trainer zeigt bei „was?" jetzt „Für *was?* gibt es noch eine andere Übersetzung".
+
+### Check 30 zum zweiten Mal zu eng — `homonym_ok` hat zwei Bedeutungen
+
+Genau diese berechtigte Markierung hat Check 30 sofort als Fehler gemeldet. Der Grund: das Flag
+steuert im Trainer **zwei** Hinweise:
+
+| Funktion | Partner | Beispiel |
+|---|---|---|
+| `homonymNote()` | gleiches **Arabisch**, andere Bedeutung | `دَار` Haus / `دَارْ` er drehte sich |
+| `synonymNote()` | gleiches **Deutsch**, anderes Wort | `shnuwwa` / `shniyya` |
+
+Check 30 kannte nur die erste. Von 84 markierten Zeilen: **43** mit arabischem Partner, **18** mit nur
+deutschem Partner (berechtigt), **23** wirklich verwaist. Der Check zählt jetzt beide Partnerarten und
+steht bei **23** statt 41.
+
+**Das ist heute das dritte Mal dasselbe Muster:** ein Check, der berechtigten Zustand meldet, ist
+wertlos — und der erste Verdächtige bei einem neuen Treffer ist der Check.
+
+### Gegenprobe
+
+| | |
+|---|---|
+| 🔁 Duplikate (Trainer-Logik) | **0 Gruppen** von 3.777, `count`-Header 3.777 |
+| 🔤 Transliteration | **0** von 3.777, 23 Regeln |
+| Gruppe A | **17 Checks, alle 0** |
+| Gruppe B | 2 · 21 · 429 · 46 · 2 · 4 · 8 · 23 = **535** |

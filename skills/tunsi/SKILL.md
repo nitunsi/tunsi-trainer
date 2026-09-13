@@ -39,7 +39,7 @@ Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nic
 SELECT * FROM public.qualitaets_checks WHERE treffer > 0 ORDER BY gruppe, nr;
 ```
 
-Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, 3 Gemination-, 4 Konsonanten-Konflikte, 8 Klammern in der `darija` und 39 `homonym_ok` ohne Partner.** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
+Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, 2 Gemination-, 4 Konsonanten-Konflikte, 8 Klammern in der `darija` und 23 verwaiste `homonym_ok`.** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
 
 Was die Sicht **nicht** abdeckt und weiterhin von Hand zu ziehen ist:
 
@@ -456,6 +456,7 @@ Hier standen bis zum 2026-09-13 rund 250 Zeilen SQL. Sie sind in die Sicht gewan
 | 7 `-iou`/`-eou`/`-aou` | Plural muss `-iw` sein (= Regel 21) |
 | 8 halb verdoppelter Digraph | `ddh` statt `dhdh`. **722/4254/3042/3073 sind ausgeschlossen** — echte ظ+ه- bzw. t+th-Morphemgrenzen, sie sind korrekt |
 | 9 Sonderbuchstabe (= Regel 23) | ڨ/گ=g, ڤ=v, پ=p. **Ohne Lehnwort-Ausnahme**: die lateinische Schreibung ist frei, der arabische Buchstabe nicht. Prüft nur **eine** Richtung; die Gegenrichtung ist per Entscheidung kein Befund (siehe p/v-Entscheidung unten) |
+| 30 verwaistes `homonym_ok` | ⚠️ Das Flag steuert **zwei** Hinweise im Trainer: `homonymNote()` (gleiches Arabisch, andere Bedeutung) und `synonymNote()` (gleiches Deutsch, anderes Wort). Ein Check, der nur die erste Art Partner sucht, meldet jede berechtigte Synonym-Markierung als Fehler — 18 von 84 |
 | 10 identisches Arabisch ohne `homonym_ok` | entweder Dublette oder unmarkiertes Homonym. ⚠️ Vergleicht **Bytes**: قصّ und قَصّ gelten als verschieden. Die vokalisierungsunabhängige Fassung ist Check 31 |
 | 11–13 rohe Zeichen / Wächter | eine Umwandlungsfunktion kennt ein Zeichen nicht — siehe unten |
 | 31 `ar_key`-Dublette | gleiche arabische **Buchstaben** (ohne Harakat) **und** gleiche deutsche Bedeutung, ohne `homonym_ok`. Schließt die Lücke von Check 10, der byteweise vergleicht. ⚠️ Die Bedeutungsbedingung ist nötig: ohne sie meldet der Check 85 Paradigmenformen derselben Wurzel. Und der Bedeutungsschlüssel darf **Klammern nicht wegwerfen** — bei `476`/`837` steht die Unterscheidung genau dort |
