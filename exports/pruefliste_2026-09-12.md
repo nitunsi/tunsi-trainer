@@ -2758,3 +2758,39 @@ rotierenden Zeilen im Bestand ist durchweg eine **1.-Person-Vergangenheitsform**
 | 🔤 Transliteration | **0** von 3.776, 23 Regeln |
 | Gruppe A | **18 Checks, alle 0** |
 | Gruppe B | 1 · 3 · 425 · 36 · 1 · 1 · 7 = **474** |
+
+---
+
+## Runde 44 (2026-09-13) — `3052 osket` → `uskut`
+
+Dieselbe Methode wie bei `576`: erst die Morphologie, dann die Geschwisterzeilen, dann die Quellen.
+
+**Der Befund ist schärfer als „Vokalvariante":** das eigene `arabic_script` أُسْكُتْ trägt ein
+**Damma** auf dem zweiten Radikal. `e` ist davon keine mögliche Lesart — `osket` war nicht eine von
+mehreren Schreibungen, sondern falsch.
+
+| Instanz | sagt |
+|---|---|
+| eigenes Arabisch أُسْكُتْ | Ableitung `oskot` |
+| eigene `conjugation`-Tabelle | `uskut` |
+| Geschwisterzeile `4562 yuskut` يُسْكُت | `u` |
+| **Peace Corps, „Be quiet!"** | **`uskut`** |
+| Morphologie (regelmäßige Wurzel س-ك-ت) | اُسْكُتْ |
+
+**Geschrieben:** `darija` → `uskut`. Damit stimmen Zeile, Tabelle, Geschwisterzeile und Quelle
+überein. Das `arabic_script` bleibt; `u`/`o` ist die unnormierte Vokalachse (Peace Corps schreibt
+Damma als `u`, unsere Ableitung als `o` — dieselbe Lautung, zwei Konventionen, dokumentiert in
+**Quell-Konventionen**).
+
+### Stand
+
+**Check 21: 3 → 2.** Übrig nur die beiden bewusst offenen: `1198 na3mlou` (gehört zum
+zurückgestellten „`-ou` nach Konsonant"-Posten) und `4045 yijra` (die Modellgrenze mit
+`4039 yijri` — zwei Bedeutungen, eine Tabellenzelle).
+
+| | |
+|---|---|
+| 🔁 Duplikate | **0** von 3.776, `count`-Header 3.776 |
+| 🔤 Transliteration | **0** von 3.776, 23 Regeln |
+| Gruppe A | **18 Checks, alle 0** |
+| Gruppe B | 1 · 2 · 425 · 36 · 1 · 1 · 7 = **473** |
