@@ -242,6 +242,22 @@ Nach Nils' Freigabe umgestellt auf „der Hof zum Wäscheaufhängen (im Haus)", 
 
 **Nebenbefund, nicht angefasst:** `3710` übersetzt `fi el qe3a` (في القاعة) mit „im Flur". قاعة ist Saal/großer Raum; Ninja führt `9a3a` als „hall". Kandidat für eine spätere Runde.
 
+## _arabic_skeleton kannte ڨ nicht — 699 Zeilen waren unsichtbar (2026-09-13)
+
+Aufgefallen kurz vor einer Massenänderung, nicht danach. Nils hatte entschieden: bei `g`-Aussprache bleibt die `darija`, das Arabische wird auf ڨ umgestellt. Vor dem Schreiben der 20 Zeilen habe ich geprüft, was sich am `arabic_skeleton` ändert — und dabei gesehen, dass `public._arabic_skeleton()` die maghrebinisch/persischen Zusatzbuchstaben **گ ڨ ڤ پ** gar nicht kennt und roh stehen lässt:
+
+```
+_arabic_skeleton('بَڨْرَة')  →  'bڨr'     statt  'bgr'
+```
+
+**Betroffen waren nicht 20, sondern 699 Zeilen** — 76 im Bestand und **623 in `derja_ninja_entries`** (3,6 % der größten Quelle). Alle mit einem rohen arabischen Zeichen im gespeicherten Skelett und damit für jeden Skelett-Abgleich unauffindbar. Dazu blieben Satzzeichen stehen (`ـ - … ’ ( ) /`).
+
+**Die Umstellung hätte den Fehler auf 20 weitere Zeilen ausgedehnt** und dabei ausgerechnet die Wörter getroffen, die man danach am ehesten in den Quellen sucht.
+
+Repariert: `translate(s, 'ڨگڤڥپ', 'ggvvp')`, `چ`→`j`, Satzzeichenklasse erweitert. Danach beide gespeicherten Spalten neu berechnet (98 Bestands-, 623 Ninja-Zeilen). Erst dann die 20 Zeilen umgestellt.
+
+**Lehre:** vor einer Massenänderung an einem Feld nicht nur fragen „ist der neue Wert richtig?", sondern „**was rechnet sonst noch mit diesem Feld?**". Hier hingen zwei gespeicherte Skelettspalten und der komplette Cross-Source-Abgleich daran. Die Prüfung kostete eine Abfrage und hat einen Fehler gefunden, der seit dem ersten Import bestand.
+
 ## chatalpha für Ninja — die Quell-Regeln vorberechnen statt anwenden (2026-09-13)
 
 Nils' Anstoß, und die Begründung war die richtige: *„Wäre gut wenn nicht die Regeln der Quellen jedes Mal ausgewertet werden müssten. Das ist fehleranfällig da das manchmal vergessen wird."* Dazu seine zweite Frage: *„Macht die View vocab_lookup nicht so was Ähnliches?"* — **Ja, genau das.** `vocab_lookup.chatalpha` war für TUNICO (94 %) und Peace Corps (98 %) gefüllt und für Ninja **0 von 17.335**. Kein neues Konzept nötig, nur ein Loch — ausgerechnet bei der größten Quelle und der einzigen mit verlässlich vokalisiertem Arabisch.

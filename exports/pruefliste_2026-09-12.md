@@ -1211,3 +1211,29 @@ Warum keine bestehende Regel das fängt: `bathriq` für بطريق **enthält** 
 **Ohne die Pflichtfilter: 224 statt 44 Treffer** — bei Sätzen ist das Arabische meist nur teilweise vokalisiert, unmarkiertes ي/و wird als Konsonant gelesen (`bir-ra7a` → `balra7a`). Das ist dokumentiert, damit die Filter nicht als Bequemlichkeit missverstanden werden.
 
 **Die 44 zur Freigabe offen.** Richtung ist je Zeile zu klären — bei `7orriyya` fehlt die Schadda dem **Arabischen**, nicht der `darija`.
+
+## Runde 20 · Die 40 abgearbeitet (2026-09-13)
+
+Nils' Entscheidungen: die 40 bearbeiten; bei `g`-Aussprache bleibt die `darija` und das Arabische
+wird umgestellt; beim Artikel umgekehrt die `darija` anpassen.
+
+| Block | n | Was |
+|---|---|---|
+| 1 · `darija` korrigiert | 18 | Gemination (`nshimm`, `7orr`, `littaw`, `rottila` …), Digraph (`mokhkhou`, `mashshi`, `nsharshir`, `mshakhkhra`), Tippfehler `brrsha`→`barsha`, Artikel raus (`iqtisad`, `theni`, `bint 3am`) |
+| 2 · `arabic_script` korrigiert | 8 | fehlende Schadda (`نُصّ`, `أَهَمِّيَّة` ×2, `حُرِّيَّة`, `بَصّ`, `دَزّ`, `يْنَحِّي`) und ڤ→ق bei `yqarqir` |
+| 3 · Lehnwörter markiert | 8 | `(frz.)` bzw. `(ital.)` ins `german`, damit die bestehende Ausnahme greift |
+| 4 · ق → ڨ | 20 | alle Zeilen mit `g` in der `darija` und ق im Arabischen |
+
+**Ergebnis: 55 offene Treffer → 15.** Die verbliebenen 15 sind genau die, die stehen bleiben
+sollten, plus die zwei dokumentierten Fehlalarme (`fil`→`fi`, `3744 dour` Wortversatz).
+
+### Der wichtigste Fund kam beim Prüfen der Nebenwirkung
+
+Vor den 20 ڨ-Umstellungen habe ich nachgesehen, was sich am `arabic_skeleton` ändert.
+**`_arabic_skeleton()` kannte گ ڨ ڤ پ nicht** und ließ sie roh stehen — `بَڨْرَة` ergab `bڨr` statt `bgr`.
+
+Betroffen waren nicht 20, sondern **699 Zeilen**: 76 im Bestand und **623 bei Ninja** (3,6 % der
+größten Quelle), alle für jeden Skelett-Abgleich unsichtbar. Die Umstellung hätte den Fehler auf
+20 weitere Zeilen ausgedehnt.
+
+Repariert, beide gespeicherten Skelettspalten neu berechnet, erst dann umgestellt.
