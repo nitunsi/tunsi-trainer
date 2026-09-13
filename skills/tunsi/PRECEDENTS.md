@@ -367,6 +367,16 @@ Der Check-Abschnitt war rein chronologisch gewachsen: neue Prüfung unten anhän
 
 **Lehre:** Die Gliederung eines Regelwerks sollte der Frage folgen, die der Leser am Treffer hat — nicht der Reihenfolge, in der die Regeln entstanden sind.
 
+## Mit dem Infinitiv gesucht — die Spiegelseite einer bekannten Regel (2026-09-13)
+
+Im Test „10 neue deutsche Wörter" meldete ich „husten" als **nicht im Trainer vorhanden**. Nils: *„Er hustet gibt es schon."* — `3059 yku77` = „er hustet", seit langem da.
+
+Der Skill kennt die Regel, aber nur für eine Richtung: *„Präsens-Verben: deutsches Gloss immer als 3. Person Singular, NIE als Infinitiv — der Infinitiv versteckt Duplikate vor dem Duplikat-Check."* Das steht dort als Regel fürs **Schreiben**. Beim **Suchen** habe ich genau denselben Fehler gemacht: `german ~* 'husten'` findet „er hustet" nicht, weil der Substring dort nicht vorkommt. In einem echten Anlegevorgang wäre daraus eine Dublette geworden — die Regel, die das verhindern soll, hätte danebengestanden.
+
+**Der Gegenversuch ging sofort zu weit ins andere Extrem:** mit dem nackten Stamm `neid` kamen 8 Treffer, 7 davon „schneidet", „Schneider", „Schneidebrett". Richtig ist der Stamm **mit Wortgrenze**: `\yneid` trifft genau eine Zeile — und dabei fiel auf, dass auch mein erster Durchgang bei „neidisch" unvollständig war (`3772 ghira` = „Eifersucht / Neid" hatte ich übersehen). **Zwei falsche Testergebnisse aus einem einzigen Suchmuster-Fehler.**
+
+**Lehre:** Eine Regel über das Format eines Feldes ist immer auch eine Regel über die Suche in diesem Feld. Wer weiß, dass die Spalte „er hustet" enthält, darf nicht „husten" suchen. Und ein Suchergebnis „— nichts —" ist keine Auskunft über den Bestand, sondern über das Muster: bevor „gibt es nicht" gesagt wird, muss das Muster an einer Zeile getestet werden, von der man weiß, dass sie existiert.
+
 ## p/v ist nicht ڨ: warum zwei ähnliche Fälle verschieden entschieden wurden (2026-09-13)
 
 Nach der ڨ-Entscheidung („wird ein Wort mit `g` gesprochen, bleibt die `darija` und das `arabic_script` wird auf ڨ umgestellt") lag die Analogie nahe: 25 Zeilen schreiben `p` gegen ب, 14 schreiben `v` gegen ف — also dasselbe Vorgehen? **Nils hat anders entschieden: so lassen.**

@@ -1830,3 +1830,39 @@ damit wieder vollständig auf 0 — jetzt mit 14 Checks statt 13.**
   ist inhaltlich risikofrei. Die anderen 4 sind echte Befunde: `2103 talyaniyya` (arabisches Wortbild
   passt nicht), `2193 mamet`, `3017 nna`, `3271 badhdrout`.
 - **`2045 mela7`** aus dem Test (Runde 28) — Kandidat, noch nicht entschieden.
+
+---
+
+## Korrektur zu Runde 28 (2026-09-13) — mein Duplikat-Check war falsch
+
+Nils beim Lesen des Testberichts: *„Er hustet gibt es schon."* Stimmt — **`3059 yku77` = „er hustet"**.
+Mein Suchmuster war der Infinitiv `husten`; der Bestand glossiert Präsensverben als 3. Person
+Singular, und „husten" kommt in „er hustet" als Substring nicht vor.
+
+Die Gegenprobe mit dem nackten Stamm ging ins andere Extrem: `neid` liefert 8 Treffer, 7 davon
+„schneidet / Schneider / Schneidebrett". Richtig ist der **Stamm mit Wortgrenze** — und dabei kam
+ein zweiter übersehener Treffer heraus:
+
+| Muster | Treffer |
+|---|---|
+| `husten` | 0 — obwohl `3059 er hustet` existiert |
+| `\yhust` | 1 — `3059 yku77` ✓ |
+| `neid` | 8 — 7 Fehlalarme aus „schneiden" |
+| `\yneid` | 1 — `3772 ghira` „Eifersucht / Neid", in Runde 28 **übersehen** |
+
+**Berichtigte Bilanz von Aufgabe B:**
+
+| Kategorie | Runde 28 | richtig |
+|---|---|---|
+| schon im Trainer | 4 | **5** (zusätzlich husten `3059 yku77`; neidisch trifft doppelt: `2479` + `3772`) |
+| nicht im Trainer, aber in den Quellen | 6 | **5** (Schublade, Ellenbogen, Steckdose, Gießkanne, Schnürsenkel) |
+| nirgends | 0 | 0 |
+
+Der Rest der Runde-28-Auswertung bleibt gültig; die Schlussfolgerung wird sogar **schärfer**: von 10
+angefragten Wörtern war die Hälfte schon da, und die Lücke bei „husten" ist nicht das Verb, sondern
+das **Nomen** — `ka77a` „der Husten" (Ninja كَحَّةْ, TUNICO `kaḥḥa`, Peace Corps `ka77a`) fehlt
+weiterhin. Genau der „Verb und Nomen sind zwei Zeilen"-Fall aus derselben Runde.
+
+**Regel daraus, jetzt im Skill:** im `german`-Duplikat-Check immer den Wortstamm mit `\y` verankert
+suchen, nie die Vollform. Ein „— nichts —" ist sonst keine Auskunft über den Bestand, sondern über
+das Suchmuster.

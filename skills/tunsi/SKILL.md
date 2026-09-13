@@ -96,6 +96,13 @@ Die Schritte 2–4 sind für beide Eingänge wortgleich. Bis zum 2026-09-13 stan
    - `arabic_script`: primärer Schlüssel. Kollision möglich bei unvokalisierten Formen — Bedeutung als Tiebreaker.
    - `darija`: Homographen beachten (Konjugationspaare sie/ich haben oft identische Transliteration — kein Duplikat, aber `german` muss Person klar benennen).
    - `german`: als eigenständige Suchanfrage, Synonyme mitdenken ("einfach"≈"leicht", "Lied"≈"Gesang", "Darlehen"≈"Kredit"). Bei Fund: als Auffälligkeit markieren, Entscheidung dem Nutzer überlassen.
+     **Immer mit dem Wortstamm suchen, nie mit der Vollform, und den Stamm mit `\y` verankern.** Der Bestand glossiert Präsensverben als 3. Person Singular ("er hustet") — der Infinitiv "husten" kommt darin als Substring **nicht** vor und findet die Zeile nicht. Ohne `\y` kippt es in die andere Richtung: "neid" trifft achtmal "schneiden". Belegt am 2026-09-13, beide Fehler in einem Lauf:
+     ```sql
+     -- 'husten' → 0 Treffer, obwohl 3059 "er hustet" existiert
+     -- 'neid'   → 8 Treffer, 7 davon "schneidet/Schneider/Schneidebrett"
+     SELECT id, darija, german FROM vocabulary WHERE german ~* '\yhust';   -- richtig
+     ```
+     Gilt genauso für Nomen mit Umlaut/Fugen-s und für Adjektive: `\yeifersücht` statt "eifersüchtig".
    - Bei strukturierten Listen (Adjektiv-/Verb-Tabellen): zuerst ein Themen-Sweep gegen den passenden `topic`, nicht Wort für Wort.
    - **Duplikat-Check VOR jeder nachträglichen Schreibkorrektur, nicht erst danach** — eine Korrektur ist im Effekt ein neues `darija`. Wenn die *korrigierte* Schreibung bereits im Bestand existiert, ist die vermeintliche Schreibkorrektur in Wahrheit ein **Merge** und muss als solcher behandelt werden (Kurs-Verweise umbiegen, Felder zusammenführen, Dublette löschen) — sonst entsteht aus einer Reparatur eine neue Dublette. Zweimal am 2026-09-12 aufgetreten: `y3awid`→`y3awwed` traf die bestehende id 3442, `yit3asha`→`yit3ashsha` traf id 4029. Älterer Fall: `yisma7`→`yisma3` (PRECEDENTS.md → Duplikat-Check).
      ```sql
