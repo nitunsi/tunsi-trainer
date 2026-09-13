@@ -39,13 +39,12 @@ Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nic
 SELECT * FROM public.qualitaets_checks WHERE treffer > 0 ORDER BY gruppe, nr;
 ```
 
-Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, 12 Gemination-, 8 Konsonanten-Konflikte, 8 Klammern in der `darija` und 58 `homonym_ok` ohne Partnerzeile.** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
+Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, 3 Gemination-, 4 Konsonanten-Konflikte, 8 Klammern in der `darija`, 39 `homonym_ok` ohne Partner und 87 `ar_key`-Gruppen ohne `homonym_ok`.** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
 
 Was die Sicht **nicht** abdeckt und weiterhin von Hand zu ziehen ist:
 
 | Posten | wo |
 |---|---|
-| `ar_key`-Gruppen (vokalisierungsunabhängige Dubletten) | Datenqualitäts-Checks → B |
 | Schrägstrich im `darija` (echte Synonyme) | Datenqualitäts-Checks → B |
 | verwaiste ids in `course_lessons.vocab_lesson_refs` | Altbestand, tote Vokabel-Slots |
 | Bedeutungsverdacht gegen TUNICO | `public.bedeutungs_screen` — **keine Korrekturliste**, ~93 % Fehlalarm |
@@ -209,7 +208,9 @@ Bei Eingang B gehört dieselbe Begründung in die `internal_note` der neuen Zeil
 - Quote-verankerte Suchmuster liefern Fehlalarme — immer unverankert/als Substring suchen.
 - Ältere CSV-Quellen romanisieren ض/ظ/ذ/ث inkonsistent (dh, th, z, d) — bei Kandidaten mit diesen Buchstaben immer zusätzlich das arabic_script direkt suchen, nicht nur die Transliteration.
 - Transliterations-Rateversuche bei wissenschaftlichen Quellen (Uni Wien) sind unzuverlässig — primär über die deutsche Bedeutung suchen, nicht über die geratene Transliteration.
-- **Vokal-Varianten-Falle:** reine Substring-Suche auf die geplante Transliteration fängt Vokalvarianten nicht ab (`ghurbal`/`ghorbel`, a↔o). Bei a/e/i/o-Unsicherheit zusätzlich eine plausible Variante mitsuchen oder direkt den SQL-Skelett-Check (unten) nach dem Schreiben laufen lassen.
+- **Drei Vergleichsstufen fürs Arabische — die mittlere ist die richtige (gemessen 2026-09-13).** Bytes finden nichts (`قصّ` ≠ `قَصّ`, so ist `1681 qas`/`4544 qass` jahrelang durchgerutscht), das Konsonantenskelett findet zu viel (465 Gruppen, meist ganze Wurzelfamilien wie `kteb`/`katib`/`ktob`). Richtig ist **`ar_key`** = Buchstaben ohne Harakat: `btrim(regexp_replace(arabic_script,'[ًٌٍَُِّْٰٟ]','','g'))` — 87 Gruppen, überwiegend echte Homonympaare. Das ist Check 31.
+
+**Vokal-Varianten-Falle:** reine Substring-Suche auf die geplante Transliteration fängt Vokalvarianten nicht ab (`ghurbal`/`ghorbel`, a↔o). Bei a/e/i/o-Unsicherheit zusätzlich eine plausible Variante mitsuchen oder direkt den SQL-Skelett-Check (unten) nach dem Schreiben laufen lassen.
 - Nicht nur die Transliteration kann falsch sein — manchmal ist `arabic_script` selbst fehlerhaft. Vor einer arabic_script-Korrektur: Bedeutung/Etymologie des Wortes selbst als Beleg heranziehen (eigener Gloss, verwandte Bestandswörter), nicht raten.
 - Bei echter Buchstaben-Identitäts-Unsicherheit (ط vs. ث, ض vs. ظ): Derja Ninja als Tiebreaker nutzen, nicht raten oder nur der akademischen Quellen-Umschrift vertrauen.
 
@@ -455,7 +456,7 @@ Hier standen bis zum 2026-09-13 rund 250 Zeilen SQL. Sie sind in die Sicht gewan
 | 7 `-iou`/`-eou`/`-aou` | Plural muss `-iw` sein (= Regel 21) |
 | 8 halb verdoppelter Digraph | `ddh` statt `dhdh`. **722/4254/3042/3073 sind ausgeschlossen** — echte ظ+ه- bzw. t+th-Morphemgrenzen, sie sind korrekt |
 | 9 Sonderbuchstabe (= Regel 23) | ڨ/گ=g, ڤ=v, پ=p. **Ohne Lehnwort-Ausnahme**: die lateinische Schreibung ist frei, der arabische Buchstabe nicht. Prüft nur **eine** Richtung; die Gegenrichtung ist per Entscheidung kein Befund (siehe p/v-Entscheidung unten) |
-| 10 identisches Arabisch ohne `homonym_ok` | entweder Dublette oder unmarkiertes Homonym |
+| 10 identisches Arabisch ohne `homonym_ok` | entweder Dublette oder unmarkiertes Homonym. ⚠️ Vergleicht **Bytes**: قصّ und قَصّ gelten als verschieden. Die vokalisierungsunabhängige Fassung ist Check 31 |
 | 11–13 rohe Zeichen / Wächter | eine Umwandlungsfunktion kennt ein Zeichen nicht — siehe unten |
 | 27 `q`/`z`/`j` ohne arabische Entsprechung | Gegenrichtung zu den Regeln 10/12/13. Nur **Einzelzeichen** taugen dafür — die Digraph-Gegenrichtungen (`dh`, `th`, `sh`) sind durch Morphemgrenzen verrauscht (`3and`+`ha`, `as`+`hal`) |
 | 28 Artikel assimiliert vor Mondbuchstabe | Gegenrichtung zu Check 3 |

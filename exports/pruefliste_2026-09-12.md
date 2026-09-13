@@ -2039,3 +2039,77 @@ Bei 3308 und 428 leitet das Arabische jetzt exakt die `darija` ab. Außerdem `16
 
 Gruppe A: **16 Checks, alle 0.** Gruppe B: 20 (Check 24) → **12**, dazu 2 · 21 · 430 · 46 · 8 (Check 25) ·
 8 (Klammern) · 58 (`homonym_ok`).
+
+---
+
+## Runde 32 (2026-09-13) — Check 24 und 25 leergearbeitet, Check 10 als zu eng erkannt
+
+### Geschrieben (15 Zeilen)
+
+**Quellenbelegt, Ableitung stimmt danach exakt mit der `darija` überein:**
+
+| id | Feld | vorher → nachher | Beleg |
+|---|---|---|---|
+| 1162 | arabic | يَقْطَع → يْقَطَّع | war als Maß I vokalisiert; PC + TUNICO `qatta3` |
+| 2804 | arabic | وَقَّيِت → وْقَيِّتْ | Schadda saß auf ق statt ي; Ninja + TUNICO 3× `wqayyit` |
+| 4114 | arabic | لِيسِيَات → لِيسِّيَات | TUNICO `lissē` mit ss |
+| 2129 | beide | `guinneriyya` → `gannariyya`, ڨناريّة → ڨَنَّارِيَّة | TUNICO `gannārīya`, PC `qannariyya` |
+| 2874 | darija | `fissa3` → `fisa3` | alle drei Quellen ohne ss |
+| 2641 | darija | `titnaffas` → `tnaffis` | Ninja führt genau unser Arabisch als `tnaffis` |
+| 3394 / 3431 | darija | `tarrajja` → `tarajja`, `ytarrajja` → `yatarajja` | eigenes Arabisch: Schadda auf ج, nicht auf ر |
+
+**Lehnwort-Marker nachgetragen** (Hausregel; am Quiz-Code geprüft, dass `normalize()` den Marker wegwirft
+und die Antwort sich nicht ändert): `2274` Stress (engl.) · `4114` Gymnasien (frz.) · `425` Krawatte ·
+`703` Villa · `717` Elektrizität · `2721` Gang (Auto).
+
+**Check 24: 20 → 3. Check 25: 8 → 4.**
+
+### Der Duplikat-Check hat einen Merge verhindert
+
+`1681 qas` sollte nach TUNICO `qaṣṣ` zu `qass` korrigiert werden. Der Pflicht-Check vor der
+Schreibkorrektur fand: **`qass` existiert bereits als `4544`**, mit derselben Bedeutung „er schnitt",
+derselben Lektion 47 und fast identischem Arabisch (قصّ gegen قَصّ).
+
+| | `1681` | `4544` |
+|---|---|---|
+| arabic | قصّ | قَصّ |
+| topic | Verben-Infinitiv (L25) | Vergangenheit |
+| `homonym_ok` | **true** | false |
+| Lernfortschritt | 6 richtig / 2 falsch, 10 Wiederholungen | keiner |
+| Kurs-Verweise | keine | keine |
+
+Nach dem Standard-Vorgehen bleibt `1681` (hat Fortschritt) und wird auf `qass` / قَصّ korrigiert,
+`4544` wird gelöscht. **Zur Bestätigung vorgelegt, nicht geschrieben.**
+
+### Der eigentliche Fund: Check 10 vergleicht Bytes, nicht Buchstaben
+
+Warum hat kein Check diese Dublette gemeldet? `homonym_ok = true` auf `1681` hätte die Gruppe
+stillgelegt — aber selbst ohne das Flag hätte Check 10 nichts gefunden: er vergleicht
+`btrim(arabic_script)` **Byte für Byte**, und قصّ ≠ قَصّ.
+
+Mein eigener Check 30 hatte denselben Fehler und meldete deshalb 58 statt 39 Zeilen: von den
+angeblich partnerlosen `homonym_ok`-Zeilen haben **50 sehr wohl einen Partner**, nur mit anderer
+Vokalisierung (`دَار` / `دَارْ`, `حَلّ` / `حلّ`, `وَلَّى` / `وَلَّا`).
+
+**Drei Vergleichsstufen, gemessen:**
+
+| Schlüssel | Gruppen ohne `homonym_ok` | taugt |
+|---|---|---|
+| Bytes (Check 10 heute) | 0 | zu eng — findet die `qas`/`qass`-Klasse nie |
+| Buchstaben ohne Harakat (`ar_key`) | **87** | richtig — echte Homonympaare (`bnet`/`bnat`, `bled`/`blad`, `akhir`/`akhar`) |
+| Konsonantenskelett | 465 | zu grob — trifft die ganze Wurzelfamilie (`kteb`/`katib`/`ktob`/`yiktib`) |
+
+`ar_key` stand im Skill schon als „von Hand zu ziehen" unter den offenen Posten. Jetzt ist es
+**Check 31 (87 Gruppen)**, und Check 30 rechnet ebenfalls mit `ar_key` (**39** statt 58).
+
+### Offen zur Entscheidung
+
+| id | Lage |
+|---|---|
+| **1681 / 4544** | Merge, siehe oben — Löschung braucht Bestätigung |
+| 2071 `louwwel` | PC belegt `luwwil`, TUNICO `awwil` — das Arabische أَوَّل ist die Form **ohne** `l-` |
+| 2538 `nifli` | keine Quelle; Schadda im eigenen Arabischen نِفْلِّي, nicht in der `darija`. TUNICO kennt `flis` „to be broke" |
+| 2103 `talyaniyya` | Ninja طَلْيَانِي / TUNICO `ṭalyāni` — unser إيطَالَيَّة hat ein zusätzliches إي |
+| 2193 `mamet` / 3017 `nna` | ة am Wortende als `-et` bzw. Anfangs-Schadda — beides Lautlehre-Fragen |
+| 3271 `badhdrout` | `dhdh` in der `darija`, nur ein ض im Arabischen |
+| 2641 | Gloss „atmen" ist Infinitiv statt „er atmet" |
