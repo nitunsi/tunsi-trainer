@@ -1627,3 +1627,72 @@ Die Vokalachse ist **nicht** prüfbar (~1.000 Abweichungen ohne Aussagewert) —
 Bedeutungsachse in Runde 23. Die Gemination dagegen ist es, weil die Schadda ein geschriebenes
 Zeichen ist und keine Auslegung. Von 2.335 vokalisierten Einzelwörtern bleiben damit 50 zum Ansehen
 statt 1.023 — und 26 davon sind mit einem Blick auf das Arabische entscheidbar.
+
+---
+
+## Runde 27 (2026-09-13) — Belege für die Korrekturen aus Runde 26, plus neuer Check 26
+
+Schritt 3 (alle drei Quellen) zu den Befunden, die aus Runde 26 zur Entscheidung anstanden.
+**Ergebnis: eine der vier Gruppen ist keine Korrektur, sondern eine Grundsatzfrage.**
+
+### Neu gefunden: `3` in der darija ohne ع im Arabischen (= Check 26, 5 Zeilen)
+
+Beim Nachschlagen von `sou3el` aufgefallen und sofort als Check nachgezogen. Alle 5 Treffer sind echt,
+kein Fehlalarm. Der Check gehört nach der Korrektur in **Gruppe A** (muss auf 0 stehen).
+
+| id | Feld | Ist | Soll | Beleg |
+|---|---|---|---|---|
+| 825 | `darija` | `is3al sou3el` | `is'al sou'al` | إسأل سؤال — beide Wörter haben Hamza, kein ع |
+| 2191 | `darija` | `sou3elet` | `sou'alet` | TUNICO `suʔāl`, Peace Corps `su-al`, Ninja سُؤَالْ |
+| 2285 | `darija` | `sou3el` | `sou'al` | dito; der Bestand schreibt es in `1609` bereits als `es-su'al` |
+| 742 | `arabic_script` | صاحبي تصل حادث | صاحبي عمل حادث | `3mal` = عمل; تصل heißt etwas anderes. Ninja: حادِثْ = accident |
+| 4356 | `arabic_script` | بيت قصاد | بيت قعاد | TUNICO `qʕād` „sitting"; قصاد = `qsad` „meinen/beabsichtigen" |
+
+`742` ist der schwerste Fall der Runde: `arabic_script` und `darija` sagen Verschiedenes, und das
+Arabische ist das Falsche.
+
+### Quellenbelegt und entscheidungsreif
+
+| id | Feld | Ist | Soll | Beleg |
+|---|---|---|---|---|
+| 2856 | `arabic_script` | فَرْطَطُو | فَرْطَطُّو | Ninja فَرْطَطُّو `fartattou` — unsere darija war richtig, die Schadda fehlte |
+| 2720 | `darija` | `et-tamakhikh` | `et-tamakhmikh` | TUNICO `tmaxmīx`; unser Arabisch التَّمَخْمِيخ hatte die Silbe schon |
+| 4555 | `darija` | `thahhhert` | `thahhert` | drei `h` sind ein Tippfehler (ظَهَّرْت) |
+| 2750 | `darija` | `raayidh` | `rayidh` | Ninja رَايِضْ, Peace Corps 3× `rayidh` — رَا ist kurz, kein `aa` |
+
+### Grammatisch begründet, aber von den Quellen nicht bestätigt
+
+Die fünf `أَفْعَل`-Komparative. Im Arabischen fehlt überall die Schadda auf dem letzten Radikal;
+bei Wurzeln mit gleichem 2./3. Radikal (قلل، خفف، صحح، رقق، ركك) gehört sie dorthin, und unsere
+`darija` schreibt sie auf allen fünf Zeilen konsistent mit.
+
+| id | darija | Ist | Soll |
+|---|---|---|---|
+| 2018 | `akhaff` | أَخَف | أَخَفّ |
+| 2019 | `asa77` | أَصَح | أَصَحّ |
+| 2020 | `araqq` | أَرَق | أَرَقّ |
+| 2021 | `arakk` | أَرَك | أَرَكّ |
+| 2024 | `aqall` | أَقَل | أَقَلّ |
+
+⚠️ **Gegenbeleg, der ernst genommen gehört:** Ninja schreibt أقَلْ (`aqal`, ohne Schadda), Peace Corps
+`aqal`. Beide schreiben aber auch die Anfangs-Fatha nicht — ihre Vokalisierung ist an dieser Stelle
+unvollständig, nicht widersprechend. Entscheidung liegt bei Nils/Semia.
+
+### Keine Korrektur, sondern eine Grundsatzfrage: p/v im Arabischen
+
+Die 15 „unmarkierten Lehnwörter" aus Runde 26 sind in Wahrheit ein Muster mit **39 Zeilen**:
+
+| Klasse | Zeilen | Beispiel |
+|---|---|---|
+| `p` in der darija, ب im Arabischen | 25 | `931 parking` / بَارْكِينْڨْ — hat ڨ für das g, aber ب für das p |
+| `v` in der darija, ف im Arabischen | 14 | `703 villa` / فِيلَا — während `4282 villa` bereits ڤِيلاَّ schreibt |
+| `g` in der darija, ق im Arabischen | 0 | am 2026-09-13 abgeräumt |
+
+Das ist dieselbe Frage wie bei ڨ, nur für die anderen beiden Sonderbuchstaben. Regel 23 prüft bisher
+nur **eine** Richtung: „ڤ im Arabischen, aber kein v in der Transliteration". Die Gegenrichtung ist
+ungeprüft — deshalb sind die 39 Zeilen nie aufgefallen.
+
+Nicht alle 39 sind gleich: `2167 jupe` (stummes p im französischen Wortbild) und
+`3281 yitba3 (passive)` (das `p` steckt in der Anmerkung) sind Fehlalarme. Der Kern sind Wörter, die
+**tunesisch mit p/v gesprochen** werden: `piesa`, `spedri`, `plombi`, `plato`, `spor`, `parking`,
+`talvza`, `fivri`, `nuvambir`, `villa`.
