@@ -234,6 +234,14 @@ Dabei fiel eine zweite Blindheit derselben Formeln auf: sie streichen ا/و/ي, 
 
 **Ein Verdacht von mir war unbegründet**, und das gehört zum Ergebnis: Bei `586 skekin` سكاكن hielt ich das Arabische für unvollständig (erwartet سكاكين). Gegenprobe: TUNICO führt den Plural als `skākin`, Peace Corps als `ska:kin` — das lange ā ist ein Alif, kein Ya. **Das Arabische ist korrekt.** Ohne die Quellenprüfung hätte ich eine richtige Zeile „korrigiert" — dieselbe Falle wie bei `bnin` und `skhan`.
 
+**Auflösung von `710 el-manshir` (2026-09-13):** Alle drei Quellen gegengeprüft. **Nur TUNICO kennt das Wort überhaupt** (id 6879, `manšiṛ`, senses nur `de`, kein `en` — deshalb auch keine `english`-Achse für den Join). Ninja hat kein منشير und nennt für Korridor/Flur `koulwar` كُلْوَارْ, `mamar` مَمَرْ, `mamchaa` مَمْشَى, `bahouw` بَهُوْ; Peace Corps hat kein منشير, HALL = `mza:z`, PASSAGE = `maqTa3`. Es war also kein Quellenkonflikt, sondern eine Quelle gegen den Gloss und keine dafür.
+
+Zwei unabhängige Stützen kamen dazu: **die Wurzel** ن-ش-ر „ausbreiten/aufhängen" ergibt ein Nomen loci „Ort zum Aufhängen" — dieselbe Wortbildung wie `2910 manshfa` مَنْشَفَة „Handtuch"; von dieser Wurzel führt kein Weg zu „Korridor". Und **der Lektionskontext**: L20 (ids 702–718) ist eine Hausteile-Lektion, 710 steht direkt zwischen `el-kouwjiyna` (Küche) / `bit er-ra7a` (Bad) und `ed-drouwj` (Treppe) / `wist ed-dar` (Innenhof) — genau die Position, an die TUNICOs „Hof im Küchenflügel" gehört.
+
+Nach Nils' Freigabe umgestellt auf „der Hof zum Wäscheaufhängen (im Haus)", `topic` „(L20)" → „Wohnen", Herkunft in `internal_note`. `partner_status` bleibt `pending`: die Zeile war von Semia **nie** bestätigt — das war rückblickend das stärkste Signal und stand die ganze Zeit in der Zeile.
+
+**Nebenbefund, nicht angefasst:** `3710` übersetzt `fi el qe3a` (في القاعة) mit „im Flur". قاعة ist Saal/großer Raum; Ninja führt `9a3a` als „hall". Kandidat für eine spätere Runde.
+
 ## Quell-Konventionen waren an sechs Stellen verstreut (2026-09-13)
 
 Auslöser war Nils' Frage „die Translit-Regeln von den drei Quellen hast du oder?". Antwort: ja, benutzt wurden sie die ganze Session — aber sie standen in SKILL.md an vier und in IMPORTS.md an zwei Stellen, keine davon vollständig, und **nirgends stand, welche Abweichung kein Befund ist**. Genau dieselbe Auffindbarkeits-Lücke wie vorher beim Prüfprozess. Konsolidiert zu einer Tabelle: SKILL.md → Quell-Konventionen.

@@ -1014,3 +1014,37 @@ Die 164 Zeilen mit „vokalisiertem Geschwister" sahen nach der besseren Quelle 
 Der Buchstaben-Identitätsfilter, der die Ninja-Route rettet, ist hier **per Konstruktion erfüllt** und hilft deshalb nicht. Von 29 Paaren blieben **2** — nur die, bei denen auch die `darija` identisch ist: `652 maqfoul` (← 2296) und `4410 tsa77ar` (← 4295). Beide ausgeführt.
 
 **Konsequenz:** Der Vokalisierungs-Rückstand ist **keine Kampagne**. Ninja gibt nach Filter ~20, die Geschwister praktisch nichts. Richtig ist die Regel „ohnehin fällige Bearbeitung" — beim Anfassen einer Zeile die Vokalisierung mitziehen. Stand: **746 unvokalisiert, davon 504 Einzelwörter.**
+
+## Runde 15 · Quell-Konventionen konsolidiert + 710 el-manshir entschieden (2026-09-13)
+
+**Anlass:** Nils' zwei Fragen — übernimmt da TUNICO, oder findet sich was bei Ninja/Peace Corps? Und: die Translit-Regeln der drei Quellen hast du oder?
+
+### a) منشير — TUNICO ist die einzige Quelle, nicht die bevorzugte
+
+| Quelle | منشير | ihr Wort für „Korridor/Flur" |
+|---|---|---|
+| TUNICO (6879) | `manšiṛ` = „Platz (Hof) zum Wäscheaufhängen; Hof im Küchenflügel eines tunesischen Hauses" | — |
+| Ninja | **kein Eintrag** | `koulwar` كُلْوَارْ, `mamar` مَمَرْ, `mamchaa` مَمْشَى, `bahouw` بَهُوْ |
+| Peace Corps | **kein Eintrag** | HALL = `mza:z` („in a house"), PASSAGE = `maqTa3` |
+
+Dazu zwei unabhängige Stützen: die **Wurzel** ن-ش-ر „ausbreiten/aufhängen" (Nomen loci „Ort zum Aufhängen", gleiche Bildung wie `2910 manshfa` „Handtuch") und der **Lektionskontext** L20 (702–718 ist eine Hausteile-Lektion; 710 steht zwischen Küche/Bad und Treppe/Innenhof). Und: `partner_status='pending'` — von Semia nie bestätigt.
+
+**Ausgeführt nach Freigabe:** `710` german → „der Hof zum Wäscheaufhängen (im Haus)", topic „(L20)" → „Wohnen", Herkunft in `internal_note`, `partner_status` bleibt `pending`.
+
+**Offen:** Lernverlauf steht bei 4 richtig / 15 falsch gegen den alten Gloss, `next_review` 2026-09-16. Fällig setzen / Zähler zurücksetzen? Und: „Flur" hat jetzt kein eigenes Wort mehr im Bestand — `koulwar` oder `mamar` neu anlegen?
+
+### b) Quell-Konventionen — die Regeln waren da, aber an sechs Stellen
+
+Konsolidiert zu einer Tabelle (SKILL.md → Quell-Konventionen, Commit `bcd458b`). Beim Nachmessen drei vorher undokumentierte Fakten:
+
+| Befund | Zahl |
+|---|---|
+| **Keine der drei Quellen schreibt je ein `e`** | Ninja 0 von 17.335 · TUNICO 27 von 7.008 · Peace Corps 101 von 8.714 · eigener Bestand 32 % |
+| Ninja kennt kein freistehendes `o` | `o` kommt ausschließlich in `ou` vor |
+| **Peace Corps schreibt ظ/ذ ausnahmslos `dh`**, Ninja in 38 % der Fälle | ض: Ninja 712:11, PC 29:0 · ظ/ذ: Ninja th 327 : dh 191, PC dh 20:0, TUNICO th 528:1 |
+| Peace Corps schreibt خ als `x`, nicht `kh` | 659 von 8.714 Formen |
+
+**Konsequenz 1:** eine Vokalabweichung gegen eine Quelle ist strukturell erwartbar und **nie für sich genommen ein Befund** — genau der Fehler des externen Prüfprotokolls bei `487 wsil`.
+**Konsequenz 2:** ein `dh` von Ninja oder Peace Corps ist **kein** Gegenbeleg gegen unsere ausnahmslose ظ/ذ→`th`-Regel. Nur TUNICO kann sie prüfen.
+
+In IMPORTS.md korrigiert: die Ninja-Suchtabelle behauptete für `th` „ث oder ذ … gleich" — für ذ/ظ stimmt das nur in 64 % der Fälle.
