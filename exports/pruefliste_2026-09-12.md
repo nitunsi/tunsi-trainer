@@ -1696,3 +1696,85 @@ Nicht alle 39 sind gleich: `2167 jupe` (stummes p im französischen Wortbild) un
 `3281 yitba3 (passive)` (das `p` steckt in der Anmerkung) sind Fehlalarme. Der Kern sind Wörter, die
 **tunesisch mit p/v gesprochen** werden: `piesa`, `spedri`, `plombi`, `plato`, `spor`, `parking`,
 `talvza`, `fivri`, `nuvambir`, `villa`.
+
+---
+
+## Runde 28 (2026-09-13) — Test des zusammengelegten Prozesses: 19 bestehende + 10 neue
+
+Erster Lauf nach der Zusammenlegung zu „ein Ablauf, zwei Eingänge".
+
+### Aufgabe A — 19 bestehende Vokabeln (Eingang A)
+
+**Auswahl:** deterministisch gezogene Zufallsstichprobe aus den Zeilen, die noch **nie** angefasst
+wurden (`internal_note IS NULL AND partner_comment IS NULL`) — bewusst keine Verdachtsliste, damit
+der Ertrag einer blinden Stichprobe messbar wird.
+
+**Schritt 1** (Sammelabfrage): 1 von 19 hat `partner_status='approved'` (`608 dars`) — dort wäre eine
+Bedeutungsänderung rückfragepflichtig. Keine geflaggte Zeile, keine Vornotiz.
+
+**Schritt 2**: `SELECT * FROM qualitaets_checks WHERE gruppe='A' AND treffer>0` → leer, damit ist die
+ganze Auswahl sauber. **Eine Abfrage, kein Einschränken nötig.** Das war beim Test in Runde 25 noch
+als Schwachstelle notiert. Aus den B-Listen: `2103 talyaniyya` (Check 25) und 5 unvokalisierte Zeilen
+(`1068`, `608`, `1189`, `373`, `1075`).
+
+**Schritt 3**: hier wurde es interessant. Der Abgleich über die `chatalpha`-Achse traf nur **5 von 19**.
+Grund: flektierte Formen, Possessive und Phrasen haben keinen eigenen Wörterbucheintrag —
+`7dhart` „ich nahm teil", `ftouri` „mein Frühstück", `yimshiw` „sie gehen" können dort gar nicht
+stehen. Ein **zweiter Durchgang über die Grundform** belegte weitere 6. Das ist keine Eigenheit
+dieser Stichprobe, sondern gilt für jede Bestandsprüfung — und stand bisher nicht im Skill.
+
+**Befunde:**
+
+| id | Befund | Beleg |
+|---|---|---|
+| 2750 | `raayidh` → `rayidh` | Ninja رَايِضْ, Peace Corps 3× `rayidh`; رَا ist kurz |
+| 2103 | `arabic_script` passt nicht zur `darija` | Ninja طَلْيَانِي / TUNICO `ṭalyāni` — unseres ist إيطَالَيَّة |
+| 2045 | `mela7` „salzig" — Kandidat | TUNICO `mālaḥ`, Peace Corps `mala7`; `mela7` steht optisch nah an `mel7` „Salz" |
+
+**Fehlalarm, wie dokumentiert:** `445 bidha` „weiß (f.)" traf Peace Corps `HERSELF` — reine
+chatalpha-Kollision, genau die Falle aus Schritt 3.
+
+**Ertrag: 2 Befunde + 1 Kandidat aus 19 blind gezogenen Zeilen (≈ 11 %).**
+
+### Aufgabe B — 10 neue deutsche Wörter (Eingang B)
+
+Teppich · Schublade · neidisch · Schnürsenkel · Gießkanne · husten · Steckdose · Dachboden ·
+verzeihen · Ellenbogen
+
+| Kategorie | Anzahl | Wörter |
+|---|---|---|
+| **schon im Trainer** | 4 | Teppich (`1012 zarbiya`, `3979 zrabi`), Dachboden (`3577 sadda`), verzeihen (`563 sama7ni`, `2316 yisama7`), neidisch ≈ eifersüchtig (`2479 mghiyar`) |
+| **nicht im Trainer, aber in den Quellen** | 6 | siehe unten |
+| **nirgends** | **0** | — |
+
+| Wort | Quellenlage |
+|---|---|
+| Schublade | alle drei: `qjar` قْجَرْ |
+| husten | alle drei: `ka77` (Verb) / `ka77a` (Nomen „Husten") — **zwei Zeilen, nicht eine** |
+| Ellenbogen | **zwei konkurrierende Wörter**: Ninja كُوعْ `kou3`, TUNICO+Peace Corps `marfaq` |
+| Steckdose | Peace Corps `briz` (frz. prise), TUNICO `ṭābu` — uneinheitlich |
+| Gießkanne | nur Ninja: مْرَشْ `mrash` |
+| Schnürsenkel | nur Peace Corps: `khit sabbat` („Faden des Schuhs") |
+
+**Die dritte Kategorie blieb leer** — und das ist selbst das Ergebnis. Eine Gegenprobe mit
+Schneebesen, Bügelbrett, Tacker, Sonnencreme und Ladegerät fand in **keiner** der drei Quellen
+etwas. Dort liegt die Grenze, nicht bei Alltagswörtern wie Ellenbogen oder Schublade.
+
+### Was sich daraus ableiten lässt
+
+1. **Der zusammengelegte Prozess trägt.** Beide Aufgaben liefen durch dieselben fünf Schritte;
+   unterschiedlich waren nur Schritt 1 (Auswahl vs. Extraktion+Duplikat-Check) und Schritt 5
+   (`UPDATE` vs. `INSERT`). Kein einziges Mal war unklar, welcher Abschnitt gilt — in Runde 25 war
+   genau das die Hauptkritik.
+2. **Schritt 2 ist von einer Schwachstelle zur billigsten Stelle des Ablaufs geworden.** Eine
+   Abfrage, und die Aussage gilt für jede Auswahl.
+3. **Schritt 3 braucht bei Bestandszeilen zwei Durchgänge** — Oberflächenform, dann Grundform.
+   Ohne den zweiten sieht eine korrekte Zeile wie „keine externe Bestätigung" aus. Gehört in den
+   Skill.
+4. **„Ich brauche ein Wort für X" endet fast nie in echtem Neuland.** 10 von 10 waren entweder im
+   Trainer oder in den Quellen. Der teure Teil ist nicht das Finden, sondern das **Auswählen**:
+   zwei konkurrierende Wörter (Ellenbogen), Verb und Nomen getrennt (husten), eine einzige Quelle
+   (Gießkanne, Schnürsenkel).
+5. **Für das Ziel „alle prüfen" ist die blinde Stichprobe der teure Weg.** 19 Zeilen → 2 Befunde.
+   Dieselbe Arbeitszeit an einer Verdachtsliste (Check 24: 26 Zeilen, alle Befunde) bringt ein
+   Vielfaches. **Erst die Listen leerarbeiten, dann über den Rest gehen.**
