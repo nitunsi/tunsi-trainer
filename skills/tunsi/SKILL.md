@@ -39,7 +39,7 @@ Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nic
 SELECT * FROM public.qualitaets_checks WHERE treffer > 0 ORDER BY gruppe, nr;
 ```
 
-Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, 26 Gemination- und 24 Konsonanten-Konflikte (die letzten beiden neu, noch unbearbeitet).** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
+Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, 26 Gemination-, 24 Konsonanten-Konflikte und 5 Hamza-als-`3` (die letzten drei neu, noch unbearbeitet).** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
 
 Was die Sicht **nicht** abdeckt und weiterhin von Hand zu ziehen ist:
 
@@ -141,6 +141,8 @@ Ist die Vokabel ein **Verb**, zusätzlich das 3-Zeilen-Modell (siehe „Verb-Kon
 3. `peacecorps_dict_import` — dritte unabhängige Quelle, v.a. bei älterem Lehrbuchvokabular
 
 Erst wenn **keine** der drei trifft, gilt „keine externe Bestätigung". Werkzeug für alle drei: **vocab_lookup** (unten) — `english_key` als primäre Achse, Skelett-Treffer nur separat und ab Länge 4. Live-Ninja nur, wenn offline nichts kommt (IMPORTS.md).
+
+**Zwei Durchgänge, nicht einer (gemessen 2026-09-13).** Die `chatalpha`-Achse trifft nur die **Oberflächenform**. Flektierte Formen, Possessive und Phrasen haben in keinem Wörterbuch einen eigenen Eintrag — `7dhart` „ich nahm teil", `ftouri` „mein Frühstück", `yimshiw` „sie gehen" können dort gar nicht stehen. Im Test trafen so nur **5 von 19** Zeilen; ein zweiter Durchgang über die **Grundform** (Verb-Grundform, Singular, Wort ohne Suffix) belegte 6 weitere. Ohne diesen zweiten Durchgang sieht eine korrekte Zeile wie „keine externe Bestätigung" aus.
 
 Drei Fallen, jede schon einmal zugeschlagen:
 - **Die Lautschrift jeder Quelle ist ein Strukturhinweis, keine Vorlage.** Vor dem Vergleich die Tabelle **Quell-Konventionen** lesen — sie sagt, welche Abweichung nur Konvention ist (und damit kein Befund) und welche zählt. Prüfen, ob die Quelle ein übersehenes Feature zeigt (v.a. Gemination), aber nie 1:1 übernehmen. `touwl` ist so in den Bestand gerutscht, richtig ist `toul`.
@@ -441,9 +443,11 @@ Hier standen bis zum 2026-09-13 rund 250 Zeilen SQL. Sie sind in die Sicht gewan
 | 6 `wa`/`u` statt `w-` | Hausregel |
 | 7 `-iou`/`-eou`/`-aou` | Plural muss `-iw` sein (= Regel 21) |
 | 8 halb verdoppelter Digraph | `ddh` statt `dhdh`. **722/4254/3042/3073 sind ausgeschlossen** — echte ظ+ه- bzw. t+th-Morphemgrenzen, sie sind korrekt |
-| 9 Sonderbuchstabe (= Regel 23) | ڨ/گ=g, ڤ=v, پ=p. **Ohne Lehnwort-Ausnahme**: die lateinische Schreibung ist frei, der arabische Buchstabe nicht |
+| 9 Sonderbuchstabe (= Regel 23) | ڨ/گ=g, ڤ=v, پ=p. **Ohne Lehnwort-Ausnahme**: die lateinische Schreibung ist frei, der arabische Buchstabe nicht. ⚠️ Prüft nur **eine** Richtung (Sonderbuchstabe im Arabischen ohne Entsprechung in der Transliteration). Die Gegenrichtung — `p`/`v` in der `darija`, aber ب/ف im Arabischen — ist ungeprüft: 25 bzw. 14 Zeilen, offene Grundsatzfrage analog zur ڨ-Entscheidung |
 | 10 identisches Arabisch ohne `homonym_ok` | entweder Dublette oder unmarkiertes Homonym |
 | 11–13 rohe Zeichen / Wächter | eine Umwandlungsfunktion kennt ein Zeichen nicht — siehe unten |
+
+Dazu **Check 26** („`3` in der `darija`, aber kein ع im `arabic_script`"): steht noch in Gruppe B, weil er 5 offene Treffer hat — inhaltlich ist er ein A-Check ohne bekannte Fehlalarme und gehört nach deren Korrektur dorthin. Er findet Hamza, das als `3` geschrieben wurde (`sou3el` für سُؤَال), und hat dabei mit `742` eine Zeile aufgedeckt, deren `arabic_script` schlicht etwas anderes sagt als die `darija`.
 
 **Warum 12 und 13 so gebaut sind.** Der naheliegende Weg wäre, die bekannten Buchstaben aufzuzählen. Genau das hat ڨ **699 Zeilen lang unsichtbar** gelassen (76 im Bestand, 623 bei Ninja), weil `_arabic_skeleton()` ihn nicht kannte und roh stehen ließ. Eine Aufzählung vergisst den nächsten neuen Buchstaben genauso. Die Wächter drehen es um: sie melden, **was die Funktionen nicht kennen**.
 
