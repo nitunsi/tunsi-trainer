@@ -39,7 +39,7 @@ Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nic
 | Posten | Schnappschuss 2026-09-13 | Einordnung |
 |---|---|---|
 | Bestand | 3.780 | — |
-| `TRANSLIT_RULES` (22 Regeln, Prüf-Tab) | 0 | sauber, per Node-Harness verifiziert |
+| `TRANSLIT_RULES` (23 Regeln, Prüf-Tab) | 0 | sauber, per Node-Harness verifiziert |
 | Verb-Selbstcheck | 19 | Zeilen ohne vollständige `conjugation`, bekannter D4-Rückstand |
 | Liste C (Schadda ohne Gemination) | 21 | überwiegend mehrwortig, Schadda sitzt in einem anderen Wort |
 | unvokalisiertes `arabic_script` | 746 | **keine Kampagne** — siehe Datenqualitäts-Checks → Vokalisierung |
@@ -567,6 +567,30 @@ ORDER BY id;
 
 ---
 
+**Sonderbuchstaben ڨ گ ڤ پ — drei Checks, die alle auf 0 stehen müssen (seit 2026-09-13).** Diese Buchstaben sind **eigene Laute, keine Varianten** von ق/ف/ب. Sie tauchen in neuen Wörtern immer wieder auf, und zwei von ihnen sehen sich zum Verwechseln ähnlich (ڤ = v, ڨ = g).
+
+```sql
+-- 1 · Waechter: kennt eine der Umwandlungsfunktionen ein Zeichen nicht? MUSS leer sein.
+SELECT * FROM public.unbekannte_arabische_zeichen;
+
+-- 2 · Sonderbuchstabe im Arabischen passt nicht zur Transliteration (= Trainer-Regel 23).
+--     Bewusst OHNE Lehnwort-Ausnahme: die lateinische Schreibung eines Lehnworts ist frei,
+--     der arabische Buchstabe ist es nicht.
+SELECT id, darija, arabic_script, german FROM vocabulary
+WHERE (arabic_script ~ 'ق'    AND darija ~ 'g' AND darija !~ 'gh')
+   OR (arabic_script ~ '[ڨگ]' AND darija !~ 'g')
+   OR (arabic_script ~ '[ڤڥ]' AND darija !~ 'v')
+   OR (arabic_script ~ 'پ'    AND darija !~ 'p');
+
+-- 3 · Rohes arabisches Zeichen in einem gespeicherten Skelett — heisst: eine Funktion kennt es nicht
+SELECT count(*) FROM vocabulary            WHERE arabic_skeleton ~ '[^a-z0-9]';
+SELECT count(*) FROM derja_ninja_entries   WHERE arabic_skeleton ~ '[^a-z0-9]';
+```
+
+**Die Entscheidung dahinter (Nils, 2026-09-13):** wird ein Wort mit `g` gesprochen, **bleibt die `darija` und das `arabic_script` wird auf ڨ umgestellt** — nicht umgekehrt. 20 Zeilen mit ق (`bagra` بقرة, `manga`, `bgar`, `galbi`, `degla` …) sind entsprechend auf ڨ geändert. Beim **Artikel** gilt das Umgekehrte: dort wird die `darija` angepasst (`el-iqtisad` → `iqtisad`).
+
+**Warum Check 1 so gebaut ist, wie er ist.** Der naheliegende Weg wäre, die bekannten Buchstaben aufzuzählen — genau das hat ڨ **699 Zeilen lang unsichtbar** gelassen (76 im Bestand, 623 bei Ninja), weil `_arabic_skeleton()` den Buchstaben nicht kannte und roh stehen ließ. Eine Aufzählung vergisst den nächsten neuen Buchstaben genauso. Die Sicht dreht es um: sie meldet, **was die Funktionen nicht kennen**, statt zu behaupten, alles Bekannte sei vollständig.
+
 ### B · Verdachtslisten (mit Fehlalarmquote)
 
 Ein Treffer ist ein **Kandidat, kein Fehler**. Jede Liste trägt ihre gemessene Fehlalarmquote — die steht dort nicht zur Zierde: bei der Gemination sind ~15 % Fehlalarme, beim arabischen Duplikat-Check ~80 %. **Nie im Block korrigieren**, immer einzeln gegen Ninja/TUNICO/Peace Corps prüfen. Präzedenzfälle, in denen ein Blockfix falsch gewesen wäre: `bnin`, `skhan` (dort war das `arabic_script` der Fehler), `metrobbi` (gegenteiliger Gloss statt Dublette), die 30 Ninja-Skelett-Kollisionen bei der Vokalisierung.
@@ -703,7 +727,7 @@ WHERE arabic_script ~ 'و[ًٌٍَُِْٰ]*ّ' AND darija !~ 'ww' ORDER BY id;
 
 ---
 
-**`darija` gegen das eigene `arabic_script` zurückrechnen (seit 2026-09-13, Fehlalarmquote ~20 %).** Der schärfste Einzelcheck im Bestand und der einzige, der Zeichen für Zeichen vergleicht statt auf Vorkommen oder Anzahl zu prüfen. Er fängt eine Klasse, die **alle 22 Trainer-Regeln durchlassen**: `bathriq` für بطريق enthält ein `t` — es steckt im `th`. Vorkommens- und Anzahlprüfungen laufen daran vorbei, der Zeichenvergleich nicht.
+**`darija` gegen das eigene `arabic_script` zurückrechnen (seit 2026-09-13, Fehlalarmquote ~20 %).** Der schärfste Einzelcheck im Bestand und der einzige, der Zeichen für Zeichen vergleicht statt auf Vorkommen oder Anzahl zu prüfen. Er fängt eine Klasse, die **alle bisherigen Trainer-Regeln durchlassen**: `bathriq` für بطريق enthält ein `t` — es steckt im `th`. Vorkommens- und Anzahlprüfungen laufen daran vorbei, der Zeichenvergleich nicht.
 
 ```sql
 WITH s AS (

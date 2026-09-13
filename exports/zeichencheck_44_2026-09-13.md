@@ -138,3 +138,36 @@ scheint ڤ zu enthalten), `2866 omm`, `3744 dour` (Wortversatz, der die Hälfte-
 
 **Fehlalarm, dokumentiert:** `1926`/`2705 fil` → `fi` — unsere `darija` verschmilzt Präposition
 und Artikel, das Arabische trennt sie.
+
+---
+
+# Nachtrag 2: Sonderbuchstaben dauerhaft absichern
+
+Nils' Einwand: *„Das andere g und die anderen Buchstaben können in neuen Worten wieder auftreten."*
+
+Die Antwort ist nicht, ڨ in eine Liste einzutragen — eine Aufzählung vergisst den nächsten neuen
+Buchstaben genauso, wie sie ڨ vergessen hat. Stattdessen die Prüfrichtung umgedreht.
+
+## Was die Inventur sofort fand
+
+| id | war | ist |
+|---|---|---|
+| 1891 | البڤْرة / `el-baqra` | البڨْرة / `el-bagra` — „Kuh" mit **ڤ (v)** statt ڨ (g); deshalb durch den ق→ڨ-Durchgang gerutscht |
+| 533 | الڤيشاي | الڨيشاي — frz. *guichet* |
+| 4194 | سِيڤارُو | سِيڨَارُو — ital. *sigaro* |
+| 3534 | آنَالْڤُونْ / `analqon` | آنَالْڨُونْ / `analgon` |
+| 2966 | `pouwbal` | `poubal` — Ninjas `ouw` |
+| 2967 | `sacha boubal` | `sacha poubal` — dasselbe Wort stand zweimal im Bestand, mit p und mit b |
+
+**ڤ und ڨ sehen sich zum Verwechseln ähnlich** (ف bzw. ق mit drei Punkten). Vier von sechs
+Funden gehen darauf zurück.
+
+## Drei dauerhafte Sicherungen
+
+1. **`SELECT * FROM unbekannte_arabische_zeichen`** — meldet jedes Zeichen, das eine der beiden
+   Umwandlungsfunktionen nicht kennt. Steht auf 0.
+2. **Trainer-Regel 23** — Sonderbuchstabe gegen Transliteration, sichtbar im Prüf-Tab.
+   Ohne Lehnwort-Ausnahme, weil der arabische Buchstabe auch bei Lehnwörtern stimmen muss.
+   9 konstruierte Testfälle, 9 korrekt. Bestand: 0 Treffer.
+3. **Skelett-Wächter** — rohes arabisches Zeichen in einer gespeicherten Skelettspalte.
+   Beide Tabellen auf 0.

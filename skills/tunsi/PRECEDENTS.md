@@ -258,6 +258,32 @@ Repariert: `translate(s, 'ڨگڤڥپ', 'ggvvp')`, `چ`→`j`, Satzzeichenklasse 
 
 **Lehre:** vor einer Massenänderung an einem Feld nicht nur fragen „ist der neue Wert richtig?", sondern „**was rechnet sonst noch mit diesem Feld?**". Hier hingen zwei gespeicherte Skelettspalten und der komplette Cross-Source-Abgleich daran. Die Prüfung kostete eine Abfrage und hat einen Fehler gefunden, der seit dem ersten Import bestand.
 
+## Sonderbuchstaben kehren in neuen Wörtern wieder — Aufzählen reicht nicht (2026-09-13)
+
+Nils' Einwand nach der ڨ-Reparatur: *„Das andere g und die anderen Buchstaben können in neuen Worten wieder auftreten. Das sollte bedacht werden."* Richtig — und die Antwort war ausdrücklich **nicht** „ڨ in die Liste eintragen", sondern die Prüfrichtung umzudrehen.
+
+**Die Inventur fand sofort weitere Fehler**, die alle Regeln bis dahin durchgelassen hatten:
+
+| id | war | ist | was los war |
+|---|---|---|---|
+| 1891 | البڤْرة / `el-baqra` | البڨْرة / `el-bagra` | „Kuh" mit **ڤ (v)** statt ڨ (g) geschrieben — deshalb ist die Zeile durch den ق→ڨ-Durchgang gerutscht |
+| 533 | الڤيشاي | الڨيشاي | frz. *guichet* wird mit g gesprochen |
+| 4194 | سِيڤارُو | سِيڨَارُو | ital. *sigaro* |
+| 3534 | آنَالْڤُونْ / `analqon` | آنَالْڨُونْ / `analgon` | *Analgon* — weder v noch q |
+| 2966 | `pouwbal` | `poubal` | Ninjas `ouw` im Bestand (vgl. `touwl`→`toul`) |
+| 2967 | `sacha boubal` | `sacha poubal` | **dasselbe Wort stand zweimal im Bestand, einmal mit p, einmal mit b** |
+
+**ڤ und ڨ sehen sich zum Verwechseln ähnlich** (ف bzw. ق mit drei Punkten). Vier von sechs Funden gehen darauf zurück.
+
+**Drei Dinge dauerhaft gebaut:**
+1. **Sicht `unbekannte_arabische_zeichen`** — meldet jedes Zeichen in `vocabulary` oder `derja_ninja_entries`, das `_arabic_skeleton()` oder `_arabic_to_chatalpha()` nicht kennt. Muss 0 sein. **Das ist der eigentliche Schutz**: eine Aufzählung bekannter Buchstaben vergisst den nächsten neuen genauso, wie sie ڨ vergessen hat.
+2. **Trainer-Regel 23** — Sonderbuchstabe gegen Transliteration, sichtbar im Prüf-Tab, wo neue Wörter auffallen. Bewusst **ohne** Lehnwort-Ausnahme: die lateinische Schreibung eines Lehnworts ist frei, der arabische Buchstabe nicht (`el-guichet` war ein Lehnwort *und* falsch geschrieben). 9 konstruierte Testfälle, 9 korrekt.
+3. **Skelett-Wächter** — rohes arabisches Zeichen in einer gespeicherten Skelettspalte heißt immer: eine Funktion kennt es nicht.
+
+**Zwei eigene Fehler in derselben Sitzung, beide sofort bemerkt:**
+- Bei `1891` habe ich mit `coalesce(f.neu_d, v.darija)` den **ganzen Satz durch das Einzelwort ersetzt**. Das `RETURNING` zeigte es, eine Abfrage später wiederhergestellt. Lehre: bei mehrwortigen Zeilen nie das ganze Feld setzen, sondern das Wort ersetzen.
+- Beim Testen der neuen Regel habe ich den Extraktor mit `indexOf('\n];')` verankert — und damit das Ende von `CONSONANT_PAIRS` erwischt statt das von `TRANSLIT_RULES`. **Exakt die Falle, die in diesem Dokument schon zweimal steht.** Eine dokumentierte Falle schützt nicht, wenn man den Anker beim Schnelltest neu schreibt, statt den vorhandenen zu benutzen.
+
 ## chatalpha für Ninja — die Quell-Regeln vorberechnen statt anwenden (2026-09-13)
 
 Nils' Anstoß, und die Begründung war die richtige: *„Wäre gut wenn nicht die Regeln der Quellen jedes Mal ausgewertet werden müssten. Das ist fehleranfällig da das manchmal vergessen wird."* Dazu seine zweite Frage: *„Macht die View vocab_lookup nicht so was Ähnliches?"* — **Ja, genau das.** `vocab_lookup.chatalpha` war für TUNICO (94 %) und Peace Corps (98 %) gefüllt und für Ninja **0 von 17.335**. Kein neues Konzept nötig, nur ein Loch — ausgerechnet bei der größten Quelle und der einzigen mit verlässlich vokalisiertem Arabisch.
