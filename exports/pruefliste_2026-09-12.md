@@ -2613,3 +2613,54 @@ Tabelle blieb stehen und behielt das alte, falsche Verb.**
 | 🔤 Transliteration | **0** von 3.777, 23 Regeln |
 | Gruppe A | **18 Checks, alle 0** |
 | Gruppe B | 1 · 4 · 425 · 36 · 1 · 1 · 7 = **475** |
+
+---
+
+## Runde 41 (2026-09-13) — `576 eqif`: der Imperativ ist doppelt besetzt
+
+Untersucht, nichts geschrieben. Die Verbgruppe وقف:
+
+| id | darija | arabic_script | Ableitung | deutsch | Lernstand | Rolle |
+|---|---|---|---|---|---|---|
+| **576** | `eqif` | قف | `qf` | Halte an! / Stopp / Steh auf (Imperativ) | 6/5 · 15× | — |
+| **2600** | `weqif` | وَاقِف | `waqif` | steh! (Imperativ) | 2/4 · 10× | `conj_rotate` |
+| 4188 | `yaqif` | يَاقِف | `yaqif` | er steht | 5/0 · 5× | Präsens, Kurs-Ref |
+| 4378 | `wqif` | وْقِفْ | `wqif` | er stand | 5/0 · 5× | Vergangenheit, Kurs-Ref |
+
+**Quellenlage:** TUNICO `wqif` („to stand / to stop / to come to standstill / to stall"), Ninja وْقِفْ
+`wqif`, Peace Corps `waqqif` („to stop / to park", Maß II, kausativ). **Keine Quelle gibt den
+Imperativ.**
+
+### Drei Befunde
+
+1. **Der Imperativ ist doppelt besetzt.** `576` und `2600` sind beide als Imperativ Singular
+   glossiert („Halte an! / Stopp / Steh auf" und „steh!"). Das 3-Zeilen-Modell sieht dafür eine
+   Zeile vor; Präsens (`4188`) und Vergangenheit (`4378`) sind je einfach da.
+2. **`576`s `arabic_script` ist defekt:** قف, unvokalisiert und **ohne و** — es leitet `qf` ab und
+   zeigt die Wurzel nicht einmal vollständig. Die ganze übrige Gruppe trägt وقف.
+3. **`2600`s `arabic_script` ist das aktive Partizip, nicht der Imperativ:** وَاقِف leitet `waqif`
+   ab, das heißt „stehend". Das Gloss sagt „steh! (Imperativ)".
+
+`4378 wqif` ist als einzige der vier sauber (exakt Ninjas Form).
+
+### Was zu entscheiden ist
+
+Beide Kandidaten tragen Lernfortschritt — `576` mehr Wiederholungen (15 gegen 10), `2600` ist die
+Modellzeile (`conj_rotate`, und die Tabelle führt `imperative.sg = weqif`). Kein Kurs-Verweis auf
+beide.
+
+| Weg | was passiert |
+|---|---|
+| **A: `576` behalten** | breiteres Gloss, mehr Fortschritt; `conj_rotate` müsste von `2600` übergehen, `2600` wird gelöscht |
+| **B: `2600` behalten** | bleibt die Modellzeile, stimmt mit der Tabelle überein; `576` wird gelöscht, 15 Wiederholungen gehen verloren |
+| **C: beide behalten** | dann sind es zwei Schreibvarianten desselben Imperativs → `homonym_ok` auf beiden, und beide Arabisch-Werte müssen repariert werden |
+
+**In jedem Fall offen:** wie der Imperativ arabisch geschrieben wird. Die Quellen geben ihn nicht
+her, und ich rate ihn nicht. Für Weg C wäre das Gloss von `2600` auf „stehend" zu ändern — dann
+wäre وَاقِف richtig und die Zeile kein Imperativ mehr, womit sich die Doppelbesetzung von selbst
+auflöst.
+
+**Das ist mein Vorschlag: Weg C in dieser Lesart** — `2600` ist gar kein Imperativ, sondern das
+Partizip „stehend", so wie sein Arabisch es sagt. Dann behält `576` den Imperativ (mit zu
+reparierendem Arabisch), `2600` wird zum Partizip, und die Gruppe ist vollständig statt doppelt.
+Das setzt aber eine Bedeutungsentscheidung voraus, die Semia bestätigen sollte.
