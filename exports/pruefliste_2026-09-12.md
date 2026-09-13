@@ -2714,3 +2714,47 @@ Lernstand: `2600` 2/4 · 10×, `3838` — (noch nicht geprüft). Kein Kurs-Verwe
 es her" ist keine Begründung, wenn die Form aus dem Wurzelmuster folgt. Der Fehler hat in derselben
 Runde zwei Befunde verdeckt: ein angeblich defektes `arabic_script`, das richtig war, und eine
 Dublette, die sich erst zeigte, als die Morphologie das Gloss widerlegte.
+
+---
+
+## Runde 43 (2026-09-13) — Merge `2600` → `3838`, die وقف-Gruppe ist sauber
+
+**Geschrieben:**
+
+1. **`conjugation`: `imperative.sg` von `weqif` auf `eqif`** (in allen vier Zeilen der Gruppe, eine
+   Tabelle). `imperative.pl` bleibt `wqifu` — dafür gibt es keinen Bestandsbeleg, und die Ableitung
+   allein (قِفُوا) reicht mir hier nicht.
+2. **`2600 weqif` gelöscht**, Begründung in `3838`s `internal_note`.
+
+**Warum `3838` bleibt:** richtiges Gloss („stehend"), richtiges topic („Adjektive"), Kurs-Verweis,
+mehr Wiederholungen (14× gegen 10×). `2600` hatte nichts davon außer dem `conj_rotate`-Flag.
+
+### `conj_rotate` wurde bewusst nicht vererbt
+
+Der Trainer braucht dafür **beides** — `if(v.cr && v.cj)` (trainer.html:2441). `3838` trägt keine
+`conjugation` und könnte das Flag gar nicht nutzen. Und auf eine der verbliebenen Zeilen zu setzen
+wäre falsch: `576 eqif`, `4188 yaqif` und `4378 wqif` sind **Grundformen**, deren Karte genau ihre
+eigene Form abfragen soll. Ein Rotationsflag würde daraus eine Zufallsabfrage machen.
+
+Die وقف-Gruppe hat damit keine rotierende Zeile — wie 88 andere Gruppen auch. Das Muster der
+rotierenden Zeilen im Bestand ist durchweg eine **1.-Person-Vergangenheitsform**
+(`4550 3ayyitt` „ich rief", `4545 qassit` „ich schnitt"); eine solche Zeile hat diese Gruppe nicht.
+
+### Die Gruppe jetzt
+
+| id | darija | arabic | deutsch | Rolle |
+|---|---|---|---|---|
+| 576 | `eqif` | إِقِفْ | Halte an! / Stopp / Steh auf | Imperativ |
+| 4188 | `yaqif` | يَاقِف | er steht | Präsens |
+| 4378 | `wqif` | وْقِفْ | er stand | Vergangenheit |
+| 3838 | `waqif` | وَاقِفْ | stehend | Partizip (eigene Zeile, topic Adjektive) |
+
+**Check 21: 4 → 3.** Übrig: `1198 na3mlou` (zurückgestellter `-ou`-Posten), `3052 osket`,
+`4045 yijra`.
+
+| | |
+|---|---|
+| 🔁 Duplikate | **0** von 3.776, `count`-Header 3.776 |
+| 🔤 Transliteration | **0** von 3.776, 23 Regeln |
+| Gruppe A | **18 Checks, alle 0** |
+| Gruppe B | 1 · 3 · 425 · 36 · 1 · 1 · 7 = **474** |
