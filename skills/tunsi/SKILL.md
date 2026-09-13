@@ -947,7 +947,22 @@ Der Buchstaben-Identitätsfilter, der die Ninja-Route rettet, **hilft hier nicht
 
 **Regel:** Vokalisierung aus dem Bestand nur übernehmen, wenn `darija` **und** Buchstaben übereinstimmen. Alles andere braucht eine lexem-gebundene Quelle oder Handarbeit.
 
-**Konsequenz für die Planung:** Der Vokalisierungs-Rückstand (Stand 2026-09-13: 746 Zeilen, davon 504 Einzelwörter) ist **nicht als Kampagne abarbeitbar**. Ninja liefert nach Filter ~20 pro Durchgang, die Geschwister-Route praktisch nichts. Sinnvoll ist die Regel „ohnehin fällige Bearbeitung": wird eine Zeile aus anderem Grund angefasst, die Vokalisierung bei der Gelegenheit mitziehen.
+**Konsequenz für die Planung — am 2026-09-13 revidiert.** Hier stand bis dahin: „Der Vokalisierungs-Rückstand ist **nicht als Kampagne abarbeitbar**, Ninja liefert nach Filter ~20 pro Durchgang." **Das galt, weil `_arabic_skeleton()` kaputt war.** Die Funktion kannte گ ڨ ڤ پ nicht und ließ sie roh stehen — 623 Ninja-Zeilen waren dadurch für jeden Skelett-Join unsichtbar. Nach der Reparatur:
+
+| | |
+|---|---|
+| unvokalisierte Einzelwörter | 507 |
+| davon mit vokalisiertem Ninja-Treffer | 364 |
+| davon buchstabenidentisch (Pflichtfilter) | 130 |
+| davon mit **genau einer** Ninja-Vokalisierung | **122** |
+
+**Das ist eine Kampagne.** Werkzeug: `public.vokalisierung_kandidaten` — wendet den Pflichtfilter mechanisch an und liefert zusätzlich zwei der drei Handprüfungen als Spalte: `vokale_unser`/`vokale_ninja` (widerspricht Ninjas Vokalisierung unserer `darija`? das ist der `toshrob`/`tishrab`-Fall) und `wortart_verdacht` (unser Gloss verbal, Ninjas Eintrag ein Nomen).
+
+**Erster Durchgang, 2026-09-13:** 64 in der sichersten Gruppe (Vokale identisch, Wortart unauffällig), davon **59 geschrieben**. Die fünf übrigen hat erst das Gegenlesen der Bedeutung gefunden — der Filter prüft Buchstaben, nicht Bedeutung: `4358 glass` „Kleiderschrank" gegen Ninjas كلاس „class(room)" (unser Wort ist ڨلاص), `4180 kasa` „Waschlappen" gegen „cash register", `1576 louza` „Schwägerin" gegen „almond", `735 maktou3` „gebrochen" gegen „not available", `648 nshid` „reservieren" gegen „to ask". **Die Bedeutungsprüfung bleibt Handarbeit, auch wenn beide Filter sauber sind.**
+
+Ertrag: die Reichweite des Zeichen-Checks wuchs von 1.179 auf 1.275 vollvokalisierte Einzelwörter, und 58 der 59 Zeilen brachten Ninja-Audio mit. Offen aus dem Lauf: 47 mit abweichender Vokalfolge, 11 mit Wortart-Verdacht.
+
+Die Regel „ohnehin fällige Bearbeitung" (beim Anfassen einer Zeile die Vokalisierung mitziehen) bleibt richtig — sie ist jetzt nur nicht mehr der einzige Weg.
 
 **Nie blind über `translit_skeleton`/`arabic_skeleton` joinen — kurze Skelette (≤3 Konsonanten) kollidieren zufällig** (Präzedenzfall: PRECEDENTS.md → vocab_lookup). `english_key` ist die primäre, zuverlässige Achse; Skeleton-Treffer nur separat markiert und mit `length(...) >= 4` gefiltert.
 

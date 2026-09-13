@@ -1237,3 +1237,36 @@ größten Quelle), alle für jeden Skelett-Abgleich unsichtbar. Die Umstellung h
 20 weitere Zeilen ausgedehnt.
 
 Repariert, beide gespeicherten Skelettspalten neu berechnet, erst dann umgestellt.
+
+## Runde 21 · Vokalisierung wird doch eine Kampagne (2026-09-13)
+
+Der Skill sagte: *„Der Vokalisierungs-Rückstand ist nicht als Kampagne abarbeitbar, Ninja liefert
+nach Filter ~20 pro Durchgang."* **Das galt, weil `_arabic_skeleton()` kaputt war** — 623 Ninja-Zeilen
+waren für jeden Skelett-Join unsichtbar. Nach der Reparatur von heute Vormittag:
+
+| | |
+|---|---|
+| unvokalisierte Einzelwörter | 507 |
+| mit vokalisiertem Ninja-Treffer | 364 |
+| buchstabenidentisch (Pflichtfilter) | 130 |
+| **genau eine** Ninja-Vokalisierung | **122** |
+
+Gebaut: `public.vokalisierung_kandidaten` — wendet den Pflichtfilter mechanisch an und liefert zwei
+der drei Handprüfungen als Spalte (Vokalfolge gegen unsere `darija`, Wortart-Verdacht).
+
+**59 geschrieben.** Reichweite des Zeichen-Checks: **1.179 → 1.275** vollvokalisierte Einzelwörter.
+58 der 59 brachten Ninja-Audio mit. Genau eine neue Abweichung im Zeichen-Check: `521 colis`,
+das französische Lehnwort — als `(frz.)` markiert, damit es aus den Prüfungen fällt.
+
+**Fünf hat erst das Gegenlesen gefunden**, nicht der Filter:
+
+| id | unser Gloss | Ninja | |
+|---|---|---|---|
+| 4358 | `glass` „Kleiderschrank" | „class(room)" | كلاس ist „Klasse"; unser Wort ist ڨلاص — dasselbe, das heute bei 3579 auf ڨ umgestellt wurde |
+| 4180 | `kasa` „Waschlappen" | „cashier" | كاسة ist die Kasse |
+| 1576 | `louza` „Schwägerin" | „almond" | لوزة heißt Mandel |
+| 735 | `maktou3` „gebrochen" | „not available" | مقطوع = abgeschnitten |
+| 648 | `nshid` „reservieren" | „to ask" | نشد = fragen |
+
+**Der Filter prüft Buchstaben, nicht Bedeutung.** Beide mechanischen Prüfungen waren bei allen fünf
+sauber. Offen: 47 mit abweichender Vokalfolge, 11 mit Wortart-Verdacht.
