@@ -2502,3 +2502,70 @@ dessen Tabelle keine einzige Form mit passendem Skelett enthält.
 ### Stand
 
 Gruppe A: **18 Checks, alle 0.** Gruppe B: 1 · 17 · 425 · 36 · 1 · 1 · 7 = **488**.
+
+---
+
+## Runde 39 (2026-09-13) — Zeile und Tabelle angeglichen
+
+Entscheidung Nils: **die Zeile gilt, die Tabelle folgt** — die Zeile wird abgefragt und trägt den
+Lernfortschritt, die Tabelle ist Anzeige. Je Verbgruppe einmal ersetzt, damit alle Zeilen der Gruppe
+dieselbe Tabelle behalten.
+
+**Geschrieben (8 Verbgruppen, 31 Zeilen):**
+
+| id | Zeile | Tabelle vorher |
+|---|---|---|
+| 526 | `tnijjem` | `tnajjim` |
+| 732 | `youja3` | `yuja3` |
+| 1042 | `nsakker` | `nsakkar` |
+| 3415 | `thahhar` | `thahher` |
+| 3432 | `y3jeb` | `yi3jeb` |
+| 3435 | `yrodd` | `yrudd` |
+| 3443 | `ylawwej` | `ylawwij` |
+| 3452 | `ythahhir` | `ythahher` |
+
+Vorher geprüft: jede der neun Zeichenketten kommt in genau **einer** Tabelle vor, keine Kollision
+mit fremden Verbgruppen. Ersetzt wurde die exakte JSON-Zeichenkette inklusive Anführungszeichen —
+sonst hätte `"thahher"` auch `"ythahher"` getroffen.
+
+**Check 21: 17 → 9.**
+
+### Eine Angleichung zurückgenommen — sie hat das Problem nur verschoben
+
+`4045 yijra` „es geschieht" teilt die Tabelle mit `4039 yijri` „er läuft" — **zwei Bedeutungen des
+Verbs جرى mit derselben grammatischen Form**. Die Tabelle hat aber nur **eine** Zelle für
+`present.3sg_m`. Nach der Angleichung an `4045` fiel `4039` aus seiner eigenen Tabelle und stand neu
+in Check 21.
+
+Zurückgenommen; die wörtliche Grundform `yijri` steht wieder. **Das ist keine Schreibfrage, sondern
+eine Grenze des 3-Zeilen-Modells** und liegt zur Entscheidung vor.
+
+### Zwei weitere, die keine Schreibfälle sind
+
+- **`576 eqif`** „Halte an!" — die Verbgruppe enthält bereits **`2600 weqif`** als eigene Zeile.
+  Die Tabelle auf `eqif` anzugleichen würde eine bestehende Zeile verdrängen. Dazu kommt: `576`s
+  `arabic_script` ist قف **ohne و**, die ganze Gruppe (`2600 weqif`, `4188 yaqif`, `4378 wqif`) hat
+  die Wurzel وقف. Verdacht auf Dublette, nicht auf Schreibvariante.
+- **`3052 osket`** „Sei still!" — `arabic_script` أُسْكُتْ leitet weder die Zeile (`osket`) noch die
+  Tabellenform (`uskut`) exakt ab. Dreieckskonflikt zwischen Zeile, Tabelle und Arabisch.
+
+`1198 na3mlou` bleibt außen vor (gehört zum zurückgestellten „`-ou` nach Konsonant"-Posten).
+
+### Die Plausibilitätsprüfung hat sich bezahlt gemacht
+
+Beim Gegenlesen brach der Harness ab: eine der vier Datenseiten kam als **Gateway Timeout** zurück,
+also 2.777 statt 3.777 Zeilen. Ohne den Abgleich gegen den `count`-Header hätte ich „0 Duplikate"
+über einen um ein Viertel gekürzten Bestand gemeldet — genau der Fehler, den die Regel verhindern
+soll. Nach dem Nachladen:
+
+| | |
+|---|---|
+| 🔁 Duplikate | **0** von 3.777, `count`-Header 3.777 |
+| 🔤 Transliteration | **0** von 3.777, 23 Regeln |
+
+### Stand
+
+Gruppe A: **18 Checks, alle 0.** Gruppe B: 1 · 9 · 425 · 36 · 1 · 1 · 7 = **480**.
+
+Check 21 enthält nur noch: die vier `3ayyit`-Phrasen (752, 753, 1913, 2646), `3614 y7ajjim`,
+`576 eqif`, `3052 osket`, `1198 na3mlou`, `4045 yijra`.
