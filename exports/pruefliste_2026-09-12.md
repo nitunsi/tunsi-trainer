@@ -2912,11 +2912,19 @@ Das ist die Frage, die die Kampagne beinahe übersprungen hätte. Ninjas `chatal
 | | Zeilen |
 |---|---|
 | Transliteration identisch → direkt übertragbar | **18** |
-| gleiches Konsonantengerüst, andere Vokale/Schadda | **53** |
-| wirklich ein anderes Wort | **18** |
+| gleiches Konsonantengerüst, andere Vokale/Schadda | **48** |
+| anderes Konsonantengerüst → anderes Wort | **18** |
 
-Von 84 „eindeutigen" Ninja-Treffern sind **18** übertragbar. Die 53 sind keine Vokalisierungs-Vorlagen,
-sondern Widersprüche: Ninjas Harakat würden der eigenen `darija` widersprechen.
+Die 48 noch einmal aufgeteilt:
+
+| | Zeilen |
+|---|---|
+| Ninja hat eine Verdopplung, wir nicht (Form-II-Verdacht) | 12 |
+| wir haben eine Verdopplung, Ninja nicht | 9 |
+| reiner Vokalunterschied | 27 |
+
+Von 84 „eindeutigen" Ninja-Treffern sind **18** übertragbar. Bei den übrigen würden Ninjas Harakat der
+eigenen `darija` widersprechen — aber nicht immer, weil unsere Zeile falsch wäre.
 
 | id | unsere `darija` | Ninja | was Ninja wirklich hat |
 |---|---|---|---|
@@ -2984,11 +2992,16 @@ schrumpft A aber auf die 18 wirklich übereinstimmenden; der Rest von A gehört 
 
 ### Was die Messung über die Aufgabe selbst sagt
 
-Check 22 ist **keine Kampagne mit 424 Übertragungen**. Er ist ein Prüfer: wo eine Quelle vokalisiert
-und wir nicht, kommt jedes Mal eine von drei Antworten heraus — die Quelle bestätigt uns (18), die
-Quelle meint ein anderes Wort (18), oder Quelle und `darija` widersprechen sich (53). Nur die erste
-ist ein Eintrag ins `arabic_script`. Die dritte ist das eigentliche Ergebnis: sie zeigt auf Zeilen, bei
-denen `darija` und `arabic_script` schon heute nicht zusammenpassen, ohne dass ein A-Check das sieht.
+Check 22 ist **keine Kampagne mit 424 Übertragungen**. Er ist ein Prüfer: wo eine Quelle vokalisiert und
+wir nicht, kommt eine von drei Antworten heraus — die Quelle bestätigt uns (18), die Quelle meint ein
+anderes Wort (18), oder die Vokale gehen auseinander (48). Nur die erste ist ein Eintrag ins
+`arabic_script`.
+
+Die 48 sind **nicht** 48 Fehler im Bestand, und das ist wichtig: bei den 12 mit Ninja-Verdopplung ist es
+in der Stichprobe jedes Mal Form II gegen Grundstamm gewesen — zwei verschiedene Verben, die das
+unvokalisierte Arabisch gar nicht trennt. Wie viele der 48 wirklich auf eine unstimmige Zeile zeigen,
+ist damit **noch nicht gemessen**; es braucht die Einzelansicht. Die 27 reinen Vokalunterschiede sind
+der Teil, wo sie am ehesten liegt.
 
 Zwei Kandidaten aus der Stichprobe, beide noch nicht entschieden:
 
@@ -3004,6 +3017,18 @@ als `w` (`5fyf`, `ramiy`, `massouw`). Ohne die Abbildung y→i / w→u zählten 
 `fransawi` gegen `fransawy` als verschiedene Wörter. Nach der Normalisierung: 18 identisch, 53
 Vokalunterschiede, 18 andere Wörter. **Fünftes Mal, dass ein auffälliges Ergebnis ein Fehler im Check
 war und nicht in den Daten.**
+
+### Der Block, der gar keine Quelle braucht
+
+Ein Zählschritt zum Schluss, ohne jede externe Quelle: **83 der 424** haben eine Verdopplung in der
+`darija` (`massou`, `qassar`), aber nur **9** schreiben den Buchstaben im Arabischen doppelt. In den
+übrigen ~74 fordert die eigene `darija` eine Schadda, die im `arabic_script` fehlt. Das ist aus dem
+eigenen Bestand ableitbar, die Zuordnung macht `_arabic_to_chatalpha()`, und Check 24 (Gemination)
+steht auf 0 — er kann es heute nur nicht sehen, weil unvokalisiertes Arabisch nie widerspricht.
+
+Ein Vorbehalt gehört dazu: eine Schadda ist ein Harakat. Zeilen, die nur eine Schadda bekommen, fallen
+aus Check 22 heraus, ohne wirklich vokalisiert zu sein. Entweder wird das in Kauf genommen oder
+Check 22 muss künftig Vokalzeichen von der Schadda unterscheiden.
 
 ### Nebenbefund: es gibt keine Hausregel für den Auslaut
 
