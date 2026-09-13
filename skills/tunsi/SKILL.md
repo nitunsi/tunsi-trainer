@@ -147,6 +147,7 @@ Die Datei `tounsi_db_YYYY-MM-DD.md` im Projektwissen ist die primäre Datenquell
 | ح | 7 | 7lib, 7afla, ra7a | H |
 | ع | 3 | 3asel, m3ak | 3 ist korrekt |
 | ق | q | qahwa, qaddesh | 9 (Quellen-Schreibweise) |
+| ڨ / گ | g | degla, gatouw, glas, garra3 | q — **eigener Buchstabe, nicht ق** (Ninja schreibt ihn in 319 von 319 Zeilen `g`) |
 | خ | kh | khobz, khatir | – |
 | غ | gh | ghali, maghrib | – |
 | ط | t | tawla, tbib | T (kein Großbuchstabe) |
@@ -725,6 +726,17 @@ SELECT id, darija, german, arabic_script, abgeleitet FROM s WHERE sd <> sa ORDER
 **Was die 44 Treffer sind** (Stand 2026-09-13, ~35 echt): fehlende oder überzählige Gemination in beide Richtungen (`nos` gegen نُصّ; umgekehrt fehlt bei `7orriyya` dem *Arabischen* die Schadda), falsche Konsonanten (`shadika` für شهادة, `odhkhol` mit `dh` gegen د), ق/ڨ-Uneinigkeit (`bagra`/`baqara`, `manga`/`manqa`), das `7h`-Muster (`msalh7a`). Fehlalarme: nicht als Lehnwort markierte Zeilen und Artikel, den die `darija` trägt und das `arabic_script` nicht.
 
 **Richtung offen lassen.** Ein Treffer sagt „diese beiden Felder widersprechen sich", nicht welches falsch ist. Bei `7orriyya` war es das Arabische. Immer beide prüfen, nie automatisch die `darija` angleichen.
+
+**Pro Wort statt pro Zeile — erweitert die Reichweite von 1.179 auf 1.624 Zeilen (+38 %).** Die Zeilen-Variante wirft einen ganzen Satz weg, sobald *ein* Wort unvokalisiert ist. Wortweise bleiben die vokalisierten Wörter prüfbar. Das braucht aber **zwei zusätzliche Filter**, sonst ist die Liste schlechter als die kürzere:
+
+- **Status constructus ist kein Befund.** Unsere Konvention schreibt ة im Status constructus als `-t` (`jorret ed-dar`, `khobzet el-malla`, `warqit il-ma`), die Ableitung gibt immer `a`. Beide haben recht. Filter: `sd <> sa AND sd <> sa || 't'`.
+- **Wortversatz erkennen und die ganze Zeile verwerfen.** Gleiche Wortzahl heißt nicht gleiche Zuordnung: bei `insha allah fi nje7 l awled` trennt das Arabische إن شاء in zwei Wörter, die `darija` schreibt `insha` als eines — ab da ist jedes Paar verschoben und meldet Unsinn (`[allah → sha]`, `[nje7 → fi]`). Eine einzelne Zeile erzeugte vier Falschmeldungen. Filter: eine Zeile mit mehr als einem Wort verwerfen, wenn **mehr als die Hälfte** ihrer prüfbaren Paare abweicht.
+
+Die zweite Regel verwirft 40 Zeilen und nimmt damit bewusst Falsch-Negative in Kauf — eine Zeile mit echten Fehlern in der Mehrheit ihrer Wörter fällt mit heraus. Das ist der Preis dafür, dass die Liste benutzbar bleibt.
+
+**Verbleibende Fehlalarme nach beiden Filtern (~5 %):** `fil` → `fi` (unsere `darija` verschmilzt Präposition und Artikel, das Arabische trennt sie) und vereinzelter Wortversatz, der die Hälfte-Regel überlebt.
+
+**Der Check findet die Digraph-Gemination unabhängig wieder** — `mukhhu`→`mokhkhou`, `mshakhra`→`moshakhkhara`, `nsharshhar`→`nosharshir`, `mashi`→`mashshi` sind genau das `khh`/`shh`-Muster. Eine gute Bestätigung, dass beide Regeln dasselbe Phänomen beschreiben.
 
 ### C · Regeln fürs Prüfen selbst
 
