@@ -39,7 +39,7 @@ Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nic
 SELECT * FROM public.qualitaets_checks WHERE treffer > 0 ORDER BY gruppe, nr;
 ```
 
-Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, 2 Gemination-, 4 Konsonanten-Konflikte, 8 Klammern in der `darija` und 23 verwaiste `homonym_ok`.** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
+Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, 2 Gemination-, 4 Konsonanten-Konflikte, 8 Klammern in der `darija` und 23 verwaiste `homonym_ok`; Check 22/23 bei 425/36.** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
 
 Was die Sicht **nicht** abdeckt und weiterhin von Hand zu ziehen ist:
 
@@ -187,6 +187,8 @@ Bei Eingang B gehört dieselbe Begründung in die `internal_note` der neuen Zeil
 **Was NICHT geschrieben wird, sondern gefragt:** eine Bedeutungsänderung an einer Zeile mit `partner_status = 'approved'`; das Anlegen neuer Zeilen (zwei getrennte Fragen, siehe „Fehlende Zielzeilen nachlegen"); alles, wo Schritt 3 keine eindeutige Quellenlage ergeben hat.
 
 **Der Rückkanal von Nils** läuft über `vocabulary.partner_comment` und `partner_status` (Semias Prüfmodus im Trainer) — nicht mehr über eine eigene Tabelle. In Schritt 1 wird beides mitgelesen.
+
+**Am Ende jeder Runde: ein Vorschlag, was als Nächstes drankommt** (Wunsch Nils, 2026-09-13). Nicht eine Liste offener Posten, sondern **einer** — der mit dem besten Ertrag pro Aufwand, kurz begründet. Der Nutzer soll „ja" sagen können, statt selbst auswählen zu müssen.
 
 **Nach dem Schreiben, Pflicht unaufgefordert** — immer bei Eingang B, bei A sobald `darija` oder `arabic_script` verändert wurde:
 1. Duplikat-Check UND Transliterations-Check laufen lassen: App-eigener „🔍 Duplikat-Prüfung"-Tab, oder bei Live-Zugriff das SQL aus **Datenqualitäts-Checks** selbst nachbauen — gründlicher als Ad-hoc-Stichproben vorher.
@@ -787,6 +789,8 @@ Ebenso `course_lessons.vocab_lesson_refs` gegen die alte Schreibung prüfen (`da
 AND btrim(regexp_replace(<ninja_arabisch>,'[ًٌٍَُِّْٰٟ]','','g')) = btrim(v.arabic_script)
 ```
 Das erschlägt alle Kollisionen und zusätzlich die Numerus-/Genus-Fälle (Ninja gibt den Singular, die Zeile ist Plural: `fnejin`←فِنْجَانْ, `tlemtha`←تِلْمِيذْ, `trabesh`←طَرْبُوشَةْ).
+
+**Der schärfste Filter — und seine Grenze (gemessen 2026-09-13).** `ableitung_exakt` in der Sicht prüft, ob `_arabic_to_chatalpha(Ninjas Vokalisierung)` **exakt** die eigene `darija` ergibt. Von 46 Kandidaten bestanden das nur 8 — er sortiert also scharf. **Er prüft aber die Form, nicht die Bedeutung:** vier Zeilen bestanden ihn und waren trotzdem ein anderes Wort (`nshid`/to ask, `louza`/almond, `kasa`/cashier, `marka`/brand). Verworfene Vorschläge bekommen den Marker `[ninja-vokalisierung verworfen]` in `internal_note`; die Sicht blendet sie dauerhaft aus, damit sie nicht jeden Durchgang erneut kosten.
 
 **Danach trotzdem drei Dinge von Hand prüfen**, die der Filter nicht sieht: (1) ob Ninjas Eintrag dieselbe **Wortart** ist (`tfahim` „er einigte sich" gegen Ninjas تَفَاهُمْ, das Nomen „understanding" — buchstabenidentisch, anderes Wort); (2) ob Ninjas Vokalisierung der eigenen `darija` widerspricht (`toshrob` gegen تِشْرَبْ = `tishrab`); (3) ob Ninjas Fassung überhaupt vokalisiert ist — bei `intikhabat` und `amriken` ist sie es nicht, da gibt es nichts zu übernehmen.
 

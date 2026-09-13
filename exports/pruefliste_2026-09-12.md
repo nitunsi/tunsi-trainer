@@ -2311,3 +2311,58 @@ wertlos — und der erste Verdächtige bei einem neuen Treffer ist der Check.
 | 🔤 Transliteration | **0** von 3.777, 23 Regeln |
 | Gruppe A | **17 Checks, alle 0** |
 | Gruppe B | 2 · 21 · 429 · 46 · 2 · 4 · 8 · 23 = **535** |
+
+---
+
+## Runde 36 (2026-09-13) — Check 23: die Kampagne ist abgetragen
+
+46 Kandidaten, **4 übernommen**. Beim ersten Durchgang (Runde ~20) waren es 59 von 64 — der
+Unterschied ist nicht Zufall, sondern der Bodensatz: die einfachen Fälle sind durch.
+
+**Übernommen** (`arabic_script` aus Ninja, Bedeutung gegengelesen):
+`498 3omri` عُمْرِي · `555 khtha` خْذَا · `985 idara` إدَارَةْ · `3752 moush` مُوشْ
+
+### Neuer Filter, und sofort seine Grenze
+
+Der stärkste Test war: **leitet Ninjas vokalisiertes Arabisch exakt unsere `darija` ab?** Von 46
+Kandidaten bestanden ihn nur 8. Die Sicht trägt ihn jetzt als Spalte `ableitung_exakt`.
+
+**Und genau dieser Filter hätte vier falsche Übernahmen durchgewunken:**
+
+| id | unser Gloss | Ninja | Ableitung |
+|---|---|---|---|
+| 648 | einen Platz reservieren | to ask, ask about | exakt `nshid` |
+| 1576 | Schwägerin | almond tree, almond | exakt `louza` |
+| 4180 | Waschlappen | cashier, cash register | exakt `kasa` |
+| 4403 | er schoss ein Tor | brand | exakt `marka` |
+
+Buchstabenidentisch, formgleich, **anderes Wort**. `ableitung_exakt` prüft die Form, nicht die
+Bedeutung — das steht jetzt im Sicht-Kommentar.
+
+### Was die Ableitung sonst noch entlarvt hat
+
+| id | Ninja | was die Ableitung zeigt |
+|---|---|---|
+| 616 `kbir` „groß (m.)" | كْبِيرَ | `kbira` — die **feminine** Form |
+| 1023 `sghir` „klein" | صْغَيَّرْ | `sghayyar` — der **Diminutiv**, Ninja sagt „really small (cute)" |
+| 4413 `tqabil` | تْقًابِلْ | `tqanabil` — **Tanwin statt Fatha**, ein Tippfehler bei Ninja |
+| 569 `banka` „Bank" | بَنْكْ | `bank` — andere Form (ohne `-a`) |
+
+### Zwei alte offene Posten bestätigt
+
+- **`529 baash`** „um zu" — das Arabische باش leitet `bash` ab, unsere `darija` schreibt `baash`.
+  Der `aa`-Befund aus Runde 22 ist echt.
+- **`4365 khassatan`** — unser خصوصا leitet `khosousana` ab. Das passt zu keiner Lesart von
+  `khassatan`; das Arabische ist ein anderes Wort (خاصة wäre `khassa`). Befund, keine Vokalisierung.
+
+### Verworfene Vorschläge werden dauerhaft markiert
+
+`648`, `735`, `1576`, `4180`, `4358`, `4403` tragen jetzt `[ninja-vokalisierung verworfen]` in
+`internal_note`, und die Sicht schließt solche Zeilen aus. Sie haben bei drei Durchgängen jeweils
+erneut Prüfzeit gekostet — das hört damit auf.
+
+**Check 23: 46 → 36, davon 0 formexakt.** Was übrig ist, sind Einzelfälle.
+
+### Stand
+
+Gruppe A: 17 Checks, alle 0. Gruppe B: 2 · 21 · 425 · 36 · 2 · 4 · 8 · 23.
