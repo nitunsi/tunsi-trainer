@@ -134,12 +134,15 @@ Spalten: `entry_uuid`, `arabic_script`, `darija` (Ninjas eigene Transliteration 
 | ch | ش | sh | sh→ch |
 | gh | غ | gh | gleich |
 | h | ه | (kein eigenes Zeichen) | gleich |
-| th | ث oder ذ | th | gleich |
+| th | ث (immer) und ذ/ظ (in 64 % der Fälle) | th | gleich |
+| dh | ض (immer) und ذ/ظ (in 38 % der Fälle) | dh bzw. th | **nicht umkehrbar** — siehe unten |
 | a | Fatha (kurz) | a | gleich |
 | i | Kasra (kurz) | i | gleich |
 | ou | Damma (kurz) | oft u/o geschrieben | u/o→ou |
 
-Beispiel: unser `yukhruj` → Ninja-Suche `you5rouj`; unser `yaqli` → `ya9li`. Bei `script=english`-Suchen nicht nötig.
+Beispiel: unser `yukhruj` → Ninja-Suche `you5rouj`; unser `yaqli` → `ya9li`. Bei `script=english`-Suchen nicht nötig. Langvokale schreibt Ninja `aa`/`iy`/`ouw`, ein `e` kommt in allen 17.335 Zeilen **kein einziges Mal** vor.
+
+**Beim Lesen eines Ninja-Treffers (statt beim Suchen) gilt die Tabelle `SKILL.md` → Quell-Konventionen** — sie steht dort neben denselben Angaben für TUNICO und Peace Corps und sagt zusätzlich, welche Abweichung nur Konvention ist und damit kein Befund. Wichtigster Fall: Ninjas `dh` bei ذ/ظ ist **kein** Gegenbeleg gegen unsere `th`-Regel.
 
 **Ninjas Transkriptions-Philosophie:** Ninja schreibt Wörter tendenziell in ihrer vollen, theoretischen Form (تحمص nicht اتحمص), orientiert sich bei Unsicherheit an der Hocharabisch-Schreibung — "volleres" Ninja-arabic_script ist meist keine Diskrepanz, nur eine andere Kontraktionsstufe. Bei sehr geläufigen Kontraktionen schreibt Ninja aber durchaus auch die kontrahierte Form — bei Widerspruch zwischen dieser Heuristik und einem konkreten Ninja-Treffer gewinnt immer der konkrete Treffer.
 
@@ -173,6 +176,8 @@ Zwei Supabase-Tabellen, Rohextrakt aus dem "Peace Corps English-Tunisian Arabic 
 
 - **`peacecorps_dict_import`** (5.070 Zeilen — **komplett A–Z importiert**, kompletter Englisch→Tunesisch-Teil bis Seite 497; der umgekehrte Tunesisch→Englisch-Teil danach ist bewusst nicht importiert): `headword` (englisches Stichwort), `freq` (1–5, Häufigkeitsrang aus dem Original, keine Homonym-Nummer), `pos`, `forms_phonetic` (Array, Original-Lautschrift, Reihenfolge wie im Original: Sg./Pl., m./f./Pl., Imperativ/Perfekt — Groß-/Kleinschreibung markiert Emphase-Laute: H/S/T = ح/ص/ط vs. h/s/t = ه/س/ت), `forms_roles` (Array parallel zu `forms_phonetic`: `sg`/`pl`/`m`/`f`/`imperativ`/`perfekt`/`coll`/`"unklar"`, nicht befüllt bei `is_synonym_set=true`), `forms_chatalpha`/`forms_skeleton` (Arrays, aus `forms_phonetic` per Konvertierungsregel abgeleitet, siehe PRECEDENTS.md → Peace-Corps-Konvertierung; 5.004/5.070 befüllt, die restlichen 66 Zeilen haben schlicht kein `forms_phonetic`), `gender` (aus `pos` abgeleitet wo eindeutig), `is_loanword`, `is_synonym_set` (true = `forms_phonetic` sind echte unabhängige Synonyme, keine grammatischen Varianten), `needs_review` (unsichere Transkription — `false` heißt nicht "geprüft&sicher", nur "keine bekannte Auffälligkeit"), `senses` (jsonb, inkl. Beispielsätzen/Untersinnen), `arabic_script` (**bewusst leer**, nicht aus dem fehleranfälligen OCR übernommen — bleibt die einzige *unabhängige* Arabisch-Spalte dieser Quelle), `arabic_script_reconstructed`/`arabic_script_reconstruction_note` (**kein Faktum**: unvokalisierter Arabisch-Vorschlag aus `forms_phonetic[1]` per `public._pc_reconstruct_arabic()`, 4.874/5.004 rekonstruiert, davon 446 mit Unsicherheits-Hinweis; nie mit `arabic_script` verwechseln oder dort hineinschreiben — siehe PRECEDENTS.md → Peace-Corps-Arabisch-Rekonstruktion), `source_section`, `source_page`, `raw_text` (in der ganzen Tabelle 0% befüllt, kein Qualitätsproblem). Vor jeder Aussage zum Stand aktuell gegenchecken (`SELECT count(*), max(source_page) FROM peacecorps_dict_import`), nicht auf alte Notizen verlassen.
 - **`peacecorps_grammar_import`** (21 Zeilen): `topic`, `page_start`, `page_end`, `raw_text`. Lautschrift-Legende (Sonderlaute Ḥ/ʕ/q, Vokalzeichen+Längung, Shadda) plus Grammatik-Kapitel (Personalpronomen, Artikel, Possessiv, Zahlen, Dual, Komparativ, Zeiten, Konditional, unregelmäßige Verben, Verneinung, Fragebildung, Objektpronomen). Rohmaterial für künftige `course_exercises`, noch nicht umgesetzt.
+
+**Lautschrift lesen:** `forms_phonetic` benutzt Großbuchstaben für die Emphatika (`H`/`S`/`T` = ح/ص/ط), `x` für خ (nicht `kh`) und `:` für Langvokale (`thla:tha`); ذ/ظ fallen dort ausnahmslos auf `dh` zusammen. Vollständig neben den beiden anderen Quellen: `SKILL.md` → Quell-Konventionen.
 
 **Nutzen für den Ninja-Check-Workflow:** dritte Offline-Quelle im 🚩-Workflow (siehe SKILL.md) — nach `derja_ninja_entries` und `tunico_import` durchsuchen, v.a. bei älterem/ungewöhnlichem Lehrbuchvokabular.
 

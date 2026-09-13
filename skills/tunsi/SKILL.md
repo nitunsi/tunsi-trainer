@@ -16,6 +16,7 @@ Fokus dieser Datei: bestehende Trainer-Vokabeln prüfen, neue Vokabeln nachschla
 |---|---|
 | **Vokabeln prüfen — eine, ein Batch, geflaggte, fällige, der ganze Bestand** | **Vokabeln prüfen — EIN Prozess.** Ein Vorgehen für alle Fälle; es wechselt nur die Auswahl der Zeilen. |
 | Neue Vokabel nachschlagen / Quellen abgleichen | vocab_lookup — Cross-Source-Abgleich (ganz unten), das Werkzeug hinter Schritt 3 |
+| Quelle schreibt etwas anders als wir — Fehler oder nur Konvention? | **Quell-Konventionen** (in Transliteration — Ziel-Konvention). Was dort erklärt ist, ist kein Befund |
 | „alle Regeln laufen lassen" | Datenqualitäts-Checks → **A** (müssen auf 0 stehen). Das SQL dort ist nur eine Teilmenge; der vollständige Lauf geht über den Node-Harness gegen `trainer.html` |
 | Bestand nach Kandidaten durchsuchen | Datenqualitäts-Checks → **B** (Verdachtslisten mit Fehlalarmquote) — **nie im Block korrigieren** |
 | Eigene Prüfabfrage bauen | Datenqualitäts-Checks → **C** (Regeln fürs Prüfen selbst) — erst lesen, drei der Fallen dort haben schon Prüfläufe stumm wertlos gemacht |
@@ -207,6 +208,42 @@ Französische/internationale Lehnwörter behalten ihre Originalschreibung: guich
 Sonnenlettern werden assimiliert: es-sebt, esh-shatt, et-tbib, eth-thnin — nicht el-sebt, el-shatt.
 
 **Sonderfall j:** im tunesischen Dialekt ist ج (anders als im Hocharabisch) ein Sonnenbuchstabe — Artikel immer assimiliert (ej-jar, nicht el-jar; ej-Jzayer für Algerien). Gilt nur für die Transliteration — `arabic_script` bekommt kein Shadda auf ج, folgt der arabischen Standard-Orthographie.
+
+### Quell-Konventionen — was die drei Quellen anders schreiben
+
+**Keine der drei Quellen schreibt unser Chat-Alphabet.** Diese Tabelle ist die eine Stelle, an der steht, was beim externen Abgleich (Schritt 3) als Quellen-Konvention zu erwarten ist. **Jede Abweichung, die hier erklärt ist, ist KEIN Befund** — nur was hier nicht steht, ist einen Blick wert. Die vollständige Quell→Ziel-Umwandlung beim *Import* einer Quelle steht weiterhin in IMPORTS.md; hier geht es nur ums *Lesen* der Quellen.
+
+Zahlen gemessen am 2026-09-13 über 17.335 Ninja-, 7.008 TUNICO- und 8.714 Peace-Corps-Zeilen (`forms_phonetic`-Einzelformen).
+
+| Laut / Feature | Ninja (`darija`) | TUNICO (`lemma_orig` → `_chatalpha`) | Peace Corps (`forms_phonetic`) | wir |
+|---|---|---|---|---|
+| ع | `3` | `ʕ` → `3` | `3` | `3` |
+| ح | `7` | `ḥ` → `7` | **`H`** (Großbuchstabe) | `7` |
+| ق | **`9`** (`q` kommt 0× vor) | `q` → `q` | `q` | `q` |
+| خ | **`5`** | `x`/`ḫ` → `kh` | **`x`** (nicht `kh`) | `kh` |
+| ش | **`ch`** | `š` → `sh` | `sh` | `sh` |
+| غ | `gh` | `ġ` → `gh` | `gh` | `gh` |
+| ص | `s` | `ṣ` → `s` | **`S`** (Großbuchstabe) | `s` |
+| ط | `t` | `ṭ` → `t` | **`T`** (Großbuchstabe) | `t` |
+| ء | **`2`** | `ʔ` → entfällt | – | entfällt |
+| Langvokal | `aa`, `iy`, `ouw` | Makron `ā ī ū ē ō` → ohne | **`:`** hinter dem Vokal (`thla:tha`) | keine Markierung |
+| Damma | `ou` | `u` | `u` | `ou` / `o` |
+| **Vokalinventar** | nur `a i ou` — **`e` 0×, `o` ausschließlich in `ou`** | praktisch nur `a i u` (`e` 27×, `o` 46× von 7.008) | praktisch nur `a i u` (`e` 101×, `o` 21× von 8.714) | `e` in 32 %, `o` in 23 % der Zeilen |
+| eigenes `arabic_script` | ja, vokalisiert — **einzige verlässliche Arabisch-Quelle** | keins | bewusst leer; `arabic_script_reconstructed` ist unsere eigene Ableitung, keine Quelle |  |
+
+**Konsequenz 1 — eine Vokalabweichung gegen eine Quelle ist nie für sich genommen ein Befund.** Keine der drei schreibt je ein `e`, und Ninja kennt kein freistehendes `o`. Unser `berid`, `hetha`, `wsil` *muss* dort anders aussehen; das ist kein Vokalisierungsfehler, sondern der fehlende Buchstabe im Alphabet der Quelle. Ein Befund entsteht erst bei einer **strukturellen** Abweichung — fehlende Silbe, anderer Konsonant, andere Gemination (Lautlehre-Regel 1). Präzedenzfall: das externe Prüfprotokoll wollte `487 wsil` wegen der Fatha zu `wsel`/`wsal` ändern — TUNICO (`wṣil`) und Peace Corps (`wSil`) schreiben beide genau unsere Fassung.
+
+**Konsequenz 2 — bei ض/ظ/ذ beweist ein `dh` in Ninja oder Peace Corps gar nichts.** Gemessen an den Zeilen, in denen unser `arabic_script` den Buchstaben enthält:
+
+| unser Zeichen | Ninja | TUNICO (`_chatalpha`) | Peace Corps |
+|---|---|---|---|
+| `dh` = ض | `dh` (712 : 11) | `dh` — aber nur 5 Lemmata enthalten ḍ überhaupt | `dh` (29 : 0) |
+| `th` = ظ/ذ | **uneinheitlich: `th` 327 : `dh` 191** | `th` (528 : 1) | **immer `dh` (20 : 0)** |
+| `th` = ث | `th` | `th` | `th` (24 : 0) |
+
+Peace Corps kennt für ظ/ذ nur `dh` (dokumentiert in `arabic_reconstruction_note`), Ninja schwankt in 38 % der Fälle. **Nur TUNICO kann unsere ausnahmslose ظ/ذ→`th`-Regel bestätigen oder widerlegen** — ein `dh` der beiden anderen ist Konvention, kein Gegenbeleg, und darf keine Korrektur auslösen.
+
+**Konsequenz 3 — für eine Ninja-Suche muss die eigene Schreibung erst umgerechnet werden** (`script=transliterated` konvertiert die Eingabe intern zu Arabisch): `sh`→`ch`, `q`→`9`, `kh`→`5`, `u`/`o`→`ou`. Unser `yukhruj` wird zu `you5rouj`, `yaqli` zu `ya9li`. Bei `script=english` entfällt das. Volle Tabelle: IMPORTS.md → Ninjas eigener Transliterations-Schlüssel.
 
 ## Lautlehre — Zusatzregeln für Vokalisierung & Bestandsaudits
 
@@ -761,7 +798,7 @@ Ist die Vokabel ein **Verb**, zusätzlich das 3-Zeilen-Modell (siehe „Verb-Kon
 Erst wenn **keine** der drei trifft, gilt „keine externe Bestätigung". Werkzeug für alle drei: **vocab_lookup** (unten) — `english_key` als primäre Achse, Skelett-Treffer nur separat und ab Länge 4. Live-Ninja nur, wenn offline nichts kommt (IMPORTS.md).
 
 Drei Fallen, jede schon einmal zugeschlagen:
-- **Ninjas Transliteration ist ein Strukturhinweis, keine Vorlage** — andere Konvention (`ch` statt `sh`, `9` statt `q`, `ouw` für ū). Prüfen, ob sie ein übersehenes Feature zeigt (v.a. Gemination), aber nie 1:1 übernehmen. `touwl` ist so in den Bestand gerutscht, richtig ist `toul`.
+- **Die Lautschrift jeder Quelle ist ein Strukturhinweis, keine Vorlage.** Vor dem Vergleich die Tabelle **Quell-Konventionen** lesen — sie sagt, welche Abweichung nur Konvention ist (und damit kein Befund) und welche zählt. Prüfen, ob die Quelle ein übersehenes Feature zeigt (v.a. Gemination), aber nie 1:1 übernehmen. `touwl` ist so in den Bestand gerutscht, richtig ist `toul`.
 - **Ein Skelett-Treffer ist kein Wort-Treffer.** `nimshiw` „wir gehen" trifft نْمَشْ „freckles". Bedeutung gegenlesen, nicht nur das Skelett.
 - **Gleiches Arabisch heißt nicht „Dublette"** — es kann auch heißen, dass eine der Zeilen inhaltlich falsch ist (Präzedenzfall `metrobbi`, PRECEDENTS.md).
 

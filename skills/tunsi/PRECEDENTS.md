@@ -234,6 +234,22 @@ Dabei fiel eine zweite Blindheit derselben Formeln auf: sie streichen ا/و/ي, 
 
 **Ein Verdacht von mir war unbegründet**, und das gehört zum Ergebnis: Bei `586 skekin` سكاكن hielt ich das Arabische für unvollständig (erwartet سكاكين). Gegenprobe: TUNICO führt den Plural als `skākin`, Peace Corps als `ska:kin` — das lange ā ist ein Alif, kein Ya. **Das Arabische ist korrekt.** Ohne die Quellenprüfung hätte ich eine richtige Zeile „korrigiert" — dieselbe Falle wie bei `bnin` und `skhan`.
 
+## Quell-Konventionen waren an sechs Stellen verstreut (2026-09-13)
+
+Auslöser war Nils' Frage „die Translit-Regeln von den drei Quellen hast du oder?". Antwort: ja, benutzt wurden sie die ganze Session — aber sie standen in SKILL.md an vier und in IMPORTS.md an zwei Stellen, keine davon vollständig, und **nirgends stand, welche Abweichung kein Befund ist**. Genau dieselbe Auffindbarkeits-Lücke wie vorher beim Prüfprozess. Konsolidiert zu einer Tabelle: SKILL.md → Quell-Konventionen.
+
+Beim Nachmessen kamen drei Dinge heraus, die vorher nirgends dokumentiert waren und beide Richtungen von Fehlalarm erzeugen:
+
+1. **Keine der drei Quellen schreibt je ein `e`.** Ninja: 0 von 17.335 Zeilen, und `o` ausschließlich als Teil von `ou`. TUNICO `lemma_chatalpha`: `e` 27×, `o` 46× von 7.008. Peace Corps `forms_phonetic`: `e` 101×, `o` 21× von 8.714. Unser Bestand: `e` in 32 %, `o` in 23 % der Zeilen. Eine Vokalabweichung gegen eine Quelle ist damit **strukturell erwartbar und nie für sich genommen ein Befund** — das ist Lautlehre-Regel 1 (Imala), aber erstmals quantifiziert. Das externe Prüfprotokoll hatte exakt hier danebengegriffen (`487 wsil` → `wsel`/`wsal`).
+
+2. **Peace Corps schreibt ظ/ذ ausnahmslos `dh`, Ninja in 38 % der Fälle.** Gemessen an Zeilen, deren `arabic_script` den Buchstaben enthält: ض → Ninja `dh` 712:11, PC `dh` 29:0. ظ/ذ → Ninja `th` 327 : `dh` 191, PC `dh` 20:0, TUNICO `th` 528:1. ث → überall `th`. Heißt: **ein `dh` von Ninja oder Peace Corps ist kein Gegenbeleg gegen unsere ausnahmslose ظ/ذ→`th`-Regel**, nur TUNICO kann sie bestätigen oder widerlegen. Ohne diese Zahl sieht jede der 20 PC-Zeilen wie ein Befund aus.
+
+3. **Peace Corps schreibt خ als `x`, nicht `kh`** (659 von 8.714 `forms_phonetic`-Formen; `kh` kommt 2× vor). Stand nirgends — dokumentiert war nur die Großschreibung H/S/T für die Emphatika.
+
+Nebenbefund, in IMPORTS.md korrigiert: die dortige Ninja-Suchtabelle behauptete `th | ث oder ذ | th | gleich`. Für ذ/ظ stimmt das nur in 64 % der Fälle.
+
+**Lehre:** eine Konventionstabelle, die nur die Zuordnung zeigt, reicht nicht. Sie muss dazusagen, **welche Abweichung erwartbar ist** — sonst produziert jeder gewissenhafte Prüflauf genau an den Stellen Befunde, an denen die Quelle einfach ein anderes Alphabet benutzt.
+
 ## Checks nach Verbindlichkeit sortiert, nicht nach Thema (2026-09-13)
 
 `Datenqualitäts-Checks (SQL)` war mit 340 von 899 Zeilen der größte Abschnitt des Skills und rein chronologisch gewachsen — jeder neue Check kam unten dran. Ein Leser sah 39 Blöcke in loser Folge und konnte einem Treffer nicht ansehen, **was er bedeutet**: ein Fehler oder ein Kandidat mit 80 % Fehlalarmquote.
