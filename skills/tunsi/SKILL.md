@@ -39,7 +39,7 @@ Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nic
 SELECT * FROM public.qualitaets_checks WHERE treffer > 0 ORDER BY gruppe, nr;
 ```
 
-Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, 3 Gemination-, 4 Konsonanten-Konflikte, 8 Klammern in der `darija`, 39 `homonym_ok` ohne Partner und 87 `ar_key`-Gruppen ohne `homonym_ok`.** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
+Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, Check 20/24/25/30 auf 0, Check 21 bei 2 (beide bewusst offen), Check 22/23 bei 424/36.** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
 
 Was die Sicht **nicht** abdeckt und weiterhin von Hand zu ziehen ist:
 
@@ -146,6 +146,8 @@ Ist die Vokabel ein **Verb**, zusätzlich das 3-Zeilen-Modell (siehe „Verb-Kon
 2. `tunico_import` — liefert das volle Bedeutungsspektrum, wo Ninja nur eine Facette zeigt
 3. `peacecorps_dict_import` — dritte unabhängige Quelle, v.a. bei älterem Lehrbuchvokabular
 
+**Vierte Quelle, immer verfügbar: die arabische Morphologie.** Die drei Offline-Quellen sind Wörterbücher — sie führen Lemmata, keine Paradigmen. Wo eine Form aus dem Wurzelmuster folgt (Imperativ, Partizip, Maß-Zugehörigkeit, assimilierte/hohle Wurzeln), ist sie ableitbar und braucht keinen Wörterbucheintrag: `وَقَفَ → يَقِفُ → قِفْ` (das و fällt im Imperfekt und Imperativ weg). „Kein Treffer in den drei Quellen" ist dort **keine** Begründung zum Zurückstellen (PRECEDENTS.md → „Die Morphologie ist auch eine Quelle"). Über **Bedeutung** entscheidet sie dagegen nichts.
+
 Erst wenn **keine** der drei trifft, gilt „keine externe Bestätigung". Werkzeug für alle drei: **vocab_lookup** (unten) — `english_key` als primäre Achse, Skelett-Treffer nur separat und ab Länge 4. Live-Ninja nur, wenn offline nichts kommt (IMPORTS.md).
 
 **Bei Gemination-Zweifeln: die Wurzelfamilie im eigenen Bestand durchsehen.** Der stärkste Beleg ist oft nicht die Quelle, sondern die Geschwisterzeile. Für `1841 thiz` entschieden drei eigene Zeilen (`1683 hazz` هَزَّ, `2228 yhizz` يُهِزُّ, `2472 hezz` هِزّ) die Frage — und die Suche fand dabei eine **vierte** Zeile mit demselben Fehler (`1684 nihiz`), die kein Check gemeldet hatte. Ninja und Peace Corps vokalisieren Endgeminaten oft unvollständig (`هِزْ`, `hiz`, `أقَلْ`) und sind dort **kein** Gegenbeleg.
@@ -187,6 +189,8 @@ Bei Eingang B gehört dieselbe Begründung in die `internal_note` der neuen Zeil
 **Was NICHT geschrieben wird, sondern gefragt:** eine Bedeutungsänderung an einer Zeile mit `partner_status = 'approved'`; das Anlegen neuer Zeilen (zwei getrennte Fragen, siehe „Fehlende Zielzeilen nachlegen"); alles, wo Schritt 3 keine eindeutige Quellenlage ergeben hat.
 
 **Der Rückkanal von Nils** läuft über `vocabulary.partner_comment` und `partner_status` (Semias Prüfmodus im Trainer) — nicht mehr über eine eigene Tabelle. In Schritt 1 wird beides mitgelesen.
+
+**Am Ende jeder Runde: ein Vorschlag, was als Nächstes drankommt** (Wunsch Nils, 2026-09-13). Nicht eine Liste offener Posten, sondern **einer** — der mit dem besten Ertrag pro Aufwand, kurz begründet. Der Nutzer soll „ja" sagen können, statt selbst auswählen zu müssen.
 
 **Nach dem Schreiben, Pflicht unaufgefordert** — immer bei Eingang B, bei A sobald `darija` oder `arabic_script` verändert wurde:
 1. Duplikat-Check UND Transliterations-Check laufen lassen: App-eigener „🔍 Duplikat-Prüfung"-Tab, oder bei Live-Zugriff das SQL aus **Datenqualitäts-Checks** selbst nachbauen — gründlicher als Ad-hoc-Stichproben vorher.
@@ -456,8 +460,11 @@ Hier standen bis zum 2026-09-13 rund 250 Zeilen SQL. Sie sind in die Sicht gewan
 | 7 `-iou`/`-eou`/`-aou` | Plural muss `-iw` sein (= Regel 21) |
 | 8 halb verdoppelter Digraph | `ddh` statt `dhdh`. **722/4254/3042/3073 sind ausgeschlossen** — echte ظ+ه- bzw. t+th-Morphemgrenzen, sie sind korrekt |
 | 9 Sonderbuchstabe (= Regel 23) | ڨ/گ=g, ڤ=v, پ=p. **Ohne Lehnwort-Ausnahme**: die lateinische Schreibung ist frei, der arabische Buchstabe nicht. Prüft nur **eine** Richtung; die Gegenrichtung ist per Entscheidung kein Befund (siehe p/v-Entscheidung unten) |
+| 30 verwaistes `homonym_ok` | ⚠️ Das Flag steht für **drei** Partnerarten — entsprechend den drei Feldern, über die der Duplikat-Manager gruppiert: gleiches **Arabisch** (`homonymNote()`), gleiches **Deutsch** (`synonymNote()`), gleiche **darija** (`yitba3` drucken/verkauft werden). Ein Check, der nicht alle drei kennt, meldet berechtigte Markierungen als Fehler — der Wert fiel von 58 über 41 und 25 auf **7 von 84**, ohne dass sich an den Daten etwas änderte |
 | 10 identisches Arabisch ohne `homonym_ok` | entweder Dublette oder unmarkiertes Homonym. ⚠️ Vergleicht **Bytes**: قصّ und قَصّ gelten als verschieden. Die vokalisierungsunabhängige Fassung ist Check 31 |
 | 11–13 rohe Zeichen / Wächter | eine Umwandlungsfunktion kennt ein Zeichen nicht — siehe unten |
+| 32 `conjugation` gegen die Regeln | ⚠️ Die A-Checks lesen nur `vocabulary.darija`. Die `conjugation`-Tabellen enthalten dieselbe Art Transliteration (650 Zeilen × bis zu 16 Formen) und waren bis zum 2026-09-13 **komplett ungeprüft** — dort stand noch `-iou` nach der Regel-21-Umstellung, und ein am selben Tag korrigierter Tippfehler lebte in sechs Tabellenformen weiter. **Jede Korrektur an `darija` muss die Tabelle mitprüfen** |
+| 31 `ar_key`-Dublette | gleiche arabische **Buchstaben** (ohne Harakat) **und** gleiche deutsche Bedeutung, ohne `homonym_ok`. Schließt die Lücke von Check 10, der byteweise vergleicht. ⚠️ Die Bedeutungsbedingung ist nötig: ohne sie meldet der Check 85 Paradigmenformen derselben Wurzel. Und der Bedeutungsschlüssel darf **Klammern nicht wegwerfen** — bei `476`/`837` steht die Unterscheidung genau dort |
 | 27 `q`/`z`/`j` ohne arabische Entsprechung | Gegenrichtung zu den Regeln 10/12/13. Nur **Einzelzeichen** taugen dafür — die Digraph-Gegenrichtungen (`dh`, `th`, `sh`) sind durch Morphemgrenzen verrauscht (`3and`+`ha`, `as`+`hal`) |
 | 28 Artikel assimiliert vor Mondbuchstabe | Gegenrichtung zu Check 3 |
 | 26 „`3`" ohne ع | Hamza als `3` transliteriert (`sou3el` für سُؤَال). Fand bei seinem ersten Lauf 5 Zeilen, alle echt — darunter `742`, dessen `arabic_script` schlicht etwas anderes sagte als die `darija`. Seit der Korrektur am 2026-09-13 auf 0 und damit in Gruppe A |
@@ -785,6 +792,8 @@ Ebenso `course_lessons.vocab_lesson_refs` gegen die alte Schreibung prüfen (`da
 AND btrim(regexp_replace(<ninja_arabisch>,'[ًٌٍَُِّْٰٟ]','','g')) = btrim(v.arabic_script)
 ```
 Das erschlägt alle Kollisionen und zusätzlich die Numerus-/Genus-Fälle (Ninja gibt den Singular, die Zeile ist Plural: `fnejin`←فِنْجَانْ, `tlemtha`←تِلْمِيذْ, `trabesh`←طَرْبُوشَةْ).
+
+**Der schärfste Filter — und seine Grenze (gemessen 2026-09-13).** `ableitung_exakt` in der Sicht prüft, ob `_arabic_to_chatalpha(Ninjas Vokalisierung)` **exakt** die eigene `darija` ergibt. Von 46 Kandidaten bestanden das nur 8 — er sortiert also scharf. **Er prüft aber die Form, nicht die Bedeutung:** vier Zeilen bestanden ihn und waren trotzdem ein anderes Wort (`nshid`/to ask, `louza`/almond, `kasa`/cashier, `marka`/brand). Verworfene Vorschläge bekommen den Marker `[ninja-vokalisierung verworfen]` in `internal_note`; die Sicht blendet sie dauerhaft aus, damit sie nicht jeden Durchgang erneut kosten.
 
 **Danach trotzdem drei Dinge von Hand prüfen**, die der Filter nicht sieht: (1) ob Ninjas Eintrag dieselbe **Wortart** ist (`tfahim` „er einigte sich" gegen Ninjas تَفَاهُمْ, das Nomen „understanding" — buchstabenidentisch, anderes Wort); (2) ob Ninjas Vokalisierung der eigenen `darija` widerspricht (`toshrob` gegen تِشْرَبْ = `tishrab`); (3) ob Ninjas Fassung überhaupt vokalisiert ist — bei `intikhabat` und `amriken` ist sie es nicht, da gibt es nichts zu übernehmen.
 

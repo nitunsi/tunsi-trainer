@@ -377,6 +377,31 @@ Der Skill kennt die Regel, aber nur für eine Richtung: *„Präsens-Verben: deu
 
 **Lehre:** Eine Regel über das Format eines Feldes ist immer auch eine Regel über die Suche in diesem Feld. Wer weiß, dass die Spalte „er hustet" enthält, darf nicht „husten" suchen. Und ein Suchergebnis „— nichts —" ist keine Auskunft über den Bestand, sondern über das Muster: bevor „gibt es nicht" gesagt wird, muss das Muster an einer Zeile getestet werden, von der man weiß, dass sie existiert.
 
+## Ein Tippfehler in der Klammerung, 64 % des Bestands (2026-09-13)
+
+Der Bedeutungsschlüssel für die Dubletten- und Homonym-Checks lautete:
+
+```sql
+lower(regexp_replace(german,'[^a-zäöüß]','','g'))   -- falsch
+regexp_replace(lower(german),'[^a-zäöüß]','','g')   -- richtig
+```
+
+Das `regexp_replace` lief **vor** dem `lower()`. Großbuchstaben stehen nicht in `[a-zäöüß]` und wurden ersatzlos gelöscht: „Ja" → `a`, „Haus" → `aus`, „Maus" → ebenfalls `aus`. Gemessen: **2.420 von 3.775 Zeilen betroffen, 64 %** — praktisch jedes deutsche Substantiv. Der Schlüssel steckte in zwei Checks gleichzeitig.
+
+**Aufgefallen ist es an einem Einzelfall, nicht an der Zahl.** Check 30 meldete `1389 iy` „Ja" und `4448 n3am` „ja" als partnerlos, obwohl sie offensichtlich dieselbe Bedeutung haben. Die Gesamtzahl (7) sah dagegen plausibel aus und hätte nie Verdacht erregt.
+
+**Lehre:** Reihenfolge bei Normalisierungen ist keine Geschmacksfrage. `lower()` gehört **vor** jede Zeichenklassen-Filterung, sonst löscht der Filter genau die Zeichen, die `lower()` gerettet hätte. Und: eine Prüfliste wird nicht dadurch verlässlich, dass ihre Länge plausibel aussieht — die Stichprobe am Einzelfall findet, was die Zahl verbirgt.
+
+## Die Morphologie ist auch eine Quelle (2026-09-13)
+
+Bei `576 eqif` „Halte an!" stand im `arabic_script` قف. Ich stufte das als defekt ein — „unvokalisiert und **ohne و**, zeigt die Wurzel nicht einmal vollständig" — und legte den Fall mit der Begründung vor, **keine** der drei Quellen gebe den Imperativ her. Nils: *„Ist das nicht gleich Standardarabisch? Das solltest du leicht rausfinden."*
+
+Er hatte recht. Bei assimilierten Verben (مثال واوي) fällt das و im Imperfekt und Imperativ weg: وَقَفَ → يَقِفُ → **قِفْ**. قف war die richtige Form, nur unvokalisiert. Vokalisiert nach der Bestandskonvention für Imperative (prothetisches Alif wie in `575 imshi` إمشي, `2465 ejri` إِجْرِي): إِقِفْ.
+
+**Der Fehler verdeckte in derselben Runde zwei Befunde.** Erstens das angeblich defekte Arabisch, das richtig war. Zweitens — sobald dieselbe Morphologie auf die Geschwisterzeile angewandt wurde — dass `2600 weqif` وَاقِف gar kein Imperativ ist, sondern das aktive Partizip „stehend", und damit eine Dublette zu `3838 waqif` „stehend". Beide haben denselben `ar_key`; Check 31 meldet sie nicht, weil er gleiche Bedeutung verlangt. **Ein falsches Gloss versteckt eine Dublette vor dem Dublettencheck.**
+
+**Lehre:** Die drei Offline-Quellen sind Wörterbücher — sie führen Lemmata, keine Paradigmen. Wo eine Form aus dem Wurzelmuster folgt (Imperativ, Partizip, Maß-Zugehörigkeit, assimilierte und hohle Wurzeln), ist die Morphologie die zuständige Quelle, und „kein Wörterbuchtreffer" ist keine Begründung zum Zurückstellen. Umgekehrt gilt weiter: über **Bedeutung** entscheidet die Morphologie nichts.
+
 ## Der Gegenrichtungs-Durchlauf: eine Frage an jede Regel (2026-09-13)
 
 Drei Skill-Fehler an einem Tag hatten dieselbe Form — eine Regel, die nur in eine Richtung formuliert war (Zeitzone, Regel 23, Infinitiv). Daraus wurde ein einmaliger Durchgang: **an jede Regel die Frage stellen, ob sie eine Gegenrichtung hat, und diese gegen den Bestand messen.**

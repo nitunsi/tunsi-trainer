@@ -2184,3 +2184,683 @@ verschiedener Vokalisierung und verschiedenem Gloss sind für ihn zweimal unsich
 Korrektur eines Tippfehlers im Deutschen hat sie sichtbar gemacht — durch Zufall, nicht durch Prüfung.
 Check 31 (`ar_key`, 87 Gruppen) schließt die eine Hälfte davon; die deutsche Achse deckt bisher nur
 der Trainer selbst ab.
+
+---
+
+## Runde 34 (2026-09-13) — PR #55 gemerged, Check 31 abgearbeitet
+
+### Deployment
+
+PR #55 gemerged. `main` hat damit den Ninja-Check-Block nicht mehr und fragt `vocabulary_review`
+nirgends mehr ab (vorher 8 Stellen) — die Kachel `?` verschwindet mit dem nächsten Build. Der
+Arbeitsbranch wurde frisch auf den gemergten `main` gesetzt.
+
+### Check 31: 87 Gruppen, davon 2 mit gleicher Bedeutung
+
+Der `ar_key`-Vergleich (Buchstaben ohne Harakat) findet 87 Gruppen ohne `homonym_ok`. Die
+entscheidende Trennung ist **nicht die Schreibung, sondern die Bedeutung**:
+
+| | Gruppen | heißt |
+|---|---|---|
+| verschiedene deutsche Glossen | **85** | Paradigmenformen und Homonyme derselben Wurzel — normal im Arabischen, **kein Befund** |
+| gleiche deutsche Glosse | **2** | Dublettenverdacht |
+
+**Fall 1 — echte Dublette, gemerged:**
+
+| | `680` | `1566` |
+|---|---|---|
+| darija | `wild il3amm` | `wild el 3am` |
+| arabic | ولد العم | ولد العَمّ |
+| deutsch | Cousin (väterlicherseits) | Cousin (Sohn des väterl. Onkels) |
+| Lektion | 35 | 35 |
+| Fortschritt | **1** | — |
+
+`680` behalten, von `1566` das vokalisierte ولد العَمّ, das präzisere Gloss und das topic „Familie"
+übernommen; `darija` nach Hausregel auf `wild el-3amm` normiert (Artikel `el-`, Gemination aus
+العَمّ). `1566` gelöscht. **Check 10 hat die beiden nie gesehen** — ولد العم und ولد العَمّ sind
+byteweise verschieden.
+
+**Fall 2 — Fehlalarm meiner eigenen Normalisierung:**
+
+`476 shnwa` „was? (m.)" und `837 shnoua?` „was (betonte, feminine Frageform)" wurden nur deshalb als
+gleichbedeutend gewertet, weil mein `gkey` Klammerinhalte wegwarf — und genau dort steht die
+Unterscheidung. **Dieselbe Falle wie bei `normalize()` im Trainer.** Der `gkey` behält die Klammern
+jetzt.
+
+### Check 31 geschärft und nach Gruppe A verschoben
+
+Ohne die Bedeutungsbedingung hätte der Check dauerhaft 85 bekannte Paradigmenformen gemeldet — genau
+das Muster, das eine Liste wertlos macht. Neue Fassung: `ar_key`-Gruppe **mit gleicher Bedeutung**
+und ohne `homonym_ok`. **Stand: 0.** Die Kontrolle: der `qas`/`qass`-Fall von heute früh hätte
+angeschlagen (beide „er schnitt").
+
+Die breite Fassung (87 Gruppen) bleibt als Handabfrage sinnvoll, wenn man gezielt nach unmarkierten
+Homonymen sucht — sie ist aber keine Fehlerliste.
+
+**Gruppe A: 17 Checks, alle 0. Gruppe B: 8 Listen, 552 Zeilen.**
+
+### Zur Entscheidung: die `shnou`-Familie
+
+| id | darija | arabic | deutsch |
+|---|---|---|---|
+| 476 | `shnwa` | شنوا | was? (m.) |
+| 837 | `shnoua?` | شْنُوَّا | was (betonte, feminine Frageform) |
+
+**Keine der drei Quellen kennt eine Genus-Unterscheidung bei diesem Fragewort.** Belegt sind zwei
+Varianten: TUNICO `šnuwwa` und `šniyya`, Peace Corps `shnuwwa` (5×), Ninja شنوا / أشْنِيَّا /
+أشنُوّا. Die Unterscheidung „(m.)" gegen „(feminine Frageform)" steht nur bei uns.
+
+Drei Möglichkeiten: (a) `837` ist die belegte Form `shnuwwa`, `476` die Variante `shniyya` — dann
+sind beide Glossen falsch; (b) beide sind dasselbe Wort → Merge; (c) Semia bestätigt die
+Genus-Unterscheidung als Dialektrealität. Für (a) und (b) brauche ich dein Wort, (c) wäre eine Frage
+an sie.
+
+---
+
+## Runde 35 (2026-09-13) — die `shnou`-Familie aufgelöst
+
+Entscheidung Nils: **Option (a)** — die m./f.-Systematik ist falsch, es sind zwei belegte Varianten.
+
+Der Blick auf die ganze Familie fand eine **dritte** Zeile, die in Check 31 gar nicht auftauchte:
+
+| id | darija | arabic | deutsch | |
+|---|---|---|---|---|
+| 476 | `shnwa` | شنوا | was? (m.) | Kurs-Verweis, Fortschritt |
+| 837 | `shnoua?` | شْنُوَّا | was (betonte, feminine Frageform) | Fortschritt |
+| **1205** | `shniyyaa` | شْنِيَّا | was? (f.) | Fortschritt |
+
+`شنوا` ist die unvokalisierte Schreibung von `شْنُوَّا` — `476` und `837` sind **dasselbe Wort**.
+`1205` ist die zweite belegte Variante.
+
+**Quellenlage, einstimmig ohne Genus:** TUNICO `šnuwwa` und `šniyya`, Peace Corps `shnuwwa` (5×),
+Ninja شنوا / أشْنِيَّا / أشنُوّا.
+
+**Geschrieben:**
+
+| id | vorher → nachher |
+|---|---|
+| 476 | `shnwa` → **`shnuwwa`**, شنوا → شْنُوَّا, „was? (m.)" → **„was?"**, `homonym_ok` gesetzt |
+| 1205 | `shniyyaa` → **`shniyya`**, „was? (f.)" → **„was?"**, `homonym_ok` gesetzt |
+| 837 | **gelöscht** (Merge in 476 — dort der Kurs-Verweis) |
+
+`homonym_ok` auf beiden ist hier kein Ausschalter, sondern der **Anschalter für `synonymNote()`**: der
+Trainer zeigt bei „was?" jetzt „Für *was?* gibt es noch eine andere Übersetzung".
+
+### Check 30 zum zweiten Mal zu eng — `homonym_ok` hat zwei Bedeutungen
+
+Genau diese berechtigte Markierung hat Check 30 sofort als Fehler gemeldet. Der Grund: das Flag
+steuert im Trainer **zwei** Hinweise:
+
+| Funktion | Partner | Beispiel |
+|---|---|---|
+| `homonymNote()` | gleiches **Arabisch**, andere Bedeutung | `دَار` Haus / `دَارْ` er drehte sich |
+| `synonymNote()` | gleiches **Deutsch**, anderes Wort | `shnuwwa` / `shniyya` |
+
+Check 30 kannte nur die erste. Von 84 markierten Zeilen: **43** mit arabischem Partner, **18** mit nur
+deutschem Partner (berechtigt), **23** wirklich verwaist. Der Check zählt jetzt beide Partnerarten und
+steht bei **23** statt 41.
+
+**Das ist heute das dritte Mal dasselbe Muster:** ein Check, der berechtigten Zustand meldet, ist
+wertlos — und der erste Verdächtige bei einem neuen Treffer ist der Check.
+
+### Gegenprobe
+
+| | |
+|---|---|
+| 🔁 Duplikate (Trainer-Logik) | **0 Gruppen** von 3.777, `count`-Header 3.777 |
+| 🔤 Transliteration | **0** von 3.777, 23 Regeln |
+| Gruppe A | **17 Checks, alle 0** |
+| Gruppe B | 2 · 21 · 429 · 46 · 2 · 4 · 8 · 23 = **535** |
+
+---
+
+## Runde 36 (2026-09-13) — Check 23: die Kampagne ist abgetragen
+
+46 Kandidaten, **4 übernommen**. Beim ersten Durchgang (Runde ~20) waren es 59 von 64 — der
+Unterschied ist nicht Zufall, sondern der Bodensatz: die einfachen Fälle sind durch.
+
+**Übernommen** (`arabic_script` aus Ninja, Bedeutung gegengelesen):
+`498 3omri` عُمْرِي · `555 khtha` خْذَا · `985 idara` إدَارَةْ · `3752 moush` مُوشْ
+
+### Neuer Filter, und sofort seine Grenze
+
+Der stärkste Test war: **leitet Ninjas vokalisiertes Arabisch exakt unsere `darija` ab?** Von 46
+Kandidaten bestanden ihn nur 8. Die Sicht trägt ihn jetzt als Spalte `ableitung_exakt`.
+
+**Und genau dieser Filter hätte vier falsche Übernahmen durchgewunken:**
+
+| id | unser Gloss | Ninja | Ableitung |
+|---|---|---|---|
+| 648 | einen Platz reservieren | to ask, ask about | exakt `nshid` |
+| 1576 | Schwägerin | almond tree, almond | exakt `louza` |
+| 4180 | Waschlappen | cashier, cash register | exakt `kasa` |
+| 4403 | er schoss ein Tor | brand | exakt `marka` |
+
+Buchstabenidentisch, formgleich, **anderes Wort**. `ableitung_exakt` prüft die Form, nicht die
+Bedeutung — das steht jetzt im Sicht-Kommentar.
+
+### Was die Ableitung sonst noch entlarvt hat
+
+| id | Ninja | was die Ableitung zeigt |
+|---|---|---|
+| 616 `kbir` „groß (m.)" | كْبِيرَ | `kbira` — die **feminine** Form |
+| 1023 `sghir` „klein" | صْغَيَّرْ | `sghayyar` — der **Diminutiv**, Ninja sagt „really small (cute)" |
+| 4413 `tqabil` | تْقًابِلْ | `tqanabil` — **Tanwin statt Fatha**, ein Tippfehler bei Ninja |
+| 569 `banka` „Bank" | بَنْكْ | `bank` — andere Form (ohne `-a`) |
+
+### Zwei alte offene Posten bestätigt
+
+- **`529 baash`** „um zu" — das Arabische باش leitet `bash` ab, unsere `darija` schreibt `baash`.
+  Der `aa`-Befund aus Runde 22 ist echt.
+- **`4365 khassatan`** — unser خصوصا leitet `khosousana` ab. Das passt zu keiner Lesart von
+  `khassatan`; das Arabische ist ein anderes Wort (خاصة wäre `khassa`). Befund, keine Vokalisierung.
+
+### Verworfene Vorschläge werden dauerhaft markiert
+
+`648`, `735`, `1576`, `4180`, `4358`, `4403` tragen jetzt `[ninja-vokalisierung verworfen]` in
+`internal_note`, und die Sicht schließt solche Zeilen aus. Sie haben bei drei Durchgängen jeweils
+erneut Prüfzeit gekostet — das hört damit auf.
+
+**Check 23: 46 → 36, davon 0 formexakt.** Was übrig ist, sind Einzelfälle.
+
+### Stand
+
+Gruppe A: 17 Checks, alle 0. Gruppe B: 2 · 21 · 425 · 36 · 2 · 4 · 8 · 23.
+
+---
+
+## Runde 37 (2026-09-13) — drei kleine Listen abgeräumt
+
+### Check 29 (Klammern in der `darija`) — auf 0
+
+**Anmerkungen (3):** `252 labes (7al)` → `labes`, `2879 fad (7al)` → `fad`,
+`3281 yitba3 (passive)` → `yitba3` (die Information ins `german`).
+
+**Optionale Elemente (5) auf die `/`-Variantenform:** `1492`, `1494`, `1495` (`koll we7id (w) …`),
+`1787 shkoun(ou)`, `1788 shkoun(i)`. In Klammern ging die Vollform nur über die 1-Zeichen-Fuzzy-
+Toleranz durch; mit `/` akzeptiert `checkAnswer()` **beide** Formen ausdrücklich. Am Harness geprüft:
+alle sieben Testfälle „ok exakt", vorher teils nur „fuzzy". Klammern auch aus dem `arabic_script`.
+
+**Und wieder fing der Pflicht-Duplikat-Check etwas ab:** `yitba3` existiert bereits als
+`2213 = er druckt`. Nach dem Entfernen der Klammer wäre `3281` eine unmarkierte Homographie
+(بيع verkaufen gegen طبع drucken). Beide Zeilen tragen jetzt `homonym_ok`.
+
+### Check 24/25/20 — von 2/4/2 auf je 1
+
+| id | was | Beleg |
+|---|---|---|
+| 2103 | arabic إيطَالَيَّة → **طَلْيَانِيَّة** | Ninja طَلْيَانِي, TUNICO `ṭalyāni`; Ableitung jetzt exakt `talyaniyya` |
+| 2193 | `mamet` → **`mama`** | TUNICO `māma` „grandmother"; das eigene مَامَة leitet exakt `mama` ab |
+| 2071 | arabic أَوَّل → **لَوَّل** | beide Formen belegt (PC `luwwil` 3×, TUNICO `awwil`) — die `darija` ist die l-Form, also das Arabische angeglichen |
+| 3271 | `badhdrout` → **`badhrout`** | ein `dh` zu viel; بَضْرُوط leitet exakt `badhrout` ab |
+| 2501 | `fissa3` → `fisa3`, فِي سَّاعَة → **فِيسَع** | das Arabische las „in einer Stunde" statt „schnell" — daher die ungültige Anfangs-Schadda. Beleg über `2874`, am selben Tag mit drei Quellen korrigiert |
+
+### `homonym_ok` hat drei Bedeutungen, nicht zwei
+
+Nach dem Setzen des Flags auf `2213`/`3281` sprang Check 30 von 23 auf 25 — zum **dritten** Mal
+meldete er berechtigten Zustand. Der Grund ist jetzt vollständig: der Duplikat-Manager im Trainer
+gruppiert über **drei** Felder, also kann das Flag für drei Partnerarten stehen.
+
+| Feld | Hinweis im Trainer | Beispiel |
+|---|---|---|
+| `arabic_script` | `homonymNote()` | `دَار` Haus / `دَارْ` er drehte sich |
+| `german` | `synonymNote()` | `shnuwwa` / `shniyya` — beide „was?" |
+| `darija` | Duplikat-Manager überspringt | `yitba3` drucken / verkauft werden |
+
+Check 30 prüft jetzt alle drei: **von 84 markierten Zeilen sind 7 wirklich verwaist**, nicht 58,
+nicht 41, nicht 25.
+
+**Lehre:** Ein Flag, das eine Prüfung abschaltet, muss **alle** Wege kennen, auf denen die Prüfung
+greift. Sonst meldet der Check genau die Sorgfalt als Fehler, die er erzwingen soll.
+
+### Gegenprobe
+
+| | |
+|---|---|
+| 🔁 Duplikate (Trainer-Logik) | **0** von 3.777, `count`-Header 3.777 |
+| 🔤 Transliteration | **0** von 3.777, 23 Regeln |
+| Gruppe A | **17 Checks, alle 0** |
+| Gruppe B | 1 · 21 · 425 · 36 · 1 · 1 · 7 = **492** (vorher 535) |
+
+**Offen aus dieser Runde:** `3017 nna` نَّنَا „Tante" (steht in Check 20 **und** 25 — ungültige
+Anfangs-Schadda, und die `darija` hat drei Zeichen weniger als das Arabische; keine Quelle kennt das
+Wort) und `2538 nifli` نِفْلِّي „Ich bin pleite (Variante)" (TUNICO kennt nur `flis`/`falis`).
+
+---
+
+## Runde 38 (2026-09-13) — Check 21 ist etwas anderes, als ich vorgeschlagen hatte
+
+### Korrektur meines eigenen Vorschlags
+
+Ich hatte Check 21 als „21 fehlende Verbzeilen, die Formen stehen in der Tabelle" angekündigt und
+Nils daraufhin „alle anlegen" entschieden. **Das war falsch beschrieben.** Der Check lautet:
+
+```sql
+v.conjugation IS NOT NULL AND NOT v.conj_rotate
+AND NOT EXISTS (… WHERE lower(cell->>'darija') = lower(v.darija))
+```
+
+Er findet Zeilen, deren **eigene `darija` in ihrer eigenen Tabelle nicht vorkommt** — eine
+Inkonsistenz zwischen Zeile und Tabelle. **Anzulegen ist nichts.**
+
+### Der Fund dahinter: die Tabellen sind von keinem Check erfasst
+
+Vier der 21 Treffer waren `imshiw`, `nimshiw`, `timshiw`, `yimshiw`. Ihre Tabellen schrieben noch
+`imshiou`, `nimshiou`, `timshiou`, `yimshiou`. **Die Regel-21-Umstellung (`-iou` → `-iw`) wurde nur
+auf `vocabulary.darija` angewandt, nicht auf die JSON-Tabellen.** Im Bestand: 0 Zeilen mit `-iou`.
+In den Tabellen: 14 Zeilen. Der Trainer zeigte dem Lernenden dort die verworfene Schreibung.
+
+Korrigiert. **Check 21: 21 → 17.**
+
+### Und derselbe Mechanismus noch einmal, am selben Tag
+
+Heute früh habe ich `4555 thahhhert` → `thahhert` korrigiert (drei `h` statt zwei). Die
+`conjugation`-Tabelle derselben Verbgruppe trug den Fehler **in sechs Formen weiter**:
+`thahhher`, `thahhherna`, `thahhhert`, `thahhhertu`, `nthahhher`, `ythahhher`. Ich hatte ihn nicht
+gesehen, weil kein Check die Tabellen liest.
+
+### Neuer Check 32 (Gruppe A): Tabellen gegen die Transliterationsregeln
+
+Prüft alle `conjugation`-Formen auf: Ziffern 2/5/9, Großbuchstaben, `ch` statt `sh`, nicht
+assimilierter Artikel, Plural `-iou/-eou/-aou`, halb verdoppelte Digraphen und **drei gleiche
+Zeichen in Folge**. Nach den beiden Korrekturen: **0**.
+
+**Lehre:** Eine Prüfregel, die nur eine Spalte kennt, lässt dieselben Daten in jeder anderen Form
+unkontrolliert. `conjugation` enthält 650 Zeilen × bis zu 16 Formen derselben Art Transliteration wie
+`darija` — und war bis heute komplett ungeprüft.
+
+### Die verbleibenden 17
+
+Keine davon ist zum Anlegen. Zwei Klassen:
+
+**a) Zeile und Tabelle schreiben dieselbe Form verschieden (12):**
+
+| id | Zeile | Tabelle sagt |
+|---|---|---|
+| 526 | `tnijjem` | `tnajjim` |
+| 576 | `eqif` | `weqif` |
+| 732 | `youja3` | `yuja3` |
+| 1042 | `nsakker` | `nsakkar` |
+| 1198 | `na3mlou` | `na3mlu` |
+| 3052 | `osket` | `uskut` |
+| 3415 | `thahhar` | nur Pluralformen passen |
+| 3432 | `y3jeb` | `yi3jeb` |
+| 3435 | `yrodd` | `yrudd` |
+| 3443 | `ylawwej` | `ylawwij` |
+| 3452 | `ythahhir` | nur Pluralformen passen |
+| 4045 | `yijra` | `yijri` |
+
+Das ist die unnormierte Vokalachse — **aber innerhalb einer Zeile**: der Lernende sieht beide
+Schreibungen für dasselbe Wort. `1198 na3mlou` gehört zum bewusst zurückgestellten
+„`-ou` nach Konsonant"-Posten und bleibt außen vor.
+
+**b) Phrase trägt eine Verbtabelle, in der sie nicht vorkommen kann (5):**
+`752 3ayyit l-el-7imaya`, `753 3ayyit l-esh-shorta`, `1913 3ayyit lil wled`,
+`2646 3ayyit lil-is3af!` (ganze Sätze mit der Tabelle des Verbs `3ayyit`) und `3614 y7ajjim`,
+dessen Tabelle keine einzige Form mit passendem Skelett enthält.
+
+### Stand
+
+Gruppe A: **18 Checks, alle 0.** Gruppe B: 1 · 17 · 425 · 36 · 1 · 1 · 7 = **488**.
+
+---
+
+## Runde 39 (2026-09-13) — Zeile und Tabelle angeglichen
+
+Entscheidung Nils: **die Zeile gilt, die Tabelle folgt** — die Zeile wird abgefragt und trägt den
+Lernfortschritt, die Tabelle ist Anzeige. Je Verbgruppe einmal ersetzt, damit alle Zeilen der Gruppe
+dieselbe Tabelle behalten.
+
+**Geschrieben (8 Verbgruppen, 31 Zeilen):**
+
+| id | Zeile | Tabelle vorher |
+|---|---|---|
+| 526 | `tnijjem` | `tnajjim` |
+| 732 | `youja3` | `yuja3` |
+| 1042 | `nsakker` | `nsakkar` |
+| 3415 | `thahhar` | `thahher` |
+| 3432 | `y3jeb` | `yi3jeb` |
+| 3435 | `yrodd` | `yrudd` |
+| 3443 | `ylawwej` | `ylawwij` |
+| 3452 | `ythahhir` | `ythahher` |
+
+Vorher geprüft: jede der neun Zeichenketten kommt in genau **einer** Tabelle vor, keine Kollision
+mit fremden Verbgruppen. Ersetzt wurde die exakte JSON-Zeichenkette inklusive Anführungszeichen —
+sonst hätte `"thahher"` auch `"ythahher"` getroffen.
+
+**Check 21: 17 → 9.**
+
+### Eine Angleichung zurückgenommen — sie hat das Problem nur verschoben
+
+`4045 yijra` „es geschieht" teilt die Tabelle mit `4039 yijri` „er läuft" — **zwei Bedeutungen des
+Verbs جرى mit derselben grammatischen Form**. Die Tabelle hat aber nur **eine** Zelle für
+`present.3sg_m`. Nach der Angleichung an `4045` fiel `4039` aus seiner eigenen Tabelle und stand neu
+in Check 21.
+
+Zurückgenommen; die wörtliche Grundform `yijri` steht wieder. **Das ist keine Schreibfrage, sondern
+eine Grenze des 3-Zeilen-Modells** und liegt zur Entscheidung vor.
+
+### Zwei weitere, die keine Schreibfälle sind
+
+- **`576 eqif`** „Halte an!" — die Verbgruppe enthält bereits **`2600 weqif`** als eigene Zeile.
+  Die Tabelle auf `eqif` anzugleichen würde eine bestehende Zeile verdrängen. Dazu kommt: `576`s
+  `arabic_script` ist قف **ohne و**, die ganze Gruppe (`2600 weqif`, `4188 yaqif`, `4378 wqif`) hat
+  die Wurzel وقف. Verdacht auf Dublette, nicht auf Schreibvariante.
+- **`3052 osket`** „Sei still!" — `arabic_script` أُسْكُتْ leitet weder die Zeile (`osket`) noch die
+  Tabellenform (`uskut`) exakt ab. Dreieckskonflikt zwischen Zeile, Tabelle und Arabisch.
+
+`1198 na3mlou` bleibt außen vor (gehört zum zurückgestellten „`-ou` nach Konsonant"-Posten).
+
+### Die Plausibilitätsprüfung hat sich bezahlt gemacht
+
+Beim Gegenlesen brach der Harness ab: eine der vier Datenseiten kam als **Gateway Timeout** zurück,
+also 2.777 statt 3.777 Zeilen. Ohne den Abgleich gegen den `count`-Header hätte ich „0 Duplikate"
+über einen um ein Viertel gekürzten Bestand gemeldet — genau der Fehler, den die Regel verhindern
+soll. Nach dem Nachladen:
+
+| | |
+|---|---|
+| 🔁 Duplikate | **0** von 3.777, `count`-Header 3.777 |
+| 🔤 Transliteration | **0** von 3.777, 23 Regeln |
+
+### Stand
+
+Gruppe A: **18 Checks, alle 0.** Gruppe B: 1 · 9 · 425 · 36 · 1 · 1 · 7 = **480**.
+
+Check 21 enthält nur noch: die vier `3ayyit`-Phrasen (752, 753, 1913, 2646), `3614 y7ajjim`,
+`576 eqif`, `3052 osket`, `1198 na3mlou`, `4045 yijra`.
+
+---
+
+## Runde 40 (2026-09-13) — Phrasen und ein falsches Paradigma
+
+### Die vier `3ayyit`-Phrasen: Tabelle entfernt — und ein Befund dabei
+
+Vorprüfung wie angekündigt: die Verbgruppe existiert vollständig (`4548 3ayyit` „er rief",
+`4549 y3ayyit` „er ruft", `4550 3ayyitt` „ich rief", rotierend). Die Tabelle bleibt dort; die vier
+Sätze tragen sie nur zusätzlich und können in ihr naturgemäß nie vorkommen.
+
+**Dabei aufgefallen:** `752` und `753` trugen als `arabic_script` عَيَّطْت — das leitet `3ayyatt` ab,
+also **1. Person Vergangenheit „ich rief"**. Das Deutsche sagt aber „Ruf die Feuerwehr" / „Ruf die
+Polizei", und die `darija` `3ayyit` ist der Imperativ. `1913` hatte عَيَّطْ = `3ayyat`, auch nicht
+den Imperativ.
+
+Alle drei auf عَيِّط = `3ayyit` umgestellt. Beleg aus dem eigenen Bestand: `2646` trug den Imperativ
+bereits richtig, und `4550 3ayyitt` zeigt, wie die 1. Person aussieht (doppeltes `t`).
+
+### `3614 y7ajjim`: die Tabelle beschrieb ein anderes Verb
+
+Die Tabelle enthielt `n7jem` / `t7jem` / `y7jem` — **Maß I ohne Gemination**. Die Zeile ist
+`y7ajjim` يْحَجِّم, Maß II. Die Quellen sind einstimmig für die Zeile: TUNICO `ḥažžim`,
+Ninja حَجِّمْ, Peace Corps `7ajjim`; dazu der eigene Bestand mit `2327 7ajjem` „Friseur" (حَجَّام)
+und `3603 7ajjem bel-zero` (حَجِّمْ).
+
+Die Tabelle war zudem mit drei Formen unvollständig. Entfernt — die Zeile steht jetzt als Verbzeile
+ohne Tabelle, wie 169 andere auch. Ein vollständiges Paradigma anzulegen ist eine eigene Entscheidung.
+
+Das ist übrigens genau der Präzedenzfall, den der Skill unter „Verb-Selbstcheck" führt: `y7jem` galt
+als „eine Zeile, Tabelle dran, fertig". Die Zeile wurde später auf `y7ajjim` korrigiert — **die
+Tabelle blieb stehen und behielt das alte, falsche Verb.**
+
+### Stand
+
+**Check 21: 9 → 4.** Übrig sind nur noch die vier Entscheidungsfälle: `576 eqif`, `1198 na3mlou`,
+`3052 osket`, `4045 yijra`.
+
+| | |
+|---|---|
+| 🔁 Duplikate | **0** von 3.777, `count`-Header 3.777 |
+| 🔤 Transliteration | **0** von 3.777, 23 Regeln |
+| Gruppe A | **18 Checks, alle 0** |
+| Gruppe B | 1 · 4 · 425 · 36 · 1 · 1 · 7 = **475** |
+
+---
+
+## Runde 41 (2026-09-13) — `576 eqif`: der Imperativ ist doppelt besetzt
+
+Untersucht, nichts geschrieben. Die Verbgruppe وقف:
+
+| id | darija | arabic_script | Ableitung | deutsch | Lernstand | Rolle |
+|---|---|---|---|---|---|---|
+| **576** | `eqif` | قف | `qf` | Halte an! / Stopp / Steh auf (Imperativ) | 6/5 · 15× | — |
+| **2600** | `weqif` | وَاقِف | `waqif` | steh! (Imperativ) | 2/4 · 10× | `conj_rotate` |
+| 4188 | `yaqif` | يَاقِف | `yaqif` | er steht | 5/0 · 5× | Präsens, Kurs-Ref |
+| 4378 | `wqif` | وْقِفْ | `wqif` | er stand | 5/0 · 5× | Vergangenheit, Kurs-Ref |
+
+**Quellenlage:** TUNICO `wqif` („to stand / to stop / to come to standstill / to stall"), Ninja وْقِفْ
+`wqif`, Peace Corps `waqqif` („to stop / to park", Maß II, kausativ). **Keine Quelle gibt den
+Imperativ.**
+
+### Drei Befunde
+
+1. **Der Imperativ ist doppelt besetzt.** `576` und `2600` sind beide als Imperativ Singular
+   glossiert („Halte an! / Stopp / Steh auf" und „steh!"). Das 3-Zeilen-Modell sieht dafür eine
+   Zeile vor; Präsens (`4188`) und Vergangenheit (`4378`) sind je einfach da.
+2. **`576`s `arabic_script` ist defekt:** قف, unvokalisiert und **ohne و** — es leitet `qf` ab und
+   zeigt die Wurzel nicht einmal vollständig. Die ganze übrige Gruppe trägt وقف.
+3. **`2600`s `arabic_script` ist das aktive Partizip, nicht der Imperativ:** وَاقِف leitet `waqif`
+   ab, das heißt „stehend". Das Gloss sagt „steh! (Imperativ)".
+
+`4378 wqif` ist als einzige der vier sauber (exakt Ninjas Form).
+
+### Was zu entscheiden ist
+
+Beide Kandidaten tragen Lernfortschritt — `576` mehr Wiederholungen (15 gegen 10), `2600` ist die
+Modellzeile (`conj_rotate`, und die Tabelle führt `imperative.sg = weqif`). Kein Kurs-Verweis auf
+beide.
+
+| Weg | was passiert |
+|---|---|
+| **A: `576` behalten** | breiteres Gloss, mehr Fortschritt; `conj_rotate` müsste von `2600` übergehen, `2600` wird gelöscht |
+| **B: `2600` behalten** | bleibt die Modellzeile, stimmt mit der Tabelle überein; `576` wird gelöscht, 15 Wiederholungen gehen verloren |
+| **C: beide behalten** | dann sind es zwei Schreibvarianten desselben Imperativs → `homonym_ok` auf beiden, und beide Arabisch-Werte müssen repariert werden |
+
+**In jedem Fall offen:** wie der Imperativ arabisch geschrieben wird. Die Quellen geben ihn nicht
+her, und ich rate ihn nicht. Für Weg C wäre das Gloss von `2600` auf „stehend" zu ändern — dann
+wäre وَاقِف richtig und die Zeile kein Imperativ mehr, womit sich die Doppelbesetzung von selbst
+auflöst.
+
+**Das ist mein Vorschlag: Weg C in dieser Lesart** — `2600` ist gar kein Imperativ, sondern das
+Partizip „stehend", so wie sein Arabisch es sagt. Dann behält `576` den Imperativ (mit zu
+reparierendem Arabisch), `2600` wird zum Partizip, und die Gruppe ist vollständig statt doppelt.
+Das setzt aber eine Bedeutungsentscheidung voraus, die Semia bestätigen sollte.
+
+---
+
+## Runde 42 (2026-09-13) — die Morphologie ist auch eine Quelle
+
+**Korrektur meiner eigenen Aussage aus Runde 41.** Ich hatte geschrieben: „Keine Quelle gibt den
+Imperativ her, und ich rate ihn nicht", und `576`s `arabic_script` قف als defekt eingestuft, weil es
+„die Wurzel nicht einmal vollständig zeigt". Beides war falsch.
+
+**قف ist die korrekte Form.** Bei assimilierten Verben (مثال واوي) fällt das و im Imperfekt und im
+Imperativ weg: وَقَفَ → يَقِفُ → **قِفْ**. Das ist keine Wörterbuchfrage, sondern Morphologie.
+Dasselbe Muster erklärt auch `4188 yaqif` يَاقِف.
+
+**Geschrieben:** `576` arabic_script → **إِقِفْ**. Das prothetische Alif folgt der
+Bestandskonvention für Imperative (`575 imshi` إمشي, `2465 ejri` إِجْرِي, `2468 e7bi` إِحْبِي,
+`3673 el3ab` إلْعَبْ, `3770 ishri` اِشْري). Ableitung `iqif` gegen `darija` `eqif` — reine Vokalachse.
+
+### Und damit löst sich die Doppelbesetzung
+
+Dieselbe Morphologie sagt: **وَاقِف ist das aktive Partizip „stehend", nicht der Imperativ.** Der
+Bestand weiß das längst:
+
+| id | darija | arabic | deutsch | topic |
+|---|---|---|---|---|
+| 2600 | `weqif` | وَاقِف | **steh! (Imperativ)** | Kurzphrasen |
+| **3838** | `waqif` | وَاقِفْ | **stehend** | Adjektive |
+| 3863 | `shbik waqif` | شْبِيكْ وَاقِفْ | Warum stehst du (so) rum? | Gesprächsführung |
+
+`2600` und `3838` haben denselben `ar_key` — **dasselbe Wort**, aber nur `3838` glossiert es richtig.
+Check 31 meldet das Paar nicht, weil er gleiche Bedeutung verlangt und die Glossen verschieden sind:
+**ein falsches Gloss versteckt eine Dublette vor dem Dublettencheck.**
+
+### Zur Entscheidung
+
+`2600 weqif` ist eine Dublette zu `3838 waqif` mit falschem Gloss. Der Imperativ steckt in `576`.
+Ein Merge hat aber zwei Anhängsel:
+
+- `2600` trägt `conj_rotate = true` — es ist die rotierende Zeile der وقف-Gruppe. Bei Löschung
+  müsste das Flag auf eine andere Zeile der Gruppe.
+- Die `conjugation`-Tabelle führt `imperative.sg = weqif`. Nach dieser Klärung ist auch das falsch;
+  richtig wäre `eqif`.
+
+Lernstand: `2600` 2/4 · 10×, `3838` — (noch nicht geprüft). Kein Kurs-Verweis auf `2600`.
+
+### Lehre
+
+**Die arabische Morphologie ist eine Quelle, die immer verfügbar ist.** „Keine der drei Quellen gibt
+es her" ist keine Begründung, wenn die Form aus dem Wurzelmuster folgt. Der Fehler hat in derselben
+Runde zwei Befunde verdeckt: ein angeblich defektes `arabic_script`, das richtig war, und eine
+Dublette, die sich erst zeigte, als die Morphologie das Gloss widerlegte.
+
+---
+
+## Runde 43 (2026-09-13) — Merge `2600` → `3838`, die وقف-Gruppe ist sauber
+
+**Geschrieben:**
+
+1. **`conjugation`: `imperative.sg` von `weqif` auf `eqif`** (in allen vier Zeilen der Gruppe, eine
+   Tabelle). `imperative.pl` bleibt `wqifu` — dafür gibt es keinen Bestandsbeleg, und die Ableitung
+   allein (قِفُوا) reicht mir hier nicht.
+2. **`2600 weqif` gelöscht**, Begründung in `3838`s `internal_note`.
+
+**Warum `3838` bleibt:** richtiges Gloss („stehend"), richtiges topic („Adjektive"), Kurs-Verweis,
+mehr Wiederholungen (14× gegen 10×). `2600` hatte nichts davon außer dem `conj_rotate`-Flag.
+
+### `conj_rotate` wurde bewusst nicht vererbt
+
+Der Trainer braucht dafür **beides** — `if(v.cr && v.cj)` (trainer.html:2441). `3838` trägt keine
+`conjugation` und könnte das Flag gar nicht nutzen. Und auf eine der verbliebenen Zeilen zu setzen
+wäre falsch: `576 eqif`, `4188 yaqif` und `4378 wqif` sind **Grundformen**, deren Karte genau ihre
+eigene Form abfragen soll. Ein Rotationsflag würde daraus eine Zufallsabfrage machen.
+
+Die وقف-Gruppe hat damit keine rotierende Zeile — wie 88 andere Gruppen auch. Das Muster der
+rotierenden Zeilen im Bestand ist durchweg eine **1.-Person-Vergangenheitsform**
+(`4550 3ayyitt` „ich rief", `4545 qassit` „ich schnitt"); eine solche Zeile hat diese Gruppe nicht.
+
+### Die Gruppe jetzt
+
+| id | darija | arabic | deutsch | Rolle |
+|---|---|---|---|---|
+| 576 | `eqif` | إِقِفْ | Halte an! / Stopp / Steh auf | Imperativ |
+| 4188 | `yaqif` | يَاقِف | er steht | Präsens |
+| 4378 | `wqif` | وْقِفْ | er stand | Vergangenheit |
+| 3838 | `waqif` | وَاقِفْ | stehend | Partizip (eigene Zeile, topic Adjektive) |
+
+**Check 21: 4 → 3.** Übrig: `1198 na3mlou` (zurückgestellter `-ou`-Posten), `3052 osket`,
+`4045 yijra`.
+
+| | |
+|---|---|
+| 🔁 Duplikate | **0** von 3.776, `count`-Header 3.776 |
+| 🔤 Transliteration | **0** von 3.776, 23 Regeln |
+| Gruppe A | **18 Checks, alle 0** |
+| Gruppe B | 1 · 3 · 425 · 36 · 1 · 1 · 7 = **474** |
+
+---
+
+## Runde 44 (2026-09-13) — `3052 osket` → `uskut`
+
+Dieselbe Methode wie bei `576`: erst die Morphologie, dann die Geschwisterzeilen, dann die Quellen.
+
+**Der Befund ist schärfer als „Vokalvariante":** das eigene `arabic_script` أُسْكُتْ trägt ein
+**Damma** auf dem zweiten Radikal. `e` ist davon keine mögliche Lesart — `osket` war nicht eine von
+mehreren Schreibungen, sondern falsch.
+
+| Instanz | sagt |
+|---|---|
+| eigenes Arabisch أُسْكُتْ | Ableitung `oskot` |
+| eigene `conjugation`-Tabelle | `uskut` |
+| Geschwisterzeile `4562 yuskut` يُسْكُت | `u` |
+| **Peace Corps, „Be quiet!"** | **`uskut`** |
+| Morphologie (regelmäßige Wurzel س-ك-ت) | اُسْكُتْ |
+
+**Geschrieben:** `darija` → `uskut`. Damit stimmen Zeile, Tabelle, Geschwisterzeile und Quelle
+überein. Das `arabic_script` bleibt; `u`/`o` ist die unnormierte Vokalachse (Peace Corps schreibt
+Damma als `u`, unsere Ableitung als `o` — dieselbe Lautung, zwei Konventionen, dokumentiert in
+**Quell-Konventionen**).
+
+### Stand
+
+**Check 21: 3 → 2.** Übrig nur die beiden bewusst offenen: `1198 na3mlou` (gehört zum
+zurückgestellten „`-ou` nach Konsonant"-Posten) und `4045 yijra` (die Modellgrenze mit
+`4039 yijri` — zwei Bedeutungen, eine Tabellenzelle).
+
+| | |
+|---|---|
+| 🔁 Duplikate | **0** von 3.776, `count`-Header 3.776 |
+| 🔤 Transliteration | **0** von 3.776, 23 Regeln |
+| Gruppe A | **18 Checks, alle 0** |
+| Gruppe B | 1 · 2 · 425 · 36 · 1 · 1 · 7 = **473** |
+
+---
+
+## Runde 45 (2026-09-13) — die letzten Einzelfälle, und ein Fehler in meinem eigenen Schlüssel
+
+### `3017 nna` und `2538 nifli`: gesucht, unterschiedlich ausgegangen
+
+Freigabe war „wenn keine der drei Quellen die hat, löschen". Die Suche ging unterschiedlich aus:
+
+- **`3017 nna` ist belegt** — TUNICO `ṇāṇa` „auntie", Ninja نَانَا „grandma". Nur **unsere
+  Schreibung** war falsch: `nna` gegen نَّنَا (Schadda auf dem ersten Buchstaben, orthographisch
+  unmöglich — Check 20 **und** 25 gleichzeitig). **Korrigiert** zu `nana` / نَانَا, Ableitung jetzt
+  exakt. Löschen wäre der Verlust eines belegten Wortes gewesen.
+- **`2538 nifli` nicht.** Die Wurzel فلس ist reich belegt (Ninja مْفَلِّسْ, TUNICO/PC `falis`,
+  `fallis`, `flas`), die Form `nifli`/`niflli` in keiner Quelle. Kein Lernstand, kein Kurs-Verweis,
+  und `2537 trit` deckt dieselbe Bedeutung ab. **Gelöscht.**
+
+### Beim Suchen der 7 verwaisten Flags: mein Bedeutungsschlüssel war kaputt
+
+`1389 iy` „Ja" und `4448 n3am` „ja" standen beide als verwaist in Check 30 — obwohl sie offensichtlich
+dieselbe Bedeutung haben. Ursache:
+
+```sql
+lower(regexp_replace(german,'[^a-zäöüß]','','g'))   -- falsch
+regexp_replace(lower(german),'[^a-zäöüß]','','g')   -- richtig
+```
+
+Das `regexp_replace` lief **vor** dem `lower()`. Großbuchstaben sind nicht in `[a-zäöüß]` und wurden
+gelöscht: „Ja" → `a`, „Haus" → `aus`, „Maus" → ebenfalls `aus`. **Gemessen: 2.420 von 3.775 Zeilen
+betroffen, 64 %.** Der Schlüssel steckt in Check 30 **und** Check 31 — beide waren unzuverlässig.
+Repariert; Check 30 fiel dadurch von 7 auf 5, Check 31 blieb 0.
+
+**Das ist heute das vierte Mal, dass ein auffälliges Ergebnis einen Fehler im Check statt in den
+Daten hatte** — und diesmal war es ein Tippfehler in der Klammerung.
+
+### Die 5 verbliebenen Flags: einer hatte sehr wohl einen Partner
+
+**`4180 kasa`** كاسة „Waschlappen" ↔ **`2125 el-kasa`** الكَاسَةْ „die Kasse" — dasselbe Wort, zwei
+Bedeutungen. Der Check sah sie nicht, weil der **Artikel** den `ar_key` verändert (الكاسة gegen
+كاسة). `2125` hat jetzt ebenfalls `homonym_ok`, und der `ar_key` normalisiert das führende ال weg.
+
+Die anderen vier hatten keinen Partner, Flag entfernt:
+
+| id | warum verwaist |
+|---|---|
+| 2037 `kasa7` | einziger Nachbar `2004 aksa7` „hässlicher" — andere Wurzel-Ableitung, kein Homonym |
+| **4396 `qas`** | der Partner war `1681 qas` — **den habe ich heute selbst auf `qass` umbenannt** |
+| 4533 `bqit` | kein Partner in keiner Achse, kein Skelett-Nachbar |
+| 4574 `tayya7t` | Nachbarn `663 ta7t` „unten", `1764 ti7t` „ich fiel" — anderes Wort, anderes Maß |
+
+`4396` ist lehrreich: eine Korrektur an einer Zeile kann das Flag einer **anderen** verwaisen lassen.
+
+### Stand — Gruppe B hat nur noch drei Listen
+
+| Check | Treffer |
+|---|---|
+| 20 ungültige Anfangs-Schadda | **0** |
+| 24 Gemination | **0** |
+| 25 Konsonanten | **0** |
+| 30 verwaistes `homonym_ok` | **0** |
+| 21 Verb-Selbstcheck | 2 (beide bewusst offen) |
+| 22 unvokalisierte Einzelwörter | 424 |
+| 23 Vokalisierungs-Kandidaten | 36 |
+
+| | |
+|---|---|
+| 🔁 Duplikate | **0** von 3.775, `count`-Header 3.775 |
+| 🔤 Transliteration | **0** von 3.775, 23 Regeln |
+| Gruppe A | **18 Checks, alle 0** |
+| Gruppe B | **462** statt 473 |
