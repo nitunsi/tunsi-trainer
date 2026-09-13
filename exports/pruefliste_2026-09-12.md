@@ -1100,3 +1100,28 @@ Bei 529 liefert `_arabic_skeleton` dadurch `bsh(zck)` — Skelett-Vergleich und 
 Die Ziel-Konvention markiert Langvokale **nicht**. Vier Treffer sind Lehnwörter (`weekend` ×3, `loofah`) und damit legitim. Bleiben 21: `kaas`, `7araam`, `3aalam`, `naaqes`, `naaje7`, `maasit`, `maasta`, `bisklaat`, `maatsh`, `raayidh`, `maayu`, `athaaka`, `akkaaka`, `ma7laa`, `mraa`, `sbaa7`, `warreeni`, `shniyyaa`, `3aysheen`, `aallha`, `baash`.
 
 Keine der 22 Trainer-Regeln greift darauf — Kandidat für Regel 23. Zwei Sonderfälle stecken drin: `768 aallha` hat auch ein kaputtes Arabisch (`االله` statt `الله`), und `529 baash` / `471 besh` sind **dasselbe Arabisch باش mit zwei Schreibungen und zwei Bedeutungen** („um zu" vs. „wird").
+
+### Nachtrag zu b) — ausgeführt und ein Fund bei 1473
+
+`471` und `529` bereinigt (Freigabe von Nils):
+
+| id | `arabic_script` vorher | nachher | `german` nachher | Skelette |
+|---|---|---|---|---|
+| 471 | `بش  (Zukunftsmarker)` | `بش` | `wird (Zukunftsmarker)` | `bsh` = `bsh` ✓ |
+| 529 | `باش (Zweck)` | `باش` | `um zu / damit (Zweck)` | `bsh` = `bsh` ✓ |
+
+Beide Skelettpaare stimmen jetzt überein. Die Notiz kam ins `german`-Feld, nicht in `internal_note` — sie unterscheidet die beiden Einträge beim Antworten, dafür ist sie da. Herkunft steht in `internal_note`.
+
+**`1473 aba babab` — Ninja hat den Ausdruck:**
+
+| | |
+|---|---|
+| Ninja | `بَابَابْ` / `babab` / „Wow, wow, how nice" / `(INTERJ)` |
+| Audio | `recordings/16355.mp3`, 2.888–5.734 |
+| Beispiel | `بَابَابْ ! قداّش يكذب الرّاجل هذا !` = „Wow, wow, how that guy lies!" |
+
+Zwei Dinge dazu, beide offen:
+1. Ninja kennt nur `babab`, kein vorangestelltes `aba`. Ob Semia wirklich „aba babab" sagt, kann ich nicht entscheiden — geraten wird nicht.
+2. Unser Gloss „Du siehst gut aus!" ist **enger als die Quelle**. Ninjas Beispielsatz („wie der Kerl lügt!") zeigt einen allgemeinen Ausruf des Staunens, auch negativ. „Wow!" trifft es besser.
+
+Audio läge bereit, sobald die Schreibung geklärt ist.
