@@ -39,7 +39,7 @@ Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nic
 SELECT * FROM public.qualitaets_checks WHERE treffer > 0 ORDER BY gruppe, nr;
 ```
 
-Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, je 1 Gemination-, Konsonanten- und Schadda-Treffer, 7 verwaiste `homonym_ok`; Check 22/23 bei 425/36, Check 21 bei 21.** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
+Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, je 1 Gemination-, Konsonanten- und Schadda-Treffer, 7 verwaiste `homonym_ok`; Check 22/23 bei 425/36, Check 21 bei 17.** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
 
 Was die Sicht **nicht** abdeckt und weiterhin von Hand zu ziehen ist:
 
@@ -461,6 +461,7 @@ Hier standen bis zum 2026-09-13 rund 250 Zeilen SQL. Sie sind in die Sicht gewan
 | 30 verwaistes `homonym_ok` | ⚠️ Das Flag steht für **drei** Partnerarten — entsprechend den drei Feldern, über die der Duplikat-Manager gruppiert: gleiches **Arabisch** (`homonymNote()`), gleiches **Deutsch** (`synonymNote()`), gleiche **darija** (`yitba3` drucken/verkauft werden). Ein Check, der nicht alle drei kennt, meldet berechtigte Markierungen als Fehler — der Wert fiel von 58 über 41 und 25 auf **7 von 84**, ohne dass sich an den Daten etwas änderte |
 | 10 identisches Arabisch ohne `homonym_ok` | entweder Dublette oder unmarkiertes Homonym. ⚠️ Vergleicht **Bytes**: قصّ und قَصّ gelten als verschieden. Die vokalisierungsunabhängige Fassung ist Check 31 |
 | 11–13 rohe Zeichen / Wächter | eine Umwandlungsfunktion kennt ein Zeichen nicht — siehe unten |
+| 32 `conjugation` gegen die Regeln | ⚠️ Die A-Checks lesen nur `vocabulary.darija`. Die `conjugation`-Tabellen enthalten dieselbe Art Transliteration (650 Zeilen × bis zu 16 Formen) und waren bis zum 2026-09-13 **komplett ungeprüft** — dort stand noch `-iou` nach der Regel-21-Umstellung, und ein am selben Tag korrigierter Tippfehler lebte in sechs Tabellenformen weiter. **Jede Korrektur an `darija` muss die Tabelle mitprüfen** |
 | 31 `ar_key`-Dublette | gleiche arabische **Buchstaben** (ohne Harakat) **und** gleiche deutsche Bedeutung, ohne `homonym_ok`. Schließt die Lücke von Check 10, der byteweise vergleicht. ⚠️ Die Bedeutungsbedingung ist nötig: ohne sie meldet der Check 85 Paradigmenformen derselben Wurzel. Und der Bedeutungsschlüssel darf **Klammern nicht wegwerfen** — bei `476`/`837` steht die Unterscheidung genau dort |
 | 27 `q`/`z`/`j` ohne arabische Entsprechung | Gegenrichtung zu den Regeln 10/12/13. Nur **Einzelzeichen** taugen dafür — die Digraph-Gegenrichtungen (`dh`, `th`, `sh`) sind durch Morphemgrenzen verrauscht (`3and`+`ha`, `as`+`hal`) |
 | 28 Artikel assimiliert vor Mondbuchstabe | Gegenrichtung zu Check 3 |

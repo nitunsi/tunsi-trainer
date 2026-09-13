@@ -2425,3 +2425,80 @@ greift. Sonst meldet der Check genau die Sorgfalt als Fehler, die er erzwingen s
 **Offen aus dieser Runde:** `3017 nna` نَّنَا „Tante" (steht in Check 20 **und** 25 — ungültige
 Anfangs-Schadda, und die `darija` hat drei Zeichen weniger als das Arabische; keine Quelle kennt das
 Wort) und `2538 nifli` نِفْلِّي „Ich bin pleite (Variante)" (TUNICO kennt nur `flis`/`falis`).
+
+---
+
+## Runde 38 (2026-09-13) — Check 21 ist etwas anderes, als ich vorgeschlagen hatte
+
+### Korrektur meines eigenen Vorschlags
+
+Ich hatte Check 21 als „21 fehlende Verbzeilen, die Formen stehen in der Tabelle" angekündigt und
+Nils daraufhin „alle anlegen" entschieden. **Das war falsch beschrieben.** Der Check lautet:
+
+```sql
+v.conjugation IS NOT NULL AND NOT v.conj_rotate
+AND NOT EXISTS (… WHERE lower(cell->>'darija') = lower(v.darija))
+```
+
+Er findet Zeilen, deren **eigene `darija` in ihrer eigenen Tabelle nicht vorkommt** — eine
+Inkonsistenz zwischen Zeile und Tabelle. **Anzulegen ist nichts.**
+
+### Der Fund dahinter: die Tabellen sind von keinem Check erfasst
+
+Vier der 21 Treffer waren `imshiw`, `nimshiw`, `timshiw`, `yimshiw`. Ihre Tabellen schrieben noch
+`imshiou`, `nimshiou`, `timshiou`, `yimshiou`. **Die Regel-21-Umstellung (`-iou` → `-iw`) wurde nur
+auf `vocabulary.darija` angewandt, nicht auf die JSON-Tabellen.** Im Bestand: 0 Zeilen mit `-iou`.
+In den Tabellen: 14 Zeilen. Der Trainer zeigte dem Lernenden dort die verworfene Schreibung.
+
+Korrigiert. **Check 21: 21 → 17.**
+
+### Und derselbe Mechanismus noch einmal, am selben Tag
+
+Heute früh habe ich `4555 thahhhert` → `thahhert` korrigiert (drei `h` statt zwei). Die
+`conjugation`-Tabelle derselben Verbgruppe trug den Fehler **in sechs Formen weiter**:
+`thahhher`, `thahhherna`, `thahhhert`, `thahhhertu`, `nthahhher`, `ythahhher`. Ich hatte ihn nicht
+gesehen, weil kein Check die Tabellen liest.
+
+### Neuer Check 32 (Gruppe A): Tabellen gegen die Transliterationsregeln
+
+Prüft alle `conjugation`-Formen auf: Ziffern 2/5/9, Großbuchstaben, `ch` statt `sh`, nicht
+assimilierter Artikel, Plural `-iou/-eou/-aou`, halb verdoppelte Digraphen und **drei gleiche
+Zeichen in Folge**. Nach den beiden Korrekturen: **0**.
+
+**Lehre:** Eine Prüfregel, die nur eine Spalte kennt, lässt dieselben Daten in jeder anderen Form
+unkontrolliert. `conjugation` enthält 650 Zeilen × bis zu 16 Formen derselben Art Transliteration wie
+`darija` — und war bis heute komplett ungeprüft.
+
+### Die verbleibenden 17
+
+Keine davon ist zum Anlegen. Zwei Klassen:
+
+**a) Zeile und Tabelle schreiben dieselbe Form verschieden (12):**
+
+| id | Zeile | Tabelle sagt |
+|---|---|---|
+| 526 | `tnijjem` | `tnajjim` |
+| 576 | `eqif` | `weqif` |
+| 732 | `youja3` | `yuja3` |
+| 1042 | `nsakker` | `nsakkar` |
+| 1198 | `na3mlou` | `na3mlu` |
+| 3052 | `osket` | `uskut` |
+| 3415 | `thahhar` | nur Pluralformen passen |
+| 3432 | `y3jeb` | `yi3jeb` |
+| 3435 | `yrodd` | `yrudd` |
+| 3443 | `ylawwej` | `ylawwij` |
+| 3452 | `ythahhir` | nur Pluralformen passen |
+| 4045 | `yijra` | `yijri` |
+
+Das ist die unnormierte Vokalachse — **aber innerhalb einer Zeile**: der Lernende sieht beide
+Schreibungen für dasselbe Wort. `1198 na3mlou` gehört zum bewusst zurückgestellten
+„`-ou` nach Konsonant"-Posten und bleibt außen vor.
+
+**b) Phrase trägt eine Verbtabelle, in der sie nicht vorkommen kann (5):**
+`752 3ayyit l-el-7imaya`, `753 3ayyit l-esh-shorta`, `1913 3ayyit lil wled`,
+`2646 3ayyit lil-is3af!` (ganze Sätze mit der Tabelle des Verbs `3ayyit`) und `3614 y7ajjim`,
+dessen Tabelle keine einzige Form mit passendem Skelett enthält.
+
+### Stand
+
+Gruppe A: **18 Checks, alle 0.** Gruppe B: 1 · 17 · 425 · 36 · 1 · 1 · 7 = **488**.
