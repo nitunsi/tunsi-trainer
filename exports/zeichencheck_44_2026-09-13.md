@@ -92,3 +92,49 @@ Und: **20 Bestandszeilen haben ق im Arabischen, aber `g` in der `darija`** — 
 Das ist **eine Entscheidung, nicht zwanzig**: Soll das Arabische bei `g`-Aussprache auf ڨ
 umgestellt werden (Ninjas Praxis, dann stimmt der Check), oder ist ق mit `g`-Aussprache eine
 legitime etymologische Schreibung (dann braucht der Check eine dokumentierte Ausnahme)?
+
+---
+
+# Nachtrag: Per-Wort-Check (gleicher Tag)
+
+Reichweite **1.179 → 1.624 Zeilen (+38 %)**. Zwei zusätzliche Pflichtfilter nötig:
+Status constructus (`-t`) ist kein Befund; Zeilen mit Wortversatz werden verworfen
+(mehr als die Hälfte der prüfbaren Paare weicht ab) — 40 Zeilen, bewusste Falsch-Negative.
+
+## Neue Funde, die der Einzelwort-Check nicht sah
+
+**Gemination fehlt in der `darija`** (dieselbe Klasse wie `nos`→`noss`):
+
+| id | ist | soll | Kontext |
+|---|---|---|---|
+| 2491 | `y7ib` | `yo7ibb` | „selbstsüchtig (er liebt sich selbst)" |
+| 2529 | `nshim` | `nshimm` | „ich rieche einen sehr leckeren Duft" |
+| 2712 | `litaw` | `littaw` | „Bis jetzt ist alles gut." |
+| 2732 | `liteli` | `littali` | „rückwärts fahren" |
+| 2858 | `routila` | `rottila` | „Spinne" |
+| 3135 | `labnni` | `labbani` | „ich brach in kalten Schweiß aus" |
+| 3165 | `7or` | `7orr` | „reines Olivenöl" |
+| 3182 | `7or` | `7orr` | „reiner Honig" |
+| 2583 | `tounssia` | `tounsiyya` | „Tunesischer Salat" |
+
+**Digraph-Gemination — genau das `khh`/`shh`-Muster der Regel vom 2026-09-12:**
+
+| id | ist | soll |
+|---|---|---|
+| 2555 | `mukhhu` | `mokhkhou` |
+| 2891 | `mshakhra` | `moshakhkhara` |
+| 3237 | `nsharshhar` | `nosharshir` |
+| 3288 | `mashi` | `mashshi` |
+
+**Tippfehler:** `3073 brrsha` → `barsha`.
+
+**Dem Arabischen fehlt die Schadda:** `2067 ahammiyya`, `1937 noss` (in 409 hat نُصّ die Schadda,
+hier fehlt sie — dieselbe Vokabel, zwei Schreibungen), `3231 skhounna`.
+
+**Zur Klärung:** `3209 immokhar?`, `3224 shrobtshi`, `3294 mrawba`, `1884 yqarqir` (das Arabische
+scheint ڤ zu enthalten), `2866 omm`, `3744 dour` (Wortversatz, der die Hälfte-Regel überlebt hat).
+
+**ق/`g`-Konventionsfrage, weitere Fälle:** `3124 guinya!`, `3149 galbi`.
+
+**Fehlalarm, dokumentiert:** `1926`/`2705 fil` → `fi` — unsere `darija` verschmilzt Präposition
+und Artikel, das Arabische trennt sie.
