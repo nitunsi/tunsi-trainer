@@ -1125,3 +1125,45 @@ Zwei Dinge dazu, beide offen:
 2. Unser Gloss „Du siehst gut aus!" ist **enger als die Quelle**. Ninjas Beispielsatz („wie der Kerl lügt!") zeigt einen allgemeinen Ausruf des Staunens, auch negativ. „Wow!" trifft es besser.
 
 Audio läge bereit, sobald die Schreibung geklärt ist.
+
+## Runde 17 · Lohnt sich `vocabulary_review` überhaupt? (2026-09-13)
+
+Nils' Frage, zweimal gestellt. Gemessen statt geschätzt — und das Ergebnis korrigiert meine eigene erste Antwort.
+
+### Der Kanal existiert zweimal
+
+| | Kanal A · direkt auf `vocabulary` | Kanal B · über `vocabulary_review` |
+|---|---|---|
+| Wo | `partner_status`, `partner_comment`, `status_updated_at` | eigene Tabelle, 23 Spalten |
+| Im Trainer | Semias Prüfmodus + „gemeinsam prüfen" (Zeile 1714 ff., 2021 f.) | Ninja-Check-Tab (Zeile 6167 ff.) |
+| Entscheidungen insgesamt | **326** (237 approved, 84 pending, 5 skipped) | **61** (32 ✅, 29 👍) |
+| Freitext-Rückmeldungen | **0** | **1** |
+| Zuletzt benutzt | 2026-08-30 | 2026-09-02 |
+
+**Das widerlegt mein eigenes Argument von vorhin.** Ich hatte geschrieben, die Tabelle müsse bleiben, weil der 💬-Rückkanal keinen Ersatz hat. Er hat einen — `vocabulary.partner_comment` — und **beide** sind praktisch ungenutzt (1 bzw. 0 Einträge). Der Rückkanal ist kein Argument für die Tabelle.
+
+### Was nur die Tabelle kann
+
+Einen **Vorschlagswert neben dem Istwert** halten (anderes `darija`/`arabic_script`, noch nicht übernommen), damit man beides vergleichen und ✅ drücken kann. `partner_comment` kann nur Text. Das ist eine echte Fähigkeit — aber eine Tabelle wert nur, wenn dort tatsächlich Vorschläge warten. Aktuell warten **null**.
+
+### Bilanz
+
+3.181 Zeilen, 28 Kategorien, 23 Spalten — für 61 Entscheidungen. Davon 1.533 Backup-Zeilen und 1.587 Zeilen in Kategorien, die niemand liest. Ein Fehlkonflikt im letzten Prüflauf (`710`) ging direkt darauf zurück.
+
+### Empfehlung: hart reduzieren, nicht abschaffen — mit Ablaufdatum
+
+1. 1.533 Snapshot-Zeilen löschen (Backup liegt in git, `61edeb1`)
+2. 1.587 Zeilen in erfundenen Kategorien löschen — reiner Rückstand
+3. die 10 toten Spalten droppen
+
+Danach: ~61 Zeilen echte Historie, 13 Spalten, **keine Änderung an `trainer.html` nötig**. In der Größe kostet die Tabelle nichts und die Fehlerbilder sind weg.
+
+**Der Test danach:** stehen in drei Monaten immer noch null offene Vorschläge drin, ist sie überflüssig und der Tab wird gegen `vocabulary.partner_*` neu gebaut. Reduzieren ist billig und umkehrbar, Abschaffen kostet eine Code-Änderung — in dieser Reihenfolge entscheidet die Nutzung, nicht die Vermutung.
+
+### Nachtrag: 1473 ausgeführt
+
+`arabic_script` von `aba babab` (lateinisch!) auf `أَبَا بَابَابْ`. Skelette stimmen jetzt (`bbbb` = `bbbb`). Zweiter Teil von Ninja belegt, `aba` als أَبَا abgeleitet — beides in `internal_note` auseinandergehalten. Ninja-Audio **nicht** angehängt: die Aufnahme spricht nur `babab`, nicht den ganzen Ausdruck (Regel „Audio nur bei wirklich identischer Aussprache").
+
+### Warnung zum Löschschutz
+
+Der Trigger `trg_prevent_mass_delete` (max. 10 Zeilen pro Statement) prüft `current_user NOT IN ('anon','authenticated') → RETURN NULL`. Meine MCP-Verbindung läuft als `postgres`. **Der Schutz greift bei mir nicht.** Bei Massenoperationen hängt alles an der Vorlage-vor-Schreiben-Regel, nicht an der Datenbank.
