@@ -2184,3 +2184,73 @@ verschiedener Vokalisierung und verschiedenem Gloss sind für ihn zweimal unsich
 Korrektur eines Tippfehlers im Deutschen hat sie sichtbar gemacht — durch Zufall, nicht durch Prüfung.
 Check 31 (`ar_key`, 87 Gruppen) schließt die eine Hälfte davon; die deutsche Achse deckt bisher nur
 der Trainer selbst ab.
+
+---
+
+## Runde 34 (2026-09-13) — PR #55 gemerged, Check 31 abgearbeitet
+
+### Deployment
+
+PR #55 gemerged. `main` hat damit den Ninja-Check-Block nicht mehr und fragt `vocabulary_review`
+nirgends mehr ab (vorher 8 Stellen) — die Kachel `?` verschwindet mit dem nächsten Build. Der
+Arbeitsbranch wurde frisch auf den gemergten `main` gesetzt.
+
+### Check 31: 87 Gruppen, davon 2 mit gleicher Bedeutung
+
+Der `ar_key`-Vergleich (Buchstaben ohne Harakat) findet 87 Gruppen ohne `homonym_ok`. Die
+entscheidende Trennung ist **nicht die Schreibung, sondern die Bedeutung**:
+
+| | Gruppen | heißt |
+|---|---|---|
+| verschiedene deutsche Glossen | **85** | Paradigmenformen und Homonyme derselben Wurzel — normal im Arabischen, **kein Befund** |
+| gleiche deutsche Glosse | **2** | Dublettenverdacht |
+
+**Fall 1 — echte Dublette, gemerged:**
+
+| | `680` | `1566` |
+|---|---|---|
+| darija | `wild il3amm` | `wild el 3am` |
+| arabic | ولد العم | ولد العَمّ |
+| deutsch | Cousin (väterlicherseits) | Cousin (Sohn des väterl. Onkels) |
+| Lektion | 35 | 35 |
+| Fortschritt | **1** | — |
+
+`680` behalten, von `1566` das vokalisierte ولد العَمّ, das präzisere Gloss und das topic „Familie"
+übernommen; `darija` nach Hausregel auf `wild el-3amm` normiert (Artikel `el-`, Gemination aus
+العَمّ). `1566` gelöscht. **Check 10 hat die beiden nie gesehen** — ولد العم und ولد العَمّ sind
+byteweise verschieden.
+
+**Fall 2 — Fehlalarm meiner eigenen Normalisierung:**
+
+`476 shnwa` „was? (m.)" und `837 shnoua?` „was (betonte, feminine Frageform)" wurden nur deshalb als
+gleichbedeutend gewertet, weil mein `gkey` Klammerinhalte wegwarf — und genau dort steht die
+Unterscheidung. **Dieselbe Falle wie bei `normalize()` im Trainer.** Der `gkey` behält die Klammern
+jetzt.
+
+### Check 31 geschärft und nach Gruppe A verschoben
+
+Ohne die Bedeutungsbedingung hätte der Check dauerhaft 85 bekannte Paradigmenformen gemeldet — genau
+das Muster, das eine Liste wertlos macht. Neue Fassung: `ar_key`-Gruppe **mit gleicher Bedeutung**
+und ohne `homonym_ok`. **Stand: 0.** Die Kontrolle: der `qas`/`qass`-Fall von heute früh hätte
+angeschlagen (beide „er schnitt").
+
+Die breite Fassung (87 Gruppen) bleibt als Handabfrage sinnvoll, wenn man gezielt nach unmarkierten
+Homonymen sucht — sie ist aber keine Fehlerliste.
+
+**Gruppe A: 17 Checks, alle 0. Gruppe B: 8 Listen, 552 Zeilen.**
+
+### Zur Entscheidung: die `shnou`-Familie
+
+| id | darija | arabic | deutsch |
+|---|---|---|---|
+| 476 | `shnwa` | شنوا | was? (m.) |
+| 837 | `shnoua?` | شْنُوَّا | was (betonte, feminine Frageform) |
+
+**Keine der drei Quellen kennt eine Genus-Unterscheidung bei diesem Fragewort.** Belegt sind zwei
+Varianten: TUNICO `šnuwwa` und `šniyya`, Peace Corps `shnuwwa` (5×), Ninja شنوا / أشْنِيَّا /
+أشنُوّا. Die Unterscheidung „(m.)" gegen „(feminine Frageform)" steht nur bei uns.
+
+Drei Möglichkeiten: (a) `837` ist die belegte Form `shnuwwa`, `476` die Variante `shniyya` — dann
+sind beide Glossen falsch; (b) beide sind dasselbe Wort → Merge; (c) Semia bestätigt die
+Genus-Unterscheidung als Dialektrealität. Für (a) und (b) brauche ich dein Wort, (c) wäre eine Frage
+an sie.
