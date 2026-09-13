@@ -1,6 +1,8 @@
 # Tounsi Trainer — Präzedenzfälle & Fehlerhistorie
 
-Ausführliche Fallgeschichten, Bug-Berichte und Nachweise hinter den Regeln in `SKILL.md`. Nicht für den Alltagsbetrieb nötig — nur bei Bedarf nachschlagen (z.B. "warum gilt diese Regel eigentlich", "wurde dieser Fall schon mal geprüft"). Gliederung folgt den Abschnitten von `SKILL.md`.
+Ausführliche Fallgeschichten, Bug-Berichte und Nachweise hinter den Regeln in `SKILL.md`. Nicht für den Alltagsbetrieb nötig — nur bei Bedarf nachschlagen.
+
+**Wann ein Eintrag hierher gehört und wann er schrumpfen darf.** Aufnehmen, wenn ein Fehler passiert ist, den die bestehenden Regeln nicht verhindert haben. **Kürzen, sobald ein mechanischer Wächter denselben Fehler unmöglich macht** — dann bleiben nur die übertragbare Lehre und die Verweise auf den Wächter, der Fallverlauf ist Archiv. Ein Beispiel: die ڨ-Geschichte war 16 Zeilen, seit `unbekannte_arabische_zeichen` und Regel 23 sind es 8. **Nie kürzen**, wenn der Fehler weiterhin von Hand vermeidbar sein muss — die Regex-Fallen (`\y` statt `\b`, Zeichenreihenfolge Vokal-vor-Schadda), der `extract.js`-Anker und der stille Export-Abbruch bleiben deshalb in voller Länge.
 
 ## Datenregeln — Präsens-Verben-Gloss
 
@@ -123,19 +125,14 @@ Dritte Runde 2026-08-06: vorbestehende „;"-Einträge, die nie Teil des 108er-S
 
 **vocab_lesson_refs-Formatfehler, Präzedenzfall:** Lektion 5 (2026-08-02) wurde erst mit falschem Format (`"3841,3842,3843"` statt `ids:...|darija:...`) geschrieben, zeigte im Trainer "keine Vokabeln verknüpft", trotz korrekt befüllter Spalte in der DB — erst durch Lesen von `trainer.html` (`grep parseCourseVocabRefs`) gefunden und korrigiert.
 
-## derja_ninja_import (veraltet) — historischer Workflow im Detail
+## derja_ninja_import — abgelöst, aber nicht wertlos (bis 2026-09-02)
 
-Vollständigkeitshalber archiviert — für Altdaten-Fragen zum fälligen Batch vom 2026-07-24, aktuelle Methodik siehe IMPORTS.md → Abgleich mit Derja Ninja (derja_ninja_entries).
+Ersetzt durch `derja_ninja_entries`; **nicht gelöscht**, weil ~19 % ihrer Konsonantenskelette dort fehlen (größtenteils mehrwortige Phrasen — anderer Scraping-Zweck, kein Ersatz). Für neue Abfragen nicht mehr benutzen, auch nicht als Fallback. Aktuelle Methodik: IMPORTS.md → Abgleich mit Derja Ninja.
 
-**Semantische Zufallstreffer, Beispiele:** "party" als Kandidat für "Hemden" (zufällig gleiches Konsonantenskelett). "sheep" lieferte شوشطالرّاس — kein plausibles Tunesisch, verrutschte Scraper-Daten.
-
-**Maß-I/Maß-II-Praxisfall:** IDs 3422/3647 (`yqaddem`, Präsens) — korrekter Maß-II-Präfix ist يُـ (yu-), nicht يَـ (ya-), obwohl beide Varianten identisch als "yqaddem" transkribiert waren. Nur durch Abgleich mit der bereits vorhandenen Vergangenheitsform (ID 3385, قَدَّمْ) auffindbar.
-
-**Übersetzungsbasiertes Matching wenig ergiebig:** Deutsch→Englisch-Gloss-Matching über english_word hatte in einer Stichprobe nur ~1% Trefferquote (Mehrdeutigkeit wie "chest" → Schatztruhe statt Körperteil). "bream"/"dorado"/"fish" für Dorade blieb ergebnislos — reine Abdeckungslücke, kein Bestandsfehler.
-
-**Bei eindeutigen Einzeltreffern war Ninjas Vokalisierung durchgehend zuverlässig** — deckte reale Bestandsfehler auf: Cousine-Verwechslung خَالْ/خَالَة, Lamm/Schaf-Fehlgloss, "zhar" Blumen/Glück.
-
-**"Kein Match" — Stichprobe:** von 10 gegen die Live-Seite getesteten alltäglichen Wörtern fehlten 3 komplett im Offline-Dump (Institut/مَعْهِدْ, Bär/دُبّْ, Koch/طَبَّاخْ) — hoher Anteil, bevor "kein Treffer" als Vokabelfehler gewertet wird, immer live nachschlagen.
+Drei Lehren daraus gelten weiterhin, auch für die neue Tabelle:
+- **Maß-I/Maß-II-Falle:** `yqaddem` (3422/3647) — der korrekte Maß-II-Präfix ist يُـ, nicht يَـ. Gleiches Konsonantenskelett, andere Bedeutung. Vor Übernahme immer Wortart und Verb-Maß gegen die deutsche Bedeutung prüfen.
+- **„Kein Match" ist kein Beweis für einen Fehler:** von 10 alltäglichen Wörtern fehlten **3 komplett** im Offline-Dump. Bei Unsicherheit live nachschlagen.
+- **Übersetzungsbasiertes Matching ist wenig ergiebig** — die Bedeutungsachse trägt nur mit exaktem `english_key`, nicht über freies Gloss-Matching.
 
 ## vocab_lookup — Fallgeschichten
 
@@ -242,21 +239,13 @@ Nach Nils' Freigabe umgestellt auf „der Hof zum Wäscheaufhängen (im Haus)", 
 
 **Nebenbefund, nicht angefasst:** `3710` übersetzt `fi el qe3a` (في القاعة) mit „im Flur". قاعة ist Saal/großer Raum; Ninja führt `9a3a` als „hall". Kandidat für eine spätere Runde.
 
-## _arabic_skeleton kannte ڨ nicht — 699 Zeilen waren unsichtbar (2026-09-13)
+## Was rechnet sonst noch mit diesem Feld? (2026-09-13)
 
-Aufgefallen kurz vor einer Massenänderung, nicht danach. Nils hatte entschieden: bei `g`-Aussprache bleibt die `darija`, das Arabische wird auf ڨ umgestellt. Vor dem Schreiben der 20 Zeilen habe ich geprüft, was sich am `arabic_skeleton` ändert — und dabei gesehen, dass `public._arabic_skeleton()` die maghrebinisch/persischen Zusatzbuchstaben **گ ڨ ڤ پ** gar nicht kennt und roh stehen lässt:
+Vor einer Massenänderung (ق→ڨ in 20 Zeilen) habe ich geprüft, was sich am `arabic_skeleton` ändert — und dabei gesehen, dass `_arabic_skeleton()` die maghrebinisch/persischen Buchstaben **گ ڨ ڤ پ** gar nicht kannte und roh stehen ließ: `بَڨْرَة` ergab `bڨr` statt `bgr`. **Betroffen waren nicht 20, sondern 699 Zeilen** — 76 im Bestand, 623 bei Ninja (3,6 % der größten Quelle), alle für jeden Skelett-Abgleich unsichtbar, seit dem ersten Import. Die Umstellung hätte den Fehler auf 20 weitere ausgedehnt, ausgerechnet bei Wörtern, die man danach in den Quellen sucht.
 
-```
-_arabic_skeleton('بَڨْرَة')  →  'bڨr'     statt  'bgr'
-```
+Repariert, beide gespeicherten Skelettspalten neu berechnet, erst dann umgestellt. Heute durch den Wächter `unbekannte_arabische_zeichen` abgesichert.
 
-**Betroffen waren nicht 20, sondern 699 Zeilen** — 76 im Bestand und **623 in `derja_ninja_entries`** (3,6 % der größten Quelle). Alle mit einem rohen arabischen Zeichen im gespeicherten Skelett und damit für jeden Skelett-Abgleich unauffindbar. Dazu blieben Satzzeichen stehen (`ـ - … ’ ( ) /`).
-
-**Die Umstellung hätte den Fehler auf 20 weitere Zeilen ausgedehnt** und dabei ausgerechnet die Wörter getroffen, die man danach am ehesten in den Quellen sucht.
-
-Repariert: `translate(s, 'ڨگڤڥپ', 'ggvvp')`, `چ`→`j`, Satzzeichenklasse erweitert. Danach beide gespeicherten Spalten neu berechnet (98 Bestands-, 623 Ninja-Zeilen). Erst dann die 20 Zeilen umgestellt.
-
-**Lehre:** vor einer Massenänderung an einem Feld nicht nur fragen „ist der neue Wert richtig?", sondern „**was rechnet sonst noch mit diesem Feld?**". Hier hingen zwei gespeicherte Skelettspalten und der komplette Cross-Source-Abgleich daran. Die Prüfung kostete eine Abfrage und hat einen Fehler gefunden, der seit dem ersten Import bestand.
+**Lehre:** vor einer Massenänderung an einem Feld nicht nur fragen „ist der neue Wert richtig?", sondern **„was rechnet sonst noch mit diesem Feld?"**. Hier hingen zwei gespeicherte Skelettspalten und der komplette Cross-Source-Abgleich daran. Die Prüfung kostete eine Abfrage.
 
 ## Der Duplikat-Check nach einer Vokalisierungs-Kampagne (2026-09-13)
 
@@ -295,29 +284,15 @@ Gebaut, gemessen, **als Massenwerkzeug verworfen** — und das ist das Ergebnis,
 
 ## Sonderbuchstaben kehren in neuen Wörtern wieder — Aufzählen reicht nicht (2026-09-13)
 
-Nils' Einwand nach der ڨ-Reparatur: *„Das andere g und die anderen Buchstaben können in neuen Worten wieder auftreten. Das sollte bedacht werden."* Richtig — und die Antwort war ausdrücklich **nicht** „ڨ in die Liste eintragen", sondern die Prüfrichtung umzudrehen.
+Nils' Einwand nach der ڨ-Reparatur: *„Das andere g und die anderen Buchstaben können in neuen Worten wieder auftreten."* Richtig — und die Antwort war ausdrücklich **nicht**, ڨ in eine Liste einzutragen, sondern die Prüfrichtung umzudrehen.
 
-**Die Inventur fand sofort weitere Fehler**, die alle Regeln bis dahin durchgelassen hatten:
+**ڤ (v) und ڨ (g) sehen sich zum Verwechseln ähnlich** (ف bzw. ق mit drei Punkten). Vier der sechs Funde der Inventur gingen darauf zurück — darunter `1891`, das „Kuh" mit ڤ schrieb und deshalb durch den ق→ڨ-Durchgang gerutscht war, und `2966`/`2967`, wo dasselbe Wort einmal mit `p` und einmal mit `b` im Bestand stand. **Beim Schreiben arabischer Sonderbuchstaben immer den Codepoint prüfen, nicht das Schriftbild.**
 
-| id | war | ist | was los war |
-|---|---|---|---|
-| 1891 | البڤْرة / `el-baqra` | البڨْرة / `el-bagra` | „Kuh" mit **ڤ (v)** statt ڨ (g) geschrieben — deshalb ist die Zeile durch den ق→ڨ-Durchgang gerutscht |
-| 533 | الڤيشاي | الڨيشاي | frz. *guichet* wird mit g gesprochen |
-| 4194 | سِيڤارُو | سِيڨَارُو | ital. *sigaro* |
-| 3534 | آنَالْڤُونْ / `analqon` | آنَالْڨُونْ / `analgon` | *Analgon* — weder v noch q |
-| 2966 | `pouwbal` | `poubal` | Ninjas `ouw` im Bestand (vgl. `touwl`→`toul`) |
-| 2967 | `sacha boubal` | `sacha poubal` | **dasselbe Wort stand zweimal im Bestand, einmal mit p, einmal mit b** |
+**Dauerhaft abgesichert** durch die Sicht `unbekannte_arabische_zeichen`, Trainer-Regel 23 und den Skelett-Wächter — alle drei in `qualitaets_checks`. Die Fundliste selbst ist damit Archiv; der Fehler kann so nicht mehr unbemerkt entstehen.
 
-**ڤ und ڨ sehen sich zum Verwechseln ähnlich** (ف bzw. ق mit drei Punkten). Vier von sechs Funden gehen darauf zurück.
-
-**Drei Dinge dauerhaft gebaut:**
-1. **Sicht `unbekannte_arabische_zeichen`** — meldet jedes Zeichen in `vocabulary` oder `derja_ninja_entries`, das `_arabic_skeleton()` oder `_arabic_to_chatalpha()` nicht kennt. Muss 0 sein. **Das ist der eigentliche Schutz**: eine Aufzählung bekannter Buchstaben vergisst den nächsten neuen genauso, wie sie ڨ vergessen hat.
-2. **Trainer-Regel 23** — Sonderbuchstabe gegen Transliteration, sichtbar im Prüf-Tab, wo neue Wörter auffallen. Bewusst **ohne** Lehnwort-Ausnahme: die lateinische Schreibung eines Lehnworts ist frei, der arabische Buchstabe nicht (`el-guichet` war ein Lehnwort *und* falsch geschrieben). 9 konstruierte Testfälle, 9 korrekt.
-3. **Skelett-Wächter** — rohes arabisches Zeichen in einer gespeicherten Skelettspalte heißt immer: eine Funktion kennt es nicht.
-
-**Zwei eigene Fehler in derselben Sitzung, beide sofort bemerkt:**
-- Bei `1891` habe ich mit `coalesce(f.neu_d, v.darija)` den **ganzen Satz durch das Einzelwort ersetzt**. Das `RETURNING` zeigte es, eine Abfrage später wiederhergestellt. Lehre: bei mehrwortigen Zeilen nie das ganze Feld setzen, sondern das Wort ersetzen.
-- Beim Testen der neuen Regel habe ich den Extraktor mit `indexOf('\n];')` verankert — und damit das Ende von `CONSONANT_PAIRS` erwischt statt das von `TRANSLIT_RULES`. **Exakt die Falle, die in diesem Dokument schon zweimal steht.** Eine dokumentierte Falle schützt nicht, wenn man den Anker beim Schnelltest neu schreibt, statt den vorhandenen zu benutzen.
+**Zwei eigene Fehler derselben Sitzung, beide weiterhin möglich:**
+- `coalesce(f.neu_d, v.darija)` hat bei einer mehrwortigen Zeile **den ganzen Satz durch das Einzelwort ersetzt**. Das `RETURNING` zeigte es sofort. **Bei mehrwortigen Zeilen nie das ganze Feld setzen, sondern das Wort ersetzen.**
+- Den Extraktor erneut mit `indexOf('\n];')` verankert und damit das Ende von `CONSONANT_PAIRS` erwischt statt das von `TRANSLIT_RULES` — **exakt die Falle, die weiter unten in diesem Dokument schon zweimal steht.** Eine dokumentierte Falle schützt nicht, wenn man den Anker beim Schnelltest neu schreibt, statt den vorhandenen zu benutzen.
 
 ## chatalpha für Ninja — die Quell-Regeln vorberechnen statt anwenden (2026-09-13)
 
@@ -386,41 +361,25 @@ Nebenbefund, in IMPORTS.md korrigiert: die dortige Ninja-Suchtabelle behauptete 
 
 ## Checks nach Verbindlichkeit sortiert, nicht nach Thema (2026-09-13)
 
-`Datenqualitäts-Checks (SQL)` war mit 340 von 899 Zeilen der größte Abschnitt des Skills und rein chronologisch gewachsen — jeder neue Check kam unten dran. Ein Leser sah 39 Blöcke in loser Folge und konnte einem Treffer nicht ansehen, **was er bedeutet**: ein Fehler oder ein Kandidat mit 80 % Fehlalarmquote.
+Der Check-Abschnitt war rein chronologisch gewachsen: neue Prüfung unten anhängen. Für den Leser stand damit nirgends, **was ein Treffer bedeutet** — die einzige Frage, die er am Treffer wirklich hat. Neu in drei Gruppen: **A** muss auf 0 stehen (Treffer = Fehler), **B** Verdachtsliste mit gemessener Fehlalarmquote (nie im Block korrigieren), **C** Regeln fürs Prüfen selbst.
 
-Sortiert nach genau dieser Frage, in drei Gruppen:
+**Ein Fehler beim Umbau, der die Methode bestätigt:** die erste Klassifikation matchte Schlüsselwörter gegen die **ganze erste Zeile** eines Blocks — dadurch rutschte ein Methodik-Block in Gruppe A, nur weil das Wort „Verb-Selbstcheck" mitten im Absatz vorkam. Aufgefallen, weil ich die Zuordnung vor dem Schreiben ausgegeben habe. **Bei programmatischen Umbauten die Zuordnung zeigen, bevor sie wirkt.**
 
-- **A — muss auf 0 stehen** (8 Blöcke): ein Treffer ist ein Fehler, keine bekannten Fehlalarme, ohne Quellenrecherche entscheidbar. Zuerst laufen lassen.
-- **B — Verdachtsliste** (17 Blöcke): ein Treffer ist ein *Kandidat*. Jede Liste trägt ihre gemessene Quote (Gemination ~15 %, arabischer Duplikat-Check ~80 %). **Nie im Block korrigieren.**
-- **C — Regeln fürs Prüfen selbst** (14 Blöcke): keine Abfragen, sondern die Fallen. Vor dem Bau einer eigenen Prüfabfrage lesen.
-
-**Verlustfrei umgebaut, nicht neu geschrieben:** die Blöcke wurden programmatisch an den Fettdruck-Titeln geschnitten, klassifiziert und in neuer Reihenfolge zusammengesetzt. Gegengeprüft: 23 SQL-Blöcke vorher wie nachher, alle 39 Titel wiedergefunden.
-
-**Ein Fehler dabei, der die Methode bestätigt:** die erste Klassifikation matchte Schlüsselwörter gegen die ganze erste Zeile eines Blocks. Weil Markdown-Absätze einzeilig sind, traf `Verb-Selbstcheck:` mitten im Fließtext eines ganz anderen Absatzes und sortierte ihn nach A. Aufgefallen nur, weil die Klassifikation **vor** dem Schreiben ausgegeben und gelesen wurde. Fix: nur gegen den Text zwischen den ersten `**` matchen.
-
-**Lehre:** Die Gliederung eines Regelwerks sollte der Frage folgen, die der Leser am Treffer hat — hier „darf ich das einfach korrigieren?" — nicht der Reihenfolge, in der die Regeln entstanden sind.
+**Lehre:** Die Gliederung eines Regelwerks sollte der Frage folgen, die der Leser am Treffer hat — nicht der Reihenfolge, in der die Regeln entstanden sind.
 
 ## Zwei Prüf-Workflows waren einer (2026-09-13)
 
-Der Skill führte zwei getrennte Prüf-Workflows: „Geflaggte Vokabeln (🚩) live gegen Derja Ninja prüfen" und „Frisch importierte Batch-Vokabeln flaggen + verifizieren (leichtgewichtige Variante)". Beide machten dasselbe — interne Checks, dann Ninja → TUNICO → Peace Corps, dann klassifizieren. Sie unterschieden sich in **genau einem Punkt**: wohin das Ergebnis geschrieben wird (`vocabulary_review` gegen direktes `UPDATE vocabulary`).
+Der Skill führte zwei getrennte Prüf-Workflows, die sich in genau **einem** Punkt unterschieden: dem Schreibpfad. Das Eingeständnis stand im Skill selbst — *„bei Unklarheit, welcher gemeint ist, im Zweifel nachfragen"*. Zusammengelegt zu „Vokabeln prüfen — EIN Prozess"; was wechselt, ist nur die **Auswahl der Zeilen**.
 
-Das Eingeständnis stand im Skill selbst: *„Bei Unklarheit, welcher der beiden Workflows gemeint ist: im Zweifel nachfragen, die Schreibpfade unterscheiden sich."* Eine Regel, die den Leser zwingt, vorab zu klassifizieren, in welchem Prozess er ist, ist keine Regel, sondern eine Weiche ohne Nutzen. Nebenwirkung: für „eine einzelne Vokabel prüfen" gab es gar keinen Einstieg — der Fall fiel zwischen die beiden Workflows.
+**Lehre:** Wenn zwei Abschnitte dieselben Schritte in anderer Reihenfolge erzählen und am Ende „im Zweifel nachfragen" steht, sind es keine zwei Verfahren — es ist eines, das zweimal aufgeschrieben wurde.
 
-**Zusammengelegt zu „Vokabeln prüfen — EIN Prozess"** mit fünf Schritten. Was wechselt, ist **nur die Auswahl der Zeilen** (eine id, `flagged=true`, ein Import-Batch, die fälligen, eine Verdachtsliste); das Vorgehen ist identisch. Der Schreibpfad wird zu **einer Frage in Schritt 5**: war die Zeile geflaggt? Ja → `vocabulary_review`, weil Nils im Tab entscheiden will. Nein → direkt.
+## Skill-Audit: Regeln prüfen reicht nicht (2026-09-13)
 
-**Lehre:** Wenn zwei Abschnitte eines Skills dieselben Schritte in anderer Reihenfolge erzählen und am Ende „im Zweifel nachfragen, welcher gemeint ist" steht, ist das kein Dokumentationsproblem, sondern ein Designfehler. Prüfen, worin sie sich *wirklich* unterscheiden — meist ist es ein einziger Parameter, und der gehört in den Prozess hinein, nicht vor ihn.
+Ein zweiter Durchgang nach der Reparatur der gemeldeten Defekte fand drei Dinge, die der erste übersehen hatte — **alle drei außerhalb der Regeln selbst**: die „Kurzstand"-Tabelle ganz oben war durchgehend veraltet (und damit das Erste, was ein Leser sieht), eine Überschrift trug noch genau das Wort, das einen Prüfbericht in die Irre geführt hatte, und der Schnellzugriff hatte keinen Eintrag für den häufigsten Fall.
 
-## Skill-Audit — was beim ersten Durchgang übersehen wurde (2026-09-13)
+**Struktureller Fix statt Zahlenpflege:** harte Zahlen in einer Skill-Datei veralten stumm, weil niemand sie beim Arbeiten mitpflegt. Konsequenz am 2026-09-13: die Tabelle ist ganz entfallen und durch `SELECT * FROM qualitaets_checks` ersetzt.
 
-Nach der Reparatur der beiden gemeldeten Skill-Defekte (SQL-Teilmenge, „Pflichtfeld") ein zweiter, gezielter Durchgang. Die zwei bekannten Regex-Fallen waren sauber — **kein einziges `\b`** in irgendeinem SQL, keine `<Buchstabe>ّ`-Regex außerhalb des eigenen Gegenbeispiels. Drei andere Defekte lagen noch offen:
-
-1. **Die „Kurzstand"-Tabelle ganz oben war durchgehend veraltet** — und damit das Erste, was ein Leser sieht. Sie nannte 49 statt 19 beim Verb-Selbstcheck, 93 statt 21 bei der Gemination, 177 offene Vokal-Dubletten (abgearbeitet) und 9 Präsens-Verben mit Infinitiv-Gloss (0). Wer von dort aus plant, arbeitet Erledigtes nach. **Dieselbe Fehlerklasse wie „13 Regeln": der Skill sagt dem Leser etwas Falsches.**
-2. **Die Überschrift hieß weiter `## Topic-Pflichtfeld`** — das Wort, das den Prüfbericht in die Irre geführt hatte. Der Fließtext war korrigiert, die Überschrift nicht, und Überschriften werden zuerst gelesen.
-3. **Der Schnellzugriff hatte keinen Eintrag für „Bestand systematisch prüfen".** Seine erste Zeile schickte „Vokabel überprüfen" zu `vocab_lookup`; der 341-Zeilen-Abschnitt mit allen Checks hatte gar keinen Einstieg. Das erklärt, warum der fremde Prüflauf zum falschen SQL griff — er hat den richtigen Abschnitt nie angesteuert bekommen.
-
-**Struktureller Fix statt Zahlenpflege:** Harte Zahlen in einer Skill-Datei veralten stumm, weil niemand sie beim Arbeiten mitzieht. Die Tabelle trägt jetzt ein ausdrückliches „Schnappschuss, kein Stand", nennt den eigenen Verfallsfall als Warnung und hat **das SQL direkt darunter, das sie reproduziert**. Ein Leser kann in zehn Sekunden prüfen, statt zu glauben. Gegengetestet: das eingebettete SQL läuft und liefert exakt die Tabellenwerte.
-
-**Lehre:** Ein Skill-Audit darf nicht bei den Regeln aufhören. Einstiegstabelle, Überschriften und Querverweise sind das, was zuerst gelesen wird — und veralten am schnellsten, weil sie beim inhaltlichen Arbeiten nie angefasst werden. Beim Prüfen mit der Frage anfangen: *was sieht jemand, der die Datei zum ersten Mal öffnet, und stimmt das noch?*
+**Lehre:** Ein Skill-Audit darf nicht bei den Regeln aufhören. Einstiegstabelle, Überschriften und Querverweise steuern den Leser — und veralten unbemerkt, weil sie beim Arbeiten niemand liest.
 
 ## Der Skill selbst war die Fehlerquelle (2026-09-13)
 
@@ -451,25 +410,15 @@ Fix: Endanker gezielt auf den Abschluss von `TRANSLIT_RULES` (`indexOf('const TR
 
 **Lehre:** Ein Inhaltsanker ist nur so gut, wie er eindeutig ist. „Die erste schließende Klammer nach X" ist keine Eigenschaft des Ziels, sondern eine Annahme über alles, was dazwischen liegen könnte. Beim Erweitern der gespiegelten Datei immer prüfen, ob der Extraktor noch dasselbe greift — er scheitert sonst unter Umständen still.
 
-## Audit der 21 TRANSLIT_RULES — Vorkommen statt Anzahl (2026-09-12)
+## Regeln prüfen Vorkommen, nicht Anzahl (2026-09-12)
 
-Nach zwei stumm falschen Prüfregeln an einem Tag (`\b` statt `\y`, Zeichenreihenfolge im `arabic_script`) wurden die 21 Live-Regeln aus `trainer.html` selbst geprüft — der Tab, dessen Wert laut SKILL.md darin liegt, dass „0 Treffer" wirklich „sauber" heißt.
+Nach zwei stumm falschen Prüfregeln an einem Tag wurden alle Live-Regeln systematisch auditiert. **Methode:** jede Regel gegen ein konstruiertes Positivbeispiel, das zwingend anschlagen muss. Alle bestanden — der Fund lag woanders.
 
-**Methode:** jede Regel gegen ein **konstruiertes Positivbeispiel**, das zwingend anschlagen muss, plus Lauf gegen den vollen Bestand. Ergebnis: **alle 21 feuern korrekt, alle melden 0.** Keine Regel ist im Sinne von „greift gar nicht" kaputt.
+**Die ergiebige Frage war: schluckt eine Regel über ihre Ausnahmeklausel echte Fälle?** Die Konsonanten-Regeln prüften **Vorkommen statt Anzahl**: `/ح/.test(v.ar) && !/7/.test(v.tr)` schweigt, sobald irgendwo im Feld *ein* `7` steht. Bei Einzelwörtern egal, bei Sätzen ein Loch — ein falsch transliteriertes Wort neben einem richtigen bleibt unsichtbar.
 
-**Aber die zweite Frage war die ergiebige: schluckt eine Regel über ihre Ausnahmeklausel echte Fälle?** Drei Sonden:
+Der daraus gebaute Anzahl-Vergleich über 12 Buchstabenpaare fand im ersten Lauf **11 Treffer, davon 10 echte Fehler** — praktisch keine Fehlalarme. Lebt heute als Regel 22 in `TRANSLIT_RULES`.
 
-1. `isLoanword()` — nur ein Gloss-Marker-Test, greift bei 36 von 3.780 Zeilen. Eng gefasst, keine Hintertür. ✅
-2. Regel 19s hartkodierte Ausnahmeliste — entschärft genau 2 Zeilen (`hethi`, `shah`), beide berechtigt. ✅ (Beantwortet nebenbei, ob `3976 shah` ein Defekt ist: nein, ein bewusst eingetragener Sonderfall.)
-3. **Die Konsonanten-Regeln 5–16 prüfen VORKOMMEN, nicht ANZAHL.** ❌ — das war der Fund.
-
-`/ح/.test(v.ar) && !/7/.test(v.tr)` schweigt, sobald irgendwo im Feld ein `7` steht. Bei Einzelwörtern egal, bei Sätzen ein Loch. `1649 hadh-dhert barsha 7ajet lil-7afla` hat 3 × ح und 2 × `7` — `7ajet` und `7afla` beruhigen die Regel, das falsch geschriebene erste Wort (`hadh-dhert` statt `7adhdhart`) sieht sie nie.
-
-**Erster Lauf des Anzahl-Vergleichs über 12 Buchstabenpaare: 11 Treffer, 10 echte Fehler, 1 Entscheidungsfall.** Praktisch keine Fehlalarme — nach der Faustregel in SKILL.md („nahe 0 % → gehört in `TRANSLIT_RULES`") ein Aufnahmekandidat.
-
-Gefundene Fehler: `nsalhu`→`nsalla7u` (1636), `hadh-dhert`→`7adhdhart` (1649, **fünfte** Zeile derselben `7adhdhar`-Familie), `rouhou`→`rou7ou` (2491), `yslah`→`ysla7` (3074), `t7iz`→`thiz` (1841), `t7abbel`→`thabbel` (3026), `dhahab`→`thahab` (1894), dazu ein doppeltes `arabic_script` (`حَلِّيت / حلَّيت`, 1362) und zwei unmarkierte Lehnwörter.
-
-**Lehre:** Ein Prüf-Tab auf 0 beweist nur, dass die Regeln in ihrer eigenen Formulierung zufrieden sind. Zusätzlich fragen: *was genau kann diese Regel bauartbedingt nicht sehen?* Bei Präsenz-Tests ist die Antwort fast immer „die zweite Instanz desselben Zeichens".
+**Lehre, die über diesen Fall hinausgeht:** ein Prüf-Tab auf 0 beweist nur, dass die Regeln **in ihrer eigenen Formulierung** zufrieden sind. Zusätzlich fragen: *was genau könnte an dieser Formulierung vorbeilaufen?* Dieselbe Frage fand später den Zeichen-Check (`bathriq` enthält ein `t` — im `th`).
 
 ## metrobbi — gleiches Arabisch, gegenteiliger Gloss (2026-09-12)
 

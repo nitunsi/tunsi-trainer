@@ -1424,12 +1424,12 @@ SKILL behält jetzt Regel, Ausnahme und Selbsttest (21 → 8 Zeilen), PRECEDENTS
 |---|---|---|
 | A-Checks (SQL im Skill) | 181 Zeilen | **51** — Sicht `qualitaets_checks` |
 | Kurzstand-Tabelle | 30 | **14** |
-| Topic-Werteliste | 67 | **17** — Tabelle `topic_katalog` |
+| Topic-Werteliste | 67 | **8** — ersatzlos gestrichen, Nils: "da muss es auch keine Whiteliste für geben" |
 | Digraph-Block | 21 | **8** |
 | **SKILL.md gesamt** | **1.091** | **883** |
 
 Zwei neue Objekte in der DB: `qualitaets_checks` (13 A-Checks auf 0, 4 B-Rückstände mit Zahlen) und
-`topic_katalog` (48 Werte mit Prio und Verwendungshinweis).
+die Topic-Werteliste ist ersatzlos entfallen — ich hatte sie erst in eine Tabelle ausgelagert, aber Nils wollte sie gar nicht: "einfach was ungefähres reinschreiben".
 
 **Prinzip:** was mechanisch ist, gehört in die Datenbank — dort kann es nicht gegen das Schema
 driften und kostet keinen Kontext. Was im Skill bleibt, ist das, was SQL nicht sagen kann: was ein

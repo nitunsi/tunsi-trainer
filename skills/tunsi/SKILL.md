@@ -240,23 +240,13 @@ Aus der Uni-Wien-Lautlehre abgeleitete Prüfregeln, immer anwendbar wenn `arabic
 9. **Kolloquiale Vokal-Elision nur bei markiertem Sukun.** Reduktion nur dort, wo das Arabische selbst ein Sukun trägt (قْوِيَّة→"qwiyya"). Eine markierte Fatha/Kasra/Damma wird nicht gestrichen, auch wenn die Aussprache subjektiv reduziert klingt (صَيْدَلِيَّة→"sidaliyya").
 10. **Länderadjektiv vs. Ländername** ist eine Unterkategorie von Regel 5 — Konsonantenskelett-Match reicht nicht, Wortart genau prüfen.
 
-## Topic (immer selbst setzen, nie melden)
+## Topic (unwichtig — einfach setzen und nicht darüber reden)
 
-Jeder INSERT muss ein `topic` enthalten — niemals weglassen oder null lassen. Es steuert die Lernpriorisierung im Aktivierungsmodus.
+Jeder INSERT bekommt ein `topic`, nie `null`. **Irgendein passendes Stichwort genügt** — Nils ist das Feld nicht wichtig, es steuert nur grob die Reihenfolge im Aktivierungsmodus. Keine Whiteliste, keine Rückfrage, kein Eintrag im Prüfbericht.
 
-**Die gültigen Werte stehen in der Datenbank, nicht hier:**
+Orientierung, falls man eine braucht: `SELECT topic, count(*) FROM vocabulary GROUP BY 1 ORDER BY 2 DESC` zeigt, was schon benutzt wird — ein vorhandenes Stichwort zu treffen ist nett, aber nicht nötig.
 
-```sql
-SELECT topic, prio, wann_verwenden FROM public.topic_katalog ORDER BY prio NULLS LAST, topic;
-```
-
-48 Einträge mit Verwendungshinweis; `prio` 1–3 steuert die Aktivierungsreihenfolge. Hier stand die Liste bis zum 2026-09-13 ausgeschrieben — 48 Zeilen, die jede Sitzung mitlas, obwohl sie nur beim **Anlegen** gebraucht werden.
-
-**Topic wird immer selbst gesetzt — nie fragen, nie melden.** Nils ist das Feld nicht wichtig. Daraus folgt genau eine Regel: beim Anlegen oder Anfassen einer Zeile ein passendes Topic aus dem Katalog setzen, fertig. Keine Rückfrage, kein Eintrag im Prüfbericht.
-
-**Was NICHT passiert:** bestehende falsche, fehlende oder Legacy-Topics (`" (L16)"`, `"Alltag (L12)"`, `NULL`) werden **nicht** nachgepflegt und gehören in **keinen** Prüfbericht. Der Bestand hat rund 70 solcher Legacy-Werte; sie sind kein Befund.
-
-**Zwölf Ad-hoc-Werte im Bestand sind bewusst nicht im Katalog** (`Gesellschaft`, `Feiertage`, `Bildung`, `Küche`, `Glückwünsche`, `Arbeit`, `Schlafzimmer`, `Freizeit`, `Religion`, …) — je 1–5 Zeilen, gehen in bestehende Topics auf. Nicht aufnehmen, nicht umschreiben.
+**Was NICHT passiert:** bestehende falsche, fehlende oder Legacy-Topics (`" (L16)"`, `"Alltag (L12)"`, `NULL`) werden **nicht** nachgepflegt und sind **kein Befund**. Der Bestand hat rund 70 solcher Werte. Finger weg.
 
 ## Verben
 
