@@ -1778,3 +1778,55 @@ etwas. Dort liegt die Grenze, nicht bei Alltagswörtern wie Ellenbogen oder Schu
 5. **Für das Ziel „alle prüfen" ist die blinde Stichprobe der teure Weg.** 19 Zeilen → 2 Befunde.
    Dieselbe Arbeitszeit an einer Verdachtsliste (Check 24: 26 Zeilen, alle Befunde) bringt ein
    Vielfaches. **Erst die Listen leerarbeiten, dann über den Rest gehen.**
+
+---
+
+## Runde 29 (2026-09-13) — geschrieben: 15 Zeilen, drei Entscheidungen
+
+Entscheidungen von Nils: (1) alle belegten Korrekturen schreiben, (2) p/v im Arabischen **so lassen**,
+(3) bei den Komparativen die Schadda **ergänzen**.
+
+### Geschrieben (15 Zeilen, jede mit Begründung in `internal_note`)
+
+| id | Feld | vorher | nachher |
+|---|---|---|---|
+| 825 | darija | `is3al sou3el` | `is'al sou'al` |
+| 2191 | darija | `sou3elet` | `sou'alet` |
+| 2285 | darija | `sou3el` | `sou'al` |
+| 742 | arabic | صاحبي تصل حادث | صاحبي عمل حادث |
+| 4356 | arabic | بيت قصاد | بيت قعاد |
+| 2856 | arabic | فَرْطَطُو | فَرْطَطُّو |
+| 2720 | darija | `et-tamakhikh` | `et-tamakhmikh` |
+| 4555 | darija | `thahhhert` | `thahhert` |
+| 2750 | darija | `raayidh` | `rayidh` |
+| 2018–2024 (5×) | arabic | أَخَف / أَصَح / أَرَق / أَرَك / أَقَل | … je mit Schadda |
+| 1574 | flag | `flagged = true` | `false`, `ninja_checked_at` gesetzt |
+
+**Nicht geschrieben: `536 bu3d`.** Die Zeile trug die TUNICO-Bestätigung und den `masefa`-Vergleich
+bereits vollständig in `internal_note`, mit gesetztem `ninja_checked_at`. Eine zweite Notiz desselben
+Inhalts wäre Rauschen — die Zeile war schon erledigt, das Ergebnis aus Runde 25 hat das nur bestätigt.
+
+**Unabhängige Gegenprobe:** für alle sechs vokalisierten Zeilen stimmt `_arabic_to_chatalpha()`
+nach der Korrektur **exakt** mit der gespeicherten `darija` überein (`fartattou`, `akhaff`, `asa77`,
+`araqq`, `arakk`, `aqall`). Das war kein Ziel der Korrektur, sondern fällt als Bestätigung ab.
+
+### Wirkung auf die Checks
+
+| Check | vorher | nachher |
+|---|---|---|
+| 26 Hamza als `3` | 5 | **0** → von Gruppe B nach **Gruppe A** verschoben |
+| 24 Gemination | 26 | 20 |
+| 25 Konsonanten | 24 | **8** |
+
+Der Rückgang bei 25 kommt zur Hälfte aus der p/v-Entscheidung: sie ist als eigene Klasse
+`lehnwort_pv` in `chatalpha_konflikte` umgesetzt (12 Zeilen), nicht nur notiert. **Gruppe A steht
+damit wieder vollständig auf 0 — jetzt mit 14 Checks statt 13.**
+
+### Was noch offen ist
+
+- **Check 24, 20 Zeilen** — Gemination, jede einzeln zu entscheiden.
+- **Check 25, 8 Zeilen** — davon 4 französisch geschriebene Lehnwörter ohne `(frz.)`-Marker
+  (`425 cravate`, `703 villa`, `717 courant`, `2721 vitesse`): ein Marker-Nachtrag erledigt sie und
+  ist inhaltlich risikofrei. Die anderen 4 sind echte Befunde: `2103 talyaniyya` (arabisches Wortbild
+  passt nicht), `2193 mamet`, `3017 nna`, `3271 badhdrout`.
+- **`2045 mela7`** aus dem Test (Runde 28) — Kandidat, noch nicht entschieden.

@@ -367,6 +367,16 @@ Der Check-Abschnitt war rein chronologisch gewachsen: neue Prüfung unten anhän
 
 **Lehre:** Die Gliederung eines Regelwerks sollte der Frage folgen, die der Leser am Treffer hat — nicht der Reihenfolge, in der die Regeln entstanden sind.
 
+## p/v ist nicht ڨ: warum zwei ähnliche Fälle verschieden entschieden wurden (2026-09-13)
+
+Nach der ڨ-Entscheidung („wird ein Wort mit `g` gesprochen, bleibt die `darija` und das `arabic_script` wird auf ڨ umgestellt") lag die Analogie nahe: 25 Zeilen schreiben `p` gegen ب, 14 schreiben `v` gegen ف — also dasselbe Vorgehen? **Nils hat anders entschieden: so lassen.**
+
+Der Unterschied, der beide Entscheidungen zusammen stimmig macht: bei ڨ ging es um **tunesische** Wörter (`ڨلاص`, `ڨناريّة`), deren arabische Schreibung die Lautung falsch wiedergab — das ist ein Fehler in der Sache. Bei `p`/`v` geht es um **Fremdwörter** (`parking`, `spor`, `villa`, `talvza`), deren arabische Schreibung ohnehin nur eine Annäherung ist; ب und ف sind dort die übliche tunesische Umschrift und nichts, was korrigiert werden müsste.
+
+**Konsequenz für das Werkzeug, nicht nur fürs Protokoll.** Eine Entscheidung „so lassen" ist erst umgesetzt, wenn der Check die betroffenen Zeilen nicht mehr meldet — sonst steht die Liste dauerhaft auf 12 bekannten Treffern und macht die scharfen Befunde daneben unsichtbar. `chatalpha_konflikte` hat dafür die Klasse `lehnwort_pv` bekommen (Skelettvergleich nach `translate(darija,'pv','bf')`), die Zeilen bleiben sichtbar, zählen aber nicht als Befund. Check 25 fiel dadurch von 20 auf 8.
+
+**Lehre:** „Nicht ändern" ist eine Entscheidung mit Arbeit dran. Wer sie nur notiert, lässt den Prüfer weiterbellen — und ein Prüfer, der Bekanntes meldet, wird als Ganzes ignoriert.
+
 ## Die Ableitung als Prüfer: was Konsonantenskelette prinzipiell nicht sehen (2026-09-13)
 
 Der Skill-Test hinterließ zwei Notizen: „`qualitaets_checks` lässt sich nicht auf eine Auswahl einschränken, obwohl Schritt 2 genau das verlangt" und „`786 7araam` rutscht durch jeden Check, weil Skelette Vokale wegwerfen". Beide sind beim Nachgehen kleiner geworden, als sie aussahen — die zweite hat dabei eine ganze Fehlerklasse freigelegt.

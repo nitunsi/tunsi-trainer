@@ -39,7 +39,7 @@ Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nic
 SELECT * FROM public.qualitaets_checks WHERE treffer > 0 ORDER BY gruppe, nr;
 ```
 
-Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, 26 Gemination-, 24 Konsonanten-Konflikte und 5 Hamza-als-`3` (die letzten drei neu, noch unbearbeitet).** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
+Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, 20 Gemination- und 8 Konsonanten-Konflikte.** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
 
 Was die Sicht **nicht** abdeckt und weiterhin von Hand zu ziehen ist:
 
@@ -443,15 +443,16 @@ Hier standen bis zum 2026-09-13 rund 250 Zeilen SQL. Sie sind in die Sicht gewan
 | 6 `wa`/`u` statt `w-` | Hausregel |
 | 7 `-iou`/`-eou`/`-aou` | Plural muss `-iw` sein (= Regel 21) |
 | 8 halb verdoppelter Digraph | `ddh` statt `dhdh`. **722/4254/3042/3073 sind ausgeschlossen** — echte ظ+ه- bzw. t+th-Morphemgrenzen, sie sind korrekt |
-| 9 Sonderbuchstabe (= Regel 23) | ڨ/گ=g, ڤ=v, پ=p. **Ohne Lehnwort-Ausnahme**: die lateinische Schreibung ist frei, der arabische Buchstabe nicht. ⚠️ Prüft nur **eine** Richtung (Sonderbuchstabe im Arabischen ohne Entsprechung in der Transliteration). Die Gegenrichtung — `p`/`v` in der `darija`, aber ب/ف im Arabischen — ist ungeprüft: 25 bzw. 14 Zeilen, offene Grundsatzfrage analog zur ڨ-Entscheidung |
+| 9 Sonderbuchstabe (= Regel 23) | ڨ/گ=g, ڤ=v, پ=p. **Ohne Lehnwort-Ausnahme**: die lateinische Schreibung ist frei, der arabische Buchstabe nicht. Prüft nur **eine** Richtung; die Gegenrichtung ist per Entscheidung kein Befund (siehe p/v-Entscheidung unten) |
 | 10 identisches Arabisch ohne `homonym_ok` | entweder Dublette oder unmarkiertes Homonym |
 | 11–13 rohe Zeichen / Wächter | eine Umwandlungsfunktion kennt ein Zeichen nicht — siehe unten |
-
-Dazu **Check 26** („`3` in der `darija`, aber kein ع im `arabic_script`"): steht noch in Gruppe B, weil er 5 offene Treffer hat — inhaltlich ist er ein A-Check ohne bekannte Fehlalarme und gehört nach deren Korrektur dorthin. Er findet Hamza, das als `3` geschrieben wurde (`sou3el` für سُؤَال), und hat dabei mit `742` eine Zeile aufgedeckt, deren `arabic_script` schlicht etwas anderes sagt als die `darija`.
+| 26 „`3`" ohne ع | Hamza als `3` transliteriert (`sou3el` für سُؤَال). Fand bei seinem ersten Lauf 5 Zeilen, alle echt — darunter `742`, dessen `arabic_script` schlicht etwas anderes sagte als die `darija`. Seit der Korrektur am 2026-09-13 auf 0 und damit in Gruppe A |
 
 **Warum 12 und 13 so gebaut sind.** Der naheliegende Weg wäre, die bekannten Buchstaben aufzuzählen. Genau das hat ڨ **699 Zeilen lang unsichtbar** gelassen (76 im Bestand, 623 bei Ninja), weil `_arabic_skeleton()` ihn nicht kannte und roh stehen ließ. Eine Aufzählung vergisst den nächsten neuen Buchstaben genauso. Die Wächter drehen es um: sie melden, **was die Funktionen nicht kennen**.
 
 **Die ڨ-Entscheidung (Nils, 2026-09-13):** wird ein Wort mit `g` gesprochen, **bleibt die `darija` und das `arabic_script` wird auf ڨ umgestellt**. Beim **Artikel** umgekehrt: dort wird die `darija` angepasst (`el-iqtisad` → `iqtisad`).
+
+**Die p/v-Entscheidung (Nils, 2026-09-13) geht andersherum — nicht analog:** schreibt die `darija` `p` oder `v`, während das `arabic_script` ب bzw. ف hat, **bleibt beides, wie es ist**. Betroffen sind 25 (`p`) bzw. 14 (`v`) Zeilen, fast alle Lehnwörter (`parking`, `spor`, `talvza`, `villa`). Kein Befund, keine Kampagne, und `chatalpha_konflikte` sortiert sie als eigene Klasse `lehnwort_pv` aus. Der Unterschied zu ڨ: dort ging es um **tunesische** Wörter, deren Lautung das Arabische falsch wiedergab; hier um Fremdwörter, bei denen die arabische Schreibung ohnehin nur eine Annäherung ist.
 
 ⚠️ **Die Sicht deckt nur einen TEIL von `TRANSLIT_RULES` ab.** Wer „alle Regeln geprüft" sagen will, muss die echten 23 laufen lassen — über den Node-Harness gegen `trainer.html`:
 
@@ -480,15 +481,16 @@ Ein Treffer ist ein **Kandidat, kein Fehler**. Jede Liste trägt ihre gemessene 
 
 **`chatalpha_konflikte` — die einzige Prüfung, die Vokale sieht (seit 2026-09-13).** Alle anderen Checks vergleichen Konsonantenskelette; `7araam` gegen حَرَام (= `7aram`) ist für sie identisch. `public._arabic_to_chatalpha(arabic_script)` leitet dagegen die **volle** Chat-Alphabet-Form aus dem vokalisierten Arabischen ab und stellt sie der gespeicherten `darija` gegenüber. Die Sicht filtert bereits heraus, was erlaubt abweichen darf: unvokalisiertes Arabisch, Mehrwortzeilen, markierte Lehnwörter (lateinische Schreibung ist dort frei) und die bekannte Funktionslücke `bi/li/ka/fa` + Artikel.
 
-Drei Klassen, und nur zwei davon sind Befunde:
+Vier Klassen, und nur zwei davon sind Befunde:
 
-| `klasse` | Stand 2026-09-13 | heißt |
+| `klasse` | Stand nach der Korrekturrunde | heißt |
 |---|---|---|
-| `gemination` | 26 (= Check 24) | die beiden Felder widersprechen sich bei der **Verdopplung** — meist fehlt die Schadda im Arabischen (`akhaff` gegen أَخَف). Objektiv entscheidbar, deshalb ein Befund |
-| `konsonanten` | 24 (= Check 25) | verschiedene Laute — darunter die ڨ/ڤ-Fälle (`talvza` gegen تَلْفْزَة) und unmarkierte Lehnwörter |
+| `gemination` | 20 (= Check 24) | die beiden Felder widersprechen sich bei der **Verdopplung** — meist fehlt die Schadda im Arabischen (`akhaff` gegen أَخَف). Objektiv entscheidbar, deshalb ein Befund |
+| `konsonanten` | 8 (= Check 25) | verschiedene Laute. Die Hälfte sind französisch geschriebene Lehnwörter ohne `(frz.)`-Marker — mit Marker fallen sie heraus |
+| `lehnwort_pv` | 12 | **kein Befund**, p/v gegen ب/ف per Entscheidung vom 2026-09-13 |
 | `vokale` | ~1.000 | **kein Befund und kein Check.** Kurzvokale sind im Bestand nicht normiert; die Klasse steht nur für den Einzelfall zur Verfügung |
 
-Grundgesamtheit: 2.335 vokalisierte Einzelwörter, davon 1.312 exakt deckungsgleich. Die Klasse `vokale` ist bewusst **nicht** in `qualitaets_checks` — sie würde Gruppe B dauerhaft vierstellig halten und die scharfen Listen darin unsichtbar machen.
+Grundgesamtheit: 2.335 vokalisierte Einzelwörter. Die Klassen `vokale` und `lehnwort_pv` sind bewusst **nicht** in `qualitaets_checks`: eine Liste, die dauerhaft Bekanntes meldet, macht die scharfen Listen daneben unsichtbar.
 
 **Zusätzlicher Check nach größeren Batches: Konsonanten-Skelett-Vergleich neu vs. alt** (findet Vokalvarianten-Duplikate, die der normale Duplikat-Check übersieht — `normKey()` entfernt keine Vokale, `yqoum` matcht `yqum` dort NICHT). Eingeschränkt auf dieselbe `lesson_id` (sonst zu viele Zufallstreffer):
 ```sql
