@@ -125,7 +125,7 @@ Dritte Runde 2026-08-06: vorbestehende „;"-Einträge, die nie Teil des 108er-S
 
 ## derja_ninja_import (veraltet) — historischer Workflow im Detail
 
-Vollständigkeitshalber archiviert — für Altdaten-Fragen zum fälligen Batch vom 2026-07-24, aktuelle Methodik siehe SKILL.md → derja_ninja_entries.
+Vollständigkeitshalber archiviert — für Altdaten-Fragen zum fälligen Batch vom 2026-07-24, aktuelle Methodik siehe IMPORTS.md → Abgleich mit Derja Ninja (derja_ninja_entries).
 
 **Semantische Zufallstreffer, Beispiele:** "party" als Kandidat für "Hemden" (zufällig gleiches Konsonantenskelett). "sheep" lieferte شوشطالرّاس — kein plausibles Tunesisch, verrutschte Scraper-Daten.
 
@@ -333,7 +333,7 @@ Nils' Anstoß, und die Begründung war die richtige: *„Wäre gut wenn nicht di
 - 20 konstruierte Wörter: 18/20 Skelette korrekt beim ersten Lauf, die zwei Fehler waren genau die obigen.
 - Gegen echte Daten — alle Zeilen, wo unser `arabic_script` mit Ninjas identisch ist: **562 Paare, 93,6 %.** Ohne Lehnwörter (`darija` enthält `c`/`v`/`x`/`p` oder ist als frz./engl. markiert): **534 Paare, 96,4 %.** Die 19 Reste waren keine Funktionsfehler, sondern Funde.
 
-**Der eigentliche Gewinn war unerwartet.** Die Funktion braucht Ninja gar nicht — sie läuft genauso auf **unserem eigenen** `arabic_script`. Damit entsteht ein Check über den ganzen Bestand, der Zeichen für Zeichen vergleicht statt auf Vorkommen oder Anzahl zu prüfen. **Er fängt eine Klasse, die alle 22 Trainer-Regeln durchlassen:** `bathriq` für بطريق *enthält* ein `t` — es steckt im `th`. Auch der Anzahl-Gegencheck aus Regel 22 läuft daran vorbei.
+**Der eigentliche Gewinn war unerwartet.** Die Funktion braucht Ninja gar nicht — sie läuft genauso auf **unserem eigenen** `arabic_script`. Damit entsteht ein Check über den ganzen Bestand, der Zeichen für Zeichen vergleicht statt auf Vorkommen oder Anzahl zu prüfen. **Er fängt eine Klasse, die alle damaligen Trainer-Regeln durchlassen (heute Regel 23, die genau das abfängt):** `bathriq` für بطريق *enthält* ein `t` — es steckt im `th`. Auch der Anzahl-Gegencheck aus Regel 22 läuft daran vorbei.
 
 **Und er braucht zwei Pflichtfilter, sonst ist er wertlos:** nur Einzelwörter, nur vollständig vokalisiertes Arabisch. Ohne sie: 224 Treffer statt 44, weil bei Sätzen das Arabische meist nur teilweise vokalisiert ist und ein unmarkiertes ي/و als Konsonant gelesen wird (`bir-ra7a` → `balra7a`). Mit ihnen: **1.179 geprüft, 44 Treffer (3,7 %), davon rund 35 echt** — Fehlalarmquote ~20 %, die niedrigste aller Verdachtslisten.
 

@@ -1387,3 +1387,51 @@ Ninja-`chatalpha` neu berechnet (142 Zeilen betroffen). Lücke danach: **31 → 
 **Lehre:** zeigt eine Verdachtsliste eine Systematik, ist die erste Frage nicht „welche Zeilen
 korrigiere ich?", sondern **„Datenmuster oder Werkzeugfehler?"**. Hier waren 4 von 31 ein
 Werkzeugfehler — als Daten korrigiert hätte ich vier richtige Zeilen kaputtgemacht.
+
+## Runde 24 · Skill-Audit (2026-09-13)
+
+Reihenfolge nach Nils' Vorgabe: **richtig zuerst**, dann Dopplung, dann Größe.
+
+### Richtig
+
+| Befund | Status |
+|---|---|
+| Kurzstand-Tabelle: 746 statt 669 unvokalisiert, 504 statt 431 Einzelwörter | ersetzt durch `qualitaets_checks` |
+| **Widerspruch im Skill**: oben „keine Kampagne", unten seit heute früh das Gegenteil | behoben |
+| PRECEDENTS sagte „alle 22 Trainer-Regeln", wir sind bei 23 | korrigiert |
+| Verweis „SKILL.md → derja_ninja_entries" — der Abschnitt steht in IMPORTS.md | korrigiert |
+| drei Stellen mit Momentaufnahme-Zahlen, die aktuell klangen | als historisch gekennzeichnet |
+
+Mechanisch gegengeprüft: alle Querverweise lösen auf, alle Schnellzugriff-Ziele existieren,
+keine Verweise auf entfernte Tabellen außerhalb der historischen Abschnitte.
+
+**Eine eigene Überstellung zurückgenommen:** ich hatte den Topic-Abschnitt als „widerspricht dem
+Bestand" bezeichnet. Falsch — er dokumentiert die zwölf Ad-hoc-Werte ausdrücklich als „bewusst
+nicht aufgenommen".
+
+### Dopplung
+
+29 dateiübergreifende Textdopplungen gemessen. Die meisten sind **gewollt** (SKILL nennt die Regel,
+PRECEDENTS erzählt den Fall). Gefährlich ist nur, wo Kopien auseinandergehen — genau eine gefunden
+(die Regelzahl).
+
+Strukturell zusammengelegt: die **Digraph-Gemination** stand in beiden Dateien fast vollständig.
+SKILL behält jetzt Regel, Ausnahme und Selbsttest (21 → 8 Zeilen), PRECEDENTS die Belege.
+
+### Größe
+
+| | vorher | nachher |
+|---|---|---|
+| A-Checks (SQL im Skill) | 181 Zeilen | **51** — Sicht `qualitaets_checks` |
+| Kurzstand-Tabelle | 30 | **14** |
+| Topic-Werteliste | 67 | **17** — Tabelle `topic_katalog` |
+| Digraph-Block | 21 | **8** |
+| **SKILL.md gesamt** | **1.091** | **883** |
+
+Zwei neue Objekte in der DB: `qualitaets_checks` (13 A-Checks auf 0, 4 B-Rückstände mit Zahlen) und
+`topic_katalog` (48 Werte mit Prio und Verwendungshinweis).
+
+**Prinzip:** was mechanisch ist, gehört in die Datenbank — dort kann es nicht gegen das Schema
+driften und kostet keinen Kontext. Was im Skill bleibt, ist das, was SQL nicht sagen kann: was ein
+Treffer bedeutet und wo die Fallen liegen. **B-Listen bewusst nicht verschoben** — dort muss man
+den Filter sehen, weil man ihn beim Arbeiten anpasst.

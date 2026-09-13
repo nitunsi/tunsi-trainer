@@ -145,26 +145,11 @@ Die Datei `tounsi_db_YYYY-MM-DD.md` im Projektwissen ist die primäre Datenquell
 
 Keine Großbuchstaben in darija — weder als Emphase-Marker noch am Satzanfang. Durchgehend kleingeschrieben.
 
-**Gemination eines Digraphen: der ganze Digraph wird verdoppelt (Regel belegt 2026-09-12, drei unabhängige Quellen).** Bei Schadda auf ض/ظ/ذ/ش/خ/غ wird nicht nur der erste Buchstabe gedoppelt, sondern die komplette Schreibung:
+**Gemination eines Digraphen: der ganze Digraph wird verdoppelt.** Bei Schadda auf ض/ظ/ذ/ش/خ/غ wird nicht nur der erste Buchstabe gedoppelt: `dhdh`, `thth`, `shsh`, `khkh`, `ghgh` — nie `ddh`, `tth`, `ssh`, `kkh`, `ggh`. Ebenso `77` für geminiertes ح, nie `7h`. Belegt an drei unabhängigen Quellen, null echte Gegenbeispiele im Bestand; die Zählungen stehen in PRECEDENTS.md → Digraph-Gemination.
 
-| Laut | richtig | falsch | eigener Bestand | Ninja | TUNICO |
-|---|---|---|---|---|---|
-| ضّ | `dhdh` | ~~`ddh`~~ | 11 : 0 | 70 : 2 | ض kommt in TUNICOs `chatalpha` nicht als `dh` vor |
-| ظّ/ذّ | `thth` | ~~`tth`~~ | 6 : 0 | 34 : 0 | 40 : 0 |
-| شّ | `shsh` | ~~`ssh`~~ | 11 : 0 | 2 : 0 (Ninja schreibt `ch`) | 35 : 0 |
-| خّ | `khkh` | ~~`kkh`~~ | 7 : 0 | – (Ninja schreibt `5`) | 21 : 0 |
-| غّ | `ghgh` | ~~`ggh`~~ | 0 : 0 | – | 2 : 0 |
+⚠️ **Dieselbe Buchstabenfolge ist an einer Morphemgrenze richtig.** `tth` = `t` + `th` (تَذْبَحْ → `tthba7`, نِتْثَاوَب → `netthaowb`), `7h`/`thh` = echte ح+ه bzw. ظ+ه (ظهر → `thhar` „Rücken", يظهرلي → `ythhar-li`). Diese Zeilen sind korrekt und dürfen **nicht** „korrigiert" werden — in `qualitaets_checks` Nr. 8 sind die vier belegten Fälle deshalb ausgeschlossen. **Entschieden wird immer am `arabic_script`**: Schadda → verdoppeln, zwei getrennte Buchstaben → so lassen.
 
-**Die `tth`-Treffer sind keine Gegenbeispiele** — das war der Denkfehler der ersten Zählung. Jeder einzelne davon (9 in TUNICO, 17 in Ninja, 2 im eigenen Bestand) ist ein **Morphemgrenzen-`t`** vor `th`, keine Gemination: TUNICO `tṯawwib`→`tthawwib`, `tḏ̣āṛif`→`ttharif`, `mutṯaqqaf`→`mutthaqqaf`; Ninja `تْذَكِّرْ`→`tthakkir`, `مِتْثَقِّفْ`→`mittha99if`; eigener Bestand `نِتْثَاوَب`→`netthaowb` (id 3042), `تَذْبَح`→`tthba7` (id 3073). Diese Zeilen sind korrekt und dürfen **nicht** zu `thth` "korrigiert" werden. Echte ذّ/ظّ-Gemination schreibt TUNICO in **14 von 14** Fällen voll: `ʕaḏḏib`→`3aththib`, `aḏḏin`→`aththin`, `kaḏḏāb`→`kaththab`, `baẓẓaʕ`→`baththa3`, `ḏḏakkiṛ`→`ththakkir`, `ḏḏall`→`ththall`, `ṭuẓẓīna`→`tuththina`, `mīẓẓu`→`miththu`.
-
-**Verwandte Fehlerklasse: `h` statt Verdopplung (gefunden 2026-09-12).** `7h` für geminiertes ح und `thh` für geminiertes ث/ذ/ظ. Richtig ist `77` (27× im Bestand: `sa77a`, `na77a`, `twa77ashtek`; Ninja `mouwa77da`, `titna77aa`) bzw. `thth`. Betroffen waren `yba7har`/`ba7har`/`ba7hart` (→ `ba77ar`-Familie) und `moumathhla` (→ `moumaththla`). **Aber `7h`/`thh` sind nicht per se falsch:** `722 thhar` (ظهر, Rücken) und `4254 ythhar-li` (يظهرلي) sind echte ظ+ه-Folgen und korrekt. Gleiche Logik wie bei `tth` — dieselbe Buchstabenfolge ist an einer Morphemgrenze richtig und bei Schadda falsch. Entschieden wird nur am `arabic_script`.
-
-Dazu zwei Argumente, die unabhängig von der Zählung gelten:
-
-- **Lautlehre:** `dh`/`th`/`sh`/`kh`/`gh` sind Digraphen für je **einen** Laut. `ddh` liest sich als /d/+/ð/ — und diese Folge kommt an Morphemgrenzen echt vor, `ddh` ist also nicht bloß ungewöhnlich, sondern **mehrdeutig**.
-- **Maschinell nachweisbar:** `public._translit_skeleton('7addhar')` = `7ddhr`, aber `public._arabic_skeleton('حَضَّر')` = `7dhdhr`. Die beiden Skelett-Spalten derselben Zeile widersprechen sich, d.h. Duplikat- und Cross-Source-Abgleich sehen zwei verschiedene Wörter. Mit `7adhdhar` ergeben beide Funktionen `7dhdhr`. Das ist der schnellste Selbsttest für jede vermutete Digraph-Gemination: **stimmen `_translit_skeleton(darija)` und `_arabic_skeleton(arabic_script)` nicht überein, ist die Transliteration falsch, nicht das Arabische.**
-
-**Überschrieb eine frühere Entscheidung:** PRECEDENTS.md → Verben hatte für 2026-08-07 `7adhar`→`7addhar` (plus `y7adhar`→`y7addhar`) mit `ddh` festgehalten. Widerlegt und am 2026-09-12 korrigiert (ids 1648, 2218 → `7adhdhar`/`y7adhdhar`, inkl. der vier Formen in der `conjugation` von 2218). Damit hat der Bestand in **allen fünf Reihen null echte Gegenbeispiele**. Details: PRECEDENTS.md → Digraph-Gemination.
+**Selbsttest für jede vermutete Digraph-Gemination:** `public._translit_skeleton(darija)` gegen `public._arabic_skeleton(arabic_script)` halten. `7addhar` ergibt `7ddhr`, حَضَّر ergibt `7dhdhr` — die Skelette widersprechen sich, also ist die Transliteration falsch. Mit `7adhdhar` ergeben beide `7dhdhr`.
 
 ### Vokale & häufige Wörter
 
@@ -257,70 +242,21 @@ Aus der Uni-Wien-Lautlehre abgeleitete Prüfregeln, immer anwendbar wenn `arabic
 
 ## Topic (immer selbst setzen, nie melden)
 
-Jeder INSERT muss ein `topic` enthalten — niemals weglassen oder null lassen. Steuert die Lernpriorisierung im Aktivierungsmodus (Prio 1 = sofort vorschlagen).
+Jeder INSERT muss ein `topic` enthalten — niemals weglassen oder null lassen. Es steuert die Lernpriorisierung im Aktivierungsmodus.
 
-Gültige Topics — nur diese verwenden:
+**Die gültigen Werte stehen in der Datenbank, nicht hier:**
 
-| Topic | Prio | Wann verwenden |
-|---|---|---|
-| Gesprächsführung | 1 | Verständigung, Reaktionspartikel, Gesprächsreparatur (stimmt?, wah, ma fhimtsh, yezzi…) |
-| Befinden | 1 | Körpergefühl, Emotionen (müde, hungrig, wütend, glücklich, Schmerzen…) |
-| Alltag | 2 | Alltagssituationen, Haushalt, gemeinsames Leben |
-| Ausdrücke | 2 | Feste Redewendungen, idiomatische Ausdrücke |
-| Phrasen | 2 | Satzbausteine, Muster-Sätze |
-| Höflichkeit | 2 | Danke, Bitte, Entschuldigung, Glückwünsche |
-| Verben-Konjugation | – | Verbformen Präsens — Lektion mit title "Verben — Präsens" |
-| Vergangenheit | – | Verbformen Vergangenheit — Lektion mit title "Verben — Vergangenheit" |
-| Verben | – | Einzelne Verben außerhalb der Verb-Lektionen |
-| Adjektive | 3 | Eigenschaftswörter m/f/Pl |
-| Körper | 3 | Körperteile |
-| Gesundheit | 3 | Krankheit, Symptome, Arzt |
-| Essen | 3 | Speisen, Gerichte |
-| Lebensmittel | 3 | Zutaten, Einkauf |
-| Getränke | 3 | Getränke |
-| Transport | 3 | Fahrzeuge, Reisen, Verkehr |
-| Wetter | 3 | Wetter, Klima |
-| Wohnen | 3 | Wohnung, Möbel, Räume |
-| Familie | 3 | Familienmitglieder |
-| Personen | – | Menschen, Beziehungen (nicht Familie) |
-| Berufe | – | Berufsbezeichnungen |
-| Orte | – | Gebäude, Stadtteile, Institutionen |
-| Zeit | – | Zeitangaben, Kalender, Uhrzeiten |
-| Zahlen | – | Zahlen, Mengen |
-| Geld | – | Währung, Preise, Finanzen |
-| Einkaufen | – | Markt, Geschäft, Einheiten |
-| Kleidung | – | Kleidungsstücke |
-| Farben | – | Farben |
-| Tiere | – | Tiere |
-| Natur | – | Pflanzen, Landschaft, Wetter-Nomen |
-| Begrüßung | 3 | Grußformeln |
-| Verabschiedung | 3 | Abschiedsformeln |
-| Grammatik | – | Grammatische Partikel, Strukturen |
-| Adverbien | – | Adverbien, Zeitadverbien |
-| Fragewörter | – | Fragewörter |
-| Nationalitäten | – | Länder, Nationalitäten, Sprachen |
-| Allgemein | – | Nur wenn kein anderes Topic passt |
-| Kurzphrasen | 2 | Kurze feste Wendungen, Grußformeln-Varianten, Antwort-Formeln — im Bestand bereits massenhaft etabliert |
-| Klassenzimmer | – | Schulgegenstände, Unterrichtsvokabular (Stift, Tafel, Frage/Antwort im Unterricht…) |
-| Reisen | 3 | Reisevokabular (Reisepass, Ticket, Gepäck…) — abzugrenzen von Transport (Verkehrsmittel selbst) |
-| Schule | 3 | Schulische Gegenstände/Einrichtungen außerhalb des reinen Klassenzimmers (Schultasche, Direktor…) |
-| Politik | – | Politische Ämter, Institutionen, Staatswesen |
-| Beispielsätze | 2 | Ganze Beispielsätze aus Quellen (82 Zeilen im Bestand) |
-| Gottesformeln | 2 | Segenswünsche und Gottesanrufungen — Lektion "Gottesformeln & Segenswünsche" (51) |
-| Sprichwörter | – | Sprichwörter — Lektion "Sprichwörter" (32); in IMPORTS.md ausdrücklich vorgeschrieben |
-| Länder | – | Ländernamen, abzugrenzen von Nationalitäten (13) |
-| Geografie | – | Geografische Begriffe, Himmelsrichtungen (11) |
-| Notfall | 1 | Hilferufe, Notfallsituationen — Lektion "Notfall & Sicherheit" (3) |
+```sql
+SELECT topic, prio, wann_verwenden FROM public.topic_katalog ORDER BY prio NULLS LAST, topic;
+```
 
-Nie verwenden: Vokabeln, null, freie Texte außerhalb der Liste.
+48 Einträge mit Verwendungshinweis; `prio` 1–3 steuert die Aktivierungsreihenfolge. Hier stand die Liste bis zum 2026-09-13 ausgeschrieben — 48 Zeilen, die jede Sitzung mitlas, obwohl sie nur beim **Anlegen** gebraucht werden.
 
-**Die Liste wurde 2026-09-12 an den Bestand angeglichen.** Sechs Werte waren dort längst etabliert (teils mit eigener Lektion), standen aber nicht in der Liste — mit der Folge, dass ein regelkonformer Eintrag als Regelverstoß erschien und umgekehrt. `Sprichwörter` war sogar ein echter Selbstwiderspruch: IMPORTS.md schreibt ihn für Instagram-Sprichwörter ausdrücklich vor, SKILL.md verbot ihn.
+**Topic wird immer selbst gesetzt — nie fragen, nie melden.** Nils ist das Feld nicht wichtig. Daraus folgt genau eine Regel: beim Anlegen oder Anfassen einer Zeile ein passendes Topic aus dem Katalog setzen, fertig. Keine Rückfrage, kein Eintrag im Prüfbericht.
 
-Weitere Ad-hoc-Werte im Bestand, **bewusst nicht aufgenommen** (je 2–5 Zeilen, gehen in bestehende Topics auf): `Gesellschaft`, `Bildung` (→ Schule), `Küche` (→ Essen/Wohnen), `Feiertage` (→ Zeit), `Glückwünsche` (→ Höflichkeit), `Komparativ` (→ Adjektive/Grammatik), `Schlafzimmer` (→ Wohnen), `Arbeit` (→ Berufe). Diese Zeilen werden nicht nachgepflegt (siehe Bestandspflege-Regel unten) — nur bei ohnehin fälliger Bearbeitung mitrichten.
+**Was NICHT passiert:** bestehende falsche, fehlende oder Legacy-Topics (`" (L16)"`, `"Alltag (L12)"`, `NULL`) werden **nicht** nachgepflegt und gehören in **keinen** Prüfbericht. Der Bestand hat rund 70 solcher Legacy-Werte; sie sind kein Befund.
 
-**Topic wird immer selbst gesetzt — nie fragen, nie melden.** Nils ist das Feld nicht wichtig. Daraus folgt genau eine Regel: bei jeder Zeile, die du ohnehin anfasst, das plausibelste Topic aus der Tabelle oben setzen — ohne Rückfrage, ohne Begründung. Bei jedem INSERT ein Topic mitgeben.
-
-**Was NICHT passiert:** bestehende falsche, fehlende oder Legacy-Topics (`" (L16)"`, `"Alltag (L12)"`, `NULL`) werden **nicht gesucht, nicht gezählt, nicht als Befund gemeldet**. Sie gehören in keinen Prüfbericht. Präzedenzfall 2026-09-13: ein Prüflauf listete 26 solcher Zeilen als eigene Fundsektion — verlorene Arbeit auf beiden Seiten.
+**Zwölf Ad-hoc-Werte im Bestand sind bewusst nicht im Katalog** (`Gesellschaft`, `Feiertage`, `Bildung`, `Küche`, `Glückwünsche`, `Arbeit`, `Schlafzimmer`, `Freizeit`, `Religion`, …) — je 1–5 Zeilen, gehen in bestehende Topics auf. Nicht aufnehmen, nicht umschreiben.
 
 ## Verben
 
