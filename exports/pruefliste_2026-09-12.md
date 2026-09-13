@@ -1270,3 +1270,52 @@ das französische Lehnwort — als `(frz.)` markiert, damit es aus den Prüfunge
 
 **Der Filter prüft Buchstaben, nicht Bedeutung.** Beide mechanischen Prüfungen waren bei allen fünf
 sauber. Offen: 47 mit abweichender Vokalfolge, 11 mit Wortart-Verdacht.
+
+## Runde 22 · Die 47 mit abweichender Vokalfolge (2026-09-13)
+
+Erster Schritt war eine Korrektur an meinem eigenen Filter: er verlangte **exakte** Vokalgleichheit
+und hat damit die legitimen Imala-Fälle (`berid`/`barid`) mit in die Verdachtsgruppe geworfen.
+Neue Funktion `_imala_vereinbar()` setzt Lautlehre-Regel 1 um — unser `e` darf gegen Ninjas `a`
+oder `i` stehen. Damit zerfallen die 47 in:
+
+| | n | |
+|---|---|---|
+| **A** nur Imala | 17 | kein Befund, Vokalisierung übernehmbar |
+| **B** echter Vokalunterschied | 8 | die `toshrob`/`tishrab`-Klasse |
+| **C** andere Silbenzahl | 22 | meist andere Wortform |
+
+**17 geschrieben** (13 aus A nach Bedeutungsprüfung, 4 unstrittige aus C: `mai`, `radio`, `film`, `omo`).
+
+### Abgelehnt — Ninja hat ein anderes Wort oder eine andere Form (11)
+
+| id | unser Wort | Ninjas Eintrag |
+|---|---|---|
+| 891 | `ktob` „Bücher (pl.)" | `ktib` „to write" — der im Skill dokumentierte Fall |
+| 4448 | `n3am` „ja" | `n3im` „to enjoy" |
+| 1521 | `wled` „Söhne" | `walid` „father, dad" |
+| 1697 | `tkun` „du bist" | `tkawwin` „to be formed" |
+| 1023 | `sghir` „klein" | `sghayyar` Diminutiv |
+| 616 | `kbir` „groß (m.)" | `kbira` — feminine Form |
+| 4397 | `wassal` „er brachte hin" | `wsil` „to arrive" — Maß II gegen Maß I |
+| 1057 | `toshrob` „du trinkst" | `tishrab` „to be drunk, consumed" — Passiv |
+| 1247 | `t3adda` „er verging" | `ti3da` — ohne Schadda, andere Form |
+| 590 | `khfif` | Ninjas خْفيفْ ist selbst unvollständig vokalisiert |
+| 4413 | `tqabil` | Ninjas تْقًابِلْ trägt ein sinnloses Tanwin — kaputte Quelldaten |
+
+### Echte Funde, zur Entscheidung
+
+| id | Befund |
+|---|---|
+| **4365** | `khassatan` „besonders" gegen خصوصا — **die Transliteration passt nicht zum Arabischen.** خصوصاً ergibt `khsousan`; `khassatan` wäre خاصةً. Eines von beiden ist falsch |
+| **529** | `baash` „um zu" gegen بَاشْ = `bash`. Bestätigt das `aa`-Problem von Runde 16 — und Ninja glossiert باش als „future marker", also als das, was bei uns `471 besh` ist |
+| 1183 | `qe3da` „gerade (f.)" gegen قاعدة „(military) base, foundation" — zwei Lexeme gleicher Schreibung |
+| 1405 | `bye` „Tschüss" gegen بَايْ „Bey (osmanischer Titel)" — Ninjas Eintrag ist ein anderes Wort |
+| 1028 | `dakhel` „innen" gegen دَاخِلْ „going into, entering" (Partizip) |
+| 1777 | `feragh` „leer (m.)" gegen فراغ „emptiness" — Nomen gegen Adjektiv; „leer" wäre فارغ |
+| 606 | `maktab` gegen Ninjas مَكْتِبْ `maktib` — ungewöhnliche Kasra, hier ist eher Ninja verdächtig |
+| 566 | `shera3` gegen شَارِعْ `shari3` — unsere zweite Silbe passt nicht |
+| 4406 | `wafaq` gegen وَافِقْ `wafiq` — Perfekt gegen Imperativ/Partizip |
+
+Dazu neun Fälle mit unklarer Silbenzahl (`hrisa`/`harisa`, `lbis`/`libis`, `mraa`/`maraa`,
+`ithniya`/`thniyya`, `okhwa`/`akhowwa`, `banka`/`bank`, `el-batala` (Artikel), `fransawi`
+(Ninja unvollständig), `idara` — dort ist Ninjas `adara` ein Artefakt meiner Funktion, die إ als `a` liest).
