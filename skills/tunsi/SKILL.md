@@ -39,7 +39,7 @@ Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nic
 SELECT * FROM public.qualitaets_checks WHERE treffer > 0 ORDER BY gruppe, nr;
 ```
 
-Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, 20 Gemination-, 8 Konsonanten-Konflikte, 8 Klammern in der `darija` und 58 `homonym_ok` ohne Partnerzeile.** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
+Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, 12 Gemination-, 8 Konsonanten-Konflikte, 8 Klammern in der `darija` und 58 `homonym_ok` ohne Partnerzeile.** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
 
 Was die Sicht **nicht** abdeckt und weiterhin von Hand zu ziehen ist:
 
@@ -148,6 +148,8 @@ Ist die Vokabel ein **Verb**, zusätzlich das 3-Zeilen-Modell (siehe „Verb-Kon
 3. `peacecorps_dict_import` — dritte unabhängige Quelle, v.a. bei älterem Lehrbuchvokabular
 
 Erst wenn **keine** der drei trifft, gilt „keine externe Bestätigung". Werkzeug für alle drei: **vocab_lookup** (unten) — `english_key` als primäre Achse, Skelett-Treffer nur separat und ab Länge 4. Live-Ninja nur, wenn offline nichts kommt (IMPORTS.md).
+
+**Bei Gemination-Zweifeln: die Wurzelfamilie im eigenen Bestand durchsehen.** Der stärkste Beleg ist oft nicht die Quelle, sondern die Geschwisterzeile. Für `1841 thiz` entschieden drei eigene Zeilen (`1683 hazz` هَزَّ, `2228 yhizz` يُهِزُّ, `2472 hezz` هِزّ) die Frage — und die Suche fand dabei eine **vierte** Zeile mit demselben Fehler (`1684 nihiz`), die kein Check gemeldet hatte. Ninja und Peace Corps vokalisieren Endgeminaten oft unvollständig (`هِزْ`, `hiz`, `أقَلْ`) und sind dort **kein** Gegenbeleg.
 
 **Zwei Durchgänge, nicht einer (gemessen 2026-09-13).** Die `chatalpha`-Achse trifft nur die **Oberflächenform**. Flektierte Formen, Possessive und Phrasen haben in keinem Wörterbuch einen eigenen Eintrag — `7dhart` „ich nahm teil", `ftouri` „mein Frühstück", `yimshiw` „sie gehen" können dort gar nicht stehen. Im Test trafen so nur **5 von 19** Zeilen; ein zweiter Durchgang über die **Grundform** (Verb-Grundform, Singular, Wort ohne Suffix) belegte 6 weitere. Ohne diesen zweiten Durchgang sieht eine korrekte Zeile wie „keine externe Bestätigung" aus.
 

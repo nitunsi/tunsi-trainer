@@ -1960,3 +1960,82 @@ stillgelegte Prüfungen**: kommt später eine Dublette dazu, meldet Check 10 sie
 Check 5 ist dabei die lehrreichste Nullnummer: nicht jede Regel hat eine sinnvolle Gegenrichtung.
 Die Frage lohnt trotzdem — sie kostet eine Abfrage und hat hier acht Datenfehler plus einen
 Regeldefekt freigelegt.
+
+---
+
+## Runde 31 (2026-09-13) — Gegenrichtung abgearbeitet, Check 24 angefangen
+
+### Geschrieben aus dem Gegenrichtungs-Durchlauf (11 Zeilen)
+
+1491 (ف→ق) · 1422, 1431 (الله ergänzt) · 4412 (تڨشش→تْغَشِّشْ) ·
+2409, 2824, 2831 (`odhkhol`→`odkhol`) · 1174, 1406, 1425, 1427 (Klammer→`/`)
+
+Dazu **Regel 23 im Trainer repariert** (`gh` wurde vor dem `g`-Test nicht entfernt) samt falschem
+Codepoint im Label. `vm.Script` sauber, 6/6 konstruierte Testfälle, 23 Regeln intakt. Am
+Quiz-Harness gegengeprüft: die vier Varianten-Zeilen akzeptieren jetzt beide Formen exakt.
+
+### Die zwei offenen Fälle — entschieden
+
+**Notation bleibt** (Nils): `thiz`/`thabbel` behalten die Schreibung, obwohl das t-Präfix vor
+ه-Wurzel wie der Digraph `th` aussieht. Dieselbe Klasse wie die vier belegten Morphemgrenzen in
+Check 8 — und TUNICO schreibt `thazz` genauso.
+
+**Die Gemination dagegen war ein Befund**, und die Frage nach der Wurzelfamilie hat eine
+**zusätzliche Zeile** aufgedeckt:
+
+| id | darija | arabic_script | |
+|---|---|---|---|
+| 1683 | `hazz` | هَزَّ | Schadda ✓ |
+| 2228 | `yhizz` | يُهِزُّ | Schadda ✓ |
+| 2472 | `hezz` | هِزّ | Schadda ✓ |
+| **1684** | `nihiz` → `nihizz` | نهِزّ | Arabisch hatte die Schadda, die darija nicht |
+| **1841** | `thiz` → `thizz` | تهز → تهِزّ | beide ergänzt |
+
+TUNICO durchgängig `hazz`/`hazzin`, Ninja هَزّْ. Ninjas هِزْ und Peace Corps `hiz` vokalisieren
+Endgeminaten unvollständig und zählen nicht als Gegenbeleg — dasselbe Muster wie bei أقَلْ.
+
+**Methodisch:** die Frage „gibt es ein weiteres der Familie?" hat mehr gefunden als der Check selbst.
+Gehört in Schritt 3 als fester Handgriff bei Gemination-Zweifeln.
+
+### Check 24: 20 → 12
+
+**Geschrieben (9 Zeilen), zwei Klassen:**
+
+**a) Schadda hinter dem Alif statt auf dem Konsonanten** — rein orthographisch, mechanisch
+reparierbar (`(.)ا([Harakat]*)ّ` → `\1ّا`), 4 Zeilen: 2183, 4238, 4279, 4282. Bei dreien stimmt die
+Ableitung danach **exakt** mit der `darija` überein (`khallas`, `mallak`, `villa`).
+
+**b) Quellenbelegt, 5 Zeilen:**
+
+| id | was | Beleg |
+|---|---|---|
+| 2180 | لَصِق → لَصِّق | Ninja/PC/TUNICO alle `lassiq` |
+| 2739 | فُم → فُمّ | Ninja `famm`, PC + TUNICO `fumm` |
+| 347 | سفناريّة → سفنّاريّة | alle drei `sfinnarya` |
+| 3308 | `3assel` → `3sal` | alle drei `3sal` — die Gemination war erfunden |
+| 428 | `qotton` → `qton` | alle drei `qton`/`qtun` |
+
+Bei 3308 und 428 leitet das Arabische jetzt exakt die `darija` ab. Außerdem `1681`: Tippfehler
+„er schnit" → „er schnitt" (die Gemination-Frage der Zeile bleibt offen).
+
+### Check 24 — die verbleibenden 12 zur Entscheidung
+
+| id | darija | aus dem Arabischen | arabic_script | deutsch | Lage |
+|---|---|---|---|---|---|
+| 1162 | `yqatta3` | `yaqta3` | يَقْطَع | zerreißen | Maß II braucht يْقَطَّع — **Neuvokalisierung**, nicht nur eine Schadda. PC+TUNICO `qatta3` |
+| 1681 | `qas` | `qss` | قصّ | er schnitt | Arabisch hat Schadda ohne Vokale → `qass` + قَصّ? |
+| 2071 | `louwwel` | `awwal` | أَوَّل | erster | PC belegt `luwwil`, TUNICO `awwil` — **zwei verschiedene Wörter**, l-Form vs. Grundform |
+| 2129 | `guinneriyya` | `gnaryya` | ڨناريّة | Artischocken | TUNICO `gannariya`, PC `qannariyya` → `gannariyya`? `gui` ist französisch geschrieben |
+| 2274 | `stress` | `stras` | سْتراس | Stress | Lehnwort ohne `(engl.)`-Marker |
+| 2538 | `nifli` | `niflli` | نِفْلِّي | Ich bin pleite | keine Quelle; Schadda im eigenen Arabischen, nicht in der darija |
+| 2641 | `titnaffas` | `tnaffis` | تْنَفِّسْ | atmen | darija hat ein `it` zu viel — **und** das Gloss ist Infinitiv statt „er atmet" |
+| 2804 | `wqayyit` | `waqqayit` | وَقَّيِت | Die Zeit ist gekommen | Gemination sitzt auf verschiedenen Konsonanten |
+| 2874 | `fissa3` | `fisa3` | فِيسَع | schnell | keine Quelle für `fissa3`; beide Schreibungen im Umlauf |
+| 3394 | `tarrajja` | `tarajja` | تَرَجَّى | er hoffte | darija hat `rr`, das Arabische die Schadda auf ج → ein `r` zu viel |
+| 3431 | `ytarrajja` | `yatarajja` | يَتَرَجَّى | er hofft | dito, Geschwisterzeile zu 3394 |
+| 4114 | `lissiyat` | `lisiyat` | لِيسِيَات | Gymnasien | Lehnwort (frz. lycée) ohne Marker |
+
+### Stand der Checks
+
+Gruppe A: **16 Checks, alle 0.** Gruppe B: 20 (Check 24) → **12**, dazu 2 · 21 · 430 · 46 · 8 (Check 25) ·
+8 (Klammern) · 58 (`homonym_ok`).
