@@ -14,13 +14,12 @@ Fokus dieser Datei: bestehende Trainer-Vokabeln prüfen, neue Vokabeln nachschla
 
 | Situation | Relevante Abschnitte |
 |---|---|
-| **Vokabeln prüfen — eine, ein Batch, geflaggte, fällige, der ganze Bestand** | **Vokabeln prüfen — EIN Prozess.** Ein Vorgehen für alle Fälle; es wechselt nur die Auswahl der Zeilen. |
+| **Vokabeln prüfen ODER neu anlegen** — eine, ein Batch, geflaggte, fällige, ein Import, „ich brauche ein Wort für X" | **Der Prozess — ein Ablauf, zwei Eingänge.** Dasselbe Vorgehen für alle Fälle; es wechseln nur die Zeilen am Anfang und `UPDATE`/`INSERT` am Ende. |
 | Neue Vokabel nachschlagen / Quellen abgleichen | vocab_lookup — Cross-Source-Abgleich (ganz unten), das Werkzeug hinter Schritt 3 |
 | Quelle schreibt etwas anders als wir — Fehler oder nur Konvention? | **Quell-Konventionen** (in Transliteration — Ziel-Konvention). Was dort erklärt ist, ist kein Befund |
 | „alle Regeln laufen lassen" | Datenqualitäts-Checks → **A** (müssen auf 0 stehen). Das SQL dort ist nur eine Teilmenge; der vollständige Lauf geht über den Node-Harness gegen `trainer.html` |
 | Bestand nach Kandidaten durchsuchen | Datenqualitäts-Checks → **B** (Verdachtslisten mit Fehlalarmquote) — **nie im Block korrigieren** |
 | Eigene Prüfabfrage bauen | Datenqualitäts-Checks → **C** (Regeln fürs Prüfen selbst) — erst lesen, drei der Fallen dort haben schon Prüfläufe stumm wertlos gemacht |
-| Neue Vokabel(n) schreiben | Kern-Workflow: neue Vokabel(n) verarbeiten → Transliteration — Ziel-Konvention → Topic |
 | Vokabel ist ein Verb (prüfen ODER anlegen) | Verben → Verb-Konjugationsmodell (3-Zeilen-Ziel, `conjugation`, `conj_rotate`) — gilt auch bei geflaggten Einzelformen |
 | Was ist von früher noch unerledigt? | Offene Punkte (direkt unten) — **die Zahlen dort sind ein Schnappschuss, vor jeder Planung mit dem SQL daneben neu ziehen** |
 | PDF/Foto-Quelle auswerten, neue Quelle importieren | IMPORTS.md |
@@ -40,7 +39,7 @@ Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nic
 SELECT * FROM public.qualitaets_checks WHERE treffer > 0 ORDER BY gruppe, nr;
 ```
 
-Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten.** Diese vier Zahlen sind der einzige Ort, an dem hier noch Zahlen stehen, und auch sie gelten nur als Größenordnung.
+Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, 26 Gemination- und 24 Konsonanten-Konflikte (die letzten beiden neu, noch unbearbeitet).** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
 
 Was die Sicht **nicht** abdeckt und weiterhin von Hand zu ziehen ist:
 
@@ -60,13 +59,36 @@ Jedes INSERT/UPDATE/DELETE erst als Vorschlag zeigen (betroffene Zeilen/Werte), 
 
 ## Projektwissen-Datei
 
-Die Datei `tounsi_db_YYYY-MM-DD.md` im Projektwissen ist die primäre Datenquelle, wenn kein Live-Supabase-Zugriff besteht. Sie enthält Schema, Lessons-Mapping, Users, Vocabulary. Duplikat-Check läuft dann gegen diese Datei via `project_knowledge_search` (Ablauf/Kriterien siehe "Kern-Workflow" unten).
+Die Datei `tounsi_db_YYYY-MM-DD.md` im Projektwissen ist die primäre Datenquelle, wenn kein Live-Supabase-Zugriff besteht. Sie enthält Schema, Lessons-Mapping, Users, Vocabulary. Duplikat-Check läuft dann gegen diese Datei via `project_knowledge_search` (Ablauf/Kriterien siehe „Der Prozess", Schritt 1, Eingang B).
 
 **Wann aktualisieren:** nach größeren Vokabel-Importen (>20 Einträge), nach Änderungen an der Lektionsstruktur, wenn Duplikat-Checks fehlschlagen/veraltete Einträge zeigen, wenn neue Supabase-Spalten angelegt werden (dann auch den Export-Modus im Trainer erweitern). Export: Trainer → 💾 Export → "📦 Daten laden" → `tounsi_db_YYYY-MM-DD.md` → ins Projektwissen hochladen, alte Datei ersetzen.
 
-## Kern-Workflow: neue Vokabel(n) verarbeiten
+## Der Prozess — ein Ablauf, zwei Eingänge
 
-**Dieser Ablauf gilt für JEDE Quelle** (PDF/Foto, Uni-Wien, TUNICO, Peace Corps, Derja Ninja, Instagram, ...) — nur die Transliterations-Umwandlung in Schritt 2 unterscheidet sich je Quelle (siehe "Transliteration — Ziel-Konvention" für die Zielregeln, IMPORTS.md für die jeweilige Quell-Notation).
+Es gibt **einen** Ablauf. Was wechselt, ist nur, **welche Zeilen** hineingehen und **ob am Ende `UPDATE` oder `INSERT`** steht:
+
+| Eingang | Die Zeilen kommen aus | Schritt 5 schreibt |
+|---|---|---|
+| **A · Bestand** | einer id, einem Batch, `flagged`, den fälligen, einer Verdachtsliste | `UPDATE vocabulary` |
+| **B · neu** | einer Quelle (PDF/Foto, Uni-Wien, TUNICO, Peace Corps, Ninja, Instagram) oder „ich brauche ein Wort für X" | `INSERT INTO vocabulary` |
+
+**B mündet in A:** jedes Duplikat, das Schritt 1 findet, ist ab da eine Bestandszeile — sie wird geprüft und ggf. ergänzt, nicht ein zweites Mal angelegt. Das ist der Normalfall, nicht die Ausnahme: beim Test am 2026-09-13 existierten **alle fünf** angefragten Wörter bereits.
+
+Die Schritte 2–4 sind für beide Eingänge wortgleich. Bis zum 2026-09-13 standen sie zweimal im Skill (PRECEDENTS.md → „Zwei Workflows waren einer").
+
+### Schritt 1 — Zeilen bestimmen, Vorwissen lesen
+
+**Eingang A — Auswahl:**
+
+| Anlass | Auswahl |
+|---|---|
+| „Ich habe Vokabeln markiert" | `WHERE flagged = true` |
+| **eine einzelne Vokabel** | `WHERE id = <id>` — genauso gültig wie ein Batch, kein Sonderweg |
+| frisch importierter Batch | die ids des Batches |
+| „prüf die fälligen" | `progress.next_review` — **das Fenster läuft von 03:00 Berlin bis 03:00 des Folgetags** (`nextReviewDE()`), nicht von Mitternacht:<br><br>`next_review` ist `timestamp WITHOUT time zone`, enthält aber **UTC**. 03:00 Berlin sind je nach Sommer-/Winterzeit 01:00 oder 02:00 UTC — deshalb **immer** über die Zeitzone rechnen, nie 03:00 hart hinschreiben:<br>`WHERE p.next_review >= (timestamp '<tag> 03:00' AT TIME ZONE 'Europe/Berlin') AT TIME ZONE 'UTC'`<br>`  AND p.next_review <  (timestamp '<tag+1> 03:00' AT TIME ZONE 'Europe/Berlin') AT TIME ZONE 'UTC'`<br>⚠️ Die harte Variante `timestamp '<tag> 03:00'` stand hier bis zum 2026-09-13 und ist **falsch**: sie vergleicht gegen 03:00 UTC = 05:00 Berlin und verliert die Zeilen, die zu Tagesbeginn fällig wurden. Gemessen am 2026-09-14: **67 statt 76**; im Winter **2 statt 9**. |
+| Bestandsaudit | eine Verdachtsliste aus **Datenqualitäts-Checks (SQL)** |
+
+**Eingang B — extrahieren, transliterieren, Duplikat-Check.** Gilt für JEDE Quelle; nur die Umwandlung der Quellen-Notation unterscheidet sich (Zielregeln: „Transliteration — Ziel-Konvention"; Quellen-Notation: IMPORTS.md).
 
 1. **Vollständig extrahieren** (PDF/Foto-spezifische Extraktionstechnik: siehe IMPORTS.md). Nicht nur die offizielle Wortschatztabelle: Dialoge, Grammatik-Beispielsätze, Übungssätze, Bildunterschriften enthalten oft zusätzliche Wörter/Sätze und müssen genauso vollständig geprüft werden. Ganze Sätze gehören ebenfalls als eigene Zeile in `vocabulary` (topic="Phrasen"/"Ausdrücke"), auch wenn die Einzelwörter schon vorhanden sind.
 2. **Transliterieren** nach Chat-Alphabet (siehe Ziel-Konvention unten), nie die Quellen-Schreibung 1:1 übernehmen.
@@ -80,11 +102,86 @@ Die Datei `tounsi_db_YYYY-MM-DD.md` im Projektwissen ist die primäre Datenquell
      -- vor JEDEM UPDATE auf darija laufen lassen:
      SELECT id, darija, german FROM vocabulary WHERE lower(btrim(darija)) = lower('<neue_schreibung>');
      ```
-   - Nach dem Schreiben: App-eigenen "🔍 Duplikat-Prüfung"-Tab nutzen oder bei Live-Zugriff selbst nachbauen (SQL siehe unten) — gründlicher als Ad-hoc-Stichproben vorher.
-4. **Topic setzen** (Pflichtfeld, siehe eigener Abschnitt) — Claude darf selbst entscheiden, keine Rückfrage nötig.
-5. **Liste zeigen, warten.** Fehlende Einträge tabellarisch (Arabic, Darija, Deutsch, lesson_id, topic), Auffälligkeiten/Rückfragen gesammelt am Ende. Kein SQL ohne Bestätigung.
-6. **Nach dem Schreiben, Pflicht unaufgefordert:** Duplikat-Check UND Transliterations-Check (SQL unten) laufen lassen, plus Bedeutungsfacetten-Check gegen `tunico_import`/`tunico_corpus_*` (Methodik siehe IMPORTS.md → TUNICO) — für JEDE Quelle, nicht nur TUNICO-eigene Batches.
-7. **`vocab_lesson_refs` und `progress` aktualisieren**, siehe COURSE_MODE.md → Kurs-Verknüpfung.
+   - Bei einem Treffer: **Standard-Vorgehen bei gefundenem Duplikat** und **Weitere Duplikat-Fallen** (beide direkt unter Schritt 5) — die Zeile wechselt damit auf Eingang A.
+
+**Beide Eingänge — EINE Sammelabfrage, bevor ein Korrekturplan gebaut wird** (bei B über die ids der Duplikat-Treffer). Sie beantwortet „was weiß ich über diese Zeilen schon?", und zwar bevor ich etwas vorschlage:
+```sql
+SELECT id, darija, german, flagged, partner_status, partner_comment, internal_note, ninja_checked_at
+FROM vocabulary WHERE id IN (<alle ids>);
+```
+Drei Dinge daraus ernst nehmen:
+- **`internal_note`** hält fest, was frühere Sitzungen an dieser Zeile schon geprüft haben — inklusive der übernommenen Ninja-Check-Begründungen (`[Ninja-Check <datum>] …`). Ein „kein Quellentreffer, zur Kenntnis genommen" heißt: **nicht nochmal suchen**, das ist erledigt.
+- **`partner_status`** ist Semias Spur. `pending` heißt: von ihr **nie bestätigt** — bei einem Bedeutungszweifel das stärkste Signal im Datensatz (Präzedenzfall `710 el-manshir`). `approved` heißt: von ihr bestätigt, eine Bedeutungsänderung braucht dann einen sehr guten Grund.
+- **`partner_comment`** ist ihr Freitext.
+
+### Schritt 2 — Intern prüfen (kostenlos, kein Netz)
+
+Deckt eine andere Fehlerklasse ab als der externe Abgleich: eine Vokabel kann extern bestätigt und trotzdem kaputt transliteriert sein. **Vor** Schritt 3.
+
+**Eingang A — eine Abfrage, unabhängig davon, wie groß die Auswahl ist:**
+```sql
+SELECT * FROM public.qualitaets_checks WHERE gruppe = 'A' AND treffer > 0;
+```
+Ist das Ergebnis leer, ist **jede** Auswahl sauber: ein Check, der bestandsweit nicht trifft, trifft auch die eigenen Zeilen nicht. Die Sicht auf eine Auswahl einzuschränken ist damit unnötig — und wäre auch nicht möglich, `erste_ids` ist bei 15 gekappt. Nur wenn ein A-Check trifft, muss man diesen einen Check mit `id IN (…)` nachziehen.
+
+**Eingang B — die Sicht kennt die vorgeschlagenen Werte nicht**, sie stehen ja noch nicht in `vocabulary`. Stattdessen die Ableitung gegenhalten:
+```sql
+SELECT public._arabic_to_chatalpha('<vorgeschlagenes arabic_script>');
+```
+Weicht das Ergebnis in einem **Konsonanten** oder in einer **Verdopplung** von der vorgeschlagenen `darija` ab, ist eines von beiden falsch. Reine Vokalunterschiede sind normal und kein Befund (Begründung bei `chatalpha_konflikte` unten).
+
+Ist die Vokabel ein **Verb**, zusätzlich das 3-Zeilen-Modell (siehe „Verb-Konjugationsmodell"): Verb-Selbstcheck zuerst, dann den Bestand per Konsonantenskelett nach Präsens- UND Vergangenheits-Grundform durchsuchen — auch unter Alt-Topics und `topic IS NULL`. Präzedenzfall 2026-09-12: `y7jem` (3614) galt als „eine Zeile, Tabelle dran, fertig"; tatsächlich fehlten 2 von 3 Zeilen. Fehlende Zielzeilen werden **als Vorschlagsliste gezeigt, nicht geschrieben**.
+
+### Schritt 3 — Extern prüfen: alle drei Quellen, nicht nur die erste
+
+**Nicht überspringen, auch wenn Schritt 2 sauber war.** Die internen Checks vergleichen `darija` gegen `arabic_script` — sie können prinzipbedingt nicht sehen, ob die **Bedeutung** stimmt. Eine Zeile kann durch jeden A- und B-Check laufen und trotzdem das Falsche lehren. Präzedenzfall aus dem Stichprobentest 2026-09-13: `710 el-manshir` ist als „Korridor / Flur" glossiert, TUNICO hat `manšiṛ` = „Platz zum Wäscheaufhängen, Hof im Küchenflügel" — alle internen Checks sauber, 4 richtige gegen 15 falsche Antworten im Lernverlauf.
+
+1. `derja_ninja_entries` — schnell, aber ein Snapshot (2026-08-17), bei mehrteiligen Begriffen oft unvollständig
+2. `tunico_import` — liefert das volle Bedeutungsspektrum, wo Ninja nur eine Facette zeigt
+3. `peacecorps_dict_import` — dritte unabhängige Quelle, v.a. bei älterem Lehrbuchvokabular
+
+Erst wenn **keine** der drei trifft, gilt „keine externe Bestätigung". Werkzeug für alle drei: **vocab_lookup** (unten) — `english_key` als primäre Achse, Skelett-Treffer nur separat und ab Länge 4. Live-Ninja nur, wenn offline nichts kommt (IMPORTS.md).
+
+Drei Fallen, jede schon einmal zugeschlagen:
+- **Die Lautschrift jeder Quelle ist ein Strukturhinweis, keine Vorlage.** Vor dem Vergleich die Tabelle **Quell-Konventionen** lesen — sie sagt, welche Abweichung nur Konvention ist (und damit kein Befund) und welche zählt. Prüfen, ob die Quelle ein übersehenes Feature zeigt (v.a. Gemination), aber nie 1:1 übernehmen. `touwl` ist so in den Bestand gerutscht, richtig ist `toul`.
+- **Ein Skelett-Treffer ist kein Wort-Treffer.** `nimshiw` „wir gehen" trifft نْمَشْ „freckles". Bedeutung gegenlesen, nicht nur das Skelett.
+- **Gleiches Arabisch heißt nicht „Dublette"** — es kann auch heißen, dass eine der Zeilen inhaltlich falsch ist (Präzedenzfall `metrobbi`, PRECEDENTS.md).
+
+### Schritt 4 — Zeigen und warten
+
+Immer, ausnahmslos, vor jedem Schreiben: betroffene Zeilen mit Ist-Wert, Soll-Wert und Beleg. Bei Unsicherheit `AskUserQuestion` statt raten.
+
+Bei Eingang B tabellarisch: Arabic, Darija, Deutsch, lesson_id, topic; Auffälligkeiten und Rückfragen gesammelt am Ende, nicht verstreut. Kein SQL ohne Bestätigung.
+
+### Schritt 5 — Schreiben
+
+**Eingang A → `UPDATE vocabulary`.** Ein Pfad, kein Vorschlags-Zwischenspeicher: **was in Schritt 4 gezeigt und bestätigt wurde, wird direkt geschrieben.** (Die frühere Vorschlagstabelle `vocabulary_review` ist seit dem 2026-09-13 weg — PRECEDENTS.md → „vocabulary_review abgeschafft".)
+
+**Eingang B → `INSERT INTO vocabulary`**, mit `topic` (Pflichtfeld, Claude entscheidet selbst — keine Rückfrage, siehe „Topic") und `lesson_id` (siehe Datenregeln, nie hardcoden).
+
+War die Zeile **geflaggt** (🚩 von Nils beim Lernen), gehört zum Schreiben zusätzlich:
+- `flagged = false` — der Auftrag ist erledigt
+- `ninja_checked_at = now()`, wenn extern gegengeprüft wurde
+- **die Begründung angehängt** an `internal_note` — nie überschreiben, immer `concat_ws(' ', internal_note, '<neue Zeile>')`. Das ist jetzt das Gedächtnis, das vorher `change_reason` war.
+
+Bei Eingang B gehört dieselbe Begründung in die `internal_note` der neuen Zeile.
+
+**Was in `internal_note` gehört**, kurz und in dieser Reihenfolge: Datum, was entschieden wurde, woher der Beleg kommt, und ausdrücklich **was Beleg und was Ableitung ist**. Beispiel aus der Praxis:
+
+> `2026-09-13: arabic_script gesetzt — "babab" = بَابَابْ ist von Derja Ninja belegt (INTERJ). Das vorangestellte "aba" hat in KEINER der drei Quellen einen Beleg und ist als أَبَا abgeleitet, nicht belegt.`
+
+**Wenn keine Quelle etwas hergibt**, ist das ein Ergebnis und kein Versäumnis — als solches festhalten, damit die nächste Sitzung nicht dieselbe Suche wiederholt:
+
+> `2026-09-13: keine Treffer in allen drei Quellen — Negationsform, Grammatik-Paradigma. Ninja ist ein Wörterbuch, erwartbar kein Eintrag. Nicht erneut suchen.`
+
+**Was NICHT geschrieben wird, sondern gefragt:** eine Bedeutungsänderung an einer Zeile mit `partner_status = 'approved'`; das Anlegen neuer Zeilen (zwei getrennte Fragen, siehe „Fehlende Zielzeilen nachlegen"); alles, wo Schritt 3 keine eindeutige Quellenlage ergeben hat.
+
+**Der Rückkanal von Nils** läuft über `vocabulary.partner_comment` und `partner_status` (Semias Prüfmodus im Trainer) — nicht mehr über eine eigene Tabelle. In Schritt 1 wird beides mitgelesen.
+
+**Nach dem Schreiben, Pflicht unaufgefordert** — immer bei Eingang B, bei A sobald `darija` oder `arabic_script` verändert wurde:
+1. Duplikat-Check UND Transliterations-Check laufen lassen: App-eigener „🔍 Duplikat-Prüfung"-Tab, oder bei Live-Zugriff das SQL aus **Datenqualitäts-Checks** selbst nachbauen — gründlicher als Ad-hoc-Stichproben vorher.
+2. Bedeutungsfacetten-Check gegen `tunico_import`/`tunico_corpus_*` (Methodik: IMPORTS.md → TUNICO) — für JEDE Quelle, nicht nur TUNICO-eigene Batches.
+3. Nur bei neuen Zeilen: **`vocab_lesson_refs` und `progress` aktualisieren**, siehe COURSE_MODE.md → Kurs-Verknüpfung.
 
 ### Standard-Vorgehen bei gefundenem Duplikat
 
@@ -314,7 +411,7 @@ Drei Gruppen, und die Zugehörigkeit sagt, **was ein Treffer bedeutet** — das 
 
 | | Gruppe | Ein Treffer heißt | Vorgehen |
 |---|---|---|---|
-| **A** | Checks, die auf 0 stehen müssen | ein Fehler, keine Fehlalarme bekannt | korrigieren (nach Schritt 4 des Prüfprozesses) |
+| **A** | Checks, die auf 0 stehen müssen | ein Fehler, keine Fehlalarme bekannt | korrigieren (nach Schritt 4 des Prozesses: zeigen, warten) |
 | **B** | Verdachtslisten mit Fehlalarmquote | ein *Kandidat*, Quote je Liste dokumentiert | einzeln gegen die Quellen prüfen, **nie im Block korrigieren** |
 | **C** | Regeln fürs Prüfen selbst | — | vor dem Schreiben eines neuen Checks lesen |
 
@@ -376,6 +473,18 @@ console.log("betroffen: "+ids.size+" von "+rows.length+" ("+L.TRANSLIT_RULES.len
 ### B · Verdachtslisten (mit Fehlalarmquote)
 
 Ein Treffer ist ein **Kandidat, kein Fehler**. Jede Liste trägt ihre gemessene Fehlalarmquote — die steht dort nicht zur Zierde: bei der Gemination sind ~15 % Fehlalarme, beim arabischen Duplikat-Check ~80 %. **Nie im Block korrigieren**, immer einzeln gegen Ninja/TUNICO/Peace Corps prüfen. Präzedenzfälle, in denen ein Blockfix falsch gewesen wäre: `bnin`, `skhan` (dort war das `arabic_script` der Fehler), `metrobbi` (gegenteiliger Gloss statt Dublette), die 30 Ninja-Skelett-Kollisionen bei der Vokalisierung.
+
+**`chatalpha_konflikte` — die einzige Prüfung, die Vokale sieht (seit 2026-09-13).** Alle anderen Checks vergleichen Konsonantenskelette; `7araam` gegen حَرَام (= `7aram`) ist für sie identisch. `public._arabic_to_chatalpha(arabic_script)` leitet dagegen die **volle** Chat-Alphabet-Form aus dem vokalisierten Arabischen ab und stellt sie der gespeicherten `darija` gegenüber. Die Sicht filtert bereits heraus, was erlaubt abweichen darf: unvokalisiertes Arabisch, Mehrwortzeilen, markierte Lehnwörter (lateinische Schreibung ist dort frei) und die bekannte Funktionslücke `bi/li/ka/fa` + Artikel.
+
+Drei Klassen, und nur zwei davon sind Befunde:
+
+| `klasse` | Stand 2026-09-13 | heißt |
+|---|---|---|
+| `gemination` | 26 (= Check 24) | die beiden Felder widersprechen sich bei der **Verdopplung** — meist fehlt die Schadda im Arabischen (`akhaff` gegen أَخَف). Objektiv entscheidbar, deshalb ein Befund |
+| `konsonanten` | 24 (= Check 25) | verschiedene Laute — darunter die ڨ/ڤ-Fälle (`talvza` gegen تَلْفْزَة) und unmarkierte Lehnwörter |
+| `vokale` | ~1.000 | **kein Befund und kein Check.** Kurzvokale sind im Bestand nicht normiert; die Klasse steht nur für den Einzelfall zur Verfügung |
+
+Grundgesamtheit: 2.335 vokalisierte Einzelwörter, davon 1.312 exakt deckungsgleich. Die Klasse `vokale` ist bewusst **nicht** in `qualitaets_checks` — sie würde Gruppe B dauerhaft vierstellig halten und die scharfen Listen darin unsichtbar machen.
 
 **Zusätzlicher Check nach größeren Batches: Konsonanten-Skelett-Vergleich neu vs. alt** (findet Vokalvarianten-Duplikate, die der normale Duplikat-Check übersieht — `normKey()` entfernt keine Vokale, `yqoum` matcht `yqum` dort NICHT). Eingeschränkt auf dieselbe `lesson_id` (sonst zu viele Zufallstreffer):
 ```sql
@@ -643,78 +752,6 @@ Ebenso `course_lessons.vocab_lesson_refs` gegen die alte Schreibung prüfen (`da
 
 **Faustregel aus diesen 8 Läufen:** Eine Regel gehört nur dann in `TRANSLIT_RULES`, wenn sie nahe an 0 % Fehlalarme liegt — der Wert der beiden Prüf-Tabs liegt darin, dass „0 Treffer" wirklich „sauber" heißt. Alles mit Restunschärfe bleibt SQL im Skill und wird als Verdachtsliste abgearbeitet.
 
-## Vokabeln prüfen — EIN Prozess
-
-Es gibt **einen** Prüfprozess. Was von Fall zu Fall wechselt, ist die **Auswahl der Zeilen** — nie das Vorgehen. Hier standen früher zwei getrennte Workflows („geflaggt" und „frischer Import") mitsamt dem Zusatz „bei Unklarheit nachfragen, welcher gemeint ist". Sie unterschieden sich in genau einem Punkt: dem Schreibpfad. Der ist jetzt Schritt 5.
-
-### Schritt 1 — Auswahl
-
-| Anlass | Auswahl |
-|---|---|
-| „Ich habe Vokabeln markiert" | `WHERE flagged = true` |
-| **eine einzelne Vokabel** | `WHERE id = <id>` — genauso gültig wie ein Batch, kein Sonderweg |
-| frisch importierter Batch | die ids des Batches |
-| „prüf die fälligen" | `progress.next_review` — **das Fenster läuft von 03:00 Berlin bis 03:00 des Folgetags** (`nextReviewDE()`), nicht von Mitternacht:<br><br>`next_review` ist `timestamp WITHOUT time zone`, enthält aber **UTC**. 03:00 Berlin sind je nach Sommer-/Winterzeit 01:00 oder 02:00 UTC — deshalb **immer** über die Zeitzone rechnen, nie 03:00 hart hinschreiben:<br>`WHERE p.next_review >= (timestamp '<tag> 03:00' AT TIME ZONE 'Europe/Berlin') AT TIME ZONE 'UTC'`<br>`  AND p.next_review <  (timestamp '<tag+1> 03:00' AT TIME ZONE 'Europe/Berlin') AT TIME ZONE 'UTC'`<br>⚠️ Die harte Variante `timestamp '<tag> 03:00'` stand hier bis zum 2026-09-13 und ist **falsch**: sie vergleicht gegen 03:00 UTC = 05:00 Berlin und verliert die Zeilen, die zu Tagesbeginn fällig wurden. Gemessen am 2026-09-14: **67 statt 76**; im Winter **2 statt 9**. |
-| Bestandsaudit | eine Verdachtsliste aus **Datenqualitäts-Checks (SQL)** |
-
-**Immer mit dabei, unabhängig von der Auswahl** — als EINE Sammelabfrage am Anfang, bevor ein Korrekturplan gebaut wird. Sie beantwortet „was weiß ich über diese Zeilen schon?", und zwar bevor ich etwas vorschlage:
-```sql
-SELECT id, darija, german, flagged, partner_status, partner_comment, internal_note, ninja_checked_at
-FROM vocabulary WHERE id IN (<alle ids>);
-```
-Drei Dinge daraus ernst nehmen:
-- **`internal_note`** hält fest, was frühere Sitzungen an dieser Zeile schon geprüft haben — inklusive der übernommenen Ninja-Check-Begründungen (`[Ninja-Check <datum>] …`). Ein „kein Quellentreffer, zur Kenntnis genommen" heißt: **nicht nochmal suchen**, das ist erledigt.
-- **`partner_status`** ist Semias Spur. `pending` heißt: von ihr **nie bestätigt** — bei einem Bedeutungszweifel das stärkste Signal im Datensatz (Präzedenzfall `710 el-manshir`). `approved` heißt: von ihr bestätigt, eine Bedeutungsänderung braucht dann einen sehr guten Grund.
-- **`partner_comment`** ist ihr Freitext.
-
-### Schritt 2 — Intern prüfen (kostenlos, kein Netz)
-
-Die Checks aus **Datenqualitäts-Checks (SQL)**, auf die Auswahl eingeschränkt. Deckt eine andere Fehlerklasse ab als der externe Abgleich: eine Vokabel kann extern bestätigt und trotzdem kaputt transliteriert sein. **Vor** Schritt 3.
-
-Ist die Vokabel ein **Verb**, zusätzlich das 3-Zeilen-Modell (siehe „Verb-Konjugationsmodell"): Verb-Selbstcheck zuerst, dann den Bestand per Konsonantenskelett nach Präsens- UND Vergangenheits-Grundform durchsuchen — auch unter Alt-Topics und `topic IS NULL`. Präzedenzfall 2026-09-12: `y7jem` (3614) galt als „eine Zeile, Tabelle dran, fertig"; tatsächlich fehlten 2 von 3 Zeilen. Fehlende Zielzeilen werden **als Vorschlagsliste gezeigt, nicht geschrieben**.
-
-### Schritt 3 — Extern prüfen: alle drei Quellen, nicht nur die erste
-
-**Nicht überspringen, auch wenn Schritt 2 sauber war.** Die internen Checks vergleichen `darija` gegen `arabic_script` — sie können prinzipbedingt nicht sehen, ob die **Bedeutung** stimmt. Eine Zeile kann durch jeden A- und B-Check laufen und trotzdem das Falsche lehren. Präzedenzfall aus dem Stichprobentest 2026-09-13: `710 el-manshir` ist als „Korridor / Flur" glossiert, TUNICO hat `manšiṛ` = „Platz zum Wäscheaufhängen, Hof im Küchenflügel" — alle internen Checks sauber, 4 richtige gegen 15 falsche Antworten im Lernverlauf.
-
-1. `derja_ninja_entries` — schnell, aber ein Snapshot (2026-08-17), bei mehrteiligen Begriffen oft unvollständig
-2. `tunico_import` — liefert das volle Bedeutungsspektrum, wo Ninja nur eine Facette zeigt
-3. `peacecorps_dict_import` — dritte unabhängige Quelle, v.a. bei älterem Lehrbuchvokabular
-
-Erst wenn **keine** der drei trifft, gilt „keine externe Bestätigung". Werkzeug für alle drei: **vocab_lookup** (unten) — `english_key` als primäre Achse, Skelett-Treffer nur separat und ab Länge 4. Live-Ninja nur, wenn offline nichts kommt (IMPORTS.md).
-
-Drei Fallen, jede schon einmal zugeschlagen:
-- **Die Lautschrift jeder Quelle ist ein Strukturhinweis, keine Vorlage.** Vor dem Vergleich die Tabelle **Quell-Konventionen** lesen — sie sagt, welche Abweichung nur Konvention ist (und damit kein Befund) und welche zählt. Prüfen, ob die Quelle ein übersehenes Feature zeigt (v.a. Gemination), aber nie 1:1 übernehmen. `touwl` ist so in den Bestand gerutscht, richtig ist `toul`.
-- **Ein Skelett-Treffer ist kein Wort-Treffer.** `nimshiw` „wir gehen" trifft نْمَشْ „freckles". Bedeutung gegenlesen, nicht nur das Skelett.
-- **Gleiches Arabisch heißt nicht „Dublette"** — es kann auch heißen, dass eine der Zeilen inhaltlich falsch ist (Präzedenzfall `metrobbi`, PRECEDENTS.md).
-
-### Schritt 4 — Zeigen
-
-Immer, ausnahmslos, vor jedem Schreiben: betroffene Zeilen mit Ist-Wert, Soll-Wert und Beleg. Bei Unsicherheit `AskUserQuestion` statt raten.
-
-### Schritt 5 — Schreiben
-
-**Ein Pfad: `UPDATE vocabulary`.** Hier standen früher zwei — geflaggte Zeilen gingen als Vorschlag in eine eigene Tabelle `vocabulary_review`, alle anderen direkt. Die Tabelle wurde am 2026-09-13 entfernt (Begründung und Bilanz: PRECEDENTS.md → „vocabulary_review abgeschafft"). Es gibt keinen zweiten Schreibpfad mehr und keinen Vorschlags-Zwischenspeicher: **was in Schritt 4 gezeigt und bestätigt wurde, wird direkt geschrieben.**
-
-War die Zeile **geflaggt** (🚩 von Nils beim Lernen), gehört zum Schreiben zusätzlich:
-- `flagged = false` — der Auftrag ist erledigt
-- `ninja_checked_at = now()`, wenn extern gegengeprüft wurde
-- **die Begründung angehängt** an `internal_note` — nie überschreiben, immer `concat_ws(' ', internal_note, '<neue Zeile>')`. Das ist jetzt das Gedächtnis, das vorher `change_reason` war.
-
-Gleiches gilt für frisch importierte Zeilen.
-
-**Was in `internal_note` gehört**, kurz und in dieser Reihenfolge: Datum, was entschieden wurde, woher der Beleg kommt, und ausdrücklich **was Beleg und was Ableitung ist**. Beispiel aus der Praxis:
-
-> `2026-09-13: arabic_script gesetzt — "babab" = بَابَابْ ist von Derja Ninja belegt (INTERJ). Das vorangestellte "aba" hat in KEINER der drei Quellen einen Beleg und ist als أَبَا abgeleitet, nicht belegt.`
-
-**Wenn keine Quelle etwas hergibt**, ist das ein Ergebnis und kein Versäumnis — als solches festhalten, damit die nächste Sitzung nicht dieselbe Suche wiederholt:
-
-> `2026-09-13: keine Treffer in allen drei Quellen — Negationsform, Grammatik-Paradigma. Ninja ist ein Wörterbuch, erwartbar kein Eintrag. Nicht erneut suchen.`
-
-**Was NICHT geschrieben wird, sondern gefragt:** eine Bedeutungsänderung an einer Zeile mit `partner_status = 'approved'`; das Anlegen neuer Zeilen (zwei getrennte Fragen, siehe „Fehlende Zielzeilen nachlegen"); alles, wo Schritt 3 keine eindeutige Quellenlage ergeben hat.
-
-**Der Rückkanal von Nils** läuft über `vocabulary.partner_comment` und `partner_status` (Semias Prüfmodus im Trainer) — nicht mehr über eine eigene Tabelle. In Schritt 1 wird beides mitgelesen.
-
 ## vocab_lookup — Cross-Source-Abgleich (seit 2026-09-05)
 
 **`vocab_lookup`** ist eine View (kein Materialized/keine Kopie — liest live aus `derja_ninja_entries`/`tunico_import`/`peacecorps_dict_import`, ändert nichts an den Rohtabellen) mit einheitlichen Spalten für alle drei: `source`, `source_id`, `english_key` (lowercased, primäre Suchachse), `headword_display`, `source_translit` (Lautschrift der Quelle in DEREN eigener Konvention, nicht unser Chat-Alphabet), `chatalpha` (unsere Konvention — bei TUNICO immer befüllt, bei Peace Corps 5.004/5.070 befüllt), `chatalpha_plural`, `gender`, `pos`, `arabic_script` (nur Ninja zuverlässig — echte, unabhängige Quellenangabe), `arabic_reconstructed`/`arabic_reconstruction_note` (nur bei `source='peacecorps'` befüllt — unvokalisierter Rekonstruktions-**Vorschlag**, kein Faktum, siehe unten), `translit_skeleton`/`arabic_skeleton`, `example_en`/`example_de`/`example_ph`, `audio_url`, `note`. Eine Zeile pro Sinn/Beispiel, nicht pro Lemma — ein mehrdeutiges Lemma erzeugt mehrere Zeilen mit demselben `source_id`. Details/Historie zu jeder Quelle: IMPORTS.md.
@@ -822,12 +859,12 @@ ORDER BY n.english, l.source;
 
 **Rezept 4 — neue Vokabel anlegen, fertigen INSERT bauen:**
 ```sql
--- Schritt 1: Kandidaten aus allen 3 Quellen (wie Rezept 2a) — daraus darija/arabic_script/german von Hand auswählen
+-- Teil 1: Kandidaten aus allen 3 Quellen (wie Rezept 2a) — daraus darija/arabic_script/german von Hand auswählen
 SELECT source, headword_display, source_translit, chatalpha, chatalpha_plural, gender, pos,
        arabic_script, arabic_reconstructed, arabic_reconstruction_note, example_en, example_de, example_ph, audio_url, note
 FROM public.vocab_lookup WHERE english_key = lower('<wort>') ORDER BY source;
 
--- Schritt 2: INSERT mit automatisch berechneten Skeletten
+-- Teil 2: INSERT mit automatisch berechneten Skeletten
 INSERT INTO public.vocabulary
   (english, darija, arabic_script, german, ninja_id, ninja_audio_url, translit_skeleton, arabic_skeleton,
    external_confirmed, external_confirmed_source)

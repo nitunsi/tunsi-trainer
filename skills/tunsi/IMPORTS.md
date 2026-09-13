@@ -2,7 +2,7 @@
 
 Wie neue Vokabeln aus einer konkreten Quelle (PDF, Foto, Web-Scraping) extrahiert und in die Zielkonvention übersetzt werden, plus die Detail-Historie jeder Rohdatenquelle. Die eigentlichen Imports (Uni-Wien, TUNICO, Derja Ninja, Peace Corps, Instagram) sind abgeschlossen — dieser Inhalt ist nur noch bei einem NEUEN Import oder einer neuen Quelle relevant, nicht für die laufende Vokabel-Prüfung (siehe `SKILL.md`). Für Cross-Source-Abgleich gegen die bereits importierten Daten: `SKILL.md` → vocab_lookup.
 
-## PDF/Foto-Extraktion (Teil des Kern-Workflows in SKILL.md, Schritt 1)
+## PDF/Foto-Extraktion (Teil von SKILL.md → Der Prozess, Schritt 1, Eingang B)
 
 **Vollständig extrahieren.** Bei PDFs/Fotos: Text (pdfplumber, inkl. `extract_tables()`) UND visuell (pdftoppm 150dpi, jede Seite mit `view` prüfen) — nie Seiten überspringen. Nicht nur die offizielle Wortschatztabelle: Dialoge, Grammatik-Beispielsätze, Übungssätze, Bildunterschriften enthalten oft zusätzliche Wörter/Sätze und müssen genauso vollständig geprüft werden. Ganze Sätze gehören ebenfalls als eigene Zeile in `vocabulary` (topic="Phrasen"/"Ausdrücke"), auch wenn die Einzelwörter schon vorhanden sind.
 
@@ -28,7 +28,7 @@ Kleinere Mengen (< ~300 Zeilen): weiterhin direkt per `execute_sql` in 2-4 Batch
 
 ## Datenquellen im Detail
 
-Für jede Quelle gilt der "Kern-Workflow" aus `SKILL.md` unverändert — hier steht nur, was pro Quelle unterschiedlich ist: die Ausgangsnotation (→ Chat-Alphabet-Umwandlung) und quellenspezifische Tabellen/Mechanik. Kurzreferenz der Tabellen für laufende Cross-Source-Abfragen: `SKILL.md` → vocab_lookup.
+Für jede Quelle gilt der Prozess aus `SKILL.md` (Schritt 1, Eingang B) unverändert — hier steht nur, was pro Quelle unterschiedlich ist: die Ausgangsnotation (→ Chat-Alphabet-Umwandlung) und quellenspezifische Tabellen/Mechanik. Kurzreferenz der Tabellen für laufende Cross-Source-Abfragen: `SKILL.md` → vocab_lookup.
 
 ### Uni-Wien-Lehrskripte (Tunesisch-Arabisch I & II)
 
@@ -179,7 +179,7 @@ Zwei Supabase-Tabellen, Rohextrakt aus dem "Peace Corps English-Tunisian Arabic 
 
 **Lautschrift lesen:** `forms_phonetic` benutzt Großbuchstaben für die Emphatika (`H`/`S`/`T` = ح/ص/ط), `x` für خ (nicht `kh`) und `:` für Langvokale (`thla:tha`); ذ/ظ fallen dort ausnahmslos auf `dh` zusammen. Vollständig neben den beiden anderen Quellen: `SKILL.md` → Quell-Konventionen.
 
-**Nutzen beim Prüfen:** dritte Offline-Quelle in Schritt 3 (siehe SKILL.md → Vokabeln prüfen) — nach `derja_ninja_entries` und `tunico_import` durchsuchen, v.a. bei älterem/ungewöhnlichem Lehrbuchvokabular.
+**Nutzen beim Prüfen:** dritte Offline-Quelle in Schritt 3 (siehe SKILL.md → Der Prozess) — nach `derja_ninja_entries` und `tunico_import` durchsuchen, v.a. bei älterem/ungewöhnlichem Lehrbuchvokabular.
 
 ### uniwien_source_pages
 

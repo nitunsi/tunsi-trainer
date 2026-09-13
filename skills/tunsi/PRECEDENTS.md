@@ -367,11 +367,27 @@ Der Check-Abschnitt war rein chronologisch gewachsen: neue Prüfung unten anhän
 
 **Lehre:** Die Gliederung eines Regelwerks sollte der Frage folgen, die der Leser am Treffer hat — nicht der Reihenfolge, in der die Regeln entstanden sind.
 
-## Zwei Prüf-Workflows waren einer (2026-09-13)
+## Die Ableitung als Prüfer: was Konsonantenskelette prinzipiell nicht sehen (2026-09-13)
+
+Der Skill-Test hinterließ zwei Notizen: „`qualitaets_checks` lässt sich nicht auf eine Auswahl einschränken, obwohl Schritt 2 genau das verlangt" und „`786 7araam` rutscht durch jeden Check, weil Skelette Vokale wegwerfen". Beide sind beim Nachgehen kleiner geworden, als sie aussahen — die zweite hat dabei eine ganze Fehlerklasse freigelegt.
+
+**Die erste Notiz war ein Denkfehler.** Ein Check, der bestandsweit 0 trifft, trifft auch keine Teilmenge davon. Solange Gruppe A auf 0 steht, ist Schritt 2 für jede Auswahl mit **einer** Abfrage erledigt; die Einschränkung braucht man erst, wenn ein Check überhaupt trifft. Es fehlte kein Werkzeug, es fehlte der Satz.
+
+**Die zweite führte zu `_arabic_to_chatalpha(arabic_script)` gegen `darija`.** Die Funktion war für den Ninja-Abgleich gebaut; als Prüfer des eigenen Bestands eingesetzt, ist sie die einzige Instanz im Projekt, die Vokale und Verdopplungen sieht. Messung über 2.335 vokalisierte Einzelwörter: 1.312 exakt deckungsgleich, ~1.000 Abweichungen nur in Kurzvokalen (keine Aussage — Kurzvokale sind im Bestand nicht normiert), **26 Gemination-Konflikte und 24 Konsonanten-Konflikte**. Darunter fünf Komparative (`akhaff`/أَخَف, `asa77`/أَصَح …), denen im Arabischen schlicht die Schadda fehlt, `talvza` gegen تَلْفْزَة (v ohne ڤ) und `thahhhert` mit drei `h`. Keiner dieser Fälle war für irgendeinen bestehenden Check sichtbar.
+
+**Vor der Messung musste die Funktion repariert werden — und das ist der eigentliche Präzedenzfall.** Der erste Lauf meldete `aakhaf`, `aasa7`, `aaraq`: ein Hamza-Träger am Wortanfang ist nur der Sitz seines Vokals, die Funktion schrieb ihn zusätzlich als `a`. Hätte ich die Trefferliste ohne diesen Blick übernommen, wären fünf Funktionsfehler als Datenfehler in eine Korrekturliste gewandert. Der Fix ist sechs Zeilen; gemessen: 256 Ableitungen ändern sich, 109 davon stimmen danach exakt mit der gespeicherten `darija` überein, **0 Zeilen, die vorher passten, passen danach nicht mehr** — dieser Nullwert ist die eigentliche Abnahme, nicht die 109.
+
+**Lehre:** Wenn ein neuer Check anschlägt, ist der erste Verdächtige der Check. Vor jeder Fundliste die Treffer nach *Ursache* sortieren (Datenfehler / Werkzeuglücke / erlaubte Ausnahme) und die Werkzeuglücken zuerst schließen — sonst misst die Fehlalarmquote das eigene Werkzeug. Erlaubte Ausnahmen (markierte Lehnwörter, `bi/li/ka/fa` + Artikel) gehören dabei in die Sicht selbst, nicht in den Kopf des Prüfenden.
+
+## Zwei Workflows waren einer — zweimal an einem Tag (2026-09-13)
 
 Der Skill führte zwei getrennte Prüf-Workflows, die sich in genau **einem** Punkt unterschieden: dem Schreibpfad. Das Eingeständnis stand im Skill selbst — *„bei Unklarheit, welcher gemeint ist, im Zweifel nachfragen"*. Zusammengelegt zu „Vokabeln prüfen — EIN Prozess"; was wechselt, ist nur die **Auswahl der Zeilen**.
 
-**Lehre:** Wenn zwei Abschnitte dieselben Schritte in anderer Reihenfolge erzählen und am Ende „im Zweifel nachfragen" steht, sind es keine zwei Verfahren — es ist eines, das zweimal aufgeschrieben wurde.
+**Dieselbe Lage eine Ebene höher, am selben Tag gefunden.** Der Skill-Test an zwei Aufgaben (19 fällige Vokabeln prüfen / 5 deutsche Wörter anlegen) zeigte, dass auch „Kern-Workflow: neue Vokabel(n) verarbeiten" und „Vokabeln prüfen — EIN Prozess" **ein** Ablauf waren. Sie unterschieden sich in zwei Spalten: woher die Zeilen kommen und ob am Ende `UPDATE` oder `INSERT` steht. Alles dazwischen — Vorwissen lesen, intern prüfen, extern gegen drei Quellen prüfen, zeigen und warten — stand zweimal da, im Anlege-Teil kürzer und ohne die Präzedenzfälle. Zusammengelegt zu „Der Prozess — ein Ablauf, zwei Eingänge".
+
+**Der Beleg, dass es wirklich einer ist:** von den 5 angefragten neuen Wörtern existierten alle 5 bereits. Der Anlege-Eingang endete also fünfmal im Prüf-Eingang. Ein Duplikat ist kein Sonderfall des Anlegens, sondern der Übergang zwischen den Eingängen — im getrennten Aufschrieb war das nirgends sichtbar.
+
+**Lehre:** Wenn zwei Abschnitte dieselben Schritte in anderer Reihenfolge erzählen und am Ende „im Zweifel nachfragen" steht, sind es keine zwei Verfahren — es ist eines, das zweimal aufgeschrieben wurde. Der Test darauf ist billig: beide an derselben Aufgabe durchspielen und die Schritte nebeneinanderlegen.
 
 ## Skill-Audit: Regeln prüfen reicht nicht (2026-09-13)
 

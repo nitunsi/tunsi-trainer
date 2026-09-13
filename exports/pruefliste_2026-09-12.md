@@ -1512,3 +1512,118 @@ Zwei Befunde entstanden trotzdem:
 4. **Beide Aufgaben endeten überwiegend mit „nichts zu tun"** — 19 geprüft, 2 zu entscheiden;
    5 vorgeschlagen, 0 anzulegen. Ein Ablauf, der das billig feststellt, ist mehr wert als einer,
    der viele Treffer produziert.
+
+---
+
+## Runde 26 (2026-09-13) — `chatalpha_konflikte`: die erste Prüfung, die Vokale sieht
+
+**Herkunft:** die beiden Schwachstellen, die der Skill-Test in Runde 25 notiert hatte. Die erste
+(„`qualitaets_checks` lässt sich nicht auf eine Auswahl einschränken") war ein Denkfehler — steht
+Gruppe A auf 0, ist jede Teilmenge sauber. Die zweite (`786 7araam` rutscht durch jeden Check, weil
+Skelette Vokale wegwerfen) führte zu einem neuen Werkzeug:
+`public._arabic_to_chatalpha(arabic_script)` gegen die gespeicherte `darija`.
+
+**Vorher repariert:** Die Funktion schrieb einen Hamza-Träger am Wortanfang zusätzlich als `a`
+(`aakhaf` statt `akhaf`). 256 Ableitungen ändern sich durch den Fix, 109 davon stimmen danach exakt
+mit der `darija` überein, **0 Zeilen, die vorher passten, passen jetzt nicht mehr.**
+
+**Grundgesamtheit:** 2.335 vokalisierte Einzelwörter (ohne Mehrwortzeilen, ohne markierte Lehnwörter,
+ohne `bi/li/ka/fa`+Artikel). Davon 1.312 exakt deckungsgleich, ~1.000 Abweichungen nur in Kurzvokalen
+(**keine Aussage** — Kurzvokale sind im Bestand nicht normiert), und die folgenden 50.
+
+### A · Gemination — 26 (Check 24): die Felder widersprechen sich bei der Verdopplung
+
+Objektiv entscheidbar: die Schadda steht im Arabischen, oder sie steht nicht.
+
+| id | darija | aus dem Arabischen abgeleitet | arabic_script | deutsch |
+|---|---|---|---|---|
+| 347 | `sfinnerya` | `sfnaryya` | سفناريّة | Karotten / Möhren |
+| 428 | `qotton` | `qton` | قْطُنْ | Baumwolle |
+| 1162 | `yqatta3` | `yaqta3` | يَقْطَع | zerreißen |
+| 1681 | `qas` | `qss` | قصّ | er schnit |
+| 2018 | `akhaff` | `akhaf` | أَخَف | leichter (Komp.) |
+| 2019 | `asa77` | `asa7` | أَصَح | gesünder / richtiger (Komp.) |
+| 2020 | `araqq` | `araq` | أَرَق | dünner / zarter (Komp.) |
+| 2021 | `arakk` | `arak` | أَرَك | schwächer / dünner (Komp.) |
+| 2024 | `aqall` | `aqal` | أَقَل | weniger |
+| 2071 | `louwwel` | `awwal` | أَوَّل | erster / erste / erstes |
+| 2129 | `guinneriyya` | `gnaryya` | ڨناريّة | Artischocken |
+| 2180 | `lassiq` | `lasiq` | لَصِق | aufkleben / ankleben |
+| 2274 | `stress` | `stras` | سْتراس | Stress |
+| 2538 | `nifli` | `niflli` | نِفْلِّي | Ich bin pleite (Variante) |
+| 2641 | `titnaffas` | `tnaffis` | تْنَفِّسْ | atmen |
+| 2739 | `fomm` | `fom` | فُم | Mund |
+| 2804 | `wqayyit` | `waqqayit` | وَقَّيِت | Die Zeit ist gekommen |
+| 2874 | `fissa3` | `fisa3` | فِيسَع | schnell / sofort |
+| 3308 | `3assel` | `3sal` | عْسَل | Honig / Sirup |
+| 3394 | `tarrajja` | `tarajja` | تَرَجَّى | er hoffte / er bat inständig |
+| 3431 | `ytarrajja` | `yatarajja` | يَتَرَجَّى | er hofft / er bittet inständig |
+| 4114 | `lissiyat` | `lisiyat` | لِيسِيَات | Gymnasien (Pl.) |
+| 4238 | `khallas` | `khalaas` | خَلاَّص | Ticketverkäufer, Kontrolleur |
+| 4279 | `mallak` | `malaak` | مَلاَّك | Eigentümer |
+| 4282 | `villa` | `vilaa` | ڤِيلاَّ | Einfamilienhaus |
+| 4555 | `thahhhert` | `thahhart` | ظَهَّرْت | ich zeigte / wies auf |
+
+**Vorsortierung:**
+- **Die fünf Komparative 2018–2021/2024** sind ein Muster, kein Einzelfall: `أَفْعَل`-Form,
+  im Arabischen fehlt überall die Schadda auf dem letzten Radikal. Die `darija` ist jeweils richtig.
+- **`4555 thahhhert`** hat drei `h` — ein Tippfehler, unabhängig von der Schadda-Frage.
+- **`4238 khallas` / `4279 mallak` / `4282 villa`**: das Arabische hat `اَّ` (Schadda **und** Alif),
+  die Ableitung macht daraus `aa`. Hier ist eher die Ableitung grob als die Zeile falsch — trotzdem
+  ansehen, weil `4282 villa` zusätzlich ein unmarkiertes Lehnwort ist.
+- **`2274 stress`** ist ein Lehnwort ohne `(engl.)`-Marker; mit Marker fällt es aus der Liste.
+
+### B · Konsonanten — 24 (Check 25)
+
+| id | darija | abgeleitet | arabic_script | deutsch |
+|---|---|---|---|---|
+| 282 | `piesa` | `byasa` | بْيَاسَة | Münze |
+| 283 | `pieset` | `byasat` | بْيَاسَات | Münzen (Pl.) |
+| 424 | `spedri` | `sbadri` | سْبَادْرِي | Turnschuhe |
+| 425 | `cravate` | `krafat` | كْرَافَاتْ | Krawatte |
+| 687 | `fivri` | `fifri` | فِيفْرِي | Februar |
+| 689 | `avril` | `afril` | أفْرِيلْ | April |
+| 696 | `nuvambir` | `noufombir` | نُوفُمْبِرْ | November |
+| 703 | `villa` | `fila` | فِيلَا | Villa |
+| 717 | `courant` | `kouroun` | كُورُونْ | Elektrizität |
+| 931 | `parking` | `barking` | بَارْكِينْڨْ | Parkplatz |
+| 1013 | `talvza` | `talfza` | تَلْفْزَة | Fernseher / TV |
+| 1488 | `spor` | `sbour` | سْبُور | Sport |
+| 2103 | `talyaniyya` | `italayya` | إيطَالَيَّة | italienisch (f.) |
+| 2191 | `sou3elet` | `soalat` | سُؤَالَات | Fragen |
+| 2193 | `mamet` | `mama` | مَامَة | Großmutter (informell) |
+| 2252 | `souvenir` | `soufwnyr` | سُوفونير | Souvenir / Mitbringsel |
+| 2285 | `sou3el` | `soal` | سُؤَال | Frage |
+| 2570 | `plombi` | `bloumbiya` | بْلُومْبِيَا | Klempner |
+| 2695 | `plato` | `blatou` | بْلَاتُو | Eierkarton / Tablett |
+| 2720 | `et-tamakhikh` | `et-tamakhmikh` | التَّمَخْمِيخ | reichhaltiges leckeres Essen genießen |
+| 2721 | `vitesse` | `fitas` | فِيتَاس | Gang (Auto) |
+| 2856 | `fartattou` | `fartatou` | فَرْطَطُو | Schmetterling |
+| 3017 | `nna` | `nnana` | نَّنَا | Tante (informell) |
+| 3271 | `badhdrout` | `badhrout` | بَضْرُوط | Schrott / billig / minderwertig |
+
+**Vorsortierung — zwei sehr verschiedene Hälften:**
+
+1. **15 unmarkierte Lehnwörter** (282, 283, 424, 425, 687, 689, 696, 703, 717, 931, 1488, 2252,
+   2570, 2695, 2721): die `darija` steht in französischer/englischer Schreibung. Das ist nach der
+   Lehnwort-Ausnahme erlaubt — **aber nur mit `(frz.)`/`(engl.)` im `german`**. Fehlt der Marker,
+   schlagen dieser Check und Check 2 („ch statt sh") gleichermaßen an. Ein Marker-Nachtrag erledigt
+   alle 15 auf einmal und ist inhaltlich risikofrei.
+2. **9 echte Befunde:**
+   - **`2191 sou3elet` / `2285 sou3el`**: ؤ ist als `3` transliteriert. ع ist es nicht — richtig
+     wäre `soual`/`soualet` o.ä. Zwei Zeilen desselben Fehlers.
+   - **`2720 et-tamakhikh`** gegen التَّمَخْمِيخ: der `darija` fehlt eine ganze Silbe (`mikh`).
+   - **`1013 talvza`** schreibt `v`, das Arabische hat ف. Nach Regel 23 muss eines von beiden
+     weichen: entweder `talfza` oder تَلْڤْزَة.
+   - **`2103 talyaniyya`** gegen إيطَالَيَّة — das Arabische ist zusätzlich auffällig
+     (`إيطَالِيَّة` wäre erwartbar).
+   - **`3271 badhdrout`** gegen بَضْرُوط: `dhdh` im Chat-Alphabet, nur ein ض im Arabischen.
+   - **`2856 fartattou`**, **`3017 nna`**, **`2193 mamet`**: je eine Silbe/ein Laut Unterschied,
+     einzeln nachzusehen.
+
+### Was das für das Ziel „alle prüfen" heißt
+
+Die Vokalachse ist **nicht** prüfbar (~1.000 Abweichungen ohne Aussagewert) — genau wie die
+Bedeutungsachse in Runde 23. Die Gemination dagegen ist es, weil die Schadda ein geschriebenes
+Zeichen ist und keine Auslegung. Von 2.335 vokalisierten Einzelwörtern bleiben damit 50 zum Ansehen
+statt 1.023 — und 26 davon sind mit einem Blick auf das Arabische entscheidbar.
