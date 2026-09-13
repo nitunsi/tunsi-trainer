@@ -2366,3 +2366,62 @@ erneut Prüfzeit gekostet — das hört damit auf.
 ### Stand
 
 Gruppe A: 17 Checks, alle 0. Gruppe B: 2 · 21 · 425 · 36 · 2 · 4 · 8 · 23.
+
+---
+
+## Runde 37 (2026-09-13) — drei kleine Listen abgeräumt
+
+### Check 29 (Klammern in der `darija`) — auf 0
+
+**Anmerkungen (3):** `252 labes (7al)` → `labes`, `2879 fad (7al)` → `fad`,
+`3281 yitba3 (passive)` → `yitba3` (die Information ins `german`).
+
+**Optionale Elemente (5) auf die `/`-Variantenform:** `1492`, `1494`, `1495` (`koll we7id (w) …`),
+`1787 shkoun(ou)`, `1788 shkoun(i)`. In Klammern ging die Vollform nur über die 1-Zeichen-Fuzzy-
+Toleranz durch; mit `/` akzeptiert `checkAnswer()` **beide** Formen ausdrücklich. Am Harness geprüft:
+alle sieben Testfälle „ok exakt", vorher teils nur „fuzzy". Klammern auch aus dem `arabic_script`.
+
+**Und wieder fing der Pflicht-Duplikat-Check etwas ab:** `yitba3` existiert bereits als
+`2213 = er druckt`. Nach dem Entfernen der Klammer wäre `3281` eine unmarkierte Homographie
+(بيع verkaufen gegen طبع drucken). Beide Zeilen tragen jetzt `homonym_ok`.
+
+### Check 24/25/20 — von 2/4/2 auf je 1
+
+| id | was | Beleg |
+|---|---|---|
+| 2103 | arabic إيطَالَيَّة → **طَلْيَانِيَّة** | Ninja طَلْيَانِي, TUNICO `ṭalyāni`; Ableitung jetzt exakt `talyaniyya` |
+| 2193 | `mamet` → **`mama`** | TUNICO `māma` „grandmother"; das eigene مَامَة leitet exakt `mama` ab |
+| 2071 | arabic أَوَّل → **لَوَّل** | beide Formen belegt (PC `luwwil` 3×, TUNICO `awwil`) — die `darija` ist die l-Form, also das Arabische angeglichen |
+| 3271 | `badhdrout` → **`badhrout`** | ein `dh` zu viel; بَضْرُوط leitet exakt `badhrout` ab |
+| 2501 | `fissa3` → `fisa3`, فِي سَّاعَة → **فِيسَع** | das Arabische las „in einer Stunde" statt „schnell" — daher die ungültige Anfangs-Schadda. Beleg über `2874`, am selben Tag mit drei Quellen korrigiert |
+
+### `homonym_ok` hat drei Bedeutungen, nicht zwei
+
+Nach dem Setzen des Flags auf `2213`/`3281` sprang Check 30 von 23 auf 25 — zum **dritten** Mal
+meldete er berechtigten Zustand. Der Grund ist jetzt vollständig: der Duplikat-Manager im Trainer
+gruppiert über **drei** Felder, also kann das Flag für drei Partnerarten stehen.
+
+| Feld | Hinweis im Trainer | Beispiel |
+|---|---|---|
+| `arabic_script` | `homonymNote()` | `دَار` Haus / `دَارْ` er drehte sich |
+| `german` | `synonymNote()` | `shnuwwa` / `shniyya` — beide „was?" |
+| `darija` | Duplikat-Manager überspringt | `yitba3` drucken / verkauft werden |
+
+Check 30 prüft jetzt alle drei: **von 84 markierten Zeilen sind 7 wirklich verwaist**, nicht 58,
+nicht 41, nicht 25.
+
+**Lehre:** Ein Flag, das eine Prüfung abschaltet, muss **alle** Wege kennen, auf denen die Prüfung
+greift. Sonst meldet der Check genau die Sorgfalt als Fehler, die er erzwingen soll.
+
+### Gegenprobe
+
+| | |
+|---|---|
+| 🔁 Duplikate (Trainer-Logik) | **0** von 3.777, `count`-Header 3.777 |
+| 🔤 Transliteration | **0** von 3.777, 23 Regeln |
+| Gruppe A | **17 Checks, alle 0** |
+| Gruppe B | 1 · 21 · 425 · 36 · 1 · 1 · 7 = **492** (vorher 535) |
+
+**Offen aus dieser Runde:** `3017 nna` نَّنَا „Tante" (steht in Check 20 **und** 25 — ungültige
+Anfangs-Schadda, und die `darija` hat drei Zeichen weniger als das Arabische; keine Quelle kennt das
+Wort) und `2538 nifli` نِفْلِّي „Ich bin pleite (Variante)" (TUNICO kennt nur `flis`/`falis`).
