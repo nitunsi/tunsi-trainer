@@ -258,6 +258,21 @@ Repariert: `translate(s, 'ڨگڤڥپ', 'ggvvp')`, `چ`→`j`, Satzzeichenklasse 
 
 **Lehre:** vor einer Massenänderung an einem Feld nicht nur fragen „ist der neue Wert richtig?", sondern „**was rechnet sonst noch mit diesem Feld?**". Hier hingen zwei gespeicherte Skelettspalten und der komplette Cross-Source-Abgleich daran. Die Prüfung kostete eine Abfrage und hat einen Fehler gefunden, der seit dem ersten Import bestand.
 
+## Bedeutungs-Screen: Mechanik richtig, Menge falsch (2026-09-13)
+
+Gebaut, gemessen, **als Massenwerkzeug verworfen** — und das ist das Ergebnis, nicht das Scheitern. Der Abnahmetest bestätigt, dass die Mechanik stimmt: `710` joint korrekt, der alte Gloss „der Korridor / der Flur" wird gemeldet, der korrigierte nicht. Trotzdem ist die Liste unbrauchbar: **~93 % Fehlalarm**, an 30 gelesenen Zeilen etwa 2 echte Funde.
+
+**Warum das nicht zu reparieren ist:** ~40 % der Treffer sind Synonymie („Geldschein" ←→ „Banknote"), ~43 % echte Homonymie (`7ayya` „lebendig" ←→ „Schlange" — حية heißt beides). Kein Stringverfahren löst Synonymie, und die echten Funde sehen aus wie die Homonyme. Es gibt kein trennendes Signal.
+
+**Drei Iterationen bis zum brauchbaren Vergleich**, jede an einem anderen Phänomen gescheitert:
+1. Präfixvergleich (4 Zeichen) + Längenschwelle ≥ 4 → meldete **exakte Treffer als Verdacht**, weil „wie", „wo", „ich", „neu" durch die Längenschwelle fielen. `474 kifesh` „wie?" gegen „wie?" stand in der Verdachtsliste.
+2. Reiner Teilstring → scheiterte an Flexion: „wäscht" und „waschen" teilen keinen Teilstring.
+3. Beides plus Gleichheit für kurze Wörter → 14 von 14 Testfällen korrekt.
+
+**Die Lehre über den Screen hinaus:** ein Abnahmetest an konstruierten Fällen beweist, dass das Werkzeug *funktioniert* — nicht, dass es *nützt*. Beides braucht eine eigene Messung. Hier war die Mechanik nach drei Runden einwandfrei und das Ergebnis trotzdem wertlos, weil die Grundgesamtheit zu 93 % aus Fällen besteht, die das Werkzeug prinzipbedingt nicht trennen kann. **Die Fehlalarmquote an echten Daten zu messen, bevor man eine Liste vorlegt, ist der Schritt, der hier alles entschieden hat.**
+
+**Was bleibt:** der Join-Schlüssel (`chatalpha` beidseitig auf `u` normalisiert) findet **861 TUNICO-Treffer statt 597 per Skelett** und gilt für jedes Nachschlagen. Und `_de_trifft()` ist als Vergleich für die *einzelne* Vokabel in Schritt 3 richtig — nur nicht für 3.780 auf einmal.
+
 ## Sonderbuchstaben kehren in neuen Wörtern wieder — Aufzählen reicht nicht (2026-09-13)
 
 Nils' Einwand nach der ڨ-Reparatur: *„Das andere g und die anderen Buchstaben können in neuen Worten wieder auftreten. Das sollte bedacht werden."* Richtig — und die Antwort war ausdrücklich **nicht** „ڨ in die Liste eintragen", sondern die Prüfrichtung umzudrehen.

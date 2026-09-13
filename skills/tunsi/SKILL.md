@@ -762,6 +762,23 @@ Die zweite Regel verwirft 40 Zeilen und nimmt damit bewusst Falsch-Negative in K
 
 **Der Check findet die Digraph-Gemination unabhängig wieder** — `mukhhu`→`mokhkhou`, `mshakhra`→`moshakhkhara`, `nsharshhar`→`nosharshir`, `mashi`→`mashshi` sind genau das `khh`/`shh`-Muster. Eine gute Bestätigung, dass beide Regeln dasselbe Phänomen beschreiben.
 
+**Bedeutungs-Screen (`public.bedeutungs_screen`) — gebaut, gemessen, und ausdrücklich KEINE Massenliste (2026-09-13).** Er vergleicht unser `german` gegen TUNICOs `senses.de` — TUNICO ist die einzige Quelle mit deutschen Glossen; Ninja und Peace Corps haben nur Englisch, und unser `english` stammt zu ~85 % aus ihnen, ein Abgleich wäre **zirkulär**.
+
+**Gemessene Fehlalarmquote: ~93 %** (an 30 gelesenen Zeilen etwa 2 echte Funde). Die Ursache ist nicht behebbar:
+
+| Ursache | Anteil | Beispiel |
+|---|---|---|
+| Synonymie | ~40 % | „Geldschein" ←→ „Banknote", „Krämer" ←→ „Lebensmittelhändler" |
+| echte Homonymie | ~43 % | `7ayya` „lebendig" ←→ „Schlange" — حية heißt beides |
+
+**Kein Stringverfahren löst Synonymie**, und die echten Funde sehen aus wie die Homonyme — es gibt kein trennendes Signal. Eine Liste mit 76 Einträgen, von denen 5 echt sind, verbrennt mehr Vertrauen, als sie bringt. Der Emphatika-Filter (ص/س unterscheiden über TUNICOs DMG-`lemma_orig`) entfernt nur 5 von 76 und rettet sie nicht.
+
+**Richtiger Einsatz: Schritt 3 für die einzelne Vokabel.** Dort liest ein Mensch das Paar und entscheidet — da ist „TUNICO sagt etwas anderes" wertvoll, auch wenn es meistens Synonymie ist. Die Sicht liefert es fertig, statt dass man den Join jedes Mal neu baut. **Nie im Block korrigieren.**
+
+**Was dabei entstanden und dauerhaft nützlich ist:**
+- **Der Join-Schlüssel.** `replace(replace(lower(chatalpha),'ou','u'),'o','u')` auf beiden Seiten — unsere mechanische Ableitung und TUNICOs `lemma_chatalpha` liegen damit in derselben Vokalschreibung. **861 TUNICO-Treffer statt 597 per Skelett (+44 %)**, und ohne Wurzelkollisionen, weil die Vokale mitvergleichen. Gilt für jedes Nachschlagen, nicht nur für diesen Screen.
+- **`public._de_trifft(a, b)`** — validierter Bedeutungsvergleich zweier deutscher Glossen, 14 von 14 konstruierten Fällen korrekt. Drei Wege, weil drei Phänomene: Gleichheit für kurze Wörter („wie?"/„wie?"), Teilstring für Komposita („Tüte" in „Papiertüte"), gleiche vier Anfangszeichen für Flexion („wäscht"/„waschen"). **Jede Fassung mit nur einem der drei fiel bei den anderen beiden durch** — Präfix allein scheitert an Komposita, Teilstring allein an Flexion, eine Längenschwelle wirft exakte Treffer weg.
+
 ### C · Regeln fürs Prüfen selbst
 
 Keine Abfragen, sondern die Fallen und Methodenregeln. **Vor dem Bau einer neuen Prüfabfrage lesen** — drei der vier hier dokumentierten Fallen haben schon einmal einen kompletten Prüflauf stumm wertlos gemacht.
