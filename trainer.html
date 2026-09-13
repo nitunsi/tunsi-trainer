@@ -6295,11 +6295,11 @@ const TRANSLIT_RULES = [
   // Bewusst OHNE Lehnwort-Ausnahme: die lateinische Schreibung eines Lehnworts ist frei,
   // der arabische Buchstabe ist es nicht (el-guichet stand mit ڤ statt ڨ im Bestand).
   // Seit 2026-09-13: bei g-Aussprache wird das Arabische auf ڨ umgestellt, nicht die darija auf q.
-  { label: 'Sonderbuchstabe im Arabischen passt nicht zur Transliteration (\u0682/\u06AF=g, \u06A4=v, \u067E=p)',
+  { label: 'Sonderbuchstabe im Arabischen passt nicht zur Transliteration (\u06A8/\u06AF=g, \u06A4=v, \u067E=p)',
     test: v => {
       if(!v.ar || !v.tr) return false;
       if(/\u0642/.test(v.ar) && /g/i.test(v.tr.replace(/gh/gi,''))) return true;   // \u0642 im Arabischen, aber g gesprochen
-      if(/[\u06A8\u06AF]/.test(v.ar) && !/g/i.test(v.tr)) return true;
+      if(/[\u06A8\u06AF]/.test(v.ar) && !/g/i.test(v.tr.replace(/gh/gi,''))) return true;
       if(/[\u06A4\u06A5]/.test(v.ar) && !/v/i.test(v.tr)) return true;
       if(/\u067E/.test(v.ar) && !/p/i.test(v.tr)) return true;
       return false;

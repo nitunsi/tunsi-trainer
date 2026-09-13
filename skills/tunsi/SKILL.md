@@ -39,7 +39,7 @@ Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nic
 SELECT * FROM public.qualitaets_checks WHERE treffer > 0 ORDER BY gruppe, nr;
 ```
 
-Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, 20 Gemination- und 8 Konsonanten-Konflikte.** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
+Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, 20 Gemination-, 8 Konsonanten-Konflikte, 8 Klammern in der `darija` und 58 `homonym_ok` ohne Partnerzeile.** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
 
 Was die Sicht **nicht** abdeckt und weiterhin von Hand zu ziehen ist:
 
@@ -214,6 +214,8 @@ Bei Eingang B gehört dieselbe Begründung in die `internal_note` der neuen Zeil
 ### `german`-Feld: „/" vs. „;"
 
 „/" NUR für echte Synonyme/alternative Formulierungen derselben Bedeutung, sonst „;". Grund: `checkAnswer()` (trainer.html, Zeile ~440) macht `answer.split(/\s*\/\s*/)` und akzeptiert JEDE der Teile als richtige Antwort — bei echten Synonymen gewollt, bei tatsächlich unterschiedlichen Bedeutungen ein Bug (falsche Übersetzung würde als richtig akzeptiert). Semikolon `;` wird von `checkAnswer()` nicht speziell behandelt, ist also der richtige Trenner für „mehrere unterschiedliche Bedeutungen".
+
+**In der `darija` gilt dasselbe — und dort ist die Klammer eine Falle.** `normalize()` wirft Klammerinhalte ersatzlos weg, bevor verglichen wird. Eine Variante in Klammern (`labes (lbes)`) wird deshalb als **falsche Antwort** gewertet; am 2026-09-13 an vier Zeilen gemessen und auf `/` umgestellt. Klammern in der `darija` sind nur für Anmerkungen zulässig — und die gehören eigentlich ins `german` (Check 29).
 
 **Testkriterium:** nicht „sehen die zwei Formulierungen unterschiedlich aus", sondern „wäre bei einer isolierten Quiz-Abfrage dieses einen Worts JEDE der beiden Antworten korrekt". Wenn ja → „/", sonst „;". Volle Herleitung inkl. mehrerer Nachprüf-Runden und Sonderfälle (grammatische Homophonie, Infinitiv-Kontamination): PRECEDENTS.md → Duplikat-Check.
 
@@ -453,6 +455,8 @@ Hier standen bis zum 2026-09-13 rund 250 Zeilen SQL. Sie sind in die Sicht gewan
 | 9 Sonderbuchstabe (= Regel 23) | ڨ/گ=g, ڤ=v, پ=p. **Ohne Lehnwort-Ausnahme**: die lateinische Schreibung ist frei, der arabische Buchstabe nicht. Prüft nur **eine** Richtung; die Gegenrichtung ist per Entscheidung kein Befund (siehe p/v-Entscheidung unten) |
 | 10 identisches Arabisch ohne `homonym_ok` | entweder Dublette oder unmarkiertes Homonym |
 | 11–13 rohe Zeichen / Wächter | eine Umwandlungsfunktion kennt ein Zeichen nicht — siehe unten |
+| 27 `q`/`z`/`j` ohne arabische Entsprechung | Gegenrichtung zu den Regeln 10/12/13. Nur **Einzelzeichen** taugen dafür — die Digraph-Gegenrichtungen (`dh`, `th`, `sh`) sind durch Morphemgrenzen verrauscht (`3and`+`ha`, `as`+`hal`) |
+| 28 Artikel assimiliert vor Mondbuchstabe | Gegenrichtung zu Check 3 |
 | 26 „`3`" ohne ع | Hamza als `3` transliteriert (`sou3el` für سُؤَال). Fand bei seinem ersten Lauf 5 Zeilen, alle echt — darunter `742`, dessen `arabic_script` schlicht etwas anderes sagte als die `darija`. Seit der Korrektur am 2026-09-13 auf 0 und damit in Gruppe A |
 
 **Warum 12 und 13 so gebaut sind.** Der naheliegende Weg wäre, die bekannten Buchstaben aufzuzählen. Genau das hat ڨ **699 Zeilen lang unsichtbar** gelassen (76 im Bestand, 623 bei Ninja), weil `_arabic_skeleton()` ihn nicht kannte und roh stehen ließ. Eine Aufzählung vergisst den nächsten neuen Buchstaben genauso. Die Wächter drehen es um: sie melden, **was die Funktionen nicht kennen**.

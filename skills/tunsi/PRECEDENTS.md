@@ -377,6 +377,24 @@ Der Skill kennt die Regel, aber nur für eine Richtung: *„Präsens-Verben: deu
 
 **Lehre:** Eine Regel über das Format eines Feldes ist immer auch eine Regel über die Suche in diesem Feld. Wer weiß, dass die Spalte „er hustet" enthält, darf nicht „husten" suchen. Und ein Suchergebnis „— nichts —" ist keine Auskunft über den Bestand, sondern über das Muster: bevor „gibt es nicht" gesagt wird, muss das Muster an einer Zeile getestet werden, von der man weiß, dass sie existiert.
 
+## Der Gegenrichtungs-Durchlauf: eine Frage an jede Regel (2026-09-13)
+
+Drei Skill-Fehler an einem Tag hatten dieselbe Form — eine Regel, die nur in eine Richtung formuliert war (Zeitzone, Regel 23, Infinitiv). Daraus wurde ein einmaliger Durchgang: **an jede Regel die Frage stellen, ob sie eine Gegenrichtung hat, und diese gegen den Bestand messen.**
+
+`TRANSLIT_RULES` 5–16 sind zwölf Regeln derselben Bauart („X im Arabischen, aber kein Y in der Transliteration"), mit Gegenrichtung für genau eine. Die Messung der übrigen elf: 30 Treffer, **8 echte Befunde** — darunter `1491` mit ف statt ق, zwei `inshallah`-Zeilen ohne الله im Arabischen und drei `odhkhol` mit einem `h` zu viel.
+
+**Der wichtigste Fund war kein Datenfehler, sondern ein Regeldefekt.** `4412 tghashshish` / تڨشش müsste Regel 23 auslösen, tat es aber nicht: die Regel testet `!/g/i.test(v.tr)`, ohne vorher `gh` zu entfernen — das `g` in `gh` zählt mit und macht die Regel für genau diesen Fall blind. Ihre erste Bedingung benutzt `replace(/gh/gi,'')` bereits; der Fix war, das auch in der zweiten zu tun. Gemessen: trifft danach genau eine Zeile, keine Fehlalarme. **Die Gegenrichtung einer Regel prüft auch die Regel selbst.**
+
+**Zweiter Fund, methodisch:** die Gegenrichtung ist bei **Einzelzeichen** sauber und bei **Digraphen** wertlos. `3`, `q`, `z`, `j` lieferten zusammen 2 Treffer, beide echt. `dh`, `th`, `sh` lieferten 17, überwiegend Morphemgrenzen (`3and`+`ha`, `mammet`+`hom`, `as`+`hal`) — ein Digraph entsteht zufällig, wo zwei Morpheme zusammenstoßen, ein `3` kann das nicht. Nur die Einzelzeichen sind als Check 27 aufgenommen.
+
+**Dritter Fund, außerhalb der Buchstabenregeln:** die „/ vs. ;"-Regel galt nur für das `german`-Feld. Die `darija` benutzt zusätzlich Klammern, in drei Bedeutungen — und `normalize()` wirft Klammerinhalte weg, bevor `checkAnswer()` vergleicht. Am echten Quiz-Code gemessen: vier Zeilen werteten die von ihnen selbst angebotene Variante als **falsche Antwort**. Auf `/` umgestellt, danach am selben Harness gegengeprüft: alle vier akzeptieren jetzt beide Formen exakt.
+
+**Vierter Fund:** `homonym_ok` ist kein Etikett, sondern ein Ausschalter — Check 10 lautet `HAVING count(*) > 1 AND NOT bool_or(homonym_ok)`, eine einzige markierte Zeile schaltet die Prüfung für die ganze Arabisch-Gruppe ab. 58 Zeilen tragen das Flag, ohne dass es überhaupt eine zweite Zeile mit demselben Arabisch gibt.
+
+**Und eine lehrreiche Nullnummer:** die Gegenrichtung zu Check 5 („`-a` ohne `(f.)`") trifft 567 Zeilen und ist wertlos — die meisten Wörter auf `-a` sind keine Feminina. Nicht jede Regel hat eine sinnvolle Gegenrichtung; die Frage kostet trotzdem nur eine Abfrage.
+
+**Lehre:** Eine Regel, die nur eine Richtung kennt, ist eine halbe Regel — und ihre fehlende Hälfte ist genau der Ort, an dem sich Fehler jahrelang halten. Die Gegenfrage ist billig, findet Datenfehler *und* Regeldefekte, und muss pro Regel nur einmal gestellt werden.
+
 ## p/v ist nicht ڨ: warum zwei ähnliche Fälle verschieden entschieden wurden (2026-09-13)
 
 Nach der ڨ-Entscheidung („wird ein Wort mit `g` gesprochen, bleibt die `darija` und das `arabic_script` wird auf ڨ umgestellt") lag die Analogie nahe: 25 Zeilen schreiben `p` gegen ب, 14 schreiben `v` gegen ف — also dasselbe Vorgehen? **Nils hat anders entschieden: so lassen.**
