@@ -318,7 +318,6 @@ body.hide-latin .chat-opt .latin {
     <button class="lesson-chip" onclick="setMode('dupes',this);closeNav()">🔍 Prüfungen</button>
     <button class="lesson-chip" onclick="setMode('partnerqueue',this);closeNav()">📬 Partner-Queue</button>
     <button class="lesson-chip" onclick="setMode('partnercheck',this);closeNav()">🙋 Partner-Check</button>
-    <button class="lesson-chip" onclick="setMode('ninjacheck',this);closeNav()">🥷 Ninja-Check</button>
     <button class="lesson-chip" onclick="setMode('tunico',this);closeNav()">🗂️ TUNICO</button>
     <button class="lesson-chip" onclick="setMode('lessons',this);closeNav()">📖 Lektionen</button>
     <button class="lesson-chip" onclick="setMode('export',this);closeNav()">💾 Export</button>
@@ -1377,6 +1376,12 @@ async function sbApiPaged(basePath, batchSize, onProgress){
       pages.forEach(p => { all = all.concat(p||[]); });
       if(onProgress) onProgress(all.length, total);
     }
+    // Pflichtabgleich gegen den count-Header: ein still unvollständig geladener Bestand
+    // verfälscht SRS-Queue, Duplikat-Check und Prüf-Tabs gleichermaßen und sieht dabei
+    // wie ein sauberes Ergebnis aus. Lieber hart scheitern als falsch weiterrechnen.
+    if(all.length !== total){
+      throw new Error('Unvollständig geladen: '+all.length+' von '+total+' Zeilen ('+basePath.split('?')[0]+') — bitte neu laden');
+    }
   } else if(firstPage.length === batchSize){
     // Fallback ohne count-Header (z.B. wenn Prefer ignoriert wird) → wie bisher sequenziell
     let offset = batchSize;
@@ -2273,7 +2278,7 @@ function setMode(m,el){
   hideAllStickyBars();
   clearTimeout(_modeDispatchTimer);
   _modeDispatchTimer=setTimeout(()=>{
-    if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='ninjacheck'){showNinjaCheckQueue();return;}if(m==='tunico'){showTunicoCandidates();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}if(m==='coursesrs'){goCourseSrs();return;}if(m==='mix'){goMix();return;}go();
+    if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='tunico'){showTunicoCandidates();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}if(m==='coursesrs'){goCourseSrs();return;}if(m==='mix'){goMix();return;}go();
   },0);
 }
 function updScore(){/* Score-Anzeige in nav-strip entfernt — score.c/w/st werden weiterhin für Ergebnis-Screen und SRS-Streak gepflegt */}
@@ -3322,12 +3327,10 @@ async function loadPartnerStats(){
     const pendingN  = await sbApiCount('vocabulary?partner_status=eq.pending&select=id');
     const suggestedN = await sbApiCount('vocabulary?partner_status=eq.suggested&select=id');
     const commentedN = await sbApiCount('vocabulary?partner_comment=not.is.null&select=id');
-    let ninjaN = '?';
-    try { ninjaN = await sbApiCount('vocabulary_review?change_category=eq.ninja_check_pending&select=vocabulary_id'); } catch(e) {}
     const qualityN = countDupeIssues() + countTranslitIssues();
 
     // Block nur zeigen, wenn mind. einer der Werte (außer "Offen") > 0 ist ODER die Prüfung überfällig ist
-    const anyOtherNonzero = [approvedRecentN, suggestedN, rejectedN, unknownN, commentedN, qualityN, (typeof ninjaN === 'number' ? ninjaN : 0)].some(n => n > 0);
+    const anyOtherNonzero = [approvedRecentN, suggestedN, rejectedN, unknownN, commentedN, qualityN].some(n => n > 0);
     const block = document.getElementById('partner-stats-block');
     if(!anyOtherNonzero && !isOverdue){
       if(block) block.style.display = 'none';
@@ -3370,10 +3373,6 @@ async function loadPartnerStats(){
         '<div onclick="jumpToPartnerQueue(\'commented\')" style="cursor:pointer;padding:.4rem;background:var(--surface2);border:1px solid var(--border);">' +
           '<div style="font-size:1.1rem;font-weight:700;color:var(--gold2)">' + commentedN + '</div>' +
           '<div style="font-size:.62rem;color:var(--muted)">💬 Kommentar</div>' +
-        '</div>' +
-        '<div onclick="goToCheck(\'ninjacheck\')" style="cursor:pointer;padding:.4rem;background:var(--surface2);border:1px solid var(--border);">' +
-          '<div style="font-size:1.1rem;font-weight:700;color:var(--gold)">' + ninjaN + '</div>' +
-          '<div style="font-size:.62rem;color:var(--muted)">🥷 Ninja-Check</div>' +
         '</div>' +
         '<div onclick="goToCheck(\'dupes\')" style="cursor:pointer;padding:.4rem;background:var(--surface2);border:1px solid var(--border);">' +
           '<div style="font-size:1.1rem;font-weight:700;color:var(--gold)">' + qualityN + '</div>' +
@@ -4306,7 +4305,6 @@ async function deleteVocabSheet(){
   if(!confirm('Vokabel wirklich löschen?')) return;
   try {
     await sbApi('progress?vocabulary_id=eq.'+vocabId, 'DELETE');
-    await sbApi('vocabulary_review?vocabulary_id=eq.'+vocabId, 'DELETE');
     await sbApi('vocabulary?id=eq.'+vocabId, 'DELETE');
     const idx = ALL_VOCAB.findIndex(v => v.id == vocabId);
     if(idx >= 0){ delete vocabIdMap[ALL_VOCAB[idx].tr]; ALL_VOCAB.splice(idx, 1); }
@@ -5965,7 +5963,6 @@ async function copyExportCSV(){
 
 let pqAllResults = [];
 let pqFilter = 'all';
-let nqAllResults = [];
 
 // Springt aus der Statistik direkt in die Partner-Queue, optional vorgefiltert.
 // filter: 'all' | 'rejected' | 'suggested' | 'unknown' | 'commented'
@@ -6141,189 +6138,6 @@ function copyQueueEntry(vocabId, btnEl){
   }
 }
 
-// ── Ninja-Check-Queue ────────────────────────────────────────────────────────
-// Zeigt Vokabeln, die gegen derja.ninja geprueft wurden und bei denen ein
-// Vorschlag zur Uebernahme in vocabulary_review liegt (change_category =
-// 'ninja_check_pending'). Herkunft: manuell markierte (flagged) Vokabeln
-// oder neue, noch nie geprüfte Vokabeln — die eigentliche Ninja-Recherche
-// laeuft ausserhalb der App (Claude-Routine), diese Ansicht ist nur fuer
-// die menschliche Freigabe/Ablehnung der Vorschlaege.
-async function showNinjaCheckQueue(){
-  const area = document.getElementById('exercise-screen');
-  if(area) area.style.display = 'block';
-  document.getElementById('act-screen').style.display='none';
-  document.getElementById('act-screen').style.pointerEvents='none';
-  const el = document.getElementById('exercise-content');
-  el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Lade…</div>';
-
-  try {
-    const res = await sbApi(
-      'vocabulary_review?select=vocabulary_id,arabic_script,darija,ninja_audio_url,ninja_audio_start,ninja_audio_end,change_reason,change_category,user_comment,' +
-      'vocabulary(arabic_script,darija,german,ninja_audio_url,ninja_audio_start,ninja_audio_end,flagged,lessons(lesson_number))' +
-      '&change_category=in.(ninja_check_pending,ninja_check_kein_vorschlag)&order=vocabulary_id.asc'
-    );
-    nqAllResults = res || [];
-    renderNinjaCheckQueue();
-  } catch(e) {
-    el.innerHTML = '<div style="color:var(--red);padding:1rem">Fehler: ' + e.message + '</div>';
-  }
-}
-
-function renderNinjaCheckQueue(){
-  const el = document.getElementById('exercise-content');
-  if(!el) return;
-
-  if(!nqAllResults.length){
-    el.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted)"><div style="font-size:2rem;margin-bottom:.8rem">🥷</div><div>Keine offenen Ninja-Vorschläge</div></div>';
-    return;
-  }
-
-  const pendingCount = nqAllResults.filter(r => r.change_category === 'ninja_check_pending').length;
-  const noSuggCount = nqAllResults.length - pendingCount;
-  let h = '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.8rem">' + pendingCount + ' offene Vorschläge' + (noSuggCount ? ' · ' + noSuggCount + ' ohne Vorschlag' : '') + '</div>';
-  h += '<div style="display:flex;flex-direction:column;gap:.6rem">';
-
-  nqAllResults.forEach(row => {
-    const orig = row.vocabulary || {};
-    const ls = orig.lessons ? 'L' + orig.lessons.lesson_number : '?';
-    const origAudio = orig.ninja_audio_url
-      ? '<button onclick="playVocabAudio(\'' + orig.ninja_audio_url.replace(/'/g,"\\'") + '\',event,' + (orig.ninja_audio_start||0) + ',' + (orig.ninja_audio_end||0) + ')" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.1rem .4rem;cursor:pointer;border-radius:3px;vertical-align:middle;margin-left:.3rem">🔊</button>'
-      : '<span title="Kein Audio hinterlegt" style="color:var(--border);margin-left:.3rem;vertical-align:middle">🔇</span>';
-    const reason = row.change_reason
-      ? '<div style="margin-top:.4rem;padding:.4rem .5rem;background:rgba(255,255,255,.04);border-left:2px solid var(--gold);border-radius:2px;font-size:.72rem;color:var(--muted)">💡 ' + row.change_reason + '</div>'
-      : '';
-
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem' + (row.change_category==='ninja_check_kein_vorschlag' ? ';opacity:.75' : '') + '">';
-    h += '<div style="font-size:.7rem;color:var(--muted);margin-bottom:.4rem">' + ls + ' · ' + (orig.german||'') + (orig.flagged ? ' · 🚩 markiert' : '') + (row.change_category==='ninja_check_kein_vorschlag' ? ' · 🤷 kein Vorschlag' : '') + '</div>';
-
-    if(row.change_category === 'ninja_check_kein_vorschlag'){
-      h += '<div style="min-width:0">';
-      h += '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--border);margin-bottom:.2rem">Aktuell (unverändert)</div>';
-      h += '<div style="font-family:\'Playfair Display\',serif;font-size:1.05rem;color:var(--muted);direction:rtl;text-align:right">' + (orig.arabic_script||'') + '</div>';
-      h += '<div style="font-size:.8rem;color:var(--muted)">' + (orig.darija||'') + origAudio + '</div>';
-      h += '</div>';
-      h += reason;
-      h += '<textarea id="nq-comment-' + row.vocabulary_id + '" placeholder="Hinweis für erneute Prüfung (z. B. Kontext, Vermutung, alternativer Suchbegriff)…" style="width:100%;box-sizing:border-box;min-height:3rem;margin-top:.5rem;padding:.4rem .5rem;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:inherit;font-size:.78rem;font-family:inherit;resize:vertical">' + (row.user_comment||'') + '</textarea>';
-      h += '<div style="display:flex;gap:.5rem;margin-top:.5rem">';
-      h += '<button onclick="ninjaCheckAcknowledge(' + row.vocabulary_id + ')" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);font-size:.78rem;padding:.4rem;cursor:pointer;border-radius:4px">👍 Verstanden</button>';
-      h += '<button onclick="ninjaCheckSaveComment(' + row.vocabulary_id + ')" style="flex:1;background:none;border:1px solid var(--gold);color:var(--gold2);font-size:.78rem;padding:.4rem;cursor:pointer;border-radius:4px">💬 Erneut prüfen lassen</button>';
-      h += '</div>';
-    } else {
-      const suggAudio = row.ninja_audio_url
-        ? '<button onclick="playVocabAudio(\'' + row.ninja_audio_url.replace(/'/g,"\\'") + '\',event,' + (row.ninja_audio_start||0) + ',' + (row.ninja_audio_end||0) + ')" title="Ninja-Aussprache abspielen" style="background:none;border:1px solid var(--gold);color:var(--gold2);font-size:.75rem;padding:.1rem .4rem;cursor:pointer;border-radius:3px;vertical-align:middle;margin-left:.3rem">🔊</button>'
-        : '<span title="Kein Audio hinterlegt" style="color:var(--border);margin-left:.3rem;vertical-align:middle">🔇</span>';
-      h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">';
-      h += '<div style="min-width:0">';
-      h += '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--border);margin-bottom:.2rem">Aktuell</div>';
-      h += '<div style="font-family:\'Playfair Display\',serif;font-size:1.05rem;color:var(--muted);direction:rtl;text-align:right">' + (orig.arabic_script||'') + '</div>';
-      h += '<div style="font-size:.8rem;color:var(--muted)">' + (orig.darija||'') + origAudio + '</div>';
-      h += '</div>';
-      h += '<div style="min-width:0">';
-      h += '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--gold);margin-bottom:.2rem">Ninja-Vorschlag</div>';
-      h += '<div style="font-family:\'Playfair Display\',serif;font-size:1.05rem;color:var(--gold2);direction:rtl;text-align:right">' + (row.arabic_script||'') + '</div>';
-      h += '<div style="font-size:.8rem">' + (row.darija||'') + suggAudio + '</div>';
-      h += '</div>';
-      h += '</div>';
-      h += reason;
-      h += '<div style="display:flex;gap:.5rem;margin-top:.6rem">';
-      h += '<button onclick="ninjaCheckApprove(' + row.vocabulary_id + ')" style="flex:1;background:var(--green);border:none;color:#0e0c0a;font-weight:700;font-size:.78rem;padding:.4rem;cursor:pointer;border-radius:4px">✅ Übernehmen</button>';
-      h += '<button onclick="ninjaCheckIgnore(' + row.vocabulary_id + ')" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);font-size:.78rem;padding:.4rem;cursor:pointer;border-radius:4px">🚫 Ignorieren</button>';
-      h += '</div>';
-    }
-    h += '</div>';
-  });
-
-  h += '</div>';
-  el.innerHTML = h;
-}
-
-async function ninjaCheckApprove(vocabId){
-  const row = nqAllResults.find(x => x.vocabulary_id === vocabId);
-  if(!row) return;
-  try {
-    await sbApi('vocabulary?id=eq.' + vocabId, 'PATCH', {
-      arabic_script: row.arabic_script,
-      darija: row.darija,
-      ninja_audio_url: row.ninja_audio_url,
-      ninja_audio_start: row.ninja_audio_start||null,
-      ninja_audio_end: row.ninja_audio_end||null,
-      flagged: false,
-      ninja_checked_at: new Date().toISOString()
-    });
-    await sbApi('vocabulary_review?vocabulary_id=eq.' + vocabId, 'PATCH', {
-      change_category: 'ninja_check_uebernommen',
-      reviewed: true,
-      status_updated_at: new Date().toISOString()
-    });
-    const v = vById(vocabId);
-    if(v){ v.ar = row.arabic_script; v.tr = row.darija; v.au = row.ninja_audio_url; v.aus = row.ninja_audio_start||0; v.aue = row.ninja_audio_end||0; }
-    nqAllResults = nqAllResults.filter(x => x.vocabulary_id !== vocabId);
-    renderNinjaCheckQueue();
-    showToast('✓ übernommen','ok');
-  } catch(e) {
-    showToast('Fehler: ' + e.message, 'err');
-  }
-}
-
-async function ninjaCheckIgnore(vocabId){
-  const row = nqAllResults.find(x => x.vocabulary_id === vocabId);
-  if(!row) return;
-  try {
-    await sbApi('vocabulary?id=eq.' + vocabId, 'PATCH', {
-      flagged: false,
-      ninja_checked_at: new Date().toISOString()
-    });
-    await sbApi('vocabulary_review?vocabulary_id=eq.' + vocabId, 'PATCH', {
-      change_category: 'ninja_check_ignoriert',
-      reviewed: true,
-      status_updated_at: new Date().toISOString()
-    });
-    nqAllResults = nqAllResults.filter(x => x.vocabulary_id !== vocabId);
-    renderNinjaCheckQueue();
-    showToast('Ignoriert','ok');
-  } catch(e) {
-    showToast('Fehler: ' + e.message, 'err');
-  }
-}
-
-// Fuer Eintraege ohne Ninja-Vorschlag (change_category = 'ninja_check_kein_vorschlag'):
-// nur zur Kenntnis nehmen, es gibt nichts zu uebernehmen oder abzulehnen.
-async function ninjaCheckAcknowledge(vocabId){
-  try {
-    await sbApi('vocabulary_review?vocabulary_id=eq.' + vocabId, 'PATCH', {
-      change_category: 'ninja_check_kein_vorschlag_bestaetigt',
-      reviewed: true,
-      status_updated_at: new Date().toISOString()
-    });
-    nqAllResults = nqAllResults.filter(x => x.vocabulary_id !== vocabId);
-    renderNinjaCheckQueue();
-    showToast('✓ zur Kenntnis genommen','ok');
-  } catch(e) {
-    showToast('Fehler: ' + e.message, 'err');
-  }
-}
-
-// Hinweis zu einem Eintrag ohne Ninja-Vorschlag hinterlegen, damit er
-// bei der naechsten Pruefung mit diesem Kontext erneut untersucht wird.
-async function ninjaCheckSaveComment(vocabId){
-  const ta = document.getElementById('nq-comment-' + vocabId);
-  const comment = ta ? ta.value.trim() : '';
-  if(!comment){ showToast('Bitte einen Hinweis eingeben','err'); return; }
-  try {
-    await sbApi('vocabulary_review?vocabulary_id=eq.' + vocabId, 'PATCH', {
-      user_comment: comment,
-      change_category: 'ninja_check_kommentiert',
-      reviewed: false,
-      status_updated_at: new Date().toISOString()
-    });
-    nqAllResults = nqAllResults.filter(x => x.vocabulary_id !== vocabId);
-    renderNinjaCheckQueue();
-    showToast('✓ Kommentar gespeichert – wird erneut geprüft','ok');
-  } catch(e) {
-    showToast('Fehler: ' + e.message, 'err');
-  }
-}
-
 let qcTab = 'dupes'; // Qualit\u00e4ts-Check-Tab: 'dupes' | 'translit'
 
 function showDupeCheck(){
@@ -6390,6 +6204,12 @@ function dupeEntryHtml(v, extraActions){
 
 // Regeln f\u00fcr den Transliterations-Check \u2014 jede Regel liefert true bei einem Verstoss
 const isLoanword = v => /(frz\.|franz\.|ital\.|engl\.|lehnwort)/i.test(v.en||'');
+// Buchstabenpaare fuer den Anzahl-Gegencheck (Regel 22), einmal vorkompiliert statt je Zeile neu
+const CONSONANT_PAIRS = [
+  [/ح/g, /7/g], [/خ/g, /kh/gi], [/ع/g, /3/g], [/ش/g, /sh/gi], [/ض/g, /dh/gi],
+  [/ج/g, /j/gi], [/ز/g, /z/gi], [/غ/g, /gh?/gi], [/ق/g, /[qgk]/gi],
+  [/ه/g, /h/gi], [/س/g, /s/gi], [/[ظذ]/g, /th/gi],
+];
 const TRANSLIT_RULES = [
   { label: 'Verbotene Ziffern (2/5/9 statt Hamza weglassen / kh / q)',
     test: v => /[259]/.test(v.tr) },
@@ -6452,6 +6272,38 @@ const TRANSLIT_RULES = [
     } },
   { label: '"und" sollte immer als "w-" geschrieben werden, nicht als eigenständiges "wa"/"u"',
     test: v => /\b(wa|u)\b/.test(v.tr) && !/\bahla\s+wa\s+sahla\b/i.test(v.tr) },
+  // Plural يفعلوا wird -iw/-aw geschrieben, nie -iou/-eou/-aou (Konvention SKILL.md).
+  // Erster Lauf 2026-09-12: 13 Treffer, alle echt, keine Fehlalarme.
+  { label: 'Plural-Endung "-iou"/"-eou"/"-aou" statt "-iw"/"-aw"',
+    test: v => /(iou|eou|aou)(\b|$)/.test(v.tr) },
+  // Die Konsonanten-Regeln oben pruefen nur, OB der Gegenpart vorkommt. Sobald irgendwo im
+  // Feld ein "7" steht, schweigen sie — bei Saetzen verdeckt das einen Fehler in einem
+  // einzelnen Wort (1649 hatte 3x ح und 2x "7", das falsch geschriebene erste Wort blieb
+  // jahrelang unsichtbar). Dieser Check vergleicht die ANZAHL und ergaenzt sie dadurch:
+  // er greift nur, wenn beide Seiten mindestens einmal vorkommen, sonst hat die jeweilige
+  // Regel oben schon angeschlagen. Erster Lauf 2026-09-12: 11 Treffer, 10 echte Fehler.
+  { label: 'Konsonant im Arabischen h\u00e4ufiger als sein Gegenst\u00fcck in der Transliteration (Fehler in einem einzelnen Wort eines Satzes)',
+    test: v => {
+      if(!v.ar || !v.tr || isLoanword(v)) return false;
+      return CONSONANT_PAIRS.some(([reAr, reTr]) => {
+        const a = (v.ar.match(reAr) || []).length;
+        const t = (v.tr.match(reTr) || []).length;
+        return a > 0 && t > 0 && a > t;
+      });
+    } },
+  // Sonderbuchstaben: ڨ/گ = g, ڤ/ڥ = v, پ = p sind eigene Laute, nicht Varianten von ق/ف/ب.
+  // Bewusst OHNE Lehnwort-Ausnahme: die lateinische Schreibung eines Lehnworts ist frei,
+  // der arabische Buchstabe ist es nicht (el-guichet stand mit ڤ statt ڨ im Bestand).
+  // Seit 2026-09-13: bei g-Aussprache wird das Arabische auf ڨ umgestellt, nicht die darija auf q.
+  { label: 'Sonderbuchstabe im Arabischen passt nicht zur Transliteration (\u06A8/\u06AF=g, \u06A4=v, \u067E=p)',
+    test: v => {
+      if(!v.ar || !v.tr) return false;
+      if(/\u0642/.test(v.ar) && /g/i.test(v.tr.replace(/gh/gi,''))) return true;   // \u0642 im Arabischen, aber g gesprochen
+      if(/[\u06A8\u06AF]/.test(v.ar) && !/g/i.test(v.tr.replace(/gh/gi,''))) return true;
+      if(/[\u06A4\u06A5]/.test(v.ar) && !/v/i.test(v.tr)) return true;
+      if(/\u067E/.test(v.ar) && !/p/i.test(v.tr)) return true;
+      return false;
+    } },
 ];
 
 // Zählt betroffene Vokabeln (distinct), für die Statistik-Kachel — reine Zahl, kein Rendering
@@ -6490,8 +6342,7 @@ function countDupeIssues(){
 function goToCheck(m){
   cMode = m;
   document.querySelectorAll('.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));
-  if(m==='ninjacheck') showNinjaCheckQueue();
-  else if(m==='dupes') showDupeCheck();
+  if(m==='dupes') showDupeCheck();
 }
 
 function renderTranslitCheck(c){
@@ -6500,15 +6351,24 @@ function renderTranslitCheck(c){
     entries: ALL_VOCAB.filter(v => v.tr && r.test(v))
   })).filter(g => g.entries.length);
 
+  // Grundgesamtheit und Regelzahl immer mit ausgeben: "0 Treffer" ist ohne Nenner keine
+  // Aussage — ein halb geladener Bestand oder eine gekürzte Regelliste sähen genauso aus.
+  const geprueft = ALL_VOCAB.filter(v => v.tr).length;
+  const fuss = geprueft + ' von ' + ALL_VOCAB.length + ' Vokabeln gepr\u00fcft \u00b7 '
+             + TRANSLIT_RULES.length + ' Regeln';
+
   if(!groups.length){
-    c.innerHTML = '<div style="padding:2rem;text-align:center"><div style="font-size:2rem;margin-bottom:.8rem">\u2705</div><div style="color:var(--green);font-size:.9rem">Keine Transliterations-Auff\u00e4lligkeiten gefunden</div></div>';
+    c.innerHTML = '<div style="padding:2rem;text-align:center">'
+      + '<div style="font-size:2rem;margin-bottom:.8rem">\u2705</div>'
+      + '<div style="color:var(--green);font-size:.9rem">Keine Transliterations-Auff\u00e4lligkeiten gefunden</div>'
+      + '<div style="color:var(--muted);font-size:.72rem;margin-top:.6rem">'+fuss+'</div></div>';
     return;
   }
 
   const total = groups.reduce((s,g)=>s+g.entries.length,0);
   let html = '<div>'
     + '<div style="color:var(--gold2);font-size:1rem;font-weight:700;margin-bottom:.4rem">\ud83d\udd24 Transliterations-Pr\u00fcfung</div>'
-    + '<div style="color:var(--muted);font-size:.78rem;margin-bottom:1.2rem">'+total+' Auff\u00e4lligkeit'+(total!==1?'en':'')+' in '+groups.length+' Kategorie'+(groups.length!==1?'n':'')+'</div>';
+    + '<div style="color:var(--muted);font-size:.78rem;margin-bottom:1.2rem">'+total+' Auff\u00e4lligkeit'+(total!==1?'en':'')+' in '+groups.length+' Kategorie'+(groups.length!==1?'n':'')+' \u00b7 '+fuss+'</div>';
 
   groups.forEach(g => {
     html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;margin-bottom:1rem;overflow:hidden">'
@@ -7744,7 +7604,7 @@ async function _tnAddNewWithValues(r, row, darijaVal, germanVal){
     vocabIdMap[darijaVal] = newId;
     flaggedVocab.add(darijaVal);
     await sbApi('tunico_candidates?id=eq.'+r.id, 'PATCH', {status:'added', vocabulary_id:newId, comment: comment||null, decided_at: new Date().toISOString()});
-    showToast('✓ Neu angelegt (#'+newId+') — geflaggt für Ninja-Check','ok');
+    showToast('✓ Neu angelegt (#'+newId+') — geflaggt zum Prüfen','ok');
     r.status='added'; r.vocabulary_id=newId;
     _tnCollapseRow(row, r);
   }catch(e){ showToast('Fehler: '+e.message,'err'); }
