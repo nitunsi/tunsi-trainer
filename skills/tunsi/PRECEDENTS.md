@@ -258,6 +258,26 @@ Repariert: `translate(s, 'ڨگڤڥپ', 'ggvvp')`, `چ`→`j`, Satzzeichenklasse 
 
 **Lehre:** vor einer Massenänderung an einem Feld nicht nur fragen „ist der neue Wert richtig?", sondern „**was rechnet sonst noch mit diesem Feld?**". Hier hingen zwei gespeicherte Skelettspalten und der komplette Cross-Source-Abgleich daran. Die Prüfung kostete eine Abfrage und hat einen Fehler gefunden, der seit dem ersten Import bestand.
 
+## Der Duplikat-Check nach einer Vokalisierungs-Kampagne (2026-09-13)
+
+Nach rund 200 Schreibvorgängen an einem Tag, davon 96 im `arabic_script` und zwei komplett neu berechneten Skelettspalten, habe ich einen Verifikationslauf gemacht. **Alle Wächter sauber** — aber der Duplikat-Check hatte eine neue Kollision, **die ich selbst erzeugt hatte**: die Vokalisierung von `2142 brik` (بريك → بْرِيكْ) ließ es mit `385 brika` zusammenfallen.
+
+Die Prüfung ergab keine Dublette, sondern ein **falsch benanntes Wort**. Ninja: `مَلْسُوقَةْ malsouqa` = „wrappers for brik". TUNICO: `malsuqa` = „Brik-Teigblatt, Blätterteig", `brik` = „Brik". Also trug `2142` den **richtigen deutschen Gloss an der falschen Vokabel**, und `malsouqa` fehlte im Bestand komplett. Korrigiert, inklusive Audio-Umzug — die alte Aufnahme sprach `brik`.
+
+**Regel:** eine Vokalisierungs-Kampagne ändert `arabic_script` und damit die Dubletten-Lage. **Der Duplikat-Check gehört direkt danach gelaufen**, nicht irgendwann. Von 13 Kollisionsgruppen waren 12 längst als `homonym_ok` entschieden — die eine neue hätte man ohne den Lauf erst beim Lernen bemerkt.
+
+### Drei Funktionsfehler, die dabei auffielen
+
+`385 brika` deckte einen **blinden Fleck des Verfahrens** auf: der Skelettvergleich streicht Vokale, also sind `brika` und `brik` für ihn identisch. Ein auslautender Vokal ist unsichtbar. Eigener Check gebaut, 31 Treffer.
+
+Beim Lesen dieser 31 stellten sich zwei Klassen als **Fehler meiner eigenen Ableitungsfunktion** heraus:
+1. **Wortfinales و** wurde als Konsonant `w` gelesen statt als Suffixvokal `ou` — نِحِلّو ergab `ni7illw` statt `ni7illou`. Betraf das ganze Präsens-Plural-Paradigma.
+2. **Alif al-wiqaya**, das stumme ا nach wortfinalem و (إِقْرَوْا „lest!"), wurde als `a` ausgegeben.
+
+Beim Reparieren von (1) griff die erste Fassung zu weit: sie machte auch aus إِقْرَوْا ein `aiqraou`. **Unterscheidung:** wortfinales و nach einem **Konsonanten** ist das Suffix `-ou`, nach einem **Vokal** der Halbvokal des Diphthongs (`-aw`, `-iw`). Danach 16 von 16 Testfällen. Ein dritter Nachzieher: bei رَاهُوْ trägt das و ein Sukun, und der Damma-Zweig verlangte „keine Diakritika".
+
+**Lehre:** wenn eine Verdachtsliste eine erkennbare Systematik zeigt, ist die erste Frage nicht „welche Zeilen korrigiere ich?", sondern **„ist das ein Datenmuster oder ein Werkzeugfehler?"**. Hier waren 4 der 31 ein Werkzeugfehler — und hätte ich sie als Daten korrigiert, wären 4 richtige Zeilen kaputtgegangen und der Fehler geblieben.
+
 ## Bedeutungs-Screen: Mechanik richtig, Menge falsch (2026-09-13)
 
 Gebaut, gemessen, **als Massenwerkzeug verworfen** — und das ist das Ergebnis, nicht das Scheitern. Der Abnahmetest bestätigt, dass die Mechanik stimmt: `710` joint korrekt, der alte Gloss „der Korridor / der Flur" wird gemeldet, der korrigierte nicht. Trotzdem ist die Liste unbrauchbar: **~93 % Fehlalarm**, an 30 gelesenen Zeilen etwa 2 echte Funde.

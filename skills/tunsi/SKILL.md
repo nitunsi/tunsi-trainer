@@ -749,6 +749,22 @@ SELECT id, darija, german, arabic_script, abgeleitet FROM s WHERE sd <> sa ORDER
 
 **Was die 44 Treffer sind** (Stand 2026-09-13, ~35 echt): fehlende oder überzählige Gemination in beide Richtungen (`nos` gegen نُصّ; umgekehrt fehlt bei `7orriyya` dem *Arabischen* die Schadda), falsche Konsonanten (`shadika` für شهادة, `odhkhol` mit `dh` gegen د), ق/ڨ-Uneinigkeit (`bagra`/`baqara`, `manga`/`manqa`), das `7h`-Muster (`msalh7a`). Fehlalarme: nicht als Lehnwort markierte Zeilen und Artikel, den die `darija` trägt und das `arabic_script` nicht.
 
+**Blinder Fleck: der auslautende Vokal.** Der Skelettvergleich streicht Vokale — ein Wort, das auf einen Vokal endet, und eines, das nicht, haben dasselbe Skelett. `385 brika` gegen بْرِيكْ lief deshalb jahrelang als „ok" durch, obwohl die `darija` ein `-a` trägt, das im Arabischen nicht steht. Eigener Check, **27 offene Treffer** (Stand 2026-09-13):
+
+```sql
+SELECT id, darija, german, arabic_script, public._arabic_to_chatalpha(arabic_script) AS abgeleitet
+FROM vocabulary
+WHERE arabic_script ~ '[ًٌٍَُِّْ]' AND arabic_script !~ '\s' AND darija !~ '[ \-cvxp]'
+  AND german !~* '(frz\.|franz\.|ital\.|engl\.|lehnwort)'
+  AND arabic_script !~ '[بتثجحخدذرزسشصضطظعغفقكلمنه](?![ًٌٍَُِّْٰ])'
+  AND public._translit_skeleton(darija) = public._translit_skeleton(public._arabic_to_chatalpha(arabic_script))
+  AND right(regexp_replace(lower(darija),'[^a-z0-9]','','g'),1) ~ '[aeiou]'
+    IS DISTINCT FROM
+      right(regexp_replace(lower(public._arabic_to_chatalpha(arabic_script)),'[^a-z0-9]','','g'),1) ~ '[aeiou]';
+```
+
+Zwei bekannte Fehlalarmklassen darin: die hocharabische Perfekt-Endung ـَّ (هَزَّ gegen unser `hazz` — im Dialekt nicht gesprochen) und `-iy` gegen `-i` bei Berufsbezeichnungen. Letzteres ist allerdings meist ein **echter** Fund: `bankajiy`, `sbabtiy`, `farmasiy`, `mitrouw` tragen Ninjas Konvention (`iy` für ī, `ouw` für ū), nicht unsere — dieselbe Klasse wie `touwl`→`toul`.
+
 **Richtung offen lassen.** Ein Treffer sagt „diese beiden Felder widersprechen sich", nicht welches falsch ist. Bei `7orriyya` war es das Arabische. Immer beide prüfen, nie automatisch die `darija` angleichen.
 
 **Pro Wort statt pro Zeile — erweitert die Reichweite von 1.179 auf 1.624 Zeilen (+38 %).** Die Zeilen-Variante wirft einen ganzen Satz weg, sobald *ein* Wort unvokalisiert ist. Wortweise bleiben die vokalisierten Wörter prüfbar. Das braucht aber **zwei zusätzliche Filter**, sonst ist die Liste schlechter als die kürzere:

@@ -1361,3 +1361,29 @@ TUNICO schreibt `brik`. Der Zeichen-Check meldet das nicht, weil die Skelette (`
 
 **Lehre für den Skill:** eine Vokalisierungs-Kampagne ändert `arabic_script` und damit die
 Dubletten-Lage. Der Duplikat-Check gehört danach gelaufen, nicht irgendwann.
+
+### Nachtrag zu Runde 23 — beide Korrekturen ausgeführt, und drei Funktionsfehler gefunden
+
+`2142`: `brik` بْرِيكْ → `malsouqa` مَلْسُوقَةْ, Gloss „Brik-Teigblatt" bleibt, **Audio umgezogen**
+(die alte Aufnahme sprach `brik`). `385`: `brika` → `brik`.
+Dubletten danach: 12 Gruppen, **alle `homonym_ok`**.
+
+**Der blinde Fleck, den `385` aufdeckte:** der Skelettvergleich streicht Vokale, also sind
+`brika` und `brik` für ihn identisch. Eigener Check gebaut → **31 Treffer**.
+
+Beim Lesen der 31 waren zwei Klassen **Fehler meiner Ableitungsfunktion**, nicht der Daten:
+
+| Fehler | Beispiel |
+|---|---|
+| wortfinales و als Konsonant `w` statt Suffixvokal `ou` | نِحِلّو → `ni7illw` statt `ni7illou` — das ganze Präsens-Plural-Paradigma |
+| Alif al-wiqaya (stummes ا nach و) als `a` ausgegeben | إِقْرَوْا → `aiqrawa` |
+
+Die erste Reparatur griff zu weit und machte aus إِقْرَوْا ein `aiqraou`. **Richtig ist:** wortfinales و
+nach einem **Konsonanten** ist das Suffix `-ou`, nach einem **Vokal** der Halbvokal (`-aw`, `-iw`).
+Dritter Nachzieher: bei رَاهُوْ trägt das و ein Sukun. Danach **16 von 16 Testfällen**.
+
+Ninja-`chatalpha` neu berechnet (142 Zeilen betroffen). Lücke danach: **31 → 27**.
+
+**Lehre:** zeigt eine Verdachtsliste eine Systematik, ist die erste Frage nicht „welche Zeilen
+korrigiere ich?", sondern **„Datenmuster oder Werkzeugfehler?"**. Hier waren 4 von 31 ein
+Werkzeugfehler — als Daten korrigiert hätte ich vier richtige Zeilen kaputtgemacht.
