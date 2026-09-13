@@ -2569,3 +2569,47 @@ Gruppe A: **18 Checks, alle 0.** Gruppe B: 1 · 9 · 425 · 36 · 1 · 1 · 7 = 
 
 Check 21 enthält nur noch: die vier `3ayyit`-Phrasen (752, 753, 1913, 2646), `3614 y7ajjim`,
 `576 eqif`, `3052 osket`, `1198 na3mlou`, `4045 yijra`.
+
+---
+
+## Runde 40 (2026-09-13) — Phrasen und ein falsches Paradigma
+
+### Die vier `3ayyit`-Phrasen: Tabelle entfernt — und ein Befund dabei
+
+Vorprüfung wie angekündigt: die Verbgruppe existiert vollständig (`4548 3ayyit` „er rief",
+`4549 y3ayyit` „er ruft", `4550 3ayyitt` „ich rief", rotierend). Die Tabelle bleibt dort; die vier
+Sätze tragen sie nur zusätzlich und können in ihr naturgemäß nie vorkommen.
+
+**Dabei aufgefallen:** `752` und `753` trugen als `arabic_script` عَيَّطْت — das leitet `3ayyatt` ab,
+also **1. Person Vergangenheit „ich rief"**. Das Deutsche sagt aber „Ruf die Feuerwehr" / „Ruf die
+Polizei", und die `darija` `3ayyit` ist der Imperativ. `1913` hatte عَيَّطْ = `3ayyat`, auch nicht
+den Imperativ.
+
+Alle drei auf عَيِّط = `3ayyit` umgestellt. Beleg aus dem eigenen Bestand: `2646` trug den Imperativ
+bereits richtig, und `4550 3ayyitt` zeigt, wie die 1. Person aussieht (doppeltes `t`).
+
+### `3614 y7ajjim`: die Tabelle beschrieb ein anderes Verb
+
+Die Tabelle enthielt `n7jem` / `t7jem` / `y7jem` — **Maß I ohne Gemination**. Die Zeile ist
+`y7ajjim` يْحَجِّم, Maß II. Die Quellen sind einstimmig für die Zeile: TUNICO `ḥažžim`,
+Ninja حَجِّمْ, Peace Corps `7ajjim`; dazu der eigene Bestand mit `2327 7ajjem` „Friseur" (حَجَّام)
+und `3603 7ajjem bel-zero` (حَجِّمْ).
+
+Die Tabelle war zudem mit drei Formen unvollständig. Entfernt — die Zeile steht jetzt als Verbzeile
+ohne Tabelle, wie 169 andere auch. Ein vollständiges Paradigma anzulegen ist eine eigene Entscheidung.
+
+Das ist übrigens genau der Präzedenzfall, den der Skill unter „Verb-Selbstcheck" führt: `y7jem` galt
+als „eine Zeile, Tabelle dran, fertig". Die Zeile wurde später auf `y7ajjim` korrigiert — **die
+Tabelle blieb stehen und behielt das alte, falsche Verb.**
+
+### Stand
+
+**Check 21: 9 → 4.** Übrig sind nur noch die vier Entscheidungsfälle: `576 eqif`, `1198 na3mlou`,
+`3052 osket`, `4045 yijra`.
+
+| | |
+|---|---|
+| 🔁 Duplikate | **0** von 3.777, `count`-Header 3.777 |
+| 🔤 Transliteration | **0** von 3.777, 23 Regeln |
+| Gruppe A | **18 Checks, alle 0** |
+| Gruppe B | 1 · 4 · 425 · 36 · 1 · 1 · 7 = **475** |
