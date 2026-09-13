@@ -1866,3 +1866,97 @@ weiterhin. Genau der „Verb und Nomen sind zwei Zeilen"-Fall aus derselben Rund
 **Regel daraus, jetzt im Skill:** im `german`-Duplikat-Check immer den Wortstamm mit `\y` verankert
 suchen, nie die Vollform. Ein „— nichts —" ist sonst keine Auskunft über den Bestand, sondern über
 das Suchmuster.
+
+---
+
+## Runde 30 (2026-09-13) — Gegenrichtungs-Durchlauf über alle Regeln
+
+Anlass: alle drei Skill-Fehler dieser Session waren einseitig formulierte Regeln (Zeitzone,
+Regel 23, Infinitiv). Der Durchlauf stellt an jede Regel eine Frage: **hat sie eine Gegenrichtung,
+und was passiert, wenn man sie misst?** Nichts davon ist geschrieben — Messungen zum Ansehen.
+
+### Der Befund gleich in der Regelliste
+
+`TRANSLIT_RULES` 5–16 sind **zwölf Regeln derselben einseitigen Form**: „X im Arabischen, aber kein Y
+in der Transliteration". Die Gegenrichtung existierte für genau eine davon — Check 26 (ع/`3`), heute
+gebaut, 5 echte Treffer beim ersten Lauf. Messung der übrigen elf:
+
+| Gegenrichtung | Treffer | davon echt |
+|---|---|---|
+| `q` ohne ق | 1 | **1** |
+| `gh` ohne غ | 1 | **1** |
+| `ح`-Paar: `7` ohne ح | 2 | 0 (beide „(7al)"-Anmerkungen) |
+| `sh` ohne ش | 2 | 0 (`s`+`ه`: أَسْهَل, يَسْهَرْ) |
+| `h` ohne ه | 4 | **2** |
+| `s` ohne س/ص | 5 | 0 (Lehnwörter) |
+| `th` ohne ظ/ذ/ث | 6 | 2 Grenzfälle |
+| `dh` ohne ض | 9 | **3** |
+| `j` ohne ج, `z` ohne ز | 0 | — |
+
+**Die acht echten Befunde:**
+
+| id | darija | arabic_script | was |
+|---|---|---|---|
+| 1491 | `el qahwa el ka7la` | ال**ف**َهْوَة الكَحْلَة | ف statt ق — Tippfehler im Arabischen |
+| 1422 | `inshallah ma3rfa tayba` | إِنْ شاء مَعْرفَة طَيِّبَة | **الله fehlt** |
+| 1431 | `inshallah bil qasm` | اِن شاء بِالقَسْم | **الله fehlt** |
+| 4412 | `tghashshish` | تڨشش | ڨ = `g`, die darija schreibt `gh` |
+| 2409 | `tnajjem todhkhol?` | تُدْخُل | `todkhol` — ein `h` zu viel |
+| 2824 | `odhkhol fi` | أَدْخُل | `odkhol` |
+| 2831 | `… odhkhol ez-zenqa` | أَدْخُل | `odkhol` |
+| 1841 / 3026 | `thiz`, `thabbel` | تهز, تَهَبَّل | `t`+`h`, liest sich als `th` — Grenzfall |
+
+### Methodischer Fund 1: Einzelzeichen ja, Digraphen nein
+
+Die Gegenrichtung ist **sauber bei Einzelzeichen** (`3`, `q`, `z`, `j`: zusammen 2 Treffer, beide echt)
+und **verrauscht bei Digraphen** (`dh`, `th`, `sh`: 17 Treffer, überwiegend Morphemgrenzen —
+`3and`+`ha`, `mammet`+`hom`, `as`+`hal`). Grund: ein Digraph entsteht auch zufällig, wo zwei Morpheme
+aufeinandertreffen; ein `3` oder `q` kann das nicht. **Nur die Einzelzeichen-Gegenrichtungen taugen
+als Dauercheck**, die Digraph-Gegenrichtungen bleiben eine einmalige Liste.
+
+### Methodischer Fund 2: die Gegenrichtung hat einen Defekt in der Hinrichtung gefunden
+
+`4412 tghashshish` / تڨشش **müsste** Regel 23 auslösen (ڨ im Arabischen, kein `g` in der
+Transliteration). Check 9 steht trotzdem auf 0. Ursache: Regel 23 testet
+
+```js
+if(/[ڨگ]/.test(v.ar) && !/g/i.test(v.tr)) return true;
+```
+
+— der `g`-Test zählt das `g` in `gh` mit. `gh` ist aber غ, ein anderer Laut. Die Regel braucht
+dasselbe `replace(/gh/gi,'')`, das ihre erste Bedingung bereits benutzt. **Eine Regel, die sich
+selbst blind macht — gefunden nur, weil die Gegenrichtung gemessen wurde.**
+
+### Gegenrichtung zur „/ vs. ;"-Regel: die darija hat eine dritte Notation
+
+Die Regel gilt im Skill nur für das `german`-Feld. Die `darija` benutzt zusätzlich **Klammern**, in
+12 Zeilen, mit drei verschiedenen Bedeutungen. Am echten Quiz-Code gemessen (`normalize` +
+`checkAnswer` aus `trainer.html`, `normalize` entfernt Klammerinhalte):
+
+| Bedeutung | Zeilen | Verhalten |
+|---|---|---|
+| Anmerkung — `labes (7al)`, `yitba3 (passive)` | 252, 2879, 3281 | ok (exakt). Gehört trotzdem ins `german` |
+| **Variante** — `labes (lbes)`, `ciao (tshaw)`, `ybarik fik (y3ayyshik)` | **1174, 1406, 1425, 1427** | **ABGELEHNT** — die angebotene Variante gilt als falsche Antwort |
+| optional — `koll we7id (w) …`, `shkoun(ou) …` | 1492, 1494, 1495, 1787, 1788 | ok, aber **nur über die 1-Zeichen-Fuzzy-Toleranz** |
+
+Die vier Varianten-Zeilen gehören auf `/` umgestellt — `checkAnswer()` splittet auf `/` und
+akzeptiert jeden Teil, genau dafür ist der Trenner da.
+
+### Gegenrichtung: `homonym_ok` ist ein Ausschalter, kein Etikett
+
+Check 10 lautet `HAVING count(*) > 1 AND NOT bool_or(homonym_ok)`. **Eine einzige Zeile mit dem Flag
+schaltet die Prüfung für die ganze Arabisch-Gruppe ab.** 58 Zeilen tragen `homonym_ok = true`, ohne
+dass es derzeit überhaupt eine zweite Zeile mit demselben `arabic_script` gibt — das sind **58 vorab
+stillgelegte Prüfungen**: kommt später eine Dublette dazu, meldet Check 10 sie nicht.
+
+### Die restlichen Gegenrichtungen
+
+| Regel | Gegenrichtung | Treffer | Urteil |
+|---|---|---|---|
+| Check 3 Artikel vor Sonnenbuchstabe | assimiliert vor **Mond**buchstabe | **0** | sauber, als A-Check aufnehmbar |
+| Regel 20 „und" = `w-` | `w-` wo kein „und" | 1 | brauchbar |
+| Check 5 `(f.)` ohne `-a` | `-a` ohne `(f.)` | **567** | **unbrauchbar** — die meisten Wörter auf `-a` sind keine Feminina. Verworfen |
+
+Check 5 ist dabei die lehrreichste Nullnummer: nicht jede Regel hat eine sinnvolle Gegenrichtung.
+Die Frage lohnt trotzdem — sie kostet eine Abfrage und hat hier acht Datenfehler plus einen
+Regeldefekt freigelegt.
