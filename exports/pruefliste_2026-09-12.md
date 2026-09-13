@@ -1031,7 +1031,7 @@ Dazu zwei unabhängige Stützen: die **Wurzel** ن-ش-ر „ausbreiten/aufhänge
 
 **Ausgeführt nach Freigabe:** `710` german → „der Hof zum Wäscheaufhängen (im Haus)", topic „(L20)" → „Wohnen", Herkunft in `internal_note`, `partner_status` bleibt `pending`.
 
-**Offen:** Lernverlauf steht bei 4 richtig / 15 falsch gegen den alten Gloss, `next_review` 2026-09-16. Fällig setzen / Zähler zurücksetzen? Und: „Flur" hat jetzt kein eigenes Wort mehr im Bestand — `koulwar` oder `mamar` neu anlegen?
+**Entschieden von Nils:** Lernstand bleibt unverändert (kommt planmäßig am 16.09. dran). Kein neues Wort für „Flur" — erst Semia fragen, welches sie benutzt.
 
 ### b) Quell-Konventionen — die Regeln waren da, aber an sechs Stellen
 
@@ -1048,3 +1048,55 @@ Konsolidiert zu einer Tabelle (SKILL.md → Quell-Konventionen, Commit `bcd458b`
 **Konsequenz 2:** ein `dh` von Ninja oder Peace Corps ist **kein** Gegenbeleg gegen unsere ausnahmslose ظ/ذ→`th`-Regel. Nur TUNICO kann sie prüfen.
 
 In IMPORTS.md korrigiert: die Ninja-Suchtabelle behauptete für `th` „ث oder ذ … gleich" — für ذ/ظ stimmt das nur in 64 % der Fälle.
+
+## Runde 16 · vocabulary_review-Altlast aufgeklärt + drei neue Befunde (2026-09-13)
+
+### a) Die „15 Altlasten" sind in Wahrheit 1.533 — und keine Vorschläge
+
+Meine Notiz aus dem Skill-Test war falsch. Vermessen:
+
+| `change_category` | `reviewed` | Zeilen | davon inhaltlich abweichend |
+|---|---|---|---|
+| **NULL** | false | **1.533** | **335** |
+| alle übrigen Kategorien zusammen | — | 1.128 | 314 |
+
+Entscheidend ist der Zeitstempel: **alle 1.533 Zeilen tragen exakt einen** — `2026-07-25 09:03:00+00`. Ein einziger Bulk-INSERT, keine 1.533 Einzelentscheidungen. 1.198 davon sind byteidentisch mit dem heutigen `vocabulary`-Stand, alle haben `lesson_id`, nur 5 waren `flagged` (alle längst erledigt).
+
+Die Richtung der Abweichungen beweist es endgültig — die Review-Zeile hält durchweg den **älteren, schlechteren** Wert:
+
+| id | Stand 25.07. | heute |
+|---|---|---|
+| 290 | `3anda` | `3andha` |
+| 326 | `anzas` | `anjas` |
+| 388 | `7ather` | `7adher` |
+| 435 | `thayyaq` | `dhayyaq` |
+
+`7ather`→`7adher` und `thayyaq`→`dhayyaq` sind genau die ض→`dh`-Entscheidung vom **2026-08-06** — also nach dem Snapshot. **Das ist ein Backup von `vocabulary` vom 25.07., kein Vorschlagsbestand.**
+
+**Warum das trotzdem stört:** `vocabulary_review.vocabulary_id` ist UNIQUE. Diese 1.533 Zeilen belegen den Slot für 1.533 Vokabeln, sind in der App unsichtbar (sie filtert hart auf `change_category in (ninja_check_pending, ninja_check_kein_vorschlag, ninja_check_kommentiert)`) — und 335 davon lesen sich nach Skill-Regel 5 als „bestehende Zeile mit abweichendem Vorschlag → Konflikt". Genau das ist mir beim Skill-Test an `710` passiert.
+
+**Vier Trainer-Zugriffe auf die Tabelle geprüft** (Zeilen 3332, 4315, 6167/6171, 6268–6328): alle filtern auf `change_category` oder adressieren eine einzelne `vocabulary_id`. Eine Umetikettierung ist für die App unsichtbar.
+
+**Vorschlag (nicht destruktiv, umkehrbar):**
+```sql
+UPDATE vocabulary_review SET change_category = 'snapshot_2026_07_25', reviewed = true
+WHERE change_category IS NULL AND NOT reviewed;   -- 1.533 Zeilen
+```
+
+### b) Lateinische Buchstaben im `arabic_script` — 3 Zeilen, alle kaputt
+
+| id | darija | `arabic_script` | Soll |
+|---|---|---|---|
+| 471 | `besh` | `بش  (Zukunftsmarker)` | `بش` — Notiz gehört ins `german` |
+| 529 | `baash` | `باش (Zweck)` | `باش` — dito |
+| 1473 | `aba babab` | `aba babab` | echtes Arabisch fehlt komplett |
+
+Bei 529 liefert `_arabic_skeleton` dadurch `bsh(zck)` — Skelett-Vergleich und Duplikat-Check laufen für die Zeile ins Leere.
+
+**Kein A-Check für Klammern:** von 9 Zeilen mit `(` im `arabic_script` sind 6 legitim (arabische Klammern für optionale Bestandteile, `يْبَارِكْ فِيك (يْعَيِّشِك)`). Nur lateinische Buchstaben sind ein sicherer Treffer — das ist der A-Check, die Klammer ist Liste B.
+
+### c) `aa`/`ee`/`oo` in der darija — 25 Zeilen, kein bestehender Regel-Treffer
+
+Die Ziel-Konvention markiert Langvokale **nicht**. Vier Treffer sind Lehnwörter (`weekend` ×3, `loofah`) und damit legitim. Bleiben 21: `kaas`, `7araam`, `3aalam`, `naaqes`, `naaje7`, `maasit`, `maasta`, `bisklaat`, `maatsh`, `raayidh`, `maayu`, `athaaka`, `akkaaka`, `ma7laa`, `mraa`, `sbaa7`, `warreeni`, `shniyyaa`, `3aysheen`, `aallha`, `baash`.
+
+Keine der 22 Trainer-Regeln greift darauf — Kandidat für Regel 23. Zwei Sonderfälle stecken drin: `768 aallha` hat auch ein kaputtes Arabisch (`االله` statt `الله`), und `529 baash` / `471 besh` sind **dasselbe Arabisch باش mit zwei Schreibungen und zwei Bedeutungen** („um zu" vs. „wird").
