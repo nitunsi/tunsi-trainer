@@ -2794,3 +2794,73 @@ zurückgestellten „`-ou` nach Konsonant"-Posten) und `4045 yijra` (die Modellg
 | 🔤 Transliteration | **0** von 3.776, 23 Regeln |
 | Gruppe A | **18 Checks, alle 0** |
 | Gruppe B | 1 · 2 · 425 · 36 · 1 · 1 · 7 = **473** |
+
+---
+
+## Runde 45 (2026-09-13) — die letzten Einzelfälle, und ein Fehler in meinem eigenen Schlüssel
+
+### `3017 nna` und `2538 nifli`: gesucht, unterschiedlich ausgegangen
+
+Freigabe war „wenn keine der drei Quellen die hat, löschen". Die Suche ging unterschiedlich aus:
+
+- **`3017 nna` ist belegt** — TUNICO `ṇāṇa` „auntie", Ninja نَانَا „grandma". Nur **unsere
+  Schreibung** war falsch: `nna` gegen نَّنَا (Schadda auf dem ersten Buchstaben, orthographisch
+  unmöglich — Check 20 **und** 25 gleichzeitig). **Korrigiert** zu `nana` / نَانَا, Ableitung jetzt
+  exakt. Löschen wäre der Verlust eines belegten Wortes gewesen.
+- **`2538 nifli` nicht.** Die Wurzel فلس ist reich belegt (Ninja مْفَلِّسْ, TUNICO/PC `falis`,
+  `fallis`, `flas`), die Form `nifli`/`niflli` in keiner Quelle. Kein Lernstand, kein Kurs-Verweis,
+  und `2537 trit` deckt dieselbe Bedeutung ab. **Gelöscht.**
+
+### Beim Suchen der 7 verwaisten Flags: mein Bedeutungsschlüssel war kaputt
+
+`1389 iy` „Ja" und `4448 n3am` „ja" standen beide als verwaist in Check 30 — obwohl sie offensichtlich
+dieselbe Bedeutung haben. Ursache:
+
+```sql
+lower(regexp_replace(german,'[^a-zäöüß]','','g'))   -- falsch
+regexp_replace(lower(german),'[^a-zäöüß]','','g')   -- richtig
+```
+
+Das `regexp_replace` lief **vor** dem `lower()`. Großbuchstaben sind nicht in `[a-zäöüß]` und wurden
+gelöscht: „Ja" → `a`, „Haus" → `aus`, „Maus" → ebenfalls `aus`. **Gemessen: 2.420 von 3.775 Zeilen
+betroffen, 64 %.** Der Schlüssel steckt in Check 30 **und** Check 31 — beide waren unzuverlässig.
+Repariert; Check 30 fiel dadurch von 7 auf 5, Check 31 blieb 0.
+
+**Das ist heute das vierte Mal, dass ein auffälliges Ergebnis einen Fehler im Check statt in den
+Daten hatte** — und diesmal war es ein Tippfehler in der Klammerung.
+
+### Die 5 verbliebenen Flags: einer hatte sehr wohl einen Partner
+
+**`4180 kasa`** كاسة „Waschlappen" ↔ **`2125 el-kasa`** الكَاسَةْ „die Kasse" — dasselbe Wort, zwei
+Bedeutungen. Der Check sah sie nicht, weil der **Artikel** den `ar_key` verändert (الكاسة gegen
+كاسة). `2125` hat jetzt ebenfalls `homonym_ok`, und der `ar_key` normalisiert das führende ال weg.
+
+Die anderen vier hatten keinen Partner, Flag entfernt:
+
+| id | warum verwaist |
+|---|---|
+| 2037 `kasa7` | einziger Nachbar `2004 aksa7` „hässlicher" — andere Wurzel-Ableitung, kein Homonym |
+| **4396 `qas`** | der Partner war `1681 qas` — **den habe ich heute selbst auf `qass` umbenannt** |
+| 4533 `bqit` | kein Partner in keiner Achse, kein Skelett-Nachbar |
+| 4574 `tayya7t` | Nachbarn `663 ta7t` „unten", `1764 ti7t` „ich fiel" — anderes Wort, anderes Maß |
+
+`4396` ist lehrreich: eine Korrektur an einer Zeile kann das Flag einer **anderen** verwaisen lassen.
+
+### Stand — Gruppe B hat nur noch drei Listen
+
+| Check | Treffer |
+|---|---|
+| 20 ungültige Anfangs-Schadda | **0** |
+| 24 Gemination | **0** |
+| 25 Konsonanten | **0** |
+| 30 verwaistes `homonym_ok` | **0** |
+| 21 Verb-Selbstcheck | 2 (beide bewusst offen) |
+| 22 unvokalisierte Einzelwörter | 424 |
+| 23 Vokalisierungs-Kandidaten | 36 |
+
+| | |
+|---|---|
+| 🔁 Duplikate | **0** von 3.775, `count`-Header 3.775 |
+| 🔤 Transliteration | **0** von 3.775, 23 Regeln |
+| Gruppe A | **18 Checks, alle 0** |
+| Gruppe B | **462** statt 473 |
