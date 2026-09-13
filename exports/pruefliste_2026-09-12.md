@@ -2864,3 +2864,149 @@ Die anderen vier hatten keinen Partner, Flag entfernt:
 | 🔤 Transliteration | **0** von 3.775, 23 Regeln |
 | Gruppe A | **18 Checks, alle 0** |
 | Gruppe B | **462** statt 473 |
+
+---
+
+## Runde 46 — Check 22 vermessen: die 424 unvokalisierten Einzelwörter
+
+Nicht als Kampagne begonnen, sondern zuerst vermessen: wie viele der 424 haben überhaupt eine Quelle,
+wie viele lassen sich aus dem eigenen Bestand ableiten, und wie viele sind Lehnwörter.
+
+### Der Bestand
+
+| | |
+|---|---|
+| Zeilen in Check 22 | 424 |
+| davon mit `conjugation`-Tabelle (Verben) | 144 |
+| davon als Lehnwort im Deutschen markiert | 3 |
+| davon mit `ninja_id` | **0** |
+| 1–2 / 3 / 4 / 5+ arabische Buchstaben | 4 / 48 / 147 / 225 |
+
+Die Null bei `ninja_id` ist ein Fingerzeig, aber ein schmaler: im ganzen Bestand tragen nur 122 Zeilen
+eine `ninja_id` — und **alle 122 sind vokalisiert**. Breiter gemessen nennen 327 Zeilen Ninja in der
+`internal_note`, bei 3.115 vokalisierten Zeilen insgesamt. Der Großteil des vokalisierten Bestands kommt
+also **nicht** aus Ninja, sondern aus der ursprünglichen Erfassung. Was die Zahlen belegen, ist enger und
+reicht: **die gezielten Vokalisierungs-Runden liefen über Ninja, und keine der 424 Zeilen hat dabei einen
+Treffer bekommen.**
+
+### Frage 1 — wie weit reicht Ninja?
+
+Auf der Buchstabenebene (`ar_key`, gleiche Buchstaben ohne Harakat, Artikel normalisiert):
+
+| Vergleichsebene | Treffer | davon genau eine vokalisierte Variante |
+|---|---|---|
+| gleiche Buchstaben | **84** | 69 |
+| + Hamza/ة/ى normalisiert | 87 | 72 |
+| Konsonantenskelett | 282 | 64 |
+
+Die Normalisierung von أ/إ/آ, ى und ة bringt **3** zusätzliche eindeutige Fälle — die Buchstabenebene
+ist gesättigt. Das Skelett bringt 202 zusätzliche Treffer, aber das ist die Ebene, die ganze
+Wurzelfamilien zusammenwirft (Runde 30: 465 Gruppen). Der Sprung von 84 auf 282 ist kein Gewinn,
+sondern die bekannte Unschärfe.
+
+### Frage 1b — und stimmen diese 84 überhaupt mit uns überein?
+
+Das ist die Frage, die die Kampagne beinahe übersprungen hätte. Ninjas `chatalpha` gegen unsere
+`darija`, beide normalisiert (y→i, w→u, Verdopplungen reduziert):
+
+| | Zeilen |
+|---|---|
+| Transliteration identisch → direkt übertragbar | **18** |
+| gleiches Konsonantengerüst, andere Vokale/Schadda | **53** |
+| wirklich ein anderes Wort | **18** |
+
+Von 84 „eindeutigen" Ninja-Treffern sind **18** übertragbar. Die 53 sind keine Vokalisierungs-Vorlagen,
+sondern Widersprüche: Ninjas Harakat würden der eigenen `darija` widersprechen.
+
+| id | unsere `darija` | Ninja | was Ninja wirklich hat |
+|---|---|---|---|
+| 547 `sma3` „er hörte" | سمع | `samma3` | Form II „jemanden hören lassen" |
+| 643 `lbis` „er zog sich an" | لبس | `labbis` | Form II „jemanden ankleiden" |
+| 644 `l3ab` „er spielte" | لعب | `la33ib` | Form II „jemanden spielen lassen" |
+| 775 `el-baba` „Der Papst" | بابا | `baba` | „Dad" |
+| 598 `er-rami` „Rami (Kartenspiel)" | الرامي | `rami` | „Rami (Männername)" |
+| 325 `hrisa` „Harissa" | هريسة | `hariysa` → هَرِيسَةْ | ein anderes Vokalmuster als unser `hrisa` |
+
+Gleiche Buchstaben, anderes Wort — dasselbe Muster wie bei `ableitung_exakt` in Runde 38: **die
+Formgleichheit prüft die Form, nicht die Bedeutung.** Bei den Formen II ist es systematisch: das
+unvokalisierte Arabisch unterscheidet Grundstamm und Form II gar nicht, genau dafür ist die
+Vokalisierung da. Ninjas Eintrag ist dann nicht die Vokalisierung unseres Wortes, sondern die eines
+anderen.
+
+### Frage 2 — die anderen beiden Quellen tragen Vokale
+
+TUNICO (`lemma_orig`: `hrīsa`, `xfīf`, `fṛanṣāwi`) und Peace Corps (`forms_phonetic`: `ixtiSa:r`,
+`ghli:dh`, `ba:nka`) führen **vokalisierte Transkriptionen**. 7.008 TUNICO-Lemmata, 5.004 Peace-Corps-
+Formen. Für die Vokalisierung sind sie damit gleichwertige Quellen — sie sind bisher nur nie dafür
+benutzt worden.
+
+| Quelle | Treffer über das Translit-Skelett | mit **identischer** `darija` |
+|---|---|---|
+| Derja Ninja (über die arabischen Buchstaben) | 84 | 18 |
+| TUNICO | 237 | 69 |
+| Peace Corps | 244 | 65 |
+| mindestens eine | **296 von 424 (70 %)** | **94** |
+| *davon ohne jeden Ninja-Treffer* | 212 | 54 |
+
+Der Block mit identischer `darija` ist der belastbare: dort stimmen Konsonanten **und** Vokale mit
+unserem Eintrag überein, das Wort ist dasselbe, und die Harakat folgen aus der Transkription.
+54 dieser Zeilen waren für den bisherigen Weg unsichtbar.
+
+Und die Quellen schiedsrichtern gegeneinander: bei **`325 hrisa`** sagt TUNICO `hrīsa` — das bestätigt
+unsere `darija` und widerlegt Ninjas هَرِيسَةْ.
+
+### Frage 3 — Ableitung aus dem eigenen Bestand, und Lehnwörter
+
+| | Zeilen |
+|---|---|
+| dasselbe Wort steht schon vokalisiert in einer anderen Zeile | 25 (21 eindeutig) |
+| nur eine vokalisierte Geschwisterzeile derselben Wurzel | 204 |
+| als Lehnwort markiert | 3 |
+
+Die 25 sind Homonym-Paare (Check 31 steht auf 0, es sind also keine Dubletten): gleiche Buchstaben,
+verschiedene Bedeutung. Gerade dort können die Harakat **auseinandergehen** — das Übertragen ist hier
+die falsche Bewegung, die `darija` entscheidet. Lehnwörter sind mit 3 Zeilen kein eigener Block.
+
+### Die Klassifikation
+
+| Klasse | Zeilen | davon Verben |
+|---|---|---|
+| A Ninja eindeutig, gleiche Buchstaben | 69 | 9 |
+| B TUNICO/PC mit identischer `darija`, eindeutig | 61 | 14 |
+| C Quelle vorhanden, aber mehrdeutig | 8 | 2 |
+| D Quelle nur über das Skelett (anderes Wort möglich) | 158 | 60 |
+| E Verb mit `conjugation`-Tabelle, sonst nichts | 59 | 59 |
+| F Lehnwort | 2 | 0 |
+| G ohne jeden Anhaltspunkt | 67 | 0 |
+
+A und B überschneiden sich nicht (Prioritätsreihenfolge), zusammen 130. Nach dem Abgleich aus Frage 1b
+schrumpft A aber auf die 18 wirklich übereinstimmenden; der Rest von A gehört in Wahrheit zu C/D.
+
+### Was die Messung über die Aufgabe selbst sagt
+
+Check 22 ist **keine Kampagne mit 424 Übertragungen**. Er ist ein Prüfer: wo eine Quelle vokalisiert
+und wir nicht, kommt jedes Mal eine von drei Antworten heraus — die Quelle bestätigt uns (18), die
+Quelle meint ein anderes Wort (18), oder Quelle und `darija` widersprechen sich (53). Nur die erste
+ist ein Eintrag ins `arabic_script`. Die dritte ist das eigentliche Ergebnis: sie zeigt auf Zeilen, bei
+denen `darija` und `arabic_script` schon heute nicht zusammenpassen, ohne dass ein A-Check das sieht.
+
+Zwei Kandidaten aus der Stichprobe, beide noch nicht entschieden:
+
+- **`569 banka`** „Bank" — unser Arabisch بنك, aber PC `ba:nka` und TUNICO `bānka`. Das Arabisch bildet
+  das auslautende -a nicht ab.
+- **`604 wraq`** „Blätter (Pl.)" — unser Arabisch أوراق (MSA `awraq`), unsere `darija` `wraq`, PC `wraq`,
+  TUNICO `wṛaq`.
+
+### Der Messfehler, der fast in diese Runde gekommen wäre
+
+Der erste Abgleich meldete **68 von 84** als abweichend. Ninja schreibt langes i als `y` und langes u
+als `w` (`5fyf`, `ramiy`, `massouw`). Ohne die Abbildung y→i / w→u zählten `khfif` gegen `khfyf` und
+`fransawi` gegen `fransawy` als verschiedene Wörter. Nach der Normalisierung: 18 identisch, 53
+Vokalunterschiede, 18 andere Wörter. **Fünftes Mal, dass ein auffälliges Ergebnis ein Fehler im Check
+war und nicht in den Daten.**
+
+### Nebenbefund: es gibt keine Hausregel für den Auslaut
+
+Von 3.115 vokalisierten Zeilen enden **676** auf Sukun, **60** tragen ein Sukun auf ة (هَرِيسَةْ). Das ist
+Ninjas Schreibweise, nicht Standard — und sie ist über 327 aus Ninja übernommene Zeilen in den Bestand
+gelangt. Bevor 130 weitere Zeilen vokalisiert werden, gehört diese Konvention entschieden.
