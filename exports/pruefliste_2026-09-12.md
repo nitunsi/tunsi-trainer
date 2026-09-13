@@ -1319,3 +1319,45 @@ oder `i` stehen. Damit zerfallen die 47 in:
 Dazu neun Fälle mit unklarer Silbenzahl (`hrisa`/`harisa`, `lbis`/`libis`, `mraa`/`maraa`,
 `ithniya`/`thniyya`, `okhwa`/`akhowwa`, `banka`/`bank`, `el-batala` (Artikel), `fransawi`
 (Ninja unvollständig), `idara` — dort ist Ninjas `adara` ein Artefakt meiner Funktion, die إ als `a` liest).
+
+## Runde 23 · Verifikationslauf nach ~200 Schreibvorgängen (2026-09-13)
+
+Ich habe heute zwei Skelettspalten neu berechnet und 96 Zeilen im `arabic_script` geändert.
+Der Duplikat-Check läuft auf Skeletten — ob dabei neue Dubletten entstanden sind, war ungeprüft.
+
+**Alle Wächter sauber:**
+
+| Check | Ist | Soll |
+|---|---|---|
+| unbekannte arabische Zeichen | 0 | 0 |
+| rohes Zeichen im Skelett (beide Tabellen) | 0 | 0 |
+| Regel 23 Sonderbuchstaben | 0 | 0 |
+| ض ohne `dh` / ظ,ذ ohne `th` | 0 / 0 | 0 |
+| ungültige Anfangs-Schadda | 2 | 2 bekannt |
+
+**Dubletten: 13 Gruppen mit identischem `arabic_script`, davon 12 längst als `homonym_ok`
+markiert** (`sakkar` Imperativ/Perfekt, `maqfoul`, `lawwej`, `3am` „schwamm"/„Jahr" …).
+
+**Genau eine Gruppe ist neu — und ich habe sie heute erzeugt.**
+
+`2142 brik` wurde von mir aus Ninja vokalisiert (بريك → بْرِيكْ) und kollidiert seither mit
+`385 brika`. Die Prüfung zeigt: es ist keine Dublette, sondern ein **falsch benanntes Wort**.
+
+| Quelle | sagt |
+|---|---|
+| Ninja | `مَلْسُوقَةْ malsouqa` → „wrappers for brik" |
+| TUNICO | `malsuqa` → „**Brik-Teigblatt, Blätterteig**" · `brik` → „Brik" |
+
+`2142` trägt also den **richtigen deutschen Gloss** („Brik-Teigblatt") an der **falschen Vokabel**.
+Das Teigblatt heißt `malsouqa`, nicht `brik`. Und `malsouqa` **fehlt im Bestand komplett**.
+
+Dazu ein zweiter Befund an `385 brika`: die `darija` endet auf `-a`, das Arabisch بْرِيكْ nicht.
+TUNICO schreibt `brik`. Der Zeichen-Check meldet das nicht, weil die Skelette (`brk`) übereinstimmen —
+**ein auslautender Vokal ist für den Skelettvergleich unsichtbar.**
+
+**Zur Entscheidung:**
+1. `2142`: `brik` بْرِيكْ → `malsouqa` مَلْسُوقَةْ (Ninja hat Audio), Gloss bleibt
+2. `385`: `brika` → `brik`, oder das Arabische auf بْرِيكَة
+
+**Lehre für den Skill:** eine Vokalisierungs-Kampagne ändert `arabic_script` und damit die
+Dubletten-Lage. Der Duplikat-Check gehört danach gelaufen, nicht irgendwann.
