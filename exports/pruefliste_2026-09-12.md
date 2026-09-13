@@ -1435,3 +1435,80 @@ die Topic-Werteliste ist ersatzlos entfallen — ich hatte sie erst in eine Tabe
 driften und kostet keinen Kontext. Was im Skill bleibt, ist das, was SQL nicht sagen kann: was ein
 Treffer bedeutet und wo die Fallen liegen. **B-Listen bewusst nicht verschoben** — dort muss man
 den Filter sehen, weil man ihn beim Arbeiten anpasst.
+
+## Runde 25 · Skill-Test an zwei Aufgaben im Vergleich (2026-09-13)
+
+Auftrag: den Skill einmal an 19 morgen fälligen Vokabeln durchspielen und einmal am Hinzufügen
+von 5 allgemeinen deutschen Wörtern — dann Ablauf und Ergebnisse vergleichen.
+
+### Aufgabe A · 19 fällige prüfen
+
+**Der Test fand einen Fehler, bevor die erste Vokabel angesehen war.** Das Fällig-SQL, das ich
+heute selbst in den Skill geschrieben hatte, ist falsch:
+
+| Variante | Treffer am 14.09. | im Winter (14.12.) |
+|---|---|---|
+| Skill-SQL `timestamp '<tag> 03:00'` | 67 | 2 |
+| korrekt, über die Zeitzone | **76** | **9** |
+
+`progress.next_review` ist `timestamp WITHOUT time zone`, enthält aber **UTC**. 03:00 Berlin sind
+01:00 UTC im Sommer und 02:00 im Winter. Das harte `03:00` vergleicht gegen 05:00 Berlin und
+verliert genau die Zeilen, die zu Tagesbeginn fällig wurden — **12 % im Sommer, 78 % im Winter.**
+Korrigiert auf `(timestamp '<tag> 03:00' AT TIME ZONE 'Europe/Berlin') AT TIME ZONE 'UTC'`.
+
+**Schritt 2 (intern) war sauber** — Zeichen-Check und auslautender Vokal ohne Treffer. Zwei
+Beobachtungen dabei:
+- **`qualitaets_checks` lässt sich nicht auf eine Auswahl einschränken.** Der Skill verlangt in
+  Schritt 2 „die Checks, auf die Auswahl eingeschränkt"; die heute gebaute Sicht kann das nicht.
+- **`786 7araam` rutscht durch beide Checks.** Das `aa` verstößt gegen die Konvention, aber
+  Skelette streichen Vokale — kein Check sieht es. Steht seit Runde 16 auf der offenen Liste.
+
+**Schritt 3 (extern) lieferte die Ergebnisse:**
+
+| id | Befund |
+|---|---|
+| **1574 `7ma`** | **geflaggt** — TUNICO bestätigt exakt `7ma = Schwiegermutter`. Flag kann weg |
+| **536 `bu3d`** | TUNICO: `bu3d = Entfernung (in Zeit und Raum)` — **bestätigt unseren Eintrag** und löst den alten `masefa`-Konflikt aus `vocabulary_review` auf |
+| 647 `raj3` | „er kam zurück"; TUNICO trennt `rja3` (zurückkommen) von `raja3` (wiederholen). Unsere Form passt eher zu `rja3` |
+| 730 `sidr` | TUNICO schreibt `sdir` für „Brust" — andere Vokalstellung |
+| 786 `7araam` | TUNICO `7ram` — das `aa` bestätigt sich als Abweichung |
+
+### Aufgabe B · 5 Wörter hinzufügen (Löffel, Regenschirm, vergessen, laut, Nachbar)
+
+**Ergebnis: null neue Vokabeln.** Alle fünf sind vorhanden — der Duplikat-Check hat fünf Dubletten
+verhindert. Das ist kein Fehlschlag, sondern der Normalfall.
+
+Zwei Befunde entstanden trotzdem:
+- **`vergessen` hat 2 von 3 Verbzeilen**: `551 nsa` („er vergaß") und `1228 ninsaw` („wir vergessen")
+  existieren, die Präsens-Zitierform `yinsa` fehlt. Genau die Lücke, die das Verb-Konjugationsmodell
+  beschreibt.
+- **„laut" (Lautstärke) fehlt — zu Recht.** Ninja drückt es als `صُوتْ قْوِيّْ souwt qwiyy` („starke
+  Stimme") aus, TUNICO hat nur Ableitungen. Es gibt kein einfaches Adjektiv. `2749 marraj` ist
+  „laut/Störenfried" (Person), `2046 3ali` ist „hoch". **Eine Lücke im Bestand ist nicht immer eine
+  Lücke in der Sprache.**
+
+### Vergleich der Abläufe
+
+| | A · prüfen | B · hinzufügen |
+|---|---|---|
+| Schritt 1 | Auswahl per **Rechnung** (Fälligkeitsfenster) + Sammelabfrage | Wortliste + **Duplikat-Check** |
+| Schritt 2 | interne Checks | entfällt — es gibt noch nichts zu prüfen |
+| Schritt 3 | **Quellenabfrage, alle drei** | **Quellenabfrage, alle drei** — wortgleich |
+| Schritt 4 | zeigen | zeigen |
+| Schritt 5 | `UPDATE` | `INSERT` |
+
+**Was daraus folgt:**
+
+1. **Es sind nicht zwei Abläufe, sondern einer mit zwei Eingängen.** Der Skill führt sie als
+   „Kern-Workflow: neue Vokabel(n) verarbeiten" und „Vokabeln prüfen — EIN Prozess" getrennt.
+   Sie unterscheiden sich in genau zwei Punkten: ob Schritt 2 etwas zu prüfen hat, und ob am Ende
+   `UPDATE` oder `INSERT` steht. **Das ist dieselbe Lage, die heute früh schon einmal aufgelöst
+   wurde** („Zwei Prüf-Workflows waren einer") — nur eine Ebene höher.
+2. **Der teuerste Schritt ist in beiden derselbe** — die Quellenabfrage. Bei A lieferte sie die
+   Befunde, bei B verhinderte sie fünf Dubletten. Sie ist der Kern, nicht ein Anhängsel.
+3. **Rechnende Schritte sind fehleranfällig, nachschlagende nicht.** Der einzige Skill-Fehler, den
+   der Test fand, saß im einzigen Schritt, der etwas *ausrechnet* — dem Fälligkeitsfenster. Bei B
+   gibt es keinen solchen Schritt, und es gab keinen Fehler.
+4. **Beide Aufgaben endeten überwiegend mit „nichts zu tun"** — 19 geprüft, 2 zu entscheiden;
+   5 vorgeschlagen, 0 anzulegen. Ein Ablauf, der das billig feststellt, ist mehr wert als einer,
+   der viele Treffer produziert.

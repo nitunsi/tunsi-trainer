@@ -654,7 +654,7 @@ Es gibt **einen** Prüfprozess. Was von Fall zu Fall wechselt, ist die **Auswahl
 | „Ich habe Vokabeln markiert" | `WHERE flagged = true` |
 | **eine einzelne Vokabel** | `WHERE id = <id>` — genauso gültig wie ein Batch, kein Sonderweg |
 | frisch importierter Batch | die ids des Batches |
-| „prüf die fälligen" | `progress.next_review` — **das Fenster läuft von 03:00 Berlin bis 03:00 des Folgetags** (`nextReviewDE()`), nicht von Mitternacht:<br>`WHERE p.next_review >= timestamp '<tag> 03:00' AND p.next_review < timestamp '<tag+1> 03:00'` |
+| „prüf die fälligen" | `progress.next_review` — **das Fenster läuft von 03:00 Berlin bis 03:00 des Folgetags** (`nextReviewDE()`), nicht von Mitternacht:<br><br>`next_review` ist `timestamp WITHOUT time zone`, enthält aber **UTC**. 03:00 Berlin sind je nach Sommer-/Winterzeit 01:00 oder 02:00 UTC — deshalb **immer** über die Zeitzone rechnen, nie 03:00 hart hinschreiben:<br>`WHERE p.next_review >= (timestamp '<tag> 03:00' AT TIME ZONE 'Europe/Berlin') AT TIME ZONE 'UTC'`<br>`  AND p.next_review <  (timestamp '<tag+1> 03:00' AT TIME ZONE 'Europe/Berlin') AT TIME ZONE 'UTC'`<br>⚠️ Die harte Variante `timestamp '<tag> 03:00'` stand hier bis zum 2026-09-13 und ist **falsch**: sie vergleicht gegen 03:00 UTC = 05:00 Berlin und verliert die Zeilen, die zu Tagesbeginn fällig wurden. Gemessen am 2026-09-14: **67 statt 76**; im Winter **2 statt 9**. |
 | Bestandsaudit | eine Verdachtsliste aus **Datenqualitäts-Checks (SQL)** |
 
 **Immer mit dabei, unabhängig von der Auswahl** — als EINE Sammelabfrage am Anfang, bevor ein Korrekturplan gebaut wird. Sie beantwortet „was weiß ich über diese Zeilen schon?", und zwar bevor ich etwas vorschlage:
