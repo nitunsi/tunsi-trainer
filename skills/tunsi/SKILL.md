@@ -146,6 +146,8 @@ Ist die Vokabel ein **Verb**, zusätzlich das 3-Zeilen-Modell (siehe „Verb-Kon
 2. `tunico_import` — liefert das volle Bedeutungsspektrum, wo Ninja nur eine Facette zeigt
 3. `peacecorps_dict_import` — dritte unabhängige Quelle, v.a. bei älterem Lehrbuchvokabular
 
+**Vierte Quelle, immer verfügbar: die arabische Morphologie.** Die drei Offline-Quellen sind Wörterbücher — sie führen Lemmata, keine Paradigmen. Wo eine Form aus dem Wurzelmuster folgt (Imperativ, Partizip, Maß-Zugehörigkeit, assimilierte/hohle Wurzeln), ist sie ableitbar und braucht keinen Wörterbucheintrag: `وَقَفَ → يَقِفُ → قِفْ` (das و fällt im Imperfekt und Imperativ weg). „Kein Treffer in den drei Quellen" ist dort **keine** Begründung zum Zurückstellen (PRECEDENTS.md → „Die Morphologie ist auch eine Quelle"). Über **Bedeutung** entscheidet sie dagegen nichts.
+
 Erst wenn **keine** der drei trifft, gilt „keine externe Bestätigung". Werkzeug für alle drei: **vocab_lookup** (unten) — `english_key` als primäre Achse, Skelett-Treffer nur separat und ab Länge 4. Live-Ninja nur, wenn offline nichts kommt (IMPORTS.md).
 
 **Bei Gemination-Zweifeln: die Wurzelfamilie im eigenen Bestand durchsehen.** Der stärkste Beleg ist oft nicht die Quelle, sondern die Geschwisterzeile. Für `1841 thiz` entschieden drei eigene Zeilen (`1683 hazz` هَزَّ, `2228 yhizz` يُهِزُّ, `2472 hezz` هِزّ) die Frage — und die Suche fand dabei eine **vierte** Zeile mit demselben Fehler (`1684 nihiz`), die kein Check gemeldet hatte. Ninja und Peace Corps vokalisieren Endgeminaten oft unvollständig (`هِزْ`, `hiz`, `أقَلْ`) und sind dort **kein** Gegenbeleg.

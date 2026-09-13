@@ -2664,3 +2664,53 @@ auflöst.
 Partizip „stehend", so wie sein Arabisch es sagt. Dann behält `576` den Imperativ (mit zu
 reparierendem Arabisch), `2600` wird zum Partizip, und die Gruppe ist vollständig statt doppelt.
 Das setzt aber eine Bedeutungsentscheidung voraus, die Semia bestätigen sollte.
+
+---
+
+## Runde 42 (2026-09-13) — die Morphologie ist auch eine Quelle
+
+**Korrektur meiner eigenen Aussage aus Runde 41.** Ich hatte geschrieben: „Keine Quelle gibt den
+Imperativ her, und ich rate ihn nicht", und `576`s `arabic_script` قف als defekt eingestuft, weil es
+„die Wurzel nicht einmal vollständig zeigt". Beides war falsch.
+
+**قف ist die korrekte Form.** Bei assimilierten Verben (مثال واوي) fällt das و im Imperfekt und im
+Imperativ weg: وَقَفَ → يَقِفُ → **قِفْ**. Das ist keine Wörterbuchfrage, sondern Morphologie.
+Dasselbe Muster erklärt auch `4188 yaqif` يَاقِف.
+
+**Geschrieben:** `576` arabic_script → **إِقِفْ**. Das prothetische Alif folgt der
+Bestandskonvention für Imperative (`575 imshi` إمشي, `2465 ejri` إِجْرِي, `2468 e7bi` إِحْبِي,
+`3673 el3ab` إلْعَبْ, `3770 ishri` اِشْري). Ableitung `iqif` gegen `darija` `eqif` — reine Vokalachse.
+
+### Und damit löst sich die Doppelbesetzung
+
+Dieselbe Morphologie sagt: **وَاقِف ist das aktive Partizip „stehend", nicht der Imperativ.** Der
+Bestand weiß das längst:
+
+| id | darija | arabic | deutsch | topic |
+|---|---|---|---|---|
+| 2600 | `weqif` | وَاقِف | **steh! (Imperativ)** | Kurzphrasen |
+| **3838** | `waqif` | وَاقِفْ | **stehend** | Adjektive |
+| 3863 | `shbik waqif` | شْبِيكْ وَاقِفْ | Warum stehst du (so) rum? | Gesprächsführung |
+
+`2600` und `3838` haben denselben `ar_key` — **dasselbe Wort**, aber nur `3838` glossiert es richtig.
+Check 31 meldet das Paar nicht, weil er gleiche Bedeutung verlangt und die Glossen verschieden sind:
+**ein falsches Gloss versteckt eine Dublette vor dem Dublettencheck.**
+
+### Zur Entscheidung
+
+`2600 weqif` ist eine Dublette zu `3838 waqif` mit falschem Gloss. Der Imperativ steckt in `576`.
+Ein Merge hat aber zwei Anhängsel:
+
+- `2600` trägt `conj_rotate = true` — es ist die rotierende Zeile der وقف-Gruppe. Bei Löschung
+  müsste das Flag auf eine andere Zeile der Gruppe.
+- Die `conjugation`-Tabelle führt `imperative.sg = weqif`. Nach dieser Klärung ist auch das falsch;
+  richtig wäre `eqif`.
+
+Lernstand: `2600` 2/4 · 10×, `3838` — (noch nicht geprüft). Kein Kurs-Verweis auf `2600`.
+
+### Lehre
+
+**Die arabische Morphologie ist eine Quelle, die immer verfügbar ist.** „Keine der drei Quellen gibt
+es her" ist keine Begründung, wenn die Form aus dem Wurzelmuster folgt. Der Fehler hat in derselben
+Runde zwei Befunde verdeckt: ein angeblich defektes `arabic_script`, das richtig war, und eine
+Dublette, die sich erst zeigte, als die Morphologie das Gloss widerlegte.
