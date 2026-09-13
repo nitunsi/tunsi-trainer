@@ -243,6 +243,14 @@ Zahlen gemessen am 2026-09-13 über 17.335 Ninja-, 7.008 TUNICO- und 8.714 Peace
 
 Peace Corps kennt für ظ/ذ nur `dh` (dokumentiert in `arabic_reconstruction_note`), Ninja schwankt in 38 % der Fälle. **Nur TUNICO kann unsere ausnahmslose ظ/ذ→`th`-Regel bestätigen oder widerlegen** — ein `dh` der beiden anderen ist Konvention, kein Gegenbeleg, und darf keine Korrektur auslösen.
 
+**Konsequenz 0 — die Umrechnung ist vorberechnet, nicht jedes Mal von Hand zu machen (seit 2026-09-13).** Alle drei Quellen haben in `vocab_lookup` eine Spalte **`chatalpha`** in unserer Konvention: TUNICO 94 %, Peace Corps 98 %, Ninja 95,6 % (neu — abgeleitet aus dem vokalisierten `arabic_script` per `public._arabic_to_chatalpha()`). **Die Tabelle unten ist ab jetzt Hintergrundwissen, kein Arbeitsschritt** — eine Regel, die bei jedem Nachschlagen angewendet werden muss, wird irgendwann vergessen; eine Spalte nicht.
+
+Dabei gilt für alle drei dieselbe Wertigkeit:
+
+> **`chatalpha` ist konsonanten-verbindlich und vokal-hinweisend.** Konsonanten und Gemination stimmen; die Vokale sind mechanisch (Fatha→`a`, Kasra→`i`, Damma→`o`) und tragen unsere Imala nicht. **Ein Konsonantenunterschied gegen `chatalpha` ist ein Befund. Ein Vokalunterschied ist keiner.**
+
+Damit wird aus einer Ermessensfrage ein Vergleich, und der läuft in SQL statt im Kopf — es kommen nur noch die Zeilen zurück, bei denen wirklich etwas nicht stimmt.
+
 **Konsequenz 3 — für eine Ninja-Suche muss die eigene Schreibung erst umgerechnet werden** (`script=transliterated` konvertiert die Eingabe intern zu Arabisch): `sh`→`ch`, `q`→`9`, `kh`→`5`, `u`/`o`→`ou`. Unser `yukhruj` wird zu `you5rouj`, `yaqli` zu `ya9li`. Bei `script=english` entfällt das. Volle Tabelle: IMPORTS.md → Ninjas eigener Transliterations-Schlüssel.
 
 ## Lautlehre — Zusatzregeln für Vokalisierung & Bestandsaudits
@@ -693,6 +701,30 @@ WHERE arabic_script ~ 'و[ًٌٍَُِْٰ]*ّ' AND darija !~ 'ww' ORDER BY id;
 3. **`1622 t3awinni`** تعاوّني — die Schadda sitzt dort auf dem waw von تعاون, was nach Tippfehler im Arabischen aussieht (erwartet: تعاوني). Nicht als Transliterationsfehler behandeln, bevor das Arabische geklärt ist.
 
 ---
+
+**`darija` gegen das eigene `arabic_script` zurückrechnen (seit 2026-09-13, Fehlalarmquote ~20 %).** Der schärfste Einzelcheck im Bestand und der einzige, der Zeichen für Zeichen vergleicht statt auf Vorkommen oder Anzahl zu prüfen. Er fängt eine Klasse, die **alle 22 Trainer-Regeln durchlassen**: `bathriq` für بطريق enthält ein `t` — es steckt im `th`. Vorkommens- und Anzahlprüfungen laufen daran vorbei, der Zeichenvergleich nicht.
+
+```sql
+WITH s AS (
+  SELECT id, darija, german, arabic_script,
+         public._arabic_to_chatalpha(arabic_script) AS abgeleitet,
+         public._translit_skeleton(darija) AS sd,
+         public._translit_skeleton(public._arabic_to_chatalpha(arabic_script)) AS sa
+  FROM vocabulary
+  WHERE arabic_script ~ '[ًٌٍَُِّْ]' AND darija IS NOT NULL
+    AND darija !~ '[cvxp]'                                    -- Lehnwort-Schreibungen
+    AND german !~* '(frz\.|franz\.|ital\.|engl\.|lehnwort)'
+    AND darija !~ '[ ]' AND arabic_script !~ '[ ]'             -- PFLICHT: nur Einzelwoerter
+    AND arabic_script !~ '[بتثجحخدذرزسشصضطظعغفقكلمنه](?![ًٌٍَُِّْٰ])'  -- PFLICHT: jeder Konsonant traegt eine Haraka
+)
+SELECT id, darija, german, arabic_script, abgeleitet FROM s WHERE sd <> sa ORDER BY id;
+```
+
+**Die beiden Pflichtfilter sind nicht optional.** Ohne sie steigt die Trefferzahl von 44 auf 224 und die Fehlalarmquote explodiert: bei Sätzen ist das Arabische meist nur teilweise vokalisiert, und ein unmarkiertes ي/و wird dann als Konsonant `y`/`w` gelesen. `et-tbib nsa7ni bir-ra7a` wird zu `et-tbyb nsa7ny balra7a` — das ist ein Artefakt der fehlenden Harakat, kein Fehler in der Zeile.
+
+**Was die 44 Treffer sind** (Stand 2026-09-13, ~35 echt): fehlende oder überzählige Gemination in beide Richtungen (`nos` gegen نُصّ; umgekehrt fehlt bei `7orriyya` dem *Arabischen* die Schadda), falsche Konsonanten (`shadika` für شهادة, `odhkhol` mit `dh` gegen د), ق/ڨ-Uneinigkeit (`bagra`/`baqara`, `manga`/`manqa`), das `7h`-Muster (`msalh7a`). Fehlalarme: nicht als Lehnwort markierte Zeilen und Artikel, den die `darija` trägt und das `arabic_script` nicht.
+
+**Richtung offen lassen.** Ein Treffer sagt „diese beiden Felder widersprechen sich", nicht welches falsch ist. Bei `7orriyya` war es das Arabische. Immer beide prüfen, nie automatisch die `darija` angleichen.
 
 ### C · Regeln fürs Prüfen selbst
 

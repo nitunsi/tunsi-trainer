@@ -1191,3 +1191,23 @@ Nils' Entscheidung, mit der Begründung, die den Kern traf: *„Ein Sinn war ja 
 
 1. Es gab längst richtige Backup-Tabellen — `vocabulary_backup_2026_07_25` (3.193 Zeilen) und `_2026_08_02` (3.274). Die 1.533 Spiegelzeilen in der Review-Tabelle waren also von Anfang an redundant, und die echte Sicherung desselben Tages ist sogar vollständiger.
 2. Eine Toast-Meldung im TUNICO-Flow („geflaggt für Ninja-Check") zeigte auf den entfernten Tab — auf „geflaggt zum Prüfen" geändert. Das Flag selbst bleibt: 🚩 heißt weiterhin „muss geprüft werden", nur der Vorschlags-Zwischenspeicher ist weg.
+
+## Runde 19 · chatalpha-Spalte für Ninja + neuer Zeichen-Check (2026-09-13)
+
+**Nils' Frage „Macht die View vocab_lookup nicht so was Ähnliches?" war der Treffer.** `vocab_lookup.chatalpha` gab es schon — gefüllt für TUNICO (94 %) und Peace Corps (98 %), **leer für Ninja (0 von 17.335)**. Kein neues Konzept, ein Loch bei der größten Quelle.
+
+**Gebaut:** `public._arabic_to_chatalpha(arabic_script)` + Spalte `derja_ninja_entries.chatalpha`, 16.577 Zeilen gefüllt (95,6 %), in `vocab_lookup` durchgereicht.
+
+**Abnahme:** 562 Zeilen mit identischem Arabisch → 93,6 %; ohne Lehnwörter 534 → **96,4 %**. Die Abweichungen waren keine Funktionsfehler.
+
+**Regel für alle drei Quellen:** `chatalpha` ist **konsonanten-verbindlich, vokal-hinweisend**. Konsonantenunterschied = Befund, Vokalunterschied = keiner.
+
+### Der unerwartete Teil: ein Check, den keine der 22 Regeln ersetzt
+
+Die Funktion läuft genauso auf **unserem eigenen** `arabic_script`. Ergebnis mit den zwei Pflichtfiltern (nur Einzelwörter, nur vollvokalisiert): **1.179 geprüft, 44 Treffer (3,7 %), ~35 echt.**
+
+Warum keine bestehende Regel das fängt: `bathriq` für بطريق **enthält** ein `t` — im `th`. Vorkommensprüfung und Regel 22 (Anzahl-Gegencheck) laufen beide daran vorbei. Nur ein Zeichen-für-Zeichen-Vergleich sieht es.
+
+**Ohne die Pflichtfilter: 224 statt 44 Treffer** — bei Sätzen ist das Arabische meist nur teilweise vokalisiert, unmarkiertes ي/و wird als Konsonant gelesen (`bir-ra7a` → `balra7a`). Das ist dokumentiert, damit die Filter nicht als Bequemlichkeit missverstanden werden.
+
+**Die 44 zur Freigabe offen.** Richtung ist je Zeile zu klären — bei `7orriyya` fehlt die Schadda dem **Arabischen**, nicht der `darija`.

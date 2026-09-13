@@ -242,6 +242,26 @@ Nach Nils' Freigabe umgestellt auf „der Hof zum Wäscheaufhängen (im Haus)", 
 
 **Nebenbefund, nicht angefasst:** `3710` übersetzt `fi el qe3a` (في القاعة) mit „im Flur". قاعة ist Saal/großer Raum; Ninja führt `9a3a` als „hall". Kandidat für eine spätere Runde.
 
+## chatalpha für Ninja — die Quell-Regeln vorberechnen statt anwenden (2026-09-13)
+
+Nils' Anstoß, und die Begründung war die richtige: *„Wäre gut wenn nicht die Regeln der Quellen jedes Mal ausgewertet werden müssten. Das ist fehleranfällig da das manchmal vergessen wird."* Dazu seine zweite Frage: *„Macht die View vocab_lookup nicht so was Ähnliches?"* — **Ja, genau das.** `vocab_lookup.chatalpha` war für TUNICO (94 %) und Peace Corps (98 %) gefüllt und für Ninja **0 von 17.335**. Kein neues Konzept nötig, nur ein Loch — ausgerechnet bei der größten Quelle und der einzigen mit verlässlich vokalisiertem Arabisch.
+
+**Aus `arabic_script` abgeleitet, nicht aus Ninjas `darija`.** Ninja kennt kein `e` und kein freistehendes `o`, `ouw` ist mehrdeutig — aus der Lautschrift wäre es unzuverlässig. Aus dem vokalisierten Arabisch kommen Konsonanten und Gemination exakt heraus. 16.577 von 17.335 Zeilen (95,6 %) sind vokalisiert.
+
+**Zwei Fehler beim Bauen, beide lehrreich:**
+1. **Endlosschleife.** `position('' IN x)` liefert in Postgres **1, nicht 0** — die Diakritika-Sammelschleife hängte am Wortende leere Strings an, `length(diac)` wuchs nie. Am Wortende hart gegen `length(w)` prüfen, nicht auf das Ergebnis von `substr()` vertrauen.
+2. **Artikelassimilation doppelt.** `الشَّمْس` wurde zu `esh-shshams`. Die Assimilation **ist** die Schadda auf dem Sonnenbuchstaben — verdoppelt die Hauptschleife sie nochmal, steht sie zweimal da. Einmaliges `skip_shadda` nach dem Artikel.
+
+**Abnahme in zwei Stufen, wie der Skill es verlangt:**
+- 20 konstruierte Wörter: 18/20 Skelette korrekt beim ersten Lauf, die zwei Fehler waren genau die obigen.
+- Gegen echte Daten — alle Zeilen, wo unser `arabic_script` mit Ninjas identisch ist: **562 Paare, 93,6 %.** Ohne Lehnwörter (`darija` enthält `c`/`v`/`x`/`p` oder ist als frz./engl. markiert): **534 Paare, 96,4 %.** Die 19 Reste waren keine Funktionsfehler, sondern Funde.
+
+**Der eigentliche Gewinn war unerwartet.** Die Funktion braucht Ninja gar nicht — sie läuft genauso auf **unserem eigenen** `arabic_script`. Damit entsteht ein Check über den ganzen Bestand, der Zeichen für Zeichen vergleicht statt auf Vorkommen oder Anzahl zu prüfen. **Er fängt eine Klasse, die alle 22 Trainer-Regeln durchlassen:** `bathriq` für بطريق *enthält* ein `t` — es steckt im `th`. Auch der Anzahl-Gegencheck aus Regel 22 läuft daran vorbei.
+
+**Und er braucht zwei Pflichtfilter, sonst ist er wertlos:** nur Einzelwörter, nur vollständig vokalisiertes Arabisch. Ohne sie: 224 Treffer statt 44, weil bei Sätzen das Arabische meist nur teilweise vokalisiert ist und ein unmarkiertes ي/و als Konsonant gelesen wird (`bir-ra7a` → `balra7a`). Mit ihnen: **1.179 geprüft, 44 Treffer (3,7 %), davon rund 35 echt** — Fehlalarmquote ~20 %, die niedrigste aller Verdachtslisten.
+
+**Lehre:** eine Konvertierungsregel, die im Skill steht, wird bei jedem Nachschlagen neu angewendet und gelegentlich vergessen. Dieselbe Regel als Spalte ist immer angewendet — **und wird dabei zum Prüfwerkzeug**, weil man sie plötzlich gegen den eigenen Bestand laufen lassen kann. Das war der Zweck nicht, ist aber der größere Teil des Nutzens.
+
 ## vocabulary_review abgeschafft (2026-09-13)
 
 Nils' Entscheidung, nach zweimaligem Nachhaken („Ist die Tabelle überhaupt so sinnvoll? Wenn sie so oft Probleme auslöst?"). Seine Begründung traf den Kern: **„Ein Sinn war ja auch die letzten Abfragen zu dokumentieren. […] Ging darum die Abfragen bei Ninja nicht immer online machen zu müssen."** Mit 17.335 Ninja-Zeilen, 7.543 TUNICO- und 5.070 Peace-Corps-Zeilen offline ist genau dieser Zweck weg.
