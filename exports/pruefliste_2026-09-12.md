@@ -3728,3 +3728,47 @@ auf Kollision geprüft (keine), Buchstaben-für-Buchstaben gegen den gespeichert
 | Gruppe A (18 Checks) | alle 0 | **alle 0** |
 
 Rechnerisch stimmig: 348 − 4 = 344.
+
+---
+
+## Runde 58 — die beiden fehlenden Buchstaben aus Runde 57 behoben
+
+### 2118 m3abyin → m3abbyin — die Gemination des Singulars nie nachgezogen
+
+`1776 m3abbi` „voll (m.)" wurde in Runde 55 korrigiert (`darija` trägt seither `m3abbi` mit
+Doppel-b, TUNICO/PC bestätigt). Der Plural `2118` blieb bei `m3abyin` — die Korrektur hatte den
+Plural nie erreicht. `darija` und `arabic_script` zusammen korrigiert, wie beim Singular:
+
+| id | darija alt → neu | arabic_script alt → neu |
+|---|---|---|
+| 2118 | m3abyin → **m3abbyin** | معبيين → **معبّيين** |
+
+### 1143 mqat3in — dem `arabic_script` fehlte ein و
+
+`735 maktou3` „gebrochen" (dieselbe Wurzel ق-ط-ع, Muster مفعول) bestätigt: die Form braucht ein و.
+`darija` unverändert gelassen (`mqat3in` ohne ausgeschriebenes „ou" ist dieselbe Art Kurzschreibung
+wie `669 jd` für `jad` — kein Befund für sich), nur `arabic_script` ergänzt:
+
+| id | arabic_script alt → neu |
+|---|---|
+| 1143 | مقطعين → **مقطوعين** |
+
+Bleibt unvokalisiert (keine Harakat ergänzt, nur der fehlende Buchstabe) — zu Recht weiter in Check 22.
+
+Beide vor dem Schreiben gegen alle 23 Regeln getestet (0 Verstöße), auf Kollision geprüft (keine).
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 344 | **343** (nur 2118 vokalisiert, 1143 bleibt unvokalisiert) |
+| Check 24/25 | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Rechnerisch stimmig: 344 − 1 = 343.
+
+Damit ist der gesamte Audio-Untersuchungsstrang (Runden 55–58) abgeschlossen. Offen bleiben:
+6 Vokalisierungs-Kandidaten mit Strukturunterschied, 4 `darija`-Geminationsfälle, 2 Maß-I/Maß-II-Fälle
+— alle einzeln benannt in Runde 55/56.
