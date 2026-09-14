@@ -3671,3 +3671,60 @@ Kategorien E/F bleiben die schon dokumentierten offenen Einzelfälle, G ist kein
 
 Nur `ninja_audio_url` geändert, weder `arabic_script` noch `darija` berührt — Gruppe A (18 Checks)
 weiterhin alle 0, wie erwartet. Kein Effekt auf Check 22/24/25 oder die Trainer-eigenen Checks.
+
+---
+
+## Runde 57 — die 9 Kategorie-A-Zeilen als Vokalisierungsquelle, 4 geschrieben
+
+Vorschlag: die 9 Zeilen mit legitimer Singular-Audio-Wiederverwendung (Runde 56, Kategorie A) für die
+Vokalisierung nutzen — Wort und Bedeutung sind dort schon zweifelsfrei geklärt, nur die Pluralform
+fehlt als eigene Aufnahme.
+
+### Skelett-Abgleich fand zwei weitere fehlende Buchstaben im schon gespeicherten `arabic_script`
+
+Vor dem Vokalisieren geprüft, ob der Plural-Wortstamm wirklich zum Ninja-Singular passt (Singular-
+Skelett + Pluralendungs-Konsonant sollte das Plural-Skelett ergeben):
+
+- **`2118 m3abyin`** „voll (Pl.)": unser Skelett `m3bn`, erwartet `m3bbn` (Ninja-Singular `مْعَبِّي` hat
+  geminiertes ب, von TUNICO/PC unabhängig bestätigt). Dem **gespeicherten** `arabic_script` معبيين fehlt
+  die zweite ب-Gemination — kein Vokalisierungsfall, sondern eine fehlende Schadda im Bestand.
+- **`1143 mqat3in`** „zerrissen (Pl.)": beim Bauen fiel auf, dass mein Entwurf ein و enthielt, das im
+  **gespeicherten** `arabic_script` مقطعين gar nicht steht. Die Skelett-Prüfung hatte das verdeckt, weil
+  `_arabic_skeleton()` و als Vokalträger herausfiltert — ein Fehler, der vor dem Schreiben auffiel, nicht
+  danach.
+
+Beide sind jetzt offene „fehlender Buchstabe"-Fälle, keine Vokalisierungskandidaten mehr.
+
+### Weitere drei zurückgestellt
+
+- **`895 styloet`**, **`1158 shortoet`** — Ninjas eigene Einträge (`سْتيلُو`, `شورت`) sind selbst nicht
+  vollständig vokalisiert (Konsonanten ohne jedes Harakat, Lautlehre-Regel 4) bzw. ganz unvokalisiert.
+  Keine verlässliche Vorlage.
+- **`1134 dhayqin`** — einzige Quelle ist die feminine Form `ضَيّْقَةْ`, Geminationsposition/-lesung nicht
+  eindeutig auf den maskulinen Plural übertragbar.
+
+### Die 4 geschriebenen Zeilen
+
+| id | darija | bisher | vorgeschlagen | Beleg |
+|---|---|---|---|---|
+| 1135 | wes3in | واسعين | وَاسْعِينْ | Ninja وَاسْع (Singular, Audio-verknüpft) + reguläre Pluralendung ـين |
+| 1179 | ghamqin | غامقين | غَامِقِينْ | Ninja غَامِقْ (Singular, Audio-verknüpft) + reguläre Pluralendung ـين |
+| 2120 | ferghin | فارغين | فَارْغِينْ | Ninja فَارْغ (Singular, Audio-verknüpft) + reguläre Pluralendung ـين |
+| 2156 | bakoet | باكوات | بَاكُوَاتْ | Ninja بَاكُو (Singular, Audio-verknüpft) + reguläre Pluralendung ـات |
+
+Bei allen 4: `_translit_skeleton()` von `darija` und Ableitung identisch (nur Vokalqualität weicht ab,
+kein Befund laut Skill-Konsequenz 1), vor dem Schreiben gegen alle 23 Regeln getestet (0 Verstöße),
+auf Kollision geprüft (keine), Buchstaben-für-Buchstaben gegen den gespeicherten Wert abgeglichen
+(Lehre aus dem `1143`-Fehler).
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 348 | **344** |
+| Check 24/25 | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Rechnerisch stimmig: 348 − 4 = 344.
