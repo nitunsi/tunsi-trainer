@@ -3529,3 +3529,99 @@ ursprünglich ~10 geprüften wirklich sauber — der Rest schied wegen Bedeutung
 Buchstaben aus. Die Methodik trägt, ist aber pro Zeile deutlich aufwendiger als die Schadda-Runden:
 kein automatischer Gegencheck für falsche Vokale, nur für Gemination/Konsonanten. Eine größere Kampagne
 bräuchte entsprechend mehr Zeit pro Zeile, nicht mehr Zeilen pro Runde.
+
+---
+
+## Runde 55 — Audio-verknüpfte Zeilen als Quelle, 7 geschrieben
+
+Vorschlag: Zeilen, die schon `ninja_audio_url` tragen, zuerst prüfen — die Audio-Verknüpfung ist eine
+stärkere Bestätigung als ein bloßer Buchstaben-Treffer, weil jemand bestätigt hat, dass genau diese
+Ninja-Aufnahme zu genau dieser Zeile gehört.
+
+### Die Prämisse stimmt nur mit Einschränkung
+
+95 der 339 unvokalisierten Einzelwörter ohne Verdopplung haben `ninja_audio_url`, aber keinen
+`ninja_id`. Über `audio_url`-Match gegen `derja_ninja_entries` aufgelöst:
+
+| | |
+|---|---|
+| Audio-verknüpfte Zeilen | 95 |
+| davon Skelett stimmt mit Ninja überein | 68 |
+| davon Skelett weicht komplett ab | **27** |
+
+Die 27 sind ein eigener Befund: das Audio scheint dort schlicht falsch zugeordnet (`898 aqsem`
+„Klassen" verlinkt auf Ninjas „nas hay" = „Leute von hohem Rang", `900 tabloet` „Tafeln" auf „madri" =
+„große, dicke Baubretter"). Nicht in dieser Runde behoben.
+
+Von den 68 skelett-gleichen: **`4180 kasa` taucht wieder auf** — Audio verknüpft, Skelett gleich, aber
+Ninja meint weiterhin „Kasse", nicht „Waschlappen". **Die Audio-Verknüpfung schützt nicht vor dem
+Homonym-Fallstrick**, sie verengt nur die Kandidatenmenge.
+
+### Von 68 auf 14, dann auf 7 — Silbenstruktur ist der entscheidende Filter
+
+Nach Ausschluss unvokalisierter Ninja-Quellen und exaktem Buchstabenabgleich: 37 Kandidaten. Manuelle
+Bedeutungsprüfung fand darin drei bereits bekannte Fallstriktypen erneut, plus einen neuen:
+
+- **Maß-I/Maß-II** (Skill-Regel 5): `643 lbis`→لَبِّسْ „ankleiden" (Form II), `644 l3ab`→لّعَبْ (Form II
+  — **und** die Schadda sitzt auf dem ersten Buchstaben, was Lautlehre-Regel 3 automatisch als
+  Warnsignal markiert), `1697 tkun`→تْكَوِّنْ „sich bilden" (Form V) statt Kopula „sein".
+- **Anderes Wort**: `960 kbar`→كَبَّارْ „Capers" (!), `1405 bye`→„Bey" (Titel), `1521 wled`→وَالِدْ
+  „Vater" (nicht „Söhne"), `1199 njib`→„Najib" (Männername).
+- **Neu — Gemination fehlt schon in unserer `darija`**: `356 khadhar` (Ninja `khadhdhar`), `651 dla3`
+  (Ninja `dilla3`), `1825 mba3d` (Ninja `maba33ad`), **`1526 okhwa`** (Ninja `akhowwa`) — vier Fälle, bei
+  denen nicht das Arabische, sondern die `darija` selbst die Verdopplung nicht zeigt. Braucht eine
+  `darija`-Entscheidung, keine Vokalisierung.
+- **Wortart-Verdacht**: `1777 feragh` „leer (m.)" (Adjektiv) vs. Arabisch فراغ (Nomen „Leere"; das
+  Adjektiv wäre فارغ).
+
+14 kamen durch diesen Filter. Direkter Test gegen `_arabic_to_chatalpha()` zeigte: nur **1 von 14** war
+exakt identisch zur `darija` (`547 sma3`). Die anderen 13 unterschieden sich — aber nicht alle gleich
+schwer: **Vokalqualität** (Skill: „nie für sich genommen ein Befund") gegen **Silbenstruktur**
+(„fehlende Silbe" — ein echter Befund) sind zwei verschiedene Dinge:
+
+| id | Ninja | Unterschied zur `darija` | Einordnung |
+|---|---|---|---|
+| 502 fransawi | fransawy | nur y/i-Konvention | Vokalqualität → sicher |
+| 566 shera3 | shari3 | e/i | Vokalqualität → sicher |
+| 606 maktab | maktib | a/i | Vokalqualität → sicher |
+| 669 jd | jad | `darija` ist Kurzschreibung ohne Vokalbuchstaben | kein Strukturunterschied → sicher |
+| 1028 dakhel | dakhil | e/i | Vokalqualität → sicher |
+| 4406 wafaq | wafiq | a/i | Vokalqualität → sicher |
+| 325 hrisa | **harisa** | Ninja hat eine zusätzliche Anfangssilbe | Struktur → zurückgestellt (TUNICO bestätigt unsere) |
+| 569 banka | **bank** | Ninja fehlt die Endsilbe | Struktur → zurückgestellt (TUNICO/PC bestätigen unsere) |
+| 802 el-batala | btala | unsere `darija` trägt den Artikel, Ninja nicht | Struktur → zurückgestellt |
+| 1266 ithniya | thniyya | unsere `darija` hat eine Anfangssilbe „i-", Ninja und unser eigenes `arabic_script` nicht | Struktur → zurückgestellt |
+| 4333 qadhya | qdhya | Ninjas ق trägt **kein** Harakat — die Quelle selbst ist unvollständig vokalisiert (Lautlehre-Regel 4) | Quelle unvollständig → zurückgestellt |
+| 1819 mitghashesh | mitghashshish | Skelett weicht ab, Wurzelbildung unklar | zurückgestellt |
+
+### Die 7 geschriebenen Zeilen
+
+| id | darija | alt | neu |
+|---|---|---|---|
+| 547 | sma3 | سمع | سْمَعْ |
+| 502 | fransawi | فرنساوي | فْرَنْسَاوي |
+| 566 | shera3 | شارع | شَارِعْ |
+| 606 | maktab | مكتب | مَكْتِبْ |
+| 669 | jd | جد | جَدْ |
+| 1028 | dakhel | داخل | دَاخِلْ |
+| 4406 | wafaq | وافق | وَافِقْ |
+
+Vor dem Schreiben gegen alle 23 Regeln getestet (0 Verstöße), auf Kollision geprüft (keine), auf
+ungültige Schadda-Platzierung geprüft (nicht zutreffend, keine Gemination in diesem Satz).
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 355 | **348** |
+| Check 24/25 | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Rechnerisch stimmig: 355 − 7 = 348.
+
+**Fazit:** die Audio-Verknüpfung ist ein guter Vorfilter (grenzt 424 auf 95, dann 68 ein), ersetzt aber
+nicht die Einzelprüfung — weder gegen Homonyme (kasa) noch gegen Struktur-Unterschiede. Von 95
+audio-verknüpften Zeilen kamen am Ende 7 sauber durch plus 6 zurückgestellte mit klar benanntem Grund,
+plus der Nebenbefund der 27 falsch verlinkten Audios.
