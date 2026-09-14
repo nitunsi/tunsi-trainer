@@ -3625,3 +3625,49 @@ Rechnerisch stimmig: 355 − 7 = 348.
 nicht die Einzelprüfung — weder gegen Homonyme (kasa) noch gegen Struktur-Unterschiede. Von 95
 audio-verknüpften Zeilen kamen am Ende 7 sauber durch plus 6 zurückgestellte mit klar benanntem Grund,
 plus der Nebenbefund der 27 falsch verlinkten Audios.
+
+---
+
+## Runde 56 — die 27 skelett-fremden Audio-Verknüpfungen vollständig durchgesehen
+
+Nachfrage: „dann können die auch gleich komplett geprüft werden" — alle 27 mit Beispielsatz aus
+`derja_ninja_entries` durchgesehen, nicht nur die Stichprobe aus Runde 55.
+
+### Die Kategorien
+
+| Kategorie | Zeilen | Befund |
+|---|---|---|
+| A — legitime Wiederverwendung (Singular-Audio für Plural-Eintrag, gleiche Wurzel) | 9: 895, 1134, 1135, 1143, 1158, 1179, 2118, 2120, 2156 | Nicht falsch, nur nicht formgleich. Kandidaten für eine spätere Vokalisierungsrunde über die Geschwisterform. |
+| B — Audio ist ein ganzer Satz, Wort kommt nur darin vor | 2: 633, 2147 | `633 7kok` „Dosen" → Audio „Bierdosen" |
+| C — Synonym statt desselben Worts | 2: 900, 1078 | `1078 mqafil` „geschlossen" → Audio `مْسَكِّرْ` (andere Wurzel) |
+| D — wirklich falsch, unzusammenhängend | 7: 898, 960, 1144, 1181, 1185, 2145, 2168 | Wort kommt nur im Beispielsatz der falschen Quelle vor, oder reine Verwechslung (`898 aqsem` „Klassen" ↔ engl. „high class") |
+| E — Maß-I/Maß-II (schon bekannt) | 2: 643, 644 | |
+| F — Artikel/Gemination in der `darija` (schon bekannt + 1 neu) | 4: 356, 651, 1825, 4343 | `4343 b-zarba` ist derselbe Artikelassimilations-Fall wie Runde 47 (`bi-z-zirba`, unsere `darija` ohne Artikel) |
+| G — Bedeutung passt, nur Notationskonvention | 1: 1819 | Ninja schreibt „ch" für ش, wir „sh" |
+
+### Geschrieben: 11 `ninja_audio_url` auf NULL (Kategorien B, C, D)
+
+Diese 11 spielen beim Lernen ein anderes Wort oder einen ganzen Satz statt des gesuchten Worts ab —
+das führt aktiv in die Irre, nicht nur „nicht optimal":
+
+| id | darija | Audio zeigte auf |
+|---|---|---|
+| 898 | aqsem | „Leute von hohem Rang" (Verwechslung über engl. „class") |
+| 960 | kbar | „Capers" |
+| 1144 | nthaf | Verb „reinigen" statt Adjektiv „sauber" |
+| 1181 | fet7in | „Neonröhre" |
+| 1185 | timshi | Nomen „Vorgehen/Prozess" statt Verbform „du gehst" |
+| 2145 | bagrat | „Schlachthof" (Wort kam nur im Beispielsatz vor) |
+| 2168 | jupet | Idiom „jemandes Aufmerksamkeit erregen" (Wort kam nur im Beispielsatz vor) |
+| 633 | 7kok | ganzer Satz „Bierdosen" |
+| 2147 | 3athmet | ganzer Satz „er hat starke Knochen" |
+| 900 | tabloet | Synonym „madri" |
+| 1078 | mqafil | Synonym „msakkir" |
+
+Kategorie A (9 Zeilen) bewusst unverändert gelassen — die Wiederverwendung ist vertretbar.
+Kategorien E/F bleiben die schon dokumentierten offenen Einzelfälle, G ist kein Handlungsbedarf.
+
+### Gegenprobe
+
+Nur `ninja_audio_url` geändert, weder `arabic_script` noch `darija` berührt — Gruppe A (18 Checks)
+weiterhin alle 0, wie erwartet. Kein Effekt auf Check 22/24/25 oder die Trainer-eigenen Checks.
