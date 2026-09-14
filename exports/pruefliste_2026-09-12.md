@@ -3414,3 +3414,54 @@ Schreiben gefangen, nicht danach.**
 | Gruppe A (18 Checks) | alle 0 | **alle 0** |
 
 Rechnerisch stimmig: 381 − 20 = 361.
+
+---
+
+## Runde 53 — 4365 geklärt, dabei die eigene Ablehnung von 783 aus Runde 49 korrigiert
+
+Vorschlag aus Runde 52 aufgegriffen: `4365 khassatan` einzeln klären.
+
+### 4365: das falsche Wort, nicht nur unvokalisiert
+
+`arabic_script` خصوصا ist `khusuusan` (Standard-MSA „insbesondere" über das Muster خصوص+تنوين). TUNICO
+(`xāṣṣatan`) und Peace Corps (`xa:SSatan`, 2×) belegen aber unabhängig `khaSSatan` = خاصّةً — Wurzel
+خ-ص-ص, anderes Muster (خاصة+تنوين). Zwei verschiedene, verwandte Wörter mit gleicher Bedeutung, aber
+unser `arabic_script` war das falsche für diese Zeile. Korrigiert: خصوصا → **خاصة**.
+
+Bewusst **ohne** Schadda: `_arabic_to_chatalpha()` leitet Tanwin auf einer Ta-marbuta durchgehend als
+`-aan` ab, nicht als `-atan` (getestet: خاصّة → `khassa`, خاصّةً → `khassaan` — beides nicht `khassatan`).
+Das ist eine Lücke der Ableitungsfunktion selbst (die besondere Lautregel „فتحتان auf ة klingt -tan"
+ist nicht implementiert), keine falsche Angabe in unseren Daten. Mit Schadda wäre die Zeile fälschlich
+in Check 25 gelandet. Bleibt unvokalisiert, aber jetzt mit dem richtigen Wort — Check 22 zählt sie
+weiterhin, zu Recht.
+
+### Dabei gefunden: die Ablehnung von 783 in Runde 49 war zu streng
+
+Beim Nachrechnen für 4365 zum ersten Mal die *exakte* CASE-Logik aus `chatalpha_konflikte` nachgebaut,
+statt wie in Runde 49 nur `abgeleitet` und `darija` als rohe Strings zu vergleichen. Auf 783 angewandt:
+
+| Vergleich | Ergebnis |
+|---|---|
+| Rohe Strings (Runde 49): `ez-zka` vs `ez-zaka` | verschieden → „würde Check 25 auslösen" |
+| Echte Logik: `_translit_skeleton('ez-zaka')` vs `_translit_skeleton('ez-zka')` | **beide `zzk`, identisch** → Klasse `vokale`, von Check 24/25 gar nicht gezählt |
+
+Der rohe String-Vergleich war zu streng — er ignorierte, dass die View selbst über einen Vokal-
+Skelett-Vergleich läuft, der genau diese Art Unterschied (fehlende interne Fatha) toleriert. **783
+bekommt die Schadda doch**: الزكاة → **الزّكاة**. Eine frühere eigene Schlussfolgerung war falsch und
+wird hier korrigiert, nicht nur eine neue Zeile hinzugefügt.
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 361 | **360** (nur 783 vokalisiert, 4365 bleibt unvokalisiert) |
+| Check 24/25 | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Rechnerisch stimmig: 361 − 1 = 360.
+
+**Lehre für PRECEDENTS.md:** eine Ablehnung braucht dieselbe Sorgfalt wie eine Zusage — „würde den Check
+brechen" ist erst belastbar, wenn man die *tatsächliche* Vergleichslogik des Checks nachbildet, nicht
+eine eigene Näherung davon.
