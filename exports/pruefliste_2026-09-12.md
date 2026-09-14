@@ -3335,3 +3335,82 @@ Rechnerisch stimmig: 414 (nach Runde 47) − 3 (Runde 50: 597/894/4358) − 30 (
 
 Verbleiben aus den ursprünglich 71 Konsonanten-Verdopplungen: 28 Zeilen ohne `conjugation`-Tabelle,
 noch nicht einzeln gegen die drei Offline-Quellen geprüft.
+
+---
+
+## Runde 52 — 20 weitere Zeilen, ein Index-Fehler vor dem Schreiben gefangen
+
+Die restlichen 28 Check-22-Kandidaten ohne `conjugation`-Tabelle (aus den ursprünglichen 71
+Konsonanten-Verdopplungen) gebündelt gegen alle drei Quellen geprüft (Skelett-Join statt 28 Einzel-
+Abfragen). `1068` blieb ausgeschlossen (Runde 50), `783`/`2153` waren durch Runde 47–49 bereits auf der
+`darija`-Seite gelöst und tauchten nur auf, weil sie unvokalisiert sind.
+
+### 19 mit klarem Beleg, plus 2153
+
+| id | darija | Beleg |
+|---|---|---|
+| 523 massou | TUNICO `māṣṣu`/PC `ma:SSu:` „Briefumschlag/ENVELOPE" wortgleich |
+| 660 qoddam | TUNICO+PC `quddām`/`quddam` „vor (lokal)/in front of" |
+| 670 jadda | TUNICO `žadda`/PC `jidda` „Großmutter/GRANDMOTHER" wortgleich |
+| 778 makka | TUNICO `makka` „Mekka" wortgleich |
+| 927 metwassat | TUNICO+PC „durchschnittlich/AVERAGE" wortgleich |
+| 971 rajja3li | Geschwisterzeile 4324/4476 (`conjugation`-Tabelle) |
+| 1085 qalleyet | Geschwisterzeile 4382 (`qallāya` „Bratpfännchen" bei TUNICO) |
+| 1095 ysarraf | TUNICO+PC `ṣaṛṛaf`/`sarraf` „Geld wechseln" wortgleich |
+| 1203 tkallmik | Geschwisterzeile 1219 (`conjugation`-Tabelle) |
+| 1204 nkallamha | Geschwisterzeile 1219 (`conjugation`-Tabelle) |
+| 1776 m3abbi | TUNICO+PC „beladen/LOADED,FULL" + Geschwister 4392 |
+| 1907 yezzi | TUNICO `yizzi` „genug!" wortgleich |
+| 2153 ayyam | `_arabic_to_chatalpha('أيّام')` = `ayyam`, identisch zur darija |
+| 4314 mkassar | TUNICO+PC „kaputt/BROKEN" wortgleich |
+| 4379 saggid | TUNICO `saggid` wortgleich, identische Schreibung |
+| 4382 qalla | TUNICO `qalla` „anbraten" wortgleich |
+| 4384 dawwish | TUNICO `dawwiš` wortgleich, identische Schreibung |
+| 4392 3abba | TUNICO+PC „füllen/laden" wortgleich |
+| 4414 qaddar | TUNICO `qaddar` wortgleich, identische Schreibung |
+
+### Der Gegenrichtungs-Fund bei 783 vs. 2153
+
+Beide waren durch die vorigen Runden auf denselben Stand gebracht — `darija` korrigiert, `arabic_script`
+unvokalisiert. Vor dem Schreiben `_arabic_to_chatalpha()` auf beide mit probeweiser Schadda angewandt:
+
+| id | mit Schadda | abgeleitet | darija | Ergebnis |
+|---|---|---|---|---|
+| 2153 | أيّام | `ayyam` | ayyam | **identisch** — Schadda sicher |
+| 783 | الزّكاة | `ez-zka` | ez-zaka | **weicht ab** — fehlende Fatha zwischen ز/ك, mehr als nur Schadda |
+
+Gleiche Vorgeschichte, unterschiedliches Ergebnis — 2153 bekam die Schadda, 783 bleibt bewusst
+unvokalisiert stehen. Ohne die probeweise Ableitung wäre das nicht sichtbar gewesen.
+
+### Zweiter Codepoint-Fehler in dieser Serie, diesmal vor dem Schreiben gefangen
+
+Der generierte SQL-Text für `660 qoddam` zeigte `قداّم` statt `قدّام` — die Schadda saß auf dem Alif
+(Index 2 im Buchstaben-Array) statt auf د (Index 1), ein Tippfehler im Ausgangstupel. Der bisherige
+Codepoint-Check aus Runde 51 prüfte nur „genau eine Schadda eingefügt, nichts entfernt" — nicht „auf
+einem gültigen Buchstaben". Ergänzt: Abgleich der tatsächlichen Schadda-Position gegen den erwarteten
+Buchstaben, für alle 20 Zeilen, **vor** dem Schreiben. Nur diese eine Zeile war betroffen, korrigiert
+und erneut durch die volle Prüfkette (Codepoint, 23 Regeln, Kollision) geschickt, bevor geschrieben
+wurde. **Zweites Mal in dieser Serie, dass ein Kombinationszeichen falsch saß — beide Male vor dem
+Schreiben gefangen, nicht danach.**
+
+### Zurückgestellt, mit Begründung
+
+| id | Grund |
+|---|---|
+| 783 ez-zaka | Ableitung passt nicht (s.o.) — braucht eine echte Fatha, kein Schadda-Fall |
+| 612, 625, 893, 1858 | kein Treffer in keiner der drei Quellen |
+| 4331 3izza | TUNICO-Treffer ist ein falscher Freund (anderes Wort: „altersschwache Greisin"/„kondolieren") |
+| 4365 khassatan | TUNICO/PC bestätigen `khaSSatan`, aber `arabic_script` خصوصا ist ein anderes Wortmuster (`khusuusan`) — braucht eine Korrektur, keine Schadda |
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 381 | **361** |
+| Check 24 Gemination | 0 | **0** |
+| Check 25 Konsonanten-Widerspruch | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Rechnerisch stimmig: 381 − 20 = 361.
