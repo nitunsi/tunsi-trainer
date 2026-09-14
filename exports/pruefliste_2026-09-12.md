@@ -3035,3 +3035,55 @@ Check 22 muss künftig Vokalzeichen von der Schadda unterscheiden.
 Von 3.115 vokalisierten Zeilen enden **676** auf Sukun, **60** tragen ein Sukun auf ة (هَرِيسَةْ). Das ist
 Ninjas Schreibweise, nicht Standard — und sie ist über 327 aus Ninja übernommene Zeilen in den Bestand
 gelangt. Bevor 130 weitere Zeilen vokalisiert werden, gehört diese Konvention entschieden.
+
+---
+
+## Runde 47 — 10 Schadda-Ergänzungen geschrieben, 2 zurückgenommen
+
+Aus den 71 echten Konsonanten-Verdopplungen (die 3 Ausreißer `baash`, `mraa`, `loofah` waren lange
+Vokale, kein Schadda-Fall) zwei mechanisch eindeutige Gruppen geschrieben:
+
+| Gruppe | id → Änderung |
+|---|---|
+| Artikelassimilation | 598 الرامي→الرّامي, 784 الصوم→الصّوم, 785 الحج→الحجّ, 1065 بالنعناع→بالنّعناع, 4342 الدنيا→الدّنيا, 4438 النمسا→النّمسا |
+| Nisba-/Plural-Endung -iyya | 749 البلادية→البلاديّة, 1160 سبادريات→سبادريّات, 2100 فرنساوية→فرنساويّة, 2101 أمريكانية→أمريكانيّة |
+
+Jede Zeile trägt jetzt `[schadda ergänzt: ..., unvokalisiert]` in `internal_note` (bei 4342/4438 an die
+bestehende Notiz angehängt, nicht überschrieben).
+
+### Die Gegenprobe fand einen Fehler, den die Schadda nur sichtbar gemacht hat
+
+Nach dem Schreiben aller 12 Kandidaten sprang **Check 25 (Konsonant: darija/arabic_script
+widersprechen sich) von 0 auf 2** — vorher über Monate 0. `_arabic_to_chatalpha()` direkt aufgerufen:
+
+| id | arabic_script | abgeleitet | darija | fehlt |
+|---|---|---|---|---|
+| 783 `ez-zakat` | الزّكاة | `ez-zka` | ez-zakat | **ت** |
+| 2153 `ayyemet` | أيّام | `ayyam` | ayyemet | **ت** |
+
+Kein Vokalisierungsproblem — beiden Wörtern fehlt ein ganzer Konsonant, mit oder ohne Schadda. أيام ist
+die klassische Pluralform „Tage" ohne jedes ت; unsere `darija` trägt aber ein `-et`-Suffix. الزكاة bildet
+das `-at` der `darija` über die ة gar nicht ab. **Das Problem war immer da** — Check 25 sieht nur
+Zeilen an, die „vokalisiert genug" aussehen, und ein unvokalisiertes أيام fiel da nie hinein. Die
+Schadda hat die Zeile zum ersten Mal in den Prüfkreis gebracht und die Lücke freigelegt.
+
+Beide Schadda-Ergänzungen zurückgenommen (arabic_script und internal_note auf den Ausgangsstand), weil
+eine Schadda allein die eigentliche Lücke nicht schließt und eine neue Inkonsistenz stehen lassen
+würde. Bleiben als offene Einzelfälle: **783 ez-zakat** und **2153 ayyemet**, beide brauchen eine
+inhaltliche Entscheidung (welche Form ist richtig?), keine Schadda.
+
+**Sechstes Mal in dieser Serie, dass die Gegenprobe nach dem Schreiben — nicht nur vorher beim Messen —
+etwas gefunden hat.** Bisher prüfte diese Serie Checks vor einer Änderung; hier war die Änderung selbst
+der Auslöser, weil sie eine Zeile aus einem Ausschlusskriterium eines anderen Checks herausgeschoben hat.
+
+### Stand
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 424 | **414** |
+| Check 25 Konsonanten-Widerspruch | 0 | **0** (nach Rücknahme) |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Offen aus Runde 46 bleiben: die 61 Verbform-/Wurzelgeminations-Zeilen (davon einige vermutlich
+Lehnwort-Ausreißer wie `shkobba`, `patisserie`, `glass`, `qlammet`) und die beiden neuen Einzelfälle
+783/2153.
