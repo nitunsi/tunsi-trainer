@@ -3087,3 +3087,54 @@ der Auslöser, weil sie eine Zeile aus einem Ausschlusskriterium eines anderen C
 Offen aus Runde 46 bleiben: die 61 Verbform-/Wurzelgeminations-Zeilen (davon einige vermutlich
 Lehnwort-Ausreißer wie `shkobba`, `patisserie`, `glass`, `qlammet`) und die beiden neuen Einzelfälle
 783/2153.
+
+---
+
+## Runde 48 — die beiden offenen Fälle aus Runde 47 gegen die Offline-Quellen geprüft
+
+Nachfrage: ob 783 und 2153 in den drei Offline-Quellen (Ninja, TUNICO, Peace Corps) überprüft wurden —
+war noch nicht geschehen, nur `_arabic_to_chatalpha()` direkt. Nachgeholt.
+
+### 783 `ez-zakat` „die Armensteuer"
+
+| Quelle | Beleg |
+|---|---|
+| Derja Ninja | زَكَاةْ → `zaka`, „Charity, alms" |
+| TUNICO | `zkā` → `zka`, „Almosensteuer, Armensteuer" (deutsche Bedeutung wortgleich) |
+
+Beide unabhängig **ohne** Artikel `ez-` und **ohne** End-`t`. Keine Quelle kennt `ez-zakat`.
+
+### 2153 `ayyemet` „Tage (Pl.)"
+
+| Quelle | Beleg |
+|---|---|
+| Peace Corps | „fil-**ayyam** il-muqbla" = „in den kommenden Tagen" |
+| Derja Ninja / TUNICO | nur der Singular (`youwm`/`yum`), keine Pluralform mit `-et` |
+
+Keine Quelle kennt ein `-et`-Suffix für den Plural von „Tag".
+
+### Auflösung
+
+In beiden Fällen war nicht das `arabic_script` unvollständig (wie in Runde 47 vermutet), sondern die
+`darija` trug einen Zusatz, den keine Quelle stützt. Beide Zeilen stammen unbestätigt aus
+Kurslektionen (`external_confirmed=false`, Lektion 44/L24 „5 Säulen des Islam" bzw. Lektion 37). Keine
+Kollision mit bestehenden Einträgen geprüft, dann geschrieben:
+
+| id | `darija` alt → neu | `external_confirmed_source` |
+|---|---|---|
+| 783 | `ez-zakat` → **`zaka`** | tunico |
+| 2153 | `ayyemet` → **`ayyam`** | peacecorps |
+
+`arabic_script` unverändert (الزكاة / أيام) — das war schon richtig.
+
+### Gegenprobe
+
+| Check | Treffer |
+|---|---|
+| Gruppe A (18 Checks) | alle 0 |
+| 24 Gemination | 0 |
+| 25 Konsonanten-Widerspruch | 0 |
+| 22 unvokalisierte Einzelwörter | 414 (unverändert — beide Zeilen bleiben unvokalisiert, jetzt aber ohne Widerspruch) |
+
+Damit sind aus Runde 46/47 nur noch die 61 Verbform-/Wurzelgeminations-Zeilen offen, davon vermutlich
+ein paar Lehnwort-Ausreißer (`shkobba`, `patisserie`, `glass`, `qlammet`).
