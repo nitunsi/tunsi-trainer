@@ -3465,3 +3465,67 @@ Rechnerisch stimmig: 361 − 1 = 360.
 **Lehre für PRECEDENTS.md:** eine Ablehnung braucht dieselbe Sorgfalt wie eine Zusage — „würde den Check
 brechen" ist erst belastbar, wenn man die *tatsächliche* Vergleichslogik des Checks nachbildet, nicht
 eine eigene Näherung davon.
+
+---
+
+## Runde 54 — Pilotrunde: 5 Zeilen voll vokalisiert, keine Schadda-Ergänzung
+
+Erste Runde jenseits der Konsonanten-Verdopplung: die 344 Check-22-Zeilen ohne jede Gemination
+brauchen volle Vokalisierung (Fatha/Kasra/Damma), nicht nur ein Diakritikum — dafür gibt es keinen
+automatischen Gegencheck wie 24/25. Vorschlag: eine kleine Pilotrunde, um die Methodik zu erproben,
+bevor über eine größere Kampagne entschieden wird. Nachgefragt: „Wie würdest du die Prüfung machen?
+Mit dem Skill?" — `SKILL.md` hatte die Methodik bereits ausgearbeitet, nicht neu erfunden:
+
+- **Lautlehre-Regel 3** (Schadda nie auf dem ersten Buchstaben, nie auf einem Alif) — genau der Fehler,
+  der mir in Runde 50/52 zweimal passiert ist, hier zur expliziten Prüfregel gemacht.
+- **`vocab_lookup.chatalpha`** — für alle drei Quellen vorberechnet in unserer Konvention, spart die
+  Handumschrift von TUNICOs/Peace Corps' IPA-Notation.
+- **Vokalzeichen-vor-Schadda-Reihenfolge** (803 von 819 Zeilen im Bestand) — hier nicht gebraucht, da
+  keiner der 5 Kandidaten Gemination hat, aber für künftige Runden mit Schadda+Vokal auf demselben
+  Buchstaben relevant.
+- **Nie im Block, immer einzeln gegen die Quellen** — mit benannten Präzedenzfällen, wo ein Blockfix
+  falsch gewesen wäre.
+
+### Vor der Vokalisierung: zwei Kandidaten aussortiert, weil die Bedeutung nicht passte
+
+Buchstaben-Skelett-Match reichte nicht. Bei der Kandidatensuche:
+
+| id | Ninja-Beleg | Ninja-Bedeutung | unsere Bedeutung | Urteil |
+|---|---|---|---|---|
+| 4180 kasa | كَاسَةْ | „cashier, cash register" | „Waschlappen" | anderes Wort (deckt sich mit dem `2125 el-kasa`-Homonym aus Runde 46) |
+| 1576 louza | لُوزَة | „almond tree, almond" | „Schwägerin" | vermutlich anderes Wort — nicht sicher genug, um Ninjas Vokalisierung zu übernehmen |
+
+Zwei weitere zurückgestellt: `569 banka`/`4400 fadlik` — Ninja/Peace Corps zeigen zusätzliche Alif-
+Buchstaben, die unser `arabic_script` nicht hat; das braucht vermutlich eine Buchstaben-, nicht nur
+eine Vokalkorrektur. `547 sma3` ist der bekannte Maß-II-Fall aus Runde 46.
+
+### Die 5 geschriebenen Zeilen
+
+| id | darija | alt | neu | Beleg |
+|---|---|---|---|---|
+| 608 | dars | درس | دَرْسْ | Ninja دَرْسْ, exakt, „lesson" wortgleich |
+| 4419 | wzin | وزن | وْزِنْ | Ninja وْزِنْ, exakt, „to weigh" wortgleich |
+| 4421 | 7raq | حرق | حْرَقْ | Ninja حْرَقْ, exakt, „to burn" wortgleich |
+| 616 | kbir | كبير | كْبِيرْ | Peace Corps `kbir/kbira/kbar` „BIG/LARGE"; reguläres فعيل-Muster ohne Anfangsvokal |
+| 590 | khfif | خفيف | خْفِيفْ | TUNICO `xfīf`, PC `xfi:f` „AGILE" (Wurzel/Bedeutungsfeld leicht/wendig); reguläres فعيل-Muster |
+
+Bei allen 5: `_arabic_to_chatalpha()` reproduziert die `darija` **exakt** (nicht nur im Skelett-Sinn),
+vor dem Schreiben gegen alle 23 Regeln getestet (0 Verstöße) und auf Kollision geprüft (keine).
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 360 | **355** |
+| Check 24/25 | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Rechnerisch stimmig: 360 − 5 = 355.
+
+**Fazit der Pilotrunde:** von 5 anfänglich buchstaben-passenden Kandidaten waren am Ende nur 5 von
+ursprünglich ~10 geprüften wirklich sauber — der Rest schied wegen Bedeutungsabweichung oder fehlenden
+Buchstaben aus. Die Methodik trägt, ist aber pro Zeile deutlich aufwendiger als die Schadda-Runden:
+kein automatischer Gegencheck für falsche Vokale, nur für Gemination/Konsonanten. Eine größere Kampagne
+bräuchte entsprechend mehr Zeit pro Zeile, nicht mehr Zeilen pro Runde.
