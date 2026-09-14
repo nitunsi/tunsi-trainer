@@ -3181,3 +3181,80 @@ verifiziert.
 Markierung entfernen, die keine der Quellen encodiert, weil Wörterbuch-Lemmata den Artikel nicht
 führen. Die Gegenprobe gegen die Transliterationsregeln gehört zu *jeder* `darija`-Änderung, nicht nur
 zu neu angelegten Zeilen.
+
+---
+
+## Runde 50 — die vier vermuteten Lehnwort-Ausreißer einzeln geprüft
+
+Vorschlag aus Runde 46/49 aufgegriffen: `shkobba`, `qlammet`, `patisserie`, `glass` einzeln gegen
+Ninja/TUNICO/Peace Corps geprüft. Ergebnis: **nur einer** der vier ist wirklich ein Ausreißer — die
+Vermutung war größtenteils falsch.
+
+### 597 `shkobba` „Karten (Kartenspiel)" — echt
+
+TUNICO: `škubba`/chatalpha `shkbb`, **unabhängig** geminiertes b, Bedeutung „ein Kartenspiel" passt.
+Geschrieben: شكبة → **شكبّة**.
+
+### 1068 `patisserie` „Konditorei" — der einzige echte Ausreißer
+
+TUNICO: `pātīsrī`/`patisri`, **ein einzelnes s**, deutsche Bedeutung wortgleich „Konditorei". Unser
+doppeltes „ss" ist nur die französische Schreibung „pâtisserie", keine arabische Gemination. Keine
+Schreibungsänderung, nur Notiz gesetzt, damit es nicht erneut vorgeschlagen wird.
+
+### 4358 `glass` „Kleiderschrank (mit Spiegel)" — echt, plus ein Fund per Nutzerhinweis
+
+TUNICO: `glaṣṣ`, deutsche Bedeutung wortgleich, geminiertes ص. Bestätigt eine `internal_note` vom
+Vortag, die die Buchstabenkorrektur ك→ڨ schon festgehalten, aber nie geschrieben hatte.
+
+Dazwischen ein Einwand aus dem Trainer selbst: es gibt bereits **`3579 glas`** (ڨْلَصْ, ein ص,
+„großer Kleiderschrank", gestern unabhängig via Ninja korrigiert). Zunächst wie ein mögliches Duplikat
+geprüft — war keins: `ar_key` ohne Vokale ist ڨلص (3579) gegen ڨلاص (4358-Vorschlag), unterschiedliche
+Buchstabenfolge (das zusätzliche ا), unterschiedliche `darija` (glas/glass), unterschiedliche deutsche
+Bedeutung. Zwei echte, verwandte Wörter — Grund- und verstärkte/spezifizierte Form, beide unabhängig
+aus verschiedenen Quellen bestätigt. Geschrieben: كلاس → **ڨلاصّ**, mit Querverweis auf 3579 in der Notiz.
+
+**Nebenfund beim Schreiben:** die erste Schadda-Fassung für 597 und 894 saß auf dem falschen Buchstaben
+— ein Unicode-Kombinationszeichen hängt am *vorangehenden* Buchstaben, und in شكّبة/قلاّمات landete sie
+zwischen ك/ب bzw. hinter dem Alif statt auf ب/م. Erst auf Nachfrage auf Codepoint-Ebene geprüft
+(`ord()` je Zeichen) und korrigiert. Siebtes Mal in dieser Serie, dass eine Nachfrage einen Fehler vor
+dem Schreiben fängt statt danach.
+
+### 894 `qlammet` „Stifte (Pl.)" — zwei echte Plurale, keiner falsch
+
+Ausgangsbefund (Runde 49-Nachtrag) schien die Korrekturrichtung umzukehren: `894` teilt sich die
+Lektion (43/L10) mit der Singularform **`256 qlam` „Stift"** (قَلَم, vokalisiert), und `قلام` folgt
+exakt demselben, im Bestand etablierten Muster wie drei andere Pluralformen (`2112 qrab`/قراب,
+`2114 b3ad`/بعاد, `2116 3radh`/عراض) — alle „aC₁C₂اC₃" ohne Gemination.
+
+Erneute Recherche mit TUNICOs `inflected`-Feld (nicht nur `senses`) klärte es: das Lemma `qlam` (Wurzel
+ق-ل-م) führt **fünf** eigenständig getaggte Pluralformen — `qlammāt`, `qlām`, `aqlām` (literarisch),
+`iqlma`, `uqlma`. `قلام` entspricht `qlām` (chatalpha reduziert auf `qlam`), `qlammet` entspricht
+`qlammāt` — **beide** sind bei TUNICO als echter Dialekt-Plural (`#n_pl`) getaggt, keine Verwechslung.
+
+Entscheidend für die Auswahl war der Trainer selbst: `normalize()` faltet doppelte Vokale (`aa`→`a`),
+`qlam` (aus `qlām`) würde beim Abfragen mit der Singular-Antwort `256` zusammenfallen. `qlammāt` bleibt
+eindeutig unterscheidbar.
+
+**Beide Varianten in einem Eintrag geprüft, bevor geschrieben wurde:** eine Kombination testet, ob das
+mit etwas kollidiert.
+
+| Kombination | Regelverstöße |
+|---|---|
+| beide Varianten nur im `arabic_script` | **1** — Konsonanten-Zählregel schlägt an (ق zweimal im Arabischen, nur einmal in der `darija`; diese Regel hat anders als die Wortzahl-Regel keine `/`-Ausnahme) |
+| beide Varianten nur in der `darija` | **0** |
+
+Geschrieben: `arabic_script` قلام → **قلامّات** (das besser unterscheidbare Muster), `darija`
+`qlammet` → **`qlam/qlammet`** (nutzt die bestehende `/`-Konvention aus `checkAnswer()` — beide echten
+Formen bleiben als Antwort gültig, keine geht verloren).
+
+### Gegenprobe
+
+| | |
+|---|---|
+| Trainer 🔤 Transliteration | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 |
+
+**Bilanz der ursprünglichen Lehnwort-Vermutung:** 3 von 4 waren echte Treffer, nur 1 ein Artefakt.
+Vermutungen aus einer früheren Runde bleiben Vermutungen, bis sie einzeln geprüft sind — auch die
+eigenen.
