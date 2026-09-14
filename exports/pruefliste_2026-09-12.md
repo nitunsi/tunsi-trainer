@@ -3138,3 +3138,46 @@ Kollision mit bestehenden Einträgen geprüft, dann geschrieben:
 
 Damit sind aus Runde 46/47 nur noch die 61 Verbform-/Wurzelgeminations-Zeilen offen, davon vermutlich
 ein paar Lehnwort-Ausreißer (`shkobba`, `patisserie`, `glass`, `qlammet`).
+
+---
+
+## Runde 49 — die eigene Regression aus Runde 48 im Trainer selbst gefunden
+
+Meldung: „Jetzt schlägt die Trainer interne Prüfung an" — der clientseitige Check in `trainer.html`
+(🔁 Duplikate / 🔤 Transliteration), nicht die Supabase-Views.
+
+### Ursache
+
+Runde 48 hatte `783`s `darija` von `ez-zakat` auf `zaka` korrigiert (Ninja/TUNICO kennen beide nur
+`zaka`/`zka`, ohne Artikel und ohne End-`t`). Das entfernte aber nicht nur das unbelegte `-t`, sondern
+auch das `ez-`, das die Artikelassimilation vor dem Sonnenbuchstaben ز korrekt codiert hatte —
+الزكاة *hat* den Artikel ال. Regel „Artikel (ال) im Arabischen, aber in der Transliteration nicht
+erkennbar" schlägt seither an.
+
+### Verifiziert mit dem echten Trainer-Code, nicht nur gelesen
+
+Die 23 `TRANSLIT_RULES` und die Duplikat-Logik direkt aus `trainer.html` extrahiert (Zeilen 6205–6307)
+und gegen frisch geladenen Live-Bestand laufen lassen (`count`-Header 3.775, 4 Seiten, 23 Regeln
+bestätigt). Ergebnis: **genau 1 Treffer, id 783**, sonst nichts.
+
+Ein Nebenfehler dabei selbst gemacht und sofort korrigiert: die erste Live-Abfrage selektierte
+`homonym_ok` nicht mit, wodurch der Duplikat-Check *jedes* bewusst markierte Homonym-Paar (12
+arabische, 16 Transliterations-, 11 deutsche Paare, u.a. das seit Runde 45 bekannte `1389`/`4448`)
+fälschlich als Duplikat zeigte. Mit vollständigem Feldset: 0 Duplikate.
+
+### Korrektur
+
+`783`: `zaka` → **`ez-zaka`** — Artikel bleibt erkennbar, das unbelegte `-t` bleibt draußen. Vor dem
+Schreiben gegen die 23 Regeln getestet (0 Treffer), geschrieben, erneut gegen frischen Live-Bestand
+verifiziert.
+
+| | |
+|---|---|
+| Trainer 🔤 Transliteration | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 |
+
+**Lehre für PRECEDENTS.md:** eine `darija`-Korrektur gegen Offline-Quellen kann eine grammatische
+Markierung entfernen, die keine der Quellen encodiert, weil Wörterbuch-Lemmata den Artikel nicht
+führen. Die Gegenprobe gegen die Transliterationsregeln gehört zu *jeder* `darija`-Änderung, nicht nur
+zu neu angelegten Zeilen.
