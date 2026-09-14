@@ -3258,3 +3258,80 @@ Formen bleiben als Antwort gültig, keine geht verloren).
 **Bilanz der ursprünglichen Lehnwort-Vermutung:** 3 von 4 waren echte Treffer, nur 1 ein Artefakt.
 Vermutungen aus einer früheren Runde bleiben Vermutungen, bis sie einzeln geprüft sind — auch die
 eigenen.
+
+---
+
+## Runde 51 — 30 Verben aus der eigenen conjugation-Tabelle vokalisiert
+
+Vorschlag aus Runde 50 aufgegriffen: von den 58 verbleibenden Check-22-Kandidaten haben 30 eine
+`conjugation`-Tabelle, und die zeigt die Gemination durchgehend über alle Personen/Zeiten hinweg —
+keine externe Quelle nötig, die Tabelle ist der Beleg.
+
+Zielschreibung diesmal über explizite Buchstaben-Listen gebaut (nicht durch Tippen von kombiniertem
+Arabisch), um den Codepoint-Fehler aus Runde 50 nicht zu wiederholen. Jede der 30 Zeilen einzeln gegen
+die echten 23 `TRANSLIT_RULES` getestet (0 Verstöße) und auf Kollision mit bestehenden Einträgen
+geprüft (keine), bevor geschrieben wurde.
+
+### Nachfrage vor dem Schreiben: „Warum wird die Verdopplung weggenommen?"
+
+Codepoint-Dump aller 30 Paare zeigte: `alt` enthält nirgends eine Schadda, `neu` ist exakt `alt` plus
+eine eingefügte Schadda — nichts wurde entfernt. Die Nachfrage kam vermutlich durch einen
+Bidi-Rendering-Effekt zustande (Arabisch/RTL neben einem „→"-Pfeil/LTR in einer Tabellenzelle kann
+visuell vertauscht erscheinen, je nach Renderer). Die Tabelle danach mit `alt`/`neu` in getrennten
+Spalten statt Pfeil-in-einer-Zelle dargestellt — behebt die Zweideutigkeit für künftige Tabellen.
+
+### Bestehende Notiz beachtet, nicht widersprochen
+
+`526` und `1042` trugen bereits eine Notiz vom 13.09.: bei Widerspruch zwischen Zeile und
+`conjugation`-Tabelle gilt die Zeile, die Tabelle wurde damals an die Zeile angeglichen. Betraf nur die
+Tabellen-JSON, nicht `arabic_script` — kein Widerspruch zu dieser Runde. Bestehende Notizen wurden
+angehängt (`btrim(coalesce(...) || ...)`), nicht überschrieben.
+
+### Die 30 geschriebenen Zeilen
+
+| id | darija | alt | neu | Beleg |
+|---|---|---|---|---|
+| 526 | tnijjem | تنجم | تنجّم | jj: najjem/tnijjem/ynajjim |
+| 646 | tfarraj | تفرج | تفرّج | rr: tfarraj/nitfarraj |
+| 1042 | nsakker | نسكر | نسكّر | kk: sakkar/nsakker |
+| 1169 | y7ell | يحل | يحلّ | Geminatwurzel 7-l-l: 7all/y7ell/n7illu |
+| 1219 | yitkallam | يتكلم | يتكلّم | ll: tkallam/yitkallam |
+| 1227 | y3addi | يعدي | يعدّي | dd: 3addi/y3addi |
+| 1247 | t3adda | تعدى | تعدّى | dd: 3adda/t3adda |
+| 1284 | nrawwa7 | نروح | نروّح | ww: rawwa7/nrawwa7 |
+| 1286 | nitfarraj | نتفرج | نتفرّج | rr: tfarraj/nitfarraj |
+| 1502 | nit3allem | نتعلم | نتعلّم | ll: t3allem/nit3allem |
+| 1838 | tkammil | تكمل | تكمّل | mm: kammil/tkammil |
+| 4324 | yrajja3 | يرجع | يرجّع | jj: rajja3/yrajja3 |
+| 4352 | ywaqqaf | يوقف | يوقّف | qq: waqqaf/ywaqqaf |
+| 4373 | yitkayyif | يتكيف | يتكيّف | yy: tkayyif — Schadda auf der 2. (Wurzel-)ي |
+| 4397 | wassal | وصل | وصّل | ss: wassal/nwassal |
+| 4398 | wakkil | وكل | وكّل | kk: wakkil/nwakkil |
+| 4474 | 7abbit | حبيت | حبّيت | bb im Perfekt/Imperativ (Präsens geminiert bei diesem Verb ausnahmsweise nicht — betrifft diese Zeile nicht, sie ist Perfekt) |
+| 4475 | tkayyift | تكيفت | تكيّفت | yy: tkayyif/yitkayyif |
+| 4476 | rajja3t | رجعت | رجّعت | jj: rajja3/yrajja3 |
+| 4477 | nsalli | نصلي | نصلّي | ll: salla/nsalli |
+| 4481 | waqqaft | وقفت | وقّفت | qq: waqqaf/ywaqqaf |
+| 4484 | 3arras | عرس | عرّس | rr: 3arras/n3arris |
+| 4485 | faddit | فديت | فدّيت | dd: fadd/faddit |
+| 4486 | 3arrast | عرست | عرّست | rr: 3arras/n3arris |
+| 4487 | shaddit | شديت | شدّيت | dd: shadd/nishedd |
+| 4490 | yit3adda | يتعدى | يتعدّى | dd: t3adda/yit3adda |
+| 4491 | t3addit | تعديت | تعدّيت | dd: 3adda/t3adda |
+| 4494 | jarrabt | جربت | جرّبت | rr: jarrab/yjarrab |
+| 4498 | nitraqqa | نترقى | نترقّى | qq: traqqa/nitraqqa |
+| 4499 | nsabba7 | نصبح | نصبّح | bb: sabba7/nsabba7 |
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 411 | **381** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Rechnerisch stimmig: 414 (nach Runde 47) − 3 (Runde 50: 597/894/4358) − 30 (diese Runde) = 381.
+
+Verbleiben aus den ursprünglich 71 Konsonanten-Verdopplungen: 28 Zeilen ohne `conjugation`-Tabelle,
+noch nicht einzeln gegen die drei Offline-Quellen geprüft.
