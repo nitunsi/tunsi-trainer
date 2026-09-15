@@ -4060,3 +4060,94 @@ mit `homonym_ok` auf beiden aufgelöst. In `tools/README.md` als Pflichtfilter 6
 - **`1522 bnet` gegen `4111 bnat`** — dasselbe Wort, zwei Umschriften. Als Homonym markiert, aber
   die Umschrift-Uneinheitlichkeit bleibt eine Bestandsfrage.
 - 17 weitere geprüfte Kandidaten liegen fertig vor (aus den 67).
+
+---
+
+## Runde 64 — die restlichen 17, erweiterte Quellen, und wo die Quellen aufhören
+
+### Die 17 aus der Warteschlange
+
+Alle aus Runde 63 vorbereitet und geprüft, diesmal **mit Pflichtfilter 6** (Kollisionsprobe gegen
+bereits vokalisierte Zeilen), der in Runde 63 gefehlt hatte: `2145`, `2148`, `2450`, `2911`, `4180`,
+`4328`, `4333`, `4385`, `4387`, `4395`, `4399`, `4400`, `4401`, `4403`, `4429`, `4439`, `4440`.
+Alle 17 bestanden Rückrechnung, Buchstabengleichheit, Skelettgleichheit, Kollisionsprobe.
+`4333 qadhya` „Einkauf" war ein offener Punkt aus früheren Runden.
+
+### Quellen erweitert
+
+Für die nächste Tranche drei neue Zugänge erschlossen:
+
+1. **`tunico_import.inflected`** — die Flexionsformen mit Analysetag (`#n_pl`, `#n_dual`,
+   `#v_pres_sg_p3`). Das war die wichtigste Lücke: unser Bestand ist voller Plurale und Duale, und
+   TUNICOs *Lemma* ist immer der Singular. Deshalb scheiterte in Runde 63 `585 fnejin` an `finjan`
+   und `1075 mgharif` an `mgharfa` — mit den Flexionsformen treffen jetzt beide korrekt
+   (`fnajin` `#n_pl`, `mgharif` `#n_pl`).
+2. **`derja_ninja_entries.chatalpha` als reine Vokalquelle**, auch wo die Buchstaben abweichen.
+3. **Artikelbehandlung** — Zeilen mit `el-`/`esh-`/`ez-` in der `darija` trafen nie ein Quell-Lemma,
+   weil das Skelett den Artikel mitzählt. Artikel abtrennen, gegen das Lemma suchen, Artikel wieder
+   voranstellen: das holte `748 el-7imaya`, `775 el-baba`, `936 el qahwa`, `1479 el-lil` herein.
+
+### Zwei Filterkorrekturen
+
+**Der Vokalanzahl-Filter aus Runde 63 war zu scharf.** Er verlangte gleiche Silbenzahl in Quelle und
+`darija` — und blockierte damit genau den Normalfall, den Runde 63 selbst entdeckt hatte: dass die
+Quelle **mehr** Vokale hat als unsere verkürzte Umschrift (`qlam` gegen `qalam`). Jetzt differenziert
+nach Wortart: bei **Verben** bleibt die Silbenzahl strikt (sonst schlüpft die 1./3.-Person-
+Verwechslung `7raqt` → `7arqat` durch), bei allem anderen darf die Quelle voller sein.
+
+**Neuer Filter: kein zusätzlicher Endvokal.** Die Lockerung ließ Quellformen durch, die auf einen
+Vokal enden, den unser Wort nicht hat — der Solver hängte dann ein Fatha an den letzten Buchstaben,
+ohne dass ein Vokalträger folgt: `ka3k`→`ka3ka`, `shbih`→`shbiha`, `sikritir`→`sikritira`,
+`qrab`→`qaraba`. Alle vier sind andere Wortformen. Regel steht in `tools/README.md`.
+
+### 22 geschrieben, 9 verworfen
+
+Angenommen wurden fast ausschließlich Plurale und Duale mit passendem TUNICO-Analysetag
+(`585`, `626`, `899`, `1074`, `1075`, `1150`, `1159`, `1561`, `1578`, `2110`, `2158`, `2163`,
+`2353`, `4359`) plus die Artikelfälle und drei Einzelne (`388`, `612`, `843`, `1083`).
+
+Verworfen und **mit Begründung in `internal_note` festgehalten**, damit keine spätere Runde sie
+erneut vorschlägt:
+
+| id | | warum |
+|---|---|---|
+| 4480 | kibrit „ich wurde älter" | Ninja 807 كبريت ist **„Sulfur"** |
+| 1271 | nfiq „ich wache auf" | Ninja 393 ist „to drown, go down, die" |
+| 1291 | feqit „sie wachte auf" | Ninja 5131 ist فقط „only" |
+| 1576 | louza „Schwägerin" | Ninja 1107 ist „almond tree" |
+| 1113 | billehi „bitte" | Ninja setzt Fatha, wo `bi-` ein Kasra verlangt |
+| 1232 | talqa „du findest" | Ninja silbiert anders, Zuordnung unsicher |
+| 518 | el-irb3a „Mittwoch" | ergäbe الأرْبْعَاء mit Doppel-Sukun, weicht von الأَرْبِعَاء ab |
+| 1217 | toq3od „du bleibst" | PC-Vokalmuster `tqa3id` zu weit entfernt |
+| 4423 | skhun | Präzedenzfall in SKILL.md, TUNICO-Treffer ist `adj_pl` statt Verb |
+
+### Warum es 39 wurden und nicht 50
+
+Zusammensetzung der 256 offenen Zeilen zu Beginn der Runde:
+
+| | Anzahl |
+|---|---|
+| Skelett in TUNICO/Peace Corps vorhanden | 146 |
+| nur in Ninja | 19 |
+| **in gar keiner Quelle** | **91** |
+
+Die 91 sind kein Zufall, sondern eine Struktur: französische Lehnwörter (`sacoche`, `el-guichet`,
+`hotel`, `styloet`), Formen mit Pronominalsuffix (`ysalmik`, `ta3rafshi`, `blayiskom`) und
+zusammengesetzte Ausdrücke. Für die hilft kein Wörterbuch — die brauchen Semia.
+
+Von den 146 mit Skeletttreffer scheitern die meisten daran, dass sich die Quellform aus **unseren**
+Buchstaben nicht erzeugen lässt. Das ist kein Mangel des Verfahrens, sondern seine Schutzfunktion:
+es bedeutet, dass die Quelle eine andere Wortform meint. Der quellengestützte Weg ist damit weitgehend
+ausgeschöpft — weitere Vokalisierungen hier hieße, die Belegpflicht aufzuweichen.
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 273 | **234** |
+| Check 23 | 0 | **0** |
+| Check 24 / 25 | 0 / 0 | **0 / 0** |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+| Schadda auf ا korpusweit | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 1 | **1** (unverändert `1819`/`3897`) |

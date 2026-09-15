@@ -30,6 +30,12 @@ Die `darija` darf die Vokalisierung nur **einschränken** (Konsonanten, Geminati
 bestimmen. Als Ziel gehört eine echte Vokalquelle: `tunico_import.lemma_chatalpha`/`variants_chatalpha`
 oder `peacecorps_dict_import.forms_chatalpha`.
 
+**`tunico_import.inflected` nicht vergessen.** Unser Bestand ist voller Plurale und Duale, TUNICOs
+Lemma ist immer der Singular. Ohne die Flexionsformen (mit Analysetag `#n_pl`, `#n_dual`,
+`#v_pres_sg_p3`) zieht das Skelett den Plural auf den Singular: `fnejin` auf `finjan`, `mgharif`
+auf `mgharfa`. Ebenso: bei `darija` mit Artikel (`el-`/`esh-`/`ez-`) den Artikel vor der Suche
+abtrennen und danach wieder voranstellen, sonst trifft das Skelett nie ein Lemma.
+
 ## Pflichtfilter vor dem Schreiben
 
 Reihenfolge wie in Runde 63 verwendet, jeder einzelne hat echte Fehlpaarungen abgefangen:
@@ -45,7 +51,10 @@ Reihenfolge wie in Runde 63 verwendet, jeder einzelne hat echte Fehlpaarungen ab
    nötig, der Solver findet dann einfach keine Lösung.
 5. **Rückrechnung durch die Datenbank selbst** — vor dem `UPDATE` immer gegen
    `public._arabic_to_chatalpha` prüfen, nicht nur gegen den Port.
-6. **Kollisionsprobe gegen bereits vokalisierte Zeilen** — in Runde 63 vergessen; `1522` wurde
+6. **Kein zusaetzlicher Endvokal** — endet die Quellform auf einen Vokal, den unser Wort nicht hat,
+   ist es eine andere Wortform (`ka3k`/`ka3ka`, `shbih`/`shbiha`). Der Solver haengt sonst ein Fatha
+   an den letzten Buchstaben, ohne dass ein Vokaltraeger folgt.
+7. **Kollisionsprobe gegen bereits vokalisierte Zeilen** — in Runde 63 vergessen; `1522` wurde
    dadurch identisch mit `4111` und riss Check 10 der Gruppe A auf.
 
 ## Datenmengen am Kontext vorbei
