@@ -31,6 +31,14 @@ Hintergrund: Vokabellernen ("einfach abarbeiten") fiel leichter als der Kurs, we
 - **Lese-/Browse-Ansicht** (`renderCourseBrowseTab()`, Tab "📖 Ansicht" innerhalb einer Lektion): zeigt alle Chunks einer Lektion inkl. Lock-Status (🔒/🟡/✅/📄) und Level-Badge pro Übung (`courseExLevelBadge()`) — Inhalt ist **immer lesbar**, auch für noch nicht freigeschaltete Chunks (bewusste Nutzerentscheidung, 2026-09-08). Ersetzt den alten Chunk-Stepper als Tab-Inhalt (Tab-Key bleibt `'course'`, nur das Ziel-Rendering hat sich geändert).
 - **Kurs-Übersicht** (`renderCourseOverview()`, Lektionsliste): Status/Icon jetzt aus `courseFlattenChunks()` berechnet (Anteil gemeisterter SRS-Übungen), nicht mehr aus `course_progress.status`. Alle Lektionen sind dort immer öffenbar (keine Lock-Buttons mehr auf dieser Ebene — Sperre existiert nur auf Chunk-Ebene, sichtbar in der Browse-Ansicht).
 
+### Statistik-Screen: Vokabeln und Kurs sind zwei Blöcke, der Anfänger-Puffer ist einer
+
+`showStats()` hält die Zählungen bewusst getrennt (`levelCount`/`dueDays` für Vokabeln, `courseLevelCount`/`courseDueDays` für den Kurs) und zeigt zwei Fortschrittsblöcke — eine gemeinsame Prozentzahl aus zwei unterschiedlich weit fortgeschrittenen Beständen wäre wenig aussagekräftig. Die Kurs-Arrays sind nur bei `cLesson === 'all'` befüllt (`course_lessons` bildet nicht 1:1 auf Vokabel-Lektionen ab).
+
+**Ausnahme: die Warnung "Anfänger-Puffer wird knapp" zählt beide Quellen zusammen** (2026-09-15). Sie ist kein Fortschrittsmaß, sondern die Frage "geht mir der Anfängerstoff aus?" — und die beantwortet sich nur über den gesamten täglichen Abfragestrom, den der Mix-Modus ohnehin mischt. Vorher zählten nur Vokabeln: bei 53 Vokabeln in L0–L2 schlug sie an, obwohl 35 Kurs-Übungen danebenstanden, zusammen also 88. Der Trigger bleibt der gewichtete Puffer (`phaseAnfaengerWeighted`, L0=3/L1=2/L2=1 verbleibende Schritte bis L3, Schwelle < 25), rechnet aber über `levelCount[i] + courseLevelCount[i]`. Er steht deshalb im Code **nach** dem Kurs-Block, nicht mehr bei den Vokabel-Lernphasen, und die Warnung hängt über beiden Blöcken statt in der Vokabel-Box. Die vier Kacheln (Neu/Anfänger/Fortgeschritten/Profi) bleiben pro Block getrennt.
+
+Level in beiden Welten identisch abgeleitet: `Math.min(correct_count, 6)`; Bucket 0 ist "nie gestartet" (bei Vokabeln: kein `progress` **oder** `next_review IS NULL`; beim Kurs: keine `course_exercise_progress`-Zeile, also noch gesperrt).
+
 ### Exercise-Typen
 
 | Typ | Verwendung |
