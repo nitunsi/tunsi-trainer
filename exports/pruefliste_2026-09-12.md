@@ -4401,3 +4401,73 @@ Lehnwörter, Formen mit Pronominalsuffix, regionale Wörter. Dafür gibt es nur 
 | Trainer 🔁 Duplikate | **0** |
 | Gruppe A (18 Checks) | alle 0 |
 | Check 24 / 25 | 0 / 0 |
+
+---
+
+## Runde 68 — Ableitungen über Affixe, und die Schadda-Reihenfolge
+
+### Possessivformen (Nils' Hinweis)
+
+Systematisch gesucht statt einzeln: Pronominalsuffix abtrennen, Grundform im eigenen bestätigten
+Bestand und in den drei Quellen suchen, Gloss muss das Possessivpronomen nennen.
+
+| id | | Grundform |
+|---|---|---|
+| 957 | `blastik` dein Platz | Bestand 534 `blasa` (ninja) — Femininendung wird vor dem Suffix zu `-t` |
+| 1484 | `nhari` mein Tag | Bestand 271 `nhar` (ninja) |
+| 1962 | `3zizhom` ihr Großvater | Bestand 685 `3ziz` (ninja) — Gloss-Abweichung vermerkt |
+| 2789 | `mte3i` meins | Bestand 1820 `mte3` (ninja) |
+| 2793 | `mte3hum` ihres | Bestand 1820 `mte3` (ninja) |
+| 3874 | `3umru` sein Alter | Peace Corps 1715 `3umr` |
+
+### Artikelformen — dieselbe Mechanik
+
+25 Treffer, **21 übernommen, 3 Zufälle, 1 Fund.** Die drei Zufälle zeigen, warum der
+Bedeutungsabgleich nicht wegzulassen ist:
+
+| id | | scheinbare Grundform | tatsächlich |
+|---|---|---|---|
+| 782 | `es-sala` das Gebet | TUNICO `sala` | **„Salon; Saal"** — صالة, nicht صلاة |
+| 784 | `es-sawm` das Fasten | TUNICO `sawm` | **„Preis; Summe"** — سوم, nicht صوم |
+| 2125 | `el-kasa` die Kasse | Bestand 4180 `kasa` | der **Waschhandschuh**, den ich zwei Runden vorher selbst bestätigt hatte |
+
+Zwei weitere hatten die falsche Grundform zugeordnet bekommen und wurden korrigiert: `785 el-7ajj`
+gehört zu TUNICO 2682 `ḥažž` (Verb „pilgern"), nicht zu `4190 حَاجّ` (der Pilger, anderes Wort);
+`3111 el-battal` zu TUNICO 3324/3329 `baṭṭāl` (Nomen/Adjektiv), nicht zu 2807 (Verb „aufhören").
+
+**Der Fund: `3741 el-wta`.** Das `arabic_script` اللوطا wirkte falsch (doppeltes ل), ist aber
+korrekt — Ninja 14304 belegt **لُوطَا** `louwta` „down, under, at the bottom". Falsch war die
+`darija`, die das ل unterschlagen hatte: `el-wta` → **`el-louta`**.
+
+### Die Schadda-Reihenfolge — meine Zahl war falsch
+
+In Runde 65 hatte ich „26 Zeilen mit Schadda vor dem Vokalzeichen" gemeldet. Nachgemessen sind es
+**9**. Der Regex hatte zwei verschiedene Dinge zusammengefasst:
+
+| Muster | Anzahl | Bewertung |
+|---|---|---|
+| Schadda **vor Vokalzeichen** (`ضّـَ`) | 9 | Konventionsabweichung — korrigiert |
+| Schadda **+ Sukun** (`مُرّْ` = `morr`) | 17 | **völlig korrekt** — wortfinaler Doppelkonsonant ohne Vokal |
+| Vokalzeichen vor Schadda | 815 | Hausstil |
+
+Die 9 normalisiert (jetzt 824 zu 0). Vier davon hatte ich in dieser Sitzung selbst so geschrieben
+(`356`, `651`, `893`, `768`), zwei stammen aus wörtlich übernommenen Ninja-Werten (`1266`, `1526`).
+Vor dem Schreiben geprüft, dass der Tausch die Ableitung **nicht** verändert — bei allen neun
+identisch, Buchstabenbestand unverändert.
+
+### Stand der Belegstufen
+
+| Stufe | vorher | jetzt |
+|---|---|---|
+| direkt belegt | 2.571 | 2.571 |
+| **abgeleitet belegt** | 68 | **96** |
+| kein Beleg | 1.135 | **1.107** (854 davon mehrwortig) |
+
+### Gegenprobe
+
+| | |
+|---|---|
+| Schadda vor Vokalzeichen | **0** (824 konform) |
+| Trainer 🔤 Transliteration | **0** von 3.774, 23 Regeln |
+| Trainer 🔁 Duplikate | **0** |
+| Gruppe A / Check 24 / Check 25 | 0 / 0 / 0 |

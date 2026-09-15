@@ -349,7 +349,7 @@ Aus der Uni-Wien-Lautlehre abgeleitete Prüfregeln, immer anwendbar wenn `arabic
 
 1. **Vokalqualität a/e und i/e (Imala) ist meist kein Fehler.** Fatha/Kasra werden je nach Umgebung mal als "a"/"i", mal als "e" ausgesprochen (حَارْ→"7ar" aber بَارْد→"berid", derselbe Fatha-Laut). Nur bei strukturellen Abweichungen (fehlende Silbe, anderer Konsonant, anderes Vokalmuster) nachhaken.
 2. **Gemination (Schadda) muss sich im Doppelbuchstaben spiegeln.** كَبُّوطْ→"kabbout" ✓. Doppelter Konsonant ohne Schadda (oder umgekehrt) → möglicher Vokalisierungsfehler.
-3. **Schadda-Gültigkeitsprüfung.** Nie auf dem ersten Buchstaben eines Wortes, nie auf einem reinen Langvokal-Buchstaben (ا) — beides ist ungültig und ein Warnsignal für kaputte Quelldaten.
+3. **Schadda-Gültigkeitsprüfung.** Nie auf dem ersten Buchstaben eines Wortes, nie auf einem reinen Langvokal-Buchstaben (ا) — beides ist ungültig und ein Warnsignal für kaputte Quelldaten. **Zeichenreihenfolge:** trägt derselbe Konsonant Schadda *und* ein Vokalzeichen, steht das **Vokalzeichen zuerst** (824 Zeilen so, seit Runde 68 ausnahmslos). Nicht zu verwechseln mit **Schadda + Sukun** (`مُرّْ` = `morr`, 17 Zeilen): das ist ein wortfinaler Doppelkonsonant ohne Vokal und völlig korrekt. Wer beides in einem Regex zusammenfasst, zählt 26 statt 9.
 4. **"Vollständig vokalisiert"** heißt: jeder Konsonant hat Harakat oder Sukun. Ein Wort mit nur einem Schadda, sonst ohne Fatha/Kasra/Damma, ist unvollständig.
 5. **Maß-I- vs. Maß-II-Verwechslung bei Verben aus externen Quellen.** Unsere Vergangenheitsform (3. Pers. m. Sg., Maß I) ist die Grundform. Externe Quellen listen oft die kausative Form (Maß II, mit Schadda) oder eine Nomen-Ableitung — gleiches Konsonantenskelett, andere Bedeutung (دَخِّلْ "hineinstecken" statt دْخَلْ "er trat ein"). Vor Übernahme immer Wortart/Verb-Maß gegen die deutsche Bedeutung prüfen, reiner Skelett-Match reicht nicht. Keine passende Variante in der Quelle → ausschließen, nicht raten.
 6. **Hamza (ء) ist ein eigener Laut, kein "3".** Bei anlautendem Vokal ohne erkennbaren Konsonanten prüfen, ob eigentlich أ gemeint ist.
@@ -949,6 +949,16 @@ RETURNING id, english, darija, arabic_script, german, translit_skeleton, arabic_
 - sonst `external_confirmed=false, external_confirmed_source=NULL`.
 
 **Warum der dritte Zustand nötig war.** `external_confirmed` ist ein **Exakt-Treffer-Flag**: es beantwortet „steht dieser String in einer Quelle?", nicht „gibt es dieses Wort?". Beispiel `1175 t7eb` „du magst": die Grundform `4176 7abb` ist Ninja-belegt und über `tunico_verb_id` mit TUNICO verknüpft, TUNICO 2164 führt das Verb `ḥabb` vollständig — aber nur **eine** Beispielflexion (`y7ibb`). Auch `tunico_corpus_wordforms` (9.874 belegte Formen) kennt `t7eb` nicht, weil es andere Vokale schreibt. „Nicht bestätigt" war damit technisch wahr und inhaltlich irreführend, und der Partner-Check schickte solche Zeilen zu Semia, als wüsste niemand, ob es das Wort gibt.
+
+**So findet man die Ableitungen systematisch** (Runde 68): Affix abtrennen, Grundform im **eigenen bestätigten Bestand** und in den drei Quellen suchen, und zur Sicherheit das deutsche Gloss gegenprüfen. Drei Affixklassen sind regelmäßig genug dafür:
+
+| Klasse | Prüfung | Ausbeute Runde 68 |
+|---|---|---|
+| Pronominalsuffix (`-i` mein, `-ek/-ik` dein, `-ou/-u` sein, `-ha` ihr, `-na` unser, `-kom` euer, `-hom` ihr Pl.) | Gloss muss das Possessivpronomen nennen; Femininendung fällt vor dem Suffix zu `-t` (`blasa` → `blastik`) | 6 von 281 |
+| Artikel (`el-`, `esh-`, `ez-`, …) | Sonnenbuchstabe entdoppeln, dann Grundform suchen | 21 von 25 Treffern |
+| Flexion aus `conjugation` | Form muss in der Tabelle einer **bestätigten** Zeile stehen | 3 von 4 Treffern |
+
+Die Fehlalarmquote ist auch hier real: `es-sala` „das Gebet" trifft TUNICOs `sala` **„Salon; Saal"** (صالة statt صلاة), `es-sawm` „das Fasten" trifft `sawm` **„Preis; Summe"** (سوم statt صوم), `el-kasa` „die Kasse" den Waschhandschuh `kasa`. Ohne Bedeutungsabgleich wären das drei falsche Bestätigungen aus 25.
 
 **Der dritte Zustand ist keine Abkürzung.** Er verlangt dieselbe Wortprüfung wie eine direkte Bestätigung: `3281 yitba3` steht in der Konjugationstabelle von `2213 yitba3` — und ist trotzdem **nicht** davon abgeleitet, weil dort die Wurzel ط-ب-ع („drucken") steht und hier ب-ي-ع („verkauft werden"). Ein Skelett- oder Formtreffer ohne Bedeutungsabgleich erzeugt hier genauso Homograph-Zufälle wie überall sonst.
 
