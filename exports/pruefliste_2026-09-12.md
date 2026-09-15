@@ -2864,3 +2864,1708 @@ Die anderen vier hatten keinen Partner, Flag entfernt:
 | 🔤 Transliteration | **0** von 3.775, 23 Regeln |
 | Gruppe A | **18 Checks, alle 0** |
 | Gruppe B | **462** statt 473 |
+
+---
+
+## Runde 46 — Check 22 vermessen: die 424 unvokalisierten Einzelwörter
+
+Nicht als Kampagne begonnen, sondern zuerst vermessen: wie viele der 424 haben überhaupt eine Quelle,
+wie viele lassen sich aus dem eigenen Bestand ableiten, und wie viele sind Lehnwörter.
+
+### Der Bestand
+
+| | |
+|---|---|
+| Zeilen in Check 22 | 424 |
+| davon mit `conjugation`-Tabelle (Verben) | 144 |
+| davon als Lehnwort im Deutschen markiert | 3 |
+| davon mit `ninja_id` | **0** |
+| 1–2 / 3 / 4 / 5+ arabische Buchstaben | 4 / 48 / 147 / 225 |
+
+Die Null bei `ninja_id` ist ein Fingerzeig, aber ein schmaler: im ganzen Bestand tragen nur 122 Zeilen
+eine `ninja_id` — und **alle 122 sind vokalisiert**. Breiter gemessen nennen 327 Zeilen Ninja in der
+`internal_note`, bei 3.115 vokalisierten Zeilen insgesamt. Der Großteil des vokalisierten Bestands kommt
+also **nicht** aus Ninja, sondern aus der ursprünglichen Erfassung. Was die Zahlen belegen, ist enger und
+reicht: **die gezielten Vokalisierungs-Runden liefen über Ninja, und keine der 424 Zeilen hat dabei einen
+Treffer bekommen.**
+
+### Frage 1 — wie weit reicht Ninja?
+
+Auf der Buchstabenebene (`ar_key`, gleiche Buchstaben ohne Harakat, Artikel normalisiert):
+
+| Vergleichsebene | Treffer | davon genau eine vokalisierte Variante |
+|---|---|---|
+| gleiche Buchstaben | **84** | 69 |
+| + Hamza/ة/ى normalisiert | 87 | 72 |
+| Konsonantenskelett | 282 | 64 |
+
+Die Normalisierung von أ/إ/آ, ى und ة bringt **3** zusätzliche eindeutige Fälle — die Buchstabenebene
+ist gesättigt. Das Skelett bringt 202 zusätzliche Treffer, aber das ist die Ebene, die ganze
+Wurzelfamilien zusammenwirft (Runde 30: 465 Gruppen). Der Sprung von 84 auf 282 ist kein Gewinn,
+sondern die bekannte Unschärfe.
+
+### Frage 1b — und stimmen diese 84 überhaupt mit uns überein?
+
+Das ist die Frage, die die Kampagne beinahe übersprungen hätte. Ninjas `chatalpha` gegen unsere
+`darija`, beide normalisiert (y→i, w→u, Verdopplungen reduziert):
+
+| | Zeilen |
+|---|---|
+| Transliteration identisch → direkt übertragbar | **18** |
+| gleiches Konsonantengerüst, andere Vokale/Schadda | **48** |
+| anderes Konsonantengerüst → anderes Wort | **18** |
+
+Die 48 noch einmal aufgeteilt:
+
+| | Zeilen |
+|---|---|
+| Ninja hat eine Verdopplung, wir nicht (Form-II-Verdacht) | 12 |
+| wir haben eine Verdopplung, Ninja nicht | 9 |
+| reiner Vokalunterschied | 27 |
+
+Von 84 „eindeutigen" Ninja-Treffern sind **18** übertragbar. Bei den übrigen würden Ninjas Harakat der
+eigenen `darija` widersprechen — aber nicht immer, weil unsere Zeile falsch wäre.
+
+| id | unsere `darija` | Ninja | was Ninja wirklich hat |
+|---|---|---|---|
+| 547 `sma3` „er hörte" | سمع | `samma3` | Form II „jemanden hören lassen" |
+| 643 `lbis` „er zog sich an" | لبس | `labbis` | Form II „jemanden ankleiden" |
+| 644 `l3ab` „er spielte" | لعب | `la33ib` | Form II „jemanden spielen lassen" |
+| 775 `el-baba` „Der Papst" | بابا | `baba` | „Dad" |
+| 598 `er-rami` „Rami (Kartenspiel)" | الرامي | `rami` | „Rami (Männername)" |
+| 325 `hrisa` „Harissa" | هريسة | `hariysa` → هَرِيسَةْ | ein anderes Vokalmuster als unser `hrisa` |
+
+Gleiche Buchstaben, anderes Wort — dasselbe Muster wie bei `ableitung_exakt` in Runde 38: **die
+Formgleichheit prüft die Form, nicht die Bedeutung.** Bei den Formen II ist es systematisch: das
+unvokalisierte Arabisch unterscheidet Grundstamm und Form II gar nicht, genau dafür ist die
+Vokalisierung da. Ninjas Eintrag ist dann nicht die Vokalisierung unseres Wortes, sondern die eines
+anderen.
+
+### Frage 2 — die anderen beiden Quellen tragen Vokale
+
+TUNICO (`lemma_orig`: `hrīsa`, `xfīf`, `fṛanṣāwi`) und Peace Corps (`forms_phonetic`: `ixtiSa:r`,
+`ghli:dh`, `ba:nka`) führen **vokalisierte Transkriptionen**. 7.008 TUNICO-Lemmata, 5.004 Peace-Corps-
+Formen. Für die Vokalisierung sind sie damit gleichwertige Quellen — sie sind bisher nur nie dafür
+benutzt worden.
+
+| Quelle | Treffer über das Translit-Skelett | mit **identischer** `darija` |
+|---|---|---|
+| Derja Ninja (über die arabischen Buchstaben) | 84 | 18 |
+| TUNICO | 237 | 69 |
+| Peace Corps | 244 | 65 |
+| mindestens eine | **296 von 424 (70 %)** | **94** |
+| *davon ohne jeden Ninja-Treffer* | 212 | 54 |
+
+Der Block mit identischer `darija` ist der belastbare: dort stimmen Konsonanten **und** Vokale mit
+unserem Eintrag überein, das Wort ist dasselbe, und die Harakat folgen aus der Transkription.
+54 dieser Zeilen waren für den bisherigen Weg unsichtbar.
+
+Und die Quellen schiedsrichtern gegeneinander: bei **`325 hrisa`** sagt TUNICO `hrīsa` — das bestätigt
+unsere `darija` und widerlegt Ninjas هَرِيسَةْ.
+
+### Frage 3 — Ableitung aus dem eigenen Bestand, und Lehnwörter
+
+| | Zeilen |
+|---|---|
+| dasselbe Wort steht schon vokalisiert in einer anderen Zeile | 25 (21 eindeutig) |
+| nur eine vokalisierte Geschwisterzeile derselben Wurzel | 204 |
+| als Lehnwort markiert | 3 |
+
+Die 25 sind Homonym-Paare (Check 31 steht auf 0, es sind also keine Dubletten): gleiche Buchstaben,
+verschiedene Bedeutung. Gerade dort können die Harakat **auseinandergehen** — das Übertragen ist hier
+die falsche Bewegung, die `darija` entscheidet. Lehnwörter sind mit 3 Zeilen kein eigener Block.
+
+### Die Klassifikation
+
+| Klasse | Zeilen | davon Verben |
+|---|---|---|
+| A Ninja eindeutig, gleiche Buchstaben | 69 | 9 |
+| B TUNICO/PC mit identischer `darija`, eindeutig | 61 | 14 |
+| C Quelle vorhanden, aber mehrdeutig | 8 | 2 |
+| D Quelle nur über das Skelett (anderes Wort möglich) | 158 | 60 |
+| E Verb mit `conjugation`-Tabelle, sonst nichts | 59 | 59 |
+| F Lehnwort | 2 | 0 |
+| G ohne jeden Anhaltspunkt | 67 | 0 |
+
+A und B überschneiden sich nicht (Prioritätsreihenfolge), zusammen 130. Nach dem Abgleich aus Frage 1b
+schrumpft A aber auf die 18 wirklich übereinstimmenden; der Rest von A gehört in Wahrheit zu C/D.
+
+### Was die Messung über die Aufgabe selbst sagt
+
+Check 22 ist **keine Kampagne mit 424 Übertragungen**. Er ist ein Prüfer: wo eine Quelle vokalisiert und
+wir nicht, kommt eine von drei Antworten heraus — die Quelle bestätigt uns (18), die Quelle meint ein
+anderes Wort (18), oder die Vokale gehen auseinander (48). Nur die erste ist ein Eintrag ins
+`arabic_script`.
+
+Die 48 sind **nicht** 48 Fehler im Bestand, und das ist wichtig: bei den 12 mit Ninja-Verdopplung ist es
+in der Stichprobe jedes Mal Form II gegen Grundstamm gewesen — zwei verschiedene Verben, die das
+unvokalisierte Arabisch gar nicht trennt. Wie viele der 48 wirklich auf eine unstimmige Zeile zeigen,
+ist damit **noch nicht gemessen**; es braucht die Einzelansicht. Die 27 reinen Vokalunterschiede sind
+der Teil, wo sie am ehesten liegt.
+
+Zwei Kandidaten aus der Stichprobe, beide noch nicht entschieden:
+
+- **`569 banka`** „Bank" — unser Arabisch بنك, aber PC `ba:nka` und TUNICO `bānka`. Das Arabisch bildet
+  das auslautende -a nicht ab.
+- **`604 wraq`** „Blätter (Pl.)" — unser Arabisch أوراق (MSA `awraq`), unsere `darija` `wraq`, PC `wraq`,
+  TUNICO `wṛaq`.
+
+### Der Messfehler, der fast in diese Runde gekommen wäre
+
+Der erste Abgleich meldete **68 von 84** als abweichend. Ninja schreibt langes i als `y` und langes u
+als `w` (`5fyf`, `ramiy`, `massouw`). Ohne die Abbildung y→i / w→u zählten `khfif` gegen `khfyf` und
+`fransawi` gegen `fransawy` als verschiedene Wörter. Nach der Normalisierung: 18 identisch, 53
+Vokalunterschiede, 18 andere Wörter. **Fünftes Mal, dass ein auffälliges Ergebnis ein Fehler im Check
+war und nicht in den Daten.**
+
+### Der Block, der gar keine Quelle braucht
+
+Ein Zählschritt zum Schluss, ohne jede externe Quelle: **83 der 424** haben eine Verdopplung in der
+`darija` (`massou`, `qassar`), aber nur **9** schreiben den Buchstaben im Arabischen doppelt. In den
+übrigen ~74 fordert die eigene `darija` eine Schadda, die im `arabic_script` fehlt. Das ist aus dem
+eigenen Bestand ableitbar, die Zuordnung macht `_arabic_to_chatalpha()`, und Check 24 (Gemination)
+steht auf 0 — er kann es heute nur nicht sehen, weil unvokalisiertes Arabisch nie widerspricht.
+
+Ein Vorbehalt gehört dazu: eine Schadda ist ein Harakat. Zeilen, die nur eine Schadda bekommen, fallen
+aus Check 22 heraus, ohne wirklich vokalisiert zu sein. Entweder wird das in Kauf genommen oder
+Check 22 muss künftig Vokalzeichen von der Schadda unterscheiden.
+
+### Nebenbefund: es gibt keine Hausregel für den Auslaut
+
+Von 3.115 vokalisierten Zeilen enden **676** auf Sukun, **60** tragen ein Sukun auf ة (هَرِيسَةْ). Das ist
+Ninjas Schreibweise, nicht Standard — und sie ist über 327 aus Ninja übernommene Zeilen in den Bestand
+gelangt. Bevor 130 weitere Zeilen vokalisiert werden, gehört diese Konvention entschieden.
+
+---
+
+## Runde 47 — 10 Schadda-Ergänzungen geschrieben, 2 zurückgenommen
+
+Aus den 71 echten Konsonanten-Verdopplungen (die 3 Ausreißer `baash`, `mraa`, `loofah` waren lange
+Vokale, kein Schadda-Fall) zwei mechanisch eindeutige Gruppen geschrieben:
+
+| Gruppe | id → Änderung |
+|---|---|
+| Artikelassimilation | 598 الرامي→الرّامي, 784 الصوم→الصّوم, 785 الحج→الحجّ, 1065 بالنعناع→بالنّعناع, 4342 الدنيا→الدّنيا, 4438 النمسا→النّمسا |
+| Nisba-/Plural-Endung -iyya | 749 البلادية→البلاديّة, 1160 سبادريات→سبادريّات, 2100 فرنساوية→فرنساويّة, 2101 أمريكانية→أمريكانيّة |
+
+Jede Zeile trägt jetzt `[schadda ergänzt: ..., unvokalisiert]` in `internal_note` (bei 4342/4438 an die
+bestehende Notiz angehängt, nicht überschrieben).
+
+### Die Gegenprobe fand einen Fehler, den die Schadda nur sichtbar gemacht hat
+
+Nach dem Schreiben aller 12 Kandidaten sprang **Check 25 (Konsonant: darija/arabic_script
+widersprechen sich) von 0 auf 2** — vorher über Monate 0. `_arabic_to_chatalpha()` direkt aufgerufen:
+
+| id | arabic_script | abgeleitet | darija | fehlt |
+|---|---|---|---|---|
+| 783 `ez-zakat` | الزّكاة | `ez-zka` | ez-zakat | **ت** |
+| 2153 `ayyemet` | أيّام | `ayyam` | ayyemet | **ت** |
+
+Kein Vokalisierungsproblem — beiden Wörtern fehlt ein ganzer Konsonant, mit oder ohne Schadda. أيام ist
+die klassische Pluralform „Tage" ohne jedes ت; unsere `darija` trägt aber ein `-et`-Suffix. الزكاة bildet
+das `-at` der `darija` über die ة gar nicht ab. **Das Problem war immer da** — Check 25 sieht nur
+Zeilen an, die „vokalisiert genug" aussehen, und ein unvokalisiertes أيام fiel da nie hinein. Die
+Schadda hat die Zeile zum ersten Mal in den Prüfkreis gebracht und die Lücke freigelegt.
+
+Beide Schadda-Ergänzungen zurückgenommen (arabic_script und internal_note auf den Ausgangsstand), weil
+eine Schadda allein die eigentliche Lücke nicht schließt und eine neue Inkonsistenz stehen lassen
+würde. Bleiben als offene Einzelfälle: **783 ez-zakat** und **2153 ayyemet**, beide brauchen eine
+inhaltliche Entscheidung (welche Form ist richtig?), keine Schadda.
+
+**Sechstes Mal in dieser Serie, dass die Gegenprobe nach dem Schreiben — nicht nur vorher beim Messen —
+etwas gefunden hat.** Bisher prüfte diese Serie Checks vor einer Änderung; hier war die Änderung selbst
+der Auslöser, weil sie eine Zeile aus einem Ausschlusskriterium eines anderen Checks herausgeschoben hat.
+
+### Stand
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 424 | **414** |
+| Check 25 Konsonanten-Widerspruch | 0 | **0** (nach Rücknahme) |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Offen aus Runde 46 bleiben: die 61 Verbform-/Wurzelgeminations-Zeilen (davon einige vermutlich
+Lehnwort-Ausreißer wie `shkobba`, `patisserie`, `glass`, `qlammet`) und die beiden neuen Einzelfälle
+783/2153.
+
+---
+
+## Runde 48 — die beiden offenen Fälle aus Runde 47 gegen die Offline-Quellen geprüft
+
+Nachfrage: ob 783 und 2153 in den drei Offline-Quellen (Ninja, TUNICO, Peace Corps) überprüft wurden —
+war noch nicht geschehen, nur `_arabic_to_chatalpha()` direkt. Nachgeholt.
+
+### 783 `ez-zakat` „die Armensteuer"
+
+| Quelle | Beleg |
+|---|---|
+| Derja Ninja | زَكَاةْ → `zaka`, „Charity, alms" |
+| TUNICO | `zkā` → `zka`, „Almosensteuer, Armensteuer" (deutsche Bedeutung wortgleich) |
+
+Beide unabhängig **ohne** Artikel `ez-` und **ohne** End-`t`. Keine Quelle kennt `ez-zakat`.
+
+### 2153 `ayyemet` „Tage (Pl.)"
+
+| Quelle | Beleg |
+|---|---|
+| Peace Corps | „fil-**ayyam** il-muqbla" = „in den kommenden Tagen" |
+| Derja Ninja / TUNICO | nur der Singular (`youwm`/`yum`), keine Pluralform mit `-et` |
+
+Keine Quelle kennt ein `-et`-Suffix für den Plural von „Tag".
+
+### Auflösung
+
+In beiden Fällen war nicht das `arabic_script` unvollständig (wie in Runde 47 vermutet), sondern die
+`darija` trug einen Zusatz, den keine Quelle stützt. Beide Zeilen stammen unbestätigt aus
+Kurslektionen (`external_confirmed=false`, Lektion 44/L24 „5 Säulen des Islam" bzw. Lektion 37). Keine
+Kollision mit bestehenden Einträgen geprüft, dann geschrieben:
+
+| id | `darija` alt → neu | `external_confirmed_source` |
+|---|---|---|
+| 783 | `ez-zakat` → **`zaka`** | tunico |
+| 2153 | `ayyemet` → **`ayyam`** | peacecorps |
+
+`arabic_script` unverändert (الزكاة / أيام) — das war schon richtig.
+
+### Gegenprobe
+
+| Check | Treffer |
+|---|---|
+| Gruppe A (18 Checks) | alle 0 |
+| 24 Gemination | 0 |
+| 25 Konsonanten-Widerspruch | 0 |
+| 22 unvokalisierte Einzelwörter | 414 (unverändert — beide Zeilen bleiben unvokalisiert, jetzt aber ohne Widerspruch) |
+
+Damit sind aus Runde 46/47 nur noch die 61 Verbform-/Wurzelgeminations-Zeilen offen, davon vermutlich
+ein paar Lehnwort-Ausreißer (`shkobba`, `patisserie`, `glass`, `qlammet`).
+
+---
+
+## Runde 49 — die eigene Regression aus Runde 48 im Trainer selbst gefunden
+
+Meldung: „Jetzt schlägt die Trainer interne Prüfung an" — der clientseitige Check in `trainer.html`
+(🔁 Duplikate / 🔤 Transliteration), nicht die Supabase-Views.
+
+### Ursache
+
+Runde 48 hatte `783`s `darija` von `ez-zakat` auf `zaka` korrigiert (Ninja/TUNICO kennen beide nur
+`zaka`/`zka`, ohne Artikel und ohne End-`t`). Das entfernte aber nicht nur das unbelegte `-t`, sondern
+auch das `ez-`, das die Artikelassimilation vor dem Sonnenbuchstaben ز korrekt codiert hatte —
+الزكاة *hat* den Artikel ال. Regel „Artikel (ال) im Arabischen, aber in der Transliteration nicht
+erkennbar" schlägt seither an.
+
+### Verifiziert mit dem echten Trainer-Code, nicht nur gelesen
+
+Die 23 `TRANSLIT_RULES` und die Duplikat-Logik direkt aus `trainer.html` extrahiert (Zeilen 6205–6307)
+und gegen frisch geladenen Live-Bestand laufen lassen (`count`-Header 3.775, 4 Seiten, 23 Regeln
+bestätigt). Ergebnis: **genau 1 Treffer, id 783**, sonst nichts.
+
+Ein Nebenfehler dabei selbst gemacht und sofort korrigiert: die erste Live-Abfrage selektierte
+`homonym_ok` nicht mit, wodurch der Duplikat-Check *jedes* bewusst markierte Homonym-Paar (12
+arabische, 16 Transliterations-, 11 deutsche Paare, u.a. das seit Runde 45 bekannte `1389`/`4448`)
+fälschlich als Duplikat zeigte. Mit vollständigem Feldset: 0 Duplikate.
+
+### Korrektur
+
+`783`: `zaka` → **`ez-zaka`** — Artikel bleibt erkennbar, das unbelegte `-t` bleibt draußen. Vor dem
+Schreiben gegen die 23 Regeln getestet (0 Treffer), geschrieben, erneut gegen frischen Live-Bestand
+verifiziert.
+
+| | |
+|---|---|
+| Trainer 🔤 Transliteration | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 |
+
+**Lehre für PRECEDENTS.md:** eine `darija`-Korrektur gegen Offline-Quellen kann eine grammatische
+Markierung entfernen, die keine der Quellen encodiert, weil Wörterbuch-Lemmata den Artikel nicht
+führen. Die Gegenprobe gegen die Transliterationsregeln gehört zu *jeder* `darija`-Änderung, nicht nur
+zu neu angelegten Zeilen.
+
+---
+
+## Runde 50 — die vier vermuteten Lehnwort-Ausreißer einzeln geprüft
+
+Vorschlag aus Runde 46/49 aufgegriffen: `shkobba`, `qlammet`, `patisserie`, `glass` einzeln gegen
+Ninja/TUNICO/Peace Corps geprüft. Ergebnis: **nur einer** der vier ist wirklich ein Ausreißer — die
+Vermutung war größtenteils falsch.
+
+### 597 `shkobba` „Karten (Kartenspiel)" — echt
+
+TUNICO: `škubba`/chatalpha `shkbb`, **unabhängig** geminiertes b, Bedeutung „ein Kartenspiel" passt.
+Geschrieben: شكبة → **شكبّة**.
+
+### 1068 `patisserie` „Konditorei" — der einzige echte Ausreißer
+
+TUNICO: `pātīsrī`/`patisri`, **ein einzelnes s**, deutsche Bedeutung wortgleich „Konditorei". Unser
+doppeltes „ss" ist nur die französische Schreibung „pâtisserie", keine arabische Gemination. Keine
+Schreibungsänderung, nur Notiz gesetzt, damit es nicht erneut vorgeschlagen wird.
+
+### 4358 `glass` „Kleiderschrank (mit Spiegel)" — echt, plus ein Fund per Nutzerhinweis
+
+TUNICO: `glaṣṣ`, deutsche Bedeutung wortgleich, geminiertes ص. Bestätigt eine `internal_note` vom
+Vortag, die die Buchstabenkorrektur ك→ڨ schon festgehalten, aber nie geschrieben hatte.
+
+Dazwischen ein Einwand aus dem Trainer selbst: es gibt bereits **`3579 glas`** (ڨْلَصْ, ein ص,
+„großer Kleiderschrank", gestern unabhängig via Ninja korrigiert). Zunächst wie ein mögliches Duplikat
+geprüft — war keins: `ar_key` ohne Vokale ist ڨلص (3579) gegen ڨلاص (4358-Vorschlag), unterschiedliche
+Buchstabenfolge (das zusätzliche ا), unterschiedliche `darija` (glas/glass), unterschiedliche deutsche
+Bedeutung. Zwei echte, verwandte Wörter — Grund- und verstärkte/spezifizierte Form, beide unabhängig
+aus verschiedenen Quellen bestätigt. Geschrieben: كلاس → **ڨلاصّ**, mit Querverweis auf 3579 in der Notiz.
+
+**Nebenfund beim Schreiben:** die erste Schadda-Fassung für 597 und 894 saß auf dem falschen Buchstaben
+— ein Unicode-Kombinationszeichen hängt am *vorangehenden* Buchstaben, und in شكّبة/قلاّمات landete sie
+zwischen ك/ب bzw. hinter dem Alif statt auf ب/م. Erst auf Nachfrage auf Codepoint-Ebene geprüft
+(`ord()` je Zeichen) und korrigiert. Siebtes Mal in dieser Serie, dass eine Nachfrage einen Fehler vor
+dem Schreiben fängt statt danach.
+
+### 894 `qlammet` „Stifte (Pl.)" — zwei echte Plurale, keiner falsch
+
+Ausgangsbefund (Runde 49-Nachtrag) schien die Korrekturrichtung umzukehren: `894` teilt sich die
+Lektion (43/L10) mit der Singularform **`256 qlam` „Stift"** (قَلَم, vokalisiert), und `قلام` folgt
+exakt demselben, im Bestand etablierten Muster wie drei andere Pluralformen (`2112 qrab`/قراب,
+`2114 b3ad`/بعاد, `2116 3radh`/عراض) — alle „aC₁C₂اC₃" ohne Gemination.
+
+Erneute Recherche mit TUNICOs `inflected`-Feld (nicht nur `senses`) klärte es: das Lemma `qlam` (Wurzel
+ق-ل-م) führt **fünf** eigenständig getaggte Pluralformen — `qlammāt`, `qlām`, `aqlām` (literarisch),
+`iqlma`, `uqlma`. `قلام` entspricht `qlām` (chatalpha reduziert auf `qlam`), `qlammet` entspricht
+`qlammāt` — **beide** sind bei TUNICO als echter Dialekt-Plural (`#n_pl`) getaggt, keine Verwechslung.
+
+Entscheidend für die Auswahl war der Trainer selbst: `normalize()` faltet doppelte Vokale (`aa`→`a`),
+`qlam` (aus `qlām`) würde beim Abfragen mit der Singular-Antwort `256` zusammenfallen. `qlammāt` bleibt
+eindeutig unterscheidbar.
+
+**Beide Varianten in einem Eintrag geprüft, bevor geschrieben wurde:** eine Kombination testet, ob das
+mit etwas kollidiert.
+
+| Kombination | Regelverstöße |
+|---|---|
+| beide Varianten nur im `arabic_script` | **1** — Konsonanten-Zählregel schlägt an (ق zweimal im Arabischen, nur einmal in der `darija`; diese Regel hat anders als die Wortzahl-Regel keine `/`-Ausnahme) |
+| beide Varianten nur in der `darija` | **0** |
+
+Geschrieben: `arabic_script` قلام → **قلامّات** (das besser unterscheidbare Muster), `darija`
+`qlammet` → **`qlam/qlammet`** (nutzt die bestehende `/`-Konvention aus `checkAnswer()` — beide echten
+Formen bleiben als Antwort gültig, keine geht verloren).
+
+### Gegenprobe
+
+| | |
+|---|---|
+| Trainer 🔤 Transliteration | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 |
+
+**Bilanz der ursprünglichen Lehnwort-Vermutung:** 3 von 4 waren echte Treffer, nur 1 ein Artefakt.
+Vermutungen aus einer früheren Runde bleiben Vermutungen, bis sie einzeln geprüft sind — auch die
+eigenen.
+
+---
+
+## Runde 51 — 30 Verben aus der eigenen conjugation-Tabelle vokalisiert
+
+Vorschlag aus Runde 50 aufgegriffen: von den 58 verbleibenden Check-22-Kandidaten haben 30 eine
+`conjugation`-Tabelle, und die zeigt die Gemination durchgehend über alle Personen/Zeiten hinweg —
+keine externe Quelle nötig, die Tabelle ist der Beleg.
+
+Zielschreibung diesmal über explizite Buchstaben-Listen gebaut (nicht durch Tippen von kombiniertem
+Arabisch), um den Codepoint-Fehler aus Runde 50 nicht zu wiederholen. Jede der 30 Zeilen einzeln gegen
+die echten 23 `TRANSLIT_RULES` getestet (0 Verstöße) und auf Kollision mit bestehenden Einträgen
+geprüft (keine), bevor geschrieben wurde.
+
+### Nachfrage vor dem Schreiben: „Warum wird die Verdopplung weggenommen?"
+
+Codepoint-Dump aller 30 Paare zeigte: `alt` enthält nirgends eine Schadda, `neu` ist exakt `alt` plus
+eine eingefügte Schadda — nichts wurde entfernt. Die Nachfrage kam vermutlich durch einen
+Bidi-Rendering-Effekt zustande (Arabisch/RTL neben einem „→"-Pfeil/LTR in einer Tabellenzelle kann
+visuell vertauscht erscheinen, je nach Renderer). Die Tabelle danach mit `alt`/`neu` in getrennten
+Spalten statt Pfeil-in-einer-Zelle dargestellt — behebt die Zweideutigkeit für künftige Tabellen.
+
+### Bestehende Notiz beachtet, nicht widersprochen
+
+`526` und `1042` trugen bereits eine Notiz vom 13.09.: bei Widerspruch zwischen Zeile und
+`conjugation`-Tabelle gilt die Zeile, die Tabelle wurde damals an die Zeile angeglichen. Betraf nur die
+Tabellen-JSON, nicht `arabic_script` — kein Widerspruch zu dieser Runde. Bestehende Notizen wurden
+angehängt (`btrim(coalesce(...) || ...)`), nicht überschrieben.
+
+### Die 30 geschriebenen Zeilen
+
+| id | darija | alt | neu | Beleg |
+|---|---|---|---|---|
+| 526 | tnijjem | تنجم | تنجّم | jj: najjem/tnijjem/ynajjim |
+| 646 | tfarraj | تفرج | تفرّج | rr: tfarraj/nitfarraj |
+| 1042 | nsakker | نسكر | نسكّر | kk: sakkar/nsakker |
+| 1169 | y7ell | يحل | يحلّ | Geminatwurzel 7-l-l: 7all/y7ell/n7illu |
+| 1219 | yitkallam | يتكلم | يتكلّم | ll: tkallam/yitkallam |
+| 1227 | y3addi | يعدي | يعدّي | dd: 3addi/y3addi |
+| 1247 | t3adda | تعدى | تعدّى | dd: 3adda/t3adda |
+| 1284 | nrawwa7 | نروح | نروّح | ww: rawwa7/nrawwa7 |
+| 1286 | nitfarraj | نتفرج | نتفرّج | rr: tfarraj/nitfarraj |
+| 1502 | nit3allem | نتعلم | نتعلّم | ll: t3allem/nit3allem |
+| 1838 | tkammil | تكمل | تكمّل | mm: kammil/tkammil |
+| 4324 | yrajja3 | يرجع | يرجّع | jj: rajja3/yrajja3 |
+| 4352 | ywaqqaf | يوقف | يوقّف | qq: waqqaf/ywaqqaf |
+| 4373 | yitkayyif | يتكيف | يتكيّف | yy: tkayyif — Schadda auf der 2. (Wurzel-)ي |
+| 4397 | wassal | وصل | وصّل | ss: wassal/nwassal |
+| 4398 | wakkil | وكل | وكّل | kk: wakkil/nwakkil |
+| 4474 | 7abbit | حبيت | حبّيت | bb im Perfekt/Imperativ (Präsens geminiert bei diesem Verb ausnahmsweise nicht — betrifft diese Zeile nicht, sie ist Perfekt) |
+| 4475 | tkayyift | تكيفت | تكيّفت | yy: tkayyif/yitkayyif |
+| 4476 | rajja3t | رجعت | رجّعت | jj: rajja3/yrajja3 |
+| 4477 | nsalli | نصلي | نصلّي | ll: salla/nsalli |
+| 4481 | waqqaft | وقفت | وقّفت | qq: waqqaf/ywaqqaf |
+| 4484 | 3arras | عرس | عرّس | rr: 3arras/n3arris |
+| 4485 | faddit | فديت | فدّيت | dd: fadd/faddit |
+| 4486 | 3arrast | عرست | عرّست | rr: 3arras/n3arris |
+| 4487 | shaddit | شديت | شدّيت | dd: shadd/nishedd |
+| 4490 | yit3adda | يتعدى | يتعدّى | dd: t3adda/yit3adda |
+| 4491 | t3addit | تعديت | تعدّيت | dd: 3adda/t3adda |
+| 4494 | jarrabt | جربت | جرّبت | rr: jarrab/yjarrab |
+| 4498 | nitraqqa | نترقى | نترقّى | qq: traqqa/nitraqqa |
+| 4499 | nsabba7 | نصبح | نصبّح | bb: sabba7/nsabba7 |
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 411 | **381** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Rechnerisch stimmig: 414 (nach Runde 47) − 3 (Runde 50: 597/894/4358) − 30 (diese Runde) = 381.
+
+Verbleiben aus den ursprünglich 71 Konsonanten-Verdopplungen: 28 Zeilen ohne `conjugation`-Tabelle,
+noch nicht einzeln gegen die drei Offline-Quellen geprüft.
+
+---
+
+## Runde 52 — 20 weitere Zeilen, ein Index-Fehler vor dem Schreiben gefangen
+
+Die restlichen 28 Check-22-Kandidaten ohne `conjugation`-Tabelle (aus den ursprünglichen 71
+Konsonanten-Verdopplungen) gebündelt gegen alle drei Quellen geprüft (Skelett-Join statt 28 Einzel-
+Abfragen). `1068` blieb ausgeschlossen (Runde 50), `783`/`2153` waren durch Runde 47–49 bereits auf der
+`darija`-Seite gelöst und tauchten nur auf, weil sie unvokalisiert sind.
+
+### 19 mit klarem Beleg, plus 2153
+
+| id | darija | Beleg |
+|---|---|---|
+| 523 massou | TUNICO `māṣṣu`/PC `ma:SSu:` „Briefumschlag/ENVELOPE" wortgleich |
+| 660 qoddam | TUNICO+PC `quddām`/`quddam` „vor (lokal)/in front of" |
+| 670 jadda | TUNICO `žadda`/PC `jidda` „Großmutter/GRANDMOTHER" wortgleich |
+| 778 makka | TUNICO `makka` „Mekka" wortgleich |
+| 927 metwassat | TUNICO+PC „durchschnittlich/AVERAGE" wortgleich |
+| 971 rajja3li | Geschwisterzeile 4324/4476 (`conjugation`-Tabelle) |
+| 1085 qalleyet | Geschwisterzeile 4382 (`qallāya` „Bratpfännchen" bei TUNICO) |
+| 1095 ysarraf | TUNICO+PC `ṣaṛṛaf`/`sarraf` „Geld wechseln" wortgleich |
+| 1203 tkallmik | Geschwisterzeile 1219 (`conjugation`-Tabelle) |
+| 1204 nkallamha | Geschwisterzeile 1219 (`conjugation`-Tabelle) |
+| 1776 m3abbi | TUNICO+PC „beladen/LOADED,FULL" + Geschwister 4392 |
+| 1907 yezzi | TUNICO `yizzi` „genug!" wortgleich |
+| 2153 ayyam | `_arabic_to_chatalpha('أيّام')` = `ayyam`, identisch zur darija |
+| 4314 mkassar | TUNICO+PC „kaputt/BROKEN" wortgleich |
+| 4379 saggid | TUNICO `saggid` wortgleich, identische Schreibung |
+| 4382 qalla | TUNICO `qalla` „anbraten" wortgleich |
+| 4384 dawwish | TUNICO `dawwiš` wortgleich, identische Schreibung |
+| 4392 3abba | TUNICO+PC „füllen/laden" wortgleich |
+| 4414 qaddar | TUNICO `qaddar` wortgleich, identische Schreibung |
+
+### Der Gegenrichtungs-Fund bei 783 vs. 2153
+
+Beide waren durch die vorigen Runden auf denselben Stand gebracht — `darija` korrigiert, `arabic_script`
+unvokalisiert. Vor dem Schreiben `_arabic_to_chatalpha()` auf beide mit probeweiser Schadda angewandt:
+
+| id | mit Schadda | abgeleitet | darija | Ergebnis |
+|---|---|---|---|---|
+| 2153 | أيّام | `ayyam` | ayyam | **identisch** — Schadda sicher |
+| 783 | الزّكاة | `ez-zka` | ez-zaka | **weicht ab** — fehlende Fatha zwischen ز/ك, mehr als nur Schadda |
+
+Gleiche Vorgeschichte, unterschiedliches Ergebnis — 2153 bekam die Schadda, 783 bleibt bewusst
+unvokalisiert stehen. Ohne die probeweise Ableitung wäre das nicht sichtbar gewesen.
+
+### Zweiter Codepoint-Fehler in dieser Serie, diesmal vor dem Schreiben gefangen
+
+Der generierte SQL-Text für `660 qoddam` zeigte `قداّم` statt `قدّام` — die Schadda saß auf dem Alif
+(Index 2 im Buchstaben-Array) statt auf د (Index 1), ein Tippfehler im Ausgangstupel. Der bisherige
+Codepoint-Check aus Runde 51 prüfte nur „genau eine Schadda eingefügt, nichts entfernt" — nicht „auf
+einem gültigen Buchstaben". Ergänzt: Abgleich der tatsächlichen Schadda-Position gegen den erwarteten
+Buchstaben, für alle 20 Zeilen, **vor** dem Schreiben. Nur diese eine Zeile war betroffen, korrigiert
+und erneut durch die volle Prüfkette (Codepoint, 23 Regeln, Kollision) geschickt, bevor geschrieben
+wurde. **Zweites Mal in dieser Serie, dass ein Kombinationszeichen falsch saß — beide Male vor dem
+Schreiben gefangen, nicht danach.**
+
+### Zurückgestellt, mit Begründung
+
+| id | Grund |
+|---|---|
+| 783 ez-zaka | Ableitung passt nicht (s.o.) — braucht eine echte Fatha, kein Schadda-Fall |
+| 612, 625, 893, 1858 | kein Treffer in keiner der drei Quellen |
+| 4331 3izza | TUNICO-Treffer ist ein falscher Freund (anderes Wort: „altersschwache Greisin"/„kondolieren") |
+| 4365 khassatan | TUNICO/PC bestätigen `khaSSatan`, aber `arabic_script` خصوصا ist ein anderes Wortmuster (`khusuusan`) — braucht eine Korrektur, keine Schadda |
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 381 | **361** |
+| Check 24 Gemination | 0 | **0** |
+| Check 25 Konsonanten-Widerspruch | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Rechnerisch stimmig: 381 − 20 = 361.
+
+---
+
+## Runde 53 — 4365 geklärt, dabei die eigene Ablehnung von 783 aus Runde 49 korrigiert
+
+Vorschlag aus Runde 52 aufgegriffen: `4365 khassatan` einzeln klären.
+
+### 4365: das falsche Wort, nicht nur unvokalisiert
+
+`arabic_script` خصوصا ist `khusuusan` (Standard-MSA „insbesondere" über das Muster خصوص+تنوين). TUNICO
+(`xāṣṣatan`) und Peace Corps (`xa:SSatan`, 2×) belegen aber unabhängig `khaSSatan` = خاصّةً — Wurzel
+خ-ص-ص, anderes Muster (خاصة+تنوين). Zwei verschiedene, verwandte Wörter mit gleicher Bedeutung, aber
+unser `arabic_script` war das falsche für diese Zeile. Korrigiert: خصوصا → **خاصة**.
+
+Bewusst **ohne** Schadda: `_arabic_to_chatalpha()` leitet Tanwin auf einer Ta-marbuta durchgehend als
+`-aan` ab, nicht als `-atan` (getestet: خاصّة → `khassa`, خاصّةً → `khassaan` — beides nicht `khassatan`).
+Das ist eine Lücke der Ableitungsfunktion selbst (die besondere Lautregel „فتحتان auf ة klingt -tan"
+ist nicht implementiert), keine falsche Angabe in unseren Daten. Mit Schadda wäre die Zeile fälschlich
+in Check 25 gelandet. Bleibt unvokalisiert, aber jetzt mit dem richtigen Wort — Check 22 zählt sie
+weiterhin, zu Recht.
+
+### Dabei gefunden: die Ablehnung von 783 in Runde 49 war zu streng
+
+Beim Nachrechnen für 4365 zum ersten Mal die *exakte* CASE-Logik aus `chatalpha_konflikte` nachgebaut,
+statt wie in Runde 49 nur `abgeleitet` und `darija` als rohe Strings zu vergleichen. Auf 783 angewandt:
+
+| Vergleich | Ergebnis |
+|---|---|
+| Rohe Strings (Runde 49): `ez-zka` vs `ez-zaka` | verschieden → „würde Check 25 auslösen" |
+| Echte Logik: `_translit_skeleton('ez-zaka')` vs `_translit_skeleton('ez-zka')` | **beide `zzk`, identisch** → Klasse `vokale`, von Check 24/25 gar nicht gezählt |
+
+Der rohe String-Vergleich war zu streng — er ignorierte, dass die View selbst über einen Vokal-
+Skelett-Vergleich läuft, der genau diese Art Unterschied (fehlende interne Fatha) toleriert. **783
+bekommt die Schadda doch**: الزكاة → **الزّكاة**. Eine frühere eigene Schlussfolgerung war falsch und
+wird hier korrigiert, nicht nur eine neue Zeile hinzugefügt.
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 361 | **360** (nur 783 vokalisiert, 4365 bleibt unvokalisiert) |
+| Check 24/25 | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Rechnerisch stimmig: 361 − 1 = 360.
+
+**Lehre für PRECEDENTS.md:** eine Ablehnung braucht dieselbe Sorgfalt wie eine Zusage — „würde den Check
+brechen" ist erst belastbar, wenn man die *tatsächliche* Vergleichslogik des Checks nachbildet, nicht
+eine eigene Näherung davon.
+
+---
+
+## Runde 54 — Pilotrunde: 5 Zeilen voll vokalisiert, keine Schadda-Ergänzung
+
+Erste Runde jenseits der Konsonanten-Verdopplung: die 344 Check-22-Zeilen ohne jede Gemination
+brauchen volle Vokalisierung (Fatha/Kasra/Damma), nicht nur ein Diakritikum — dafür gibt es keinen
+automatischen Gegencheck wie 24/25. Vorschlag: eine kleine Pilotrunde, um die Methodik zu erproben,
+bevor über eine größere Kampagne entschieden wird. Nachgefragt: „Wie würdest du die Prüfung machen?
+Mit dem Skill?" — `SKILL.md` hatte die Methodik bereits ausgearbeitet, nicht neu erfunden:
+
+- **Lautlehre-Regel 3** (Schadda nie auf dem ersten Buchstaben, nie auf einem Alif) — genau der Fehler,
+  der mir in Runde 50/52 zweimal passiert ist, hier zur expliziten Prüfregel gemacht.
+- **`vocab_lookup.chatalpha`** — für alle drei Quellen vorberechnet in unserer Konvention, spart die
+  Handumschrift von TUNICOs/Peace Corps' IPA-Notation.
+- **Vokalzeichen-vor-Schadda-Reihenfolge** (803 von 819 Zeilen im Bestand) — hier nicht gebraucht, da
+  keiner der 5 Kandidaten Gemination hat, aber für künftige Runden mit Schadda+Vokal auf demselben
+  Buchstaben relevant.
+- **Nie im Block, immer einzeln gegen die Quellen** — mit benannten Präzedenzfällen, wo ein Blockfix
+  falsch gewesen wäre.
+
+### Vor der Vokalisierung: zwei Kandidaten aussortiert, weil die Bedeutung nicht passte
+
+Buchstaben-Skelett-Match reichte nicht. Bei der Kandidatensuche:
+
+| id | Ninja-Beleg | Ninja-Bedeutung | unsere Bedeutung | Urteil |
+|---|---|---|---|---|
+| 4180 kasa | كَاسَةْ | „cashier, cash register" | „Waschlappen" | anderes Wort (deckt sich mit dem `2125 el-kasa`-Homonym aus Runde 46) |
+| 1576 louza | لُوزَة | „almond tree, almond" | „Schwägerin" | vermutlich anderes Wort — nicht sicher genug, um Ninjas Vokalisierung zu übernehmen |
+
+Zwei weitere zurückgestellt: `569 banka`/`4400 fadlik` — Ninja/Peace Corps zeigen zusätzliche Alif-
+Buchstaben, die unser `arabic_script` nicht hat; das braucht vermutlich eine Buchstaben-, nicht nur
+eine Vokalkorrektur. `547 sma3` ist der bekannte Maß-II-Fall aus Runde 46.
+
+### Die 5 geschriebenen Zeilen
+
+| id | darija | alt | neu | Beleg |
+|---|---|---|---|---|
+| 608 | dars | درس | دَرْسْ | Ninja دَرْسْ, exakt, „lesson" wortgleich |
+| 4419 | wzin | وزن | وْزِنْ | Ninja وْزِنْ, exakt, „to weigh" wortgleich |
+| 4421 | 7raq | حرق | حْرَقْ | Ninja حْرَقْ, exakt, „to burn" wortgleich |
+| 616 | kbir | كبير | كْبِيرْ | Peace Corps `kbir/kbira/kbar` „BIG/LARGE"; reguläres فعيل-Muster ohne Anfangsvokal |
+| 590 | khfif | خفيف | خْفِيفْ | TUNICO `xfīf`, PC `xfi:f` „AGILE" (Wurzel/Bedeutungsfeld leicht/wendig); reguläres فعيل-Muster |
+
+Bei allen 5: `_arabic_to_chatalpha()` reproduziert die `darija` **exakt** (nicht nur im Skelett-Sinn),
+vor dem Schreiben gegen alle 23 Regeln getestet (0 Verstöße) und auf Kollision geprüft (keine).
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 360 | **355** |
+| Check 24/25 | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Rechnerisch stimmig: 360 − 5 = 355.
+
+**Fazit der Pilotrunde:** von 5 anfänglich buchstaben-passenden Kandidaten waren am Ende nur 5 von
+ursprünglich ~10 geprüften wirklich sauber — der Rest schied wegen Bedeutungsabweichung oder fehlenden
+Buchstaben aus. Die Methodik trägt, ist aber pro Zeile deutlich aufwendiger als die Schadda-Runden:
+kein automatischer Gegencheck für falsche Vokale, nur für Gemination/Konsonanten. Eine größere Kampagne
+bräuchte entsprechend mehr Zeit pro Zeile, nicht mehr Zeilen pro Runde.
+
+---
+
+## Runde 55 — Audio-verknüpfte Zeilen als Quelle, 7 geschrieben
+
+Vorschlag: Zeilen, die schon `ninja_audio_url` tragen, zuerst prüfen — die Audio-Verknüpfung ist eine
+stärkere Bestätigung als ein bloßer Buchstaben-Treffer, weil jemand bestätigt hat, dass genau diese
+Ninja-Aufnahme zu genau dieser Zeile gehört.
+
+### Die Prämisse stimmt nur mit Einschränkung
+
+95 der 339 unvokalisierten Einzelwörter ohne Verdopplung haben `ninja_audio_url`, aber keinen
+`ninja_id`. Über `audio_url`-Match gegen `derja_ninja_entries` aufgelöst:
+
+| | |
+|---|---|
+| Audio-verknüpfte Zeilen | 95 |
+| davon Skelett stimmt mit Ninja überein | 68 |
+| davon Skelett weicht komplett ab | **27** |
+
+Die 27 sind ein eigener Befund: das Audio scheint dort schlicht falsch zugeordnet (`898 aqsem`
+„Klassen" verlinkt auf Ninjas „nas hay" = „Leute von hohem Rang", `900 tabloet` „Tafeln" auf „madri" =
+„große, dicke Baubretter"). Nicht in dieser Runde behoben.
+
+Von den 68 skelett-gleichen: **`4180 kasa` taucht wieder auf** — Audio verknüpft, Skelett gleich, aber
+Ninja meint weiterhin „Kasse", nicht „Waschlappen". **Die Audio-Verknüpfung schützt nicht vor dem
+Homonym-Fallstrick**, sie verengt nur die Kandidatenmenge.
+
+### Von 68 auf 14, dann auf 7 — Silbenstruktur ist der entscheidende Filter
+
+Nach Ausschluss unvokalisierter Ninja-Quellen und exaktem Buchstabenabgleich: 37 Kandidaten. Manuelle
+Bedeutungsprüfung fand darin drei bereits bekannte Fallstriktypen erneut, plus einen neuen:
+
+- **Maß-I/Maß-II** (Skill-Regel 5): `643 lbis`→لَبِّسْ „ankleiden" (Form II), `644 l3ab`→لّعَبْ (Form II
+  — **und** die Schadda sitzt auf dem ersten Buchstaben, was Lautlehre-Regel 3 automatisch als
+  Warnsignal markiert), `1697 tkun`→تْكَوِّنْ „sich bilden" (Form V) statt Kopula „sein".
+- **Anderes Wort**: `960 kbar`→كَبَّارْ „Capers" (!), `1405 bye`→„Bey" (Titel), `1521 wled`→وَالِدْ
+  „Vater" (nicht „Söhne"), `1199 njib`→„Najib" (Männername).
+- **Neu — Gemination fehlt schon in unserer `darija`**: `356 khadhar` (Ninja `khadhdhar`), `651 dla3`
+  (Ninja `dilla3`), `1825 mba3d` (Ninja `maba33ad`), **`1526 okhwa`** (Ninja `akhowwa`) — vier Fälle, bei
+  denen nicht das Arabische, sondern die `darija` selbst die Verdopplung nicht zeigt. Braucht eine
+  `darija`-Entscheidung, keine Vokalisierung.
+- **Wortart-Verdacht**: `1777 feragh` „leer (m.)" (Adjektiv) vs. Arabisch فراغ (Nomen „Leere"; das
+  Adjektiv wäre فارغ).
+
+14 kamen durch diesen Filter. Direkter Test gegen `_arabic_to_chatalpha()` zeigte: nur **1 von 14** war
+exakt identisch zur `darija` (`547 sma3`). Die anderen 13 unterschieden sich — aber nicht alle gleich
+schwer: **Vokalqualität** (Skill: „nie für sich genommen ein Befund") gegen **Silbenstruktur**
+(„fehlende Silbe" — ein echter Befund) sind zwei verschiedene Dinge:
+
+| id | Ninja | Unterschied zur `darija` | Einordnung |
+|---|---|---|---|
+| 502 fransawi | fransawy | nur y/i-Konvention | Vokalqualität → sicher |
+| 566 shera3 | shari3 | e/i | Vokalqualität → sicher |
+| 606 maktab | maktib | a/i | Vokalqualität → sicher |
+| 669 jd | jad | `darija` ist Kurzschreibung ohne Vokalbuchstaben | kein Strukturunterschied → sicher |
+| 1028 dakhel | dakhil | e/i | Vokalqualität → sicher |
+| 4406 wafaq | wafiq | a/i | Vokalqualität → sicher |
+| 325 hrisa | **harisa** | Ninja hat eine zusätzliche Anfangssilbe | Struktur → zurückgestellt (TUNICO bestätigt unsere) |
+| 569 banka | **bank** | Ninja fehlt die Endsilbe | Struktur → zurückgestellt (TUNICO/PC bestätigen unsere) |
+| 802 el-batala | btala | unsere `darija` trägt den Artikel, Ninja nicht | Struktur → zurückgestellt |
+| 1266 ithniya | thniyya | unsere `darija` hat eine Anfangssilbe „i-", Ninja und unser eigenes `arabic_script` nicht | Struktur → zurückgestellt |
+| 4333 qadhya | qdhya | Ninjas ق trägt **kein** Harakat — die Quelle selbst ist unvollständig vokalisiert (Lautlehre-Regel 4) | Quelle unvollständig → zurückgestellt |
+| 1819 mitghashesh | mitghashshish | Skelett weicht ab, Wurzelbildung unklar | zurückgestellt |
+
+### Die 7 geschriebenen Zeilen
+
+| id | darija | alt | neu |
+|---|---|---|---|
+| 547 | sma3 | سمع | سْمَعْ |
+| 502 | fransawi | فرنساوي | فْرَنْسَاوي |
+| 566 | shera3 | شارع | شَارِعْ |
+| 606 | maktab | مكتب | مَكْتِبْ |
+| 669 | jd | جد | جَدْ |
+| 1028 | dakhel | داخل | دَاخِلْ |
+| 4406 | wafaq | وافق | وَافِقْ |
+
+Vor dem Schreiben gegen alle 23 Regeln getestet (0 Verstöße), auf Kollision geprüft (keine), auf
+ungültige Schadda-Platzierung geprüft (nicht zutreffend, keine Gemination in diesem Satz).
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 355 | **348** |
+| Check 24/25 | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Rechnerisch stimmig: 355 − 7 = 348.
+
+**Fazit:** die Audio-Verknüpfung ist ein guter Vorfilter (grenzt 424 auf 95, dann 68 ein), ersetzt aber
+nicht die Einzelprüfung — weder gegen Homonyme (kasa) noch gegen Struktur-Unterschiede. Von 95
+audio-verknüpften Zeilen kamen am Ende 7 sauber durch plus 6 zurückgestellte mit klar benanntem Grund,
+plus der Nebenbefund der 27 falsch verlinkten Audios.
+
+---
+
+## Runde 56 — die 27 skelett-fremden Audio-Verknüpfungen vollständig durchgesehen
+
+Nachfrage: „dann können die auch gleich komplett geprüft werden" — alle 27 mit Beispielsatz aus
+`derja_ninja_entries` durchgesehen, nicht nur die Stichprobe aus Runde 55.
+
+### Die Kategorien
+
+| Kategorie | Zeilen | Befund |
+|---|---|---|
+| A — legitime Wiederverwendung (Singular-Audio für Plural-Eintrag, gleiche Wurzel) | 9: 895, 1134, 1135, 1143, 1158, 1179, 2118, 2120, 2156 | Nicht falsch, nur nicht formgleich. Kandidaten für eine spätere Vokalisierungsrunde über die Geschwisterform. |
+| B — Audio ist ein ganzer Satz, Wort kommt nur darin vor | 2: 633, 2147 | `633 7kok` „Dosen" → Audio „Bierdosen" |
+| C — Synonym statt desselben Worts | 2: 900, 1078 | `1078 mqafil` „geschlossen" → Audio `مْسَكِّرْ` (andere Wurzel) |
+| D — wirklich falsch, unzusammenhängend | 7: 898, 960, 1144, 1181, 1185, 2145, 2168 | Wort kommt nur im Beispielsatz der falschen Quelle vor, oder reine Verwechslung (`898 aqsem` „Klassen" ↔ engl. „high class") |
+| E — Maß-I/Maß-II (schon bekannt) | 2: 643, 644 | |
+| F — Artikel/Gemination in der `darija` (schon bekannt + 1 neu) | 4: 356, 651, 1825, 4343 | `4343 b-zarba` ist derselbe Artikelassimilations-Fall wie Runde 47 (`bi-z-zirba`, unsere `darija` ohne Artikel) |
+| G — Bedeutung passt, nur Notationskonvention | 1: 1819 | Ninja schreibt „ch" für ش, wir „sh" |
+
+### Geschrieben: 11 `ninja_audio_url` auf NULL (Kategorien B, C, D)
+
+Diese 11 spielen beim Lernen ein anderes Wort oder einen ganzen Satz statt des gesuchten Worts ab —
+das führt aktiv in die Irre, nicht nur „nicht optimal":
+
+| id | darija | Audio zeigte auf |
+|---|---|---|
+| 898 | aqsem | „Leute von hohem Rang" (Verwechslung über engl. „class") |
+| 960 | kbar | „Capers" |
+| 1144 | nthaf | Verb „reinigen" statt Adjektiv „sauber" |
+| 1181 | fet7in | „Neonröhre" |
+| 1185 | timshi | Nomen „Vorgehen/Prozess" statt Verbform „du gehst" |
+| 2145 | bagrat | „Schlachthof" (Wort kam nur im Beispielsatz vor) |
+| 2168 | jupet | Idiom „jemandes Aufmerksamkeit erregen" (Wort kam nur im Beispielsatz vor) |
+| 633 | 7kok | ganzer Satz „Bierdosen" |
+| 2147 | 3athmet | ganzer Satz „er hat starke Knochen" |
+| 900 | tabloet | Synonym „madri" |
+| 1078 | mqafil | Synonym „msakkir" |
+
+Kategorie A (9 Zeilen) bewusst unverändert gelassen — die Wiederverwendung ist vertretbar.
+Kategorien E/F bleiben die schon dokumentierten offenen Einzelfälle, G ist kein Handlungsbedarf.
+
+### Gegenprobe
+
+Nur `ninja_audio_url` geändert, weder `arabic_script` noch `darija` berührt — Gruppe A (18 Checks)
+weiterhin alle 0, wie erwartet. Kein Effekt auf Check 22/24/25 oder die Trainer-eigenen Checks.
+
+---
+
+## Runde 57 — die 9 Kategorie-A-Zeilen als Vokalisierungsquelle, 4 geschrieben
+
+Vorschlag: die 9 Zeilen mit legitimer Singular-Audio-Wiederverwendung (Runde 56, Kategorie A) für die
+Vokalisierung nutzen — Wort und Bedeutung sind dort schon zweifelsfrei geklärt, nur die Pluralform
+fehlt als eigene Aufnahme.
+
+### Skelett-Abgleich fand zwei weitere fehlende Buchstaben im schon gespeicherten `arabic_script`
+
+Vor dem Vokalisieren geprüft, ob der Plural-Wortstamm wirklich zum Ninja-Singular passt (Singular-
+Skelett + Pluralendungs-Konsonant sollte das Plural-Skelett ergeben):
+
+- **`2118 m3abyin`** „voll (Pl.)": unser Skelett `m3bn`, erwartet `m3bbn` (Ninja-Singular `مْعَبِّي` hat
+  geminiertes ب, von TUNICO/PC unabhängig bestätigt). Dem **gespeicherten** `arabic_script` معبيين fehlt
+  die zweite ب-Gemination — kein Vokalisierungsfall, sondern eine fehlende Schadda im Bestand.
+- **`1143 mqat3in`** „zerrissen (Pl.)": beim Bauen fiel auf, dass mein Entwurf ein و enthielt, das im
+  **gespeicherten** `arabic_script` مقطعين gar nicht steht. Die Skelett-Prüfung hatte das verdeckt, weil
+  `_arabic_skeleton()` و als Vokalträger herausfiltert — ein Fehler, der vor dem Schreiben auffiel, nicht
+  danach.
+
+Beide sind jetzt offene „fehlender Buchstabe"-Fälle, keine Vokalisierungskandidaten mehr.
+
+### Weitere drei zurückgestellt
+
+- **`895 styloet`**, **`1158 shortoet`** — Ninjas eigene Einträge (`سْتيلُو`, `شورت`) sind selbst nicht
+  vollständig vokalisiert (Konsonanten ohne jedes Harakat, Lautlehre-Regel 4) bzw. ganz unvokalisiert.
+  Keine verlässliche Vorlage.
+- **`1134 dhayqin`** — einzige Quelle ist die feminine Form `ضَيّْقَةْ`, Geminationsposition/-lesung nicht
+  eindeutig auf den maskulinen Plural übertragbar.
+
+### Die 4 geschriebenen Zeilen
+
+| id | darija | bisher | vorgeschlagen | Beleg |
+|---|---|---|---|---|
+| 1135 | wes3in | واسعين | وَاسْعِينْ | Ninja وَاسْع (Singular, Audio-verknüpft) + reguläre Pluralendung ـين |
+| 1179 | ghamqin | غامقين | غَامِقِينْ | Ninja غَامِقْ (Singular, Audio-verknüpft) + reguläre Pluralendung ـين |
+| 2120 | ferghin | فارغين | فَارْغِينْ | Ninja فَارْغ (Singular, Audio-verknüpft) + reguläre Pluralendung ـين |
+| 2156 | bakoet | باكوات | بَاكُوَاتْ | Ninja بَاكُو (Singular, Audio-verknüpft) + reguläre Pluralendung ـات |
+
+Bei allen 4: `_translit_skeleton()` von `darija` und Ableitung identisch (nur Vokalqualität weicht ab,
+kein Befund laut Skill-Konsequenz 1), vor dem Schreiben gegen alle 23 Regeln getestet (0 Verstöße),
+auf Kollision geprüft (keine), Buchstaben-für-Buchstaben gegen den gespeicherten Wert abgeglichen
+(Lehre aus dem `1143`-Fehler).
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 348 | **344** |
+| Check 24/25 | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Rechnerisch stimmig: 348 − 4 = 344.
+
+---
+
+## Runde 58 — die beiden fehlenden Buchstaben aus Runde 57 behoben
+
+### 2118 m3abyin → m3abbyin — die Gemination des Singulars nie nachgezogen
+
+`1776 m3abbi` „voll (m.)" wurde in Runde 55 korrigiert (`darija` trägt seither `m3abbi` mit
+Doppel-b, TUNICO/PC bestätigt). Der Plural `2118` blieb bei `m3abyin` — die Korrektur hatte den
+Plural nie erreicht. `darija` und `arabic_script` zusammen korrigiert, wie beim Singular:
+
+| id | darija alt → neu | arabic_script alt → neu |
+|---|---|---|
+| 2118 | m3abyin → **m3abbyin** | معبيين → **معبّيين** |
+
+### 1143 mqat3in — dem `arabic_script` fehlte ein و
+
+`735 maktou3` „gebrochen" (dieselbe Wurzel ق-ط-ع, Muster مفعول) bestätigt: die Form braucht ein و.
+`darija` unverändert gelassen (`mqat3in` ohne ausgeschriebenes „ou" ist dieselbe Art Kurzschreibung
+wie `669 jd` für `jad` — kein Befund für sich), nur `arabic_script` ergänzt:
+
+| id | arabic_script alt → neu |
+|---|---|
+| 1143 | مقطعين → **مقطوعين** |
+
+Bleibt unvokalisiert (keine Harakat ergänzt, nur der fehlende Buchstabe) — zu Recht weiter in Check 22.
+
+Beide vor dem Schreiben gegen alle 23 Regeln getestet (0 Verstöße), auf Kollision geprüft (keine).
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 344 | **343** (nur 2118 vokalisiert, 1143 bleibt unvokalisiert) |
+| Check 24/25 | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Rechnerisch stimmig: 344 − 1 = 343.
+
+Damit ist der gesamte Audio-Untersuchungsstrang (Runden 55–58) abgeschlossen. Offen bleiben:
+6 Vokalisierungs-Kandidaten mit Strukturunterschied, 4 `darija`-Geminationsfälle, 2 Maß-I/Maß-II-Fälle
+— alle einzeln benannt in Runde 55/56.
+
+---
+
+## Runde 59 — Audit der Sonnet-Runden + die Slash-Lücke
+
+### Audit der Runden 50–58
+
+Auf Nachfrage geprüft, ob die mit Sonnet gefahrenen Runden korrekt waren. Alle ~75 geschriebenen
+Zeilen sind vorhanden und wertgleich; die 30 Maß-II/V-Geminationen aus Runde 51 tragen die Schadda
+durchweg auf dem mittleren Radikal; korpusweit 0 Schadda auf ا; Check 24/25 bei 0; Gruppe A alle 0.
+
+Zwei eigene Verdachtsmomente im Audit getestet und **verworfen**: „Langvokal vor Schadda ist
+ungültig" (falsch — يّ/وّ sind geminierte Konsonanten, خاصّة/مادّة legitim) und „Ninjas Vokale zu
+übernehmen ist ein neues Problem" (falsch — Klasse `vokale` hat korpusweit 1.008 Zeilen und wird
+bewusst nicht gezählt).
+
+**Ein echter Fehler: `894 qlammet`.** Gespeichert war قلامّات:
+
+```
+0642=ق 0644=ل 0627=ا 0645=م 0651=ّ 0627=ا 062a=ت
+```
+
+Eine **Mischform aus TUNICOs zwei belegten Pluralen**: das ا nach dem ل stammt aus `qlām`
+(قلام, Langvokal, keine Gemination), die Schadda aus `qlammāt` (kurzes a, geminiertes م). Die
+Hybridform `qlāmmāt` ist in keiner Quelle belegt. `_arabic_to_chatalpha` verschluckt den Unterschied
+(liefert `qlammat`), deshalb hat die Prüfkette nicht angeschlagen.
+
+Auslöser war die Antwort auf „beide Varianten in einem Eintrag": die `darija` bekam beide Formen,
+das `arabic_script` aber nicht — dort wurden die beiden Formen ineinandergeschoben statt
+nebeneinandergestellt. Der Korpus hat dafür eine klare Konvention: **16 Zeilen führen den Slash
+auch im `arabic_script`** (`2022 a7san / khir` → أَحْسَن / خِير). `894` war die einzige Ausnahme.
+
+| id | Feld | alt | neu |
+|---|---|---|---|
+| 894 | `arabic_script` | قلامّات | **قْلَام / قْلَمَّات** |
+| 894 | `darija` | qlam/qlammet | **qlam / qlammet** (Leerzeichen wie bei allen anderen Slash-Zeilen) |
+
+Codepoints nach dem Schreiben: `0642 0652 0644 064e 0627 0645 | 0020 002f 0020 | 0642 0652 0644 064e 0645 064e 0651 0627 062a`
+— Schadda auf dem **م**, Vokalzeichen **vor** der Schadda (Hauskonvention), nie auf ا.
+Ableitung `qlam / qlammat`, Skelett beidseitig `qlmqlmmt`.
+
+### Die Slash-Lücke
+
+Nebenbefund aus dem Audit: **der Slash nimmt eine Zeile komplett aus `chatalpha_konflikte`**
+(die View filtert `darija !~ '/'`). Korpusweit 26 Zeilen, 21 davon vokalisiert — bis dahin gar nicht
+gegen ihre Ableitung geprüft. Diese 21 einzeln durchgesehen: **13 skelettgleich, 8 abweichend.**
+
+**Zwei Abweichungen sind Messartefakte, keine Fehler** (`477 محطة`, `1495 يتفرج`): beide zweiten
+Varianten sind unvokalisiert, und unvokalisiertes Arabisch schreibt einen geminierten Konsonanten
+einfach — die Schadda ist ein weggelassenes Diakritikum, kein fehlender Buchstabe. Der
+Skelett-Vergleich kann eine Schadda nicht sehen, die nicht geschrieben ist. **Vier weitere** sind
+legitime Struktur-Asymmetrien (`1406 ciao` Originalschreibung des Lehnworts, `1425`/`1427` Klammer
+statt Slash, `1492`/`1494` optionales `w`).
+
+**Befund 1 — `1174` enthielt ein fremdes Wort.**
+
+| Quelle | Form | Wortart | Bedeutung |
+|---|---|---|---|
+| TUNICO 5025 | `lābis` | activeParticiple | tragend (Kleidung) = unsere Zeile |
+| Ninja 16540 | لَابِسْ `labis` | (ADJ) | wearing |
+| TUNICO 2067 | `lbis` | **verb** | sich anziehen |
+
+`lbes` war nicht die zweite Aussprache des Partizips, sondern das **Verb** — das längst eine eigene
+Zeile hat (`643 lbis` لبس „er zog sich an"). Dieselbe Fehlerklasse wie der offene Fall `1777 feragh`.
+
+**Befund 2 — `1457` unterschlug den assimilierten Artikel.** صَحَّة / بِالشِّفا, Codepoints
+`0628 0650 0627 0644 0634 0650 0651 0641 0627` — die Schadda auf ش ist die
+Sonnenbuchstaben-Assimilation von ال. Der Hausstil schreibt die immer aus (`es-salaf`, `esh-shta`,
+`ez-zaka`, `715 bit et-toum` → بيت التّوم). `bishfa` mit einzelnem `sh` widersprach der eigenen
+Vokalisierung.
+
+| id | Feld | alt | neu |
+|---|---|---|---|
+| 1174 | `darija` | labes / lbes | **labes** |
+| 1457 | `darija` | sa77a / bishfa | **sa77a / bish-shfa** |
+| 252 | `homonym_ok` | false | **true** |
+| 1174 | `homonym_ok` | false | **true** |
+
+Die letzten beiden Zeilen sind die **Folge** des ersten Fixes und zeigen genau, was der Slash
+verdeckt hat: `1174` wird ohne `lbes` zu schlichtem `labes` und kollidiert dann mit `252 labes`
+(لْبَاس „Gut / Wie geht's?"). Zwei verschiedene Wörter, gleiche Umschrift — ein echtes Homonym-Paar,
+das nur deshalb unauffällig war, weil der Slash den Duplikat-Schlüssel auf `labeslbes` verschob.
+Dry-Run vorab: ohne `homonym_ok` 1 neues Duplikat, mit `homonym_ok` auf beiden 0.
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 343 | **343** (keine Vokalisierung angefasst) |
+| Check 23 offene Ninja-Kandidaten | 24 | **24** |
+| Check 24/25 | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Offen bleiben unverändert: 6 Vokalisierungs-Kandidaten mit Strukturunterschied, 4
+`darija`-Geminationsfälle, 2 Maß-I/Maß-II-Fälle (`643`/`644`), 4 Zeilen ohne Quellentreffer,
+`4331 3izza`, `1777 feragh`.
+
+---
+
+## Runde 60–62 — selbstständiger Block, 30 Änderungen
+
+Ab hier auf Nils' Anweisung ohne Einzelbestätigung geschrieben („Bisher hat immer alles gepasst.
+Arbeite weiter und schreib auch. Mach dreißig und dann zeig mir eine Liste"). Prüftiefe unverändert:
+Quellenabgleich, Codepoint-Kontrolle, Dry-Run gegen die 23 Transliterationsregeln und den
+Duplikat-Check vor jedem Schreiben. Neue Vokabeln weiterhin nicht ungefragt angelegt.
+
+### Runde 60 — die beiden Maß-I/Maß-II-Fälle (erledigt, keine Fehler)
+
+| Quelle | `643 lbis` | `644 l3ab` |
+|---|---|---|
+| TUNICO | 2067 `lbis` **verb Maß I** „sich anziehen" (Maß II wäre 5709 `labbis` „j-n anziehen") | 2158 `lʕab` **verb Maß I** „spielen" |
+| Peace Corps | 4934 `WEAR (to)` / 1543 `DRESS (to)`: `{ilbis, lbis}`, Rollen imperativ/**perfekt** | 3494 `PLAY (to)`: `{al3ib, l3ab}`, Rollen imperativ/**perfekt** |
+
+Beide `darija`-Werte waren korrekt; unser Deutsch „er zog **sich** an" ist die reflexive Maß-I-
+Bedeutung, nicht die kausative. Da die Formen damit belegt sind, beide vokalisiert nach dem
+Hausstil für dreikonsonantige Perfektverben in Lektion 47 (9 von 12 so: Konsonant+Sukun,
+Mittelkonsonant+Vokal, Konsonant+Sukun — `541 rkib` رْكِبْ, `546 q3ad` قْعَدْ):
+`643` لبس → **لْبِسْ**, `644` لعب → **لْعَبْ**. Offener Punkt „2 Maß-I/Maß-II-Fälle" ist damit erledigt.
+
+### Runde 61 — `1777 feragh`, dritte Alif-Verschiebung
+
+| | Buchstabenfolge | Lesart |
+|---|---|---|
+| vorher | ف ر **ا** غ | `farāgh` — Nomen „Leere" |
+| nachher | ف **ا** ر غ | `fāregh` — Partizip „leer" |
+
+TUNICO kennt unter der Wurzel ف-ر-غ kein Nomen: 2391 `fāriġ` **activeParticiple** „leer",
+1062 `fraġ` verb „leer werden", 2616 `faṛṛaġ` verb „leeren". Ninja 5911 فَارْغ `fargh` (ADJ) „empty".
+Gegenbeleg für den falschen Freund: Ninja 20179 فَارَغْ الصَّبْرْ „Ungeduld" — das Nomen gibt es,
+es heißt nur „Leere", nicht „leer".
+
+Stärkste Bestätigung war intern: **فَارْغ ist exakt der Stamm unseres eigenen Plurals `2120`**
+(فَارْغِينْ), der Rest von `2120` nach diesen sechs Codepoints ist genau die Pluralendung
+Kasra+ي+ن+Sukun. `darija` unverändert — `feragh` gegen `ferghin` ist reguläre tunesische Epenthese.
+
+### Runde 62 — Check 23 vollständig abgearbeitet
+
+Die View `vokalisierung_kandidaten` verlangt buchstabengleiches Ninja-Arabisch und genau eine
+distinkte Ninja-Vokalisierung. **Wichtige Erkenntnis: sie ist nur bei der Vokalisierung eindeutig,
+nicht beim Wort — 10 der 21 Kandidaten waren Homograph-Zufälle.** Alle 10 mit Begründung in
+`internal_note` verworfen (die View schließt sie dadurch dauerhaft aus):
+
+| id | Ninja-Treffer | warum verworfen |
+|---|---|---|
+| 891 | „to write" | Verb statt Nomen-Plural „Bücher" (كتب) |
+| 1023 | صْغَيَّر | Diminutiv `sghayyar`, nicht صغير `sghir` |
+| 1199 | نَجِيب | Eigenname Najib |
+| 1405 | بَايْ | osmanischer Titel Bey, nicht das Lehnwort „bye" |
+| 1697 | تْكَوِّن | Maß II „geformt werden", nicht تْكُون „sein" |
+| 4385 | سَمَر | Eigenname Samar |
+| 4401 | تَفَاهُم | Verbalnomen statt Verb |
+| 4402 | كُبْر | Nomen „Hochmut" statt Verb |
+| 4413 | تْقًابِلْ | **Tanwin statt Fatha im Quellwert** (Ableitung ergibt `tqanabil`) |
+| 4448 | نْعِم | Verb „genießen", nicht نَعَمْ „ja" |
+
+Neun übernommen (`325`, `529`, `569`, `684`, `1057`, `1183`, `1266`, `1526`, `1817`), einer mit
+Zusatz: **`802`** bekam den Artikel, den die `darija` (`el-batala`) trägt — ohne ihn wäre
+`البْطَالَة` gegen `bṭāla` als Check-25-Treffer aufgeschlagen (Skelett `lbtl` gegen `btl`).
+Präzedenz dafür: `783 ez-zaka` الزّكاة.
+
+**`1521` war ein echter Fund:** `والد` (wālid = *Vater*) stand dort, wo `ولاد` (wlād = *Söhne*)
+hingehört — dieselbe Alif-Verschiebung wie `1777`, und Ninjas Treffer „father, dad" war genau der
+Homograph, der es verraten hat. Der Korpus schreibt den Plural überall sonst `ولاد` (`1552`).
+Ninja hat keinen ولاد-Eintrag, deshalb nur die Buchstabenkorrektur ohne Vokalisierung — die Zeile
+bleibt zu Recht in Check 22.
+
+**Geminationsfälle mit TUNICO-Lemmatreffer:** `356` `xaḏ̣ḏ̣āṛ` „Gemüse- und Obsthändler"
+(intern bestätigt durch `358 7awwet` حَوَّاتْ, dasselbe Berufsmuster فعّال), `651` `dillāʕ`
+„Wassermelonen", `893` `kuṛṛāsa` „Heft" (Singular `892` hatte die Schadda schon), `1819`
+`mitġaššiš` „verärgert", `1134` (Singular `435 dhayyaq` und TUNICO 2071 `ḏ̣ayyiq` tragen die
+Schadda, der Plural hatte sie nie bekommen). Bei `356` hätte die naheliegende `darija` `khaddhar`
+einen Check-24-Treffer erzeugt: ein doppeltes ض wird in unserer Konvention zu `dhdh`, nicht `ddh` —
+korrigiert zu `khadhdhar`, vor dem Schreiben nachgerechnet.
+
+`1825 mba3d` und `4343 b-zarba` als **Nicht-Befunde** bestätigt (TUNICO 2809 `baʕd` „dann",
+TUNICO 628 `zarba` „Schnelligkeit" — keine Gemination); `4343` nur vokalisiert. `4331 3izza`
+bleibt unbelegt, Ergebnis in `internal_note` festgehalten, damit die Suche nicht wiederholt wird.
+
+### Gegenprobe
+
+| | vor dem Block | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 343 | **323** |
+| Check 23 offene Ninja-Kandidaten | 24 | **0** |
+| Check 24/25 | 0 / 0 | **0 / 0** |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+| Schadda auf ا korpusweit | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **1** — siehe unten |
+
+### Offen, braucht Nils' Entscheidung
+
+1. **Echte Dublette `1819`/`3897`.** Nach der Korrektur von `1819` sind beide Zeilen in Schrift und
+   Umschrift identisch (مِتْغَشِّشْ / `mitghashshish`), die Bedeutung dieselbe („wütend / böse" vs.
+   „verärgert / zornig"), die Lektionen verschieden (53 vs. 33). `3897` war die ganze Zeit die
+   korrekt geschriebene Zwillingszeile; die falsche Schreibung von `1819` hat die Dublette verdeckt.
+   Nicht gelöscht — destruktiv, hängt an Lernfortschritt, und die Freigabe galt Korrekturen.
+2. **`1857`/`1858`/`1879` (`tlazz`-Cluster).** TUNICO 4339 `tlazz` „gezwungen sein/werden" hat
+   **kein Alif**, unsere Zeilen (تلازيت, يتلاز) schon — vierte Alif-Verschiebung. Zusätzlich
+   widersprechen sich unsere eigenen Zeilen: `1857 yetlaz` einfaches z, `1858 tlazzit` doppeltes.
+   Drei Zeilen auf einmal, deshalb nicht im Alleingang geschrieben.
+3. **`1130 dhayqa`** ضَيْقَة. Gehört ins Paradigma von `435 dhayyaq`/`1134 dhayyqin`, trägt aber
+   Sukun statt Schadda. Nicht geändert, weil es eine **bereits bewusst vokalisierte** Zeile ist und
+   die Regel „bereits korrekt vokalisierte Einträge nicht automatisch ändern" hier schwerer wiegt.
+4. **`569 banka`** gegen Ninjas بَنْكْ `bank`: nur vokalisiert, `darija` nicht angefasst. Ob der
+   Eintrag `banka` (ital. banca) oder `bank` heißen soll, ist eine Bestandsentscheidung.
+
+---
+
+## Runde 63 — 50 Vokalisierungen, und ein verworfener Ansatz
+
+Check 23 war nach Runde 62 leer, die Ninja-Quelle also erschöpft (nur noch 3 mehrdeutige Fälle,
+keiner davon über `chatalpha == darija` auflösbar). Für die restlichen 323 musste ein anderer Weg
+her: Harakat auf die **vorhandenen** Buchstaben setzen und das Ergebnis durch
+`_arabic_to_chatalpha` zurückrechnen lassen. Werkzeug dafür liegt jetzt in `tools/`.
+
+### Der erste Ansatz war falsch — und die Validierung hat es gezeigt
+
+Naheliegend war, als Ziel die eigene `darija` zu nehmen: dann ist die Vokalisierung nur noch das
+Explizitmachen dessen, was wir ohnehin behaupten. Gegenprobe an den **2.461 bereits von Hand
+vokalisierten** Einzelwortzeilen: nur 554 hätte der Solver identisch reproduziert. Die Abweichungen
+zeigen den Denkfehler:
+
+| id | Mensch | Solver mit `darija` als Ziel |
+|---|---|---|
+| 256 | قَلَم (`qalam`) | قْلَمْ (`qlam`) |
+| 262 | أَرْبَعَة (`arba3a`) | أرْبْعَة (`arb3a`) |
+| 267 | تِسْعَة (`tis3a`) | تْسْعَة (`ts3a`) |
+
+**Unsere `darija` ist eine verkürzte Umschrift.** Sie lässt Vokale weg, die das Arabische braucht.
+Wer die Vokalisierung auf sie zwingt, produziert systematisch falsches Arabisch — قْلَمْ statt قَلَم
+für „Stift". Die `darija` darf die Vokalisierung nur **einschränken** (Konsonanten, Gemination),
+nicht bestimmen. Ziel muss eine echte Vokalquelle sein: TUNICO oder Peace Corps.
+
+Ein zweiter Fehler kam aus derselben Probe: die erste Fassung setzte ein **Sukun auf den
+Langvokalträger** (نْسَىْ, مْرَاْ), was Lautlehre-Regel 3 verbietet. Ursache war ein Bonus für
+„Sukun am Wortende" in der Bewertung, der nicht zwischen Konsonant und Vokalträger unterschied.
+
+### Was dann funktioniert hat
+
+Quelle liefert die Vokale, unsere Buchstaben schränken ein, und fünf Filter sortieren aus —
+jeder einzelne hat echte Fehlpaarungen abgefangen:
+
+| Filter | fängt ab |
+|---|---|
+| Skelett `darija` = Skelett Ableitung | würde sonst Check 24/25 aufreißen |
+| **gleiche Vokalanzahl** | Wortform-Wechsel, die das Skelett nicht sieht: `shrit`→`shrita`, `7raqt`→`7arqat` (1. gegen 3. Person), `n3am`→`na3ma` |
+| Bedeutungsabgleich TUNICO-Glosse gegen unser `german` | das vokalfreie Skelett zieht sonst `esh-shta` (Winter) auf `shushit` (grillen) |
+| Lösbarkeit selbst | `fnejin` (Plural) gegen `finjan` (Singular) — aus unseren Buchstaben nicht erzeugbar, also kein Treffer |
+| Rückrechnung durch die DB-Funktion, nicht nur den Port | letzte Instanz vor dem `UPDATE` |
+
+Von 323 blieben 67 eindeutig lösbare Kandidaten, 50 davon geschrieben. Zwei bewusst ausgenommen:
+`4423 skhun` (Präzedenzfall in SKILL.md, nicht im Block anfassen) und `1217 toq3od` (Vokalmuster
+der Quelle weicht zu stark ab).
+
+**Zwei Zeilen aus Runde 62 kommen dadurch zurück:** `1023 sghir` und `4385 smar` hatte ich wegen
+Ninja verworfen (Diminutiv صْغَيَّر bzw. Eigenname سَمَر) — TUNICO liefert dort die richtige Form
+(`sghir` „klein; jung", `smar` „braun werden"). Die Ninja-Ablehnung war korrekt, die Vokalisierung
+kommt jetzt aus der besseren Quelle. `4401 tfahim` ebenso.
+
+### Ein Fehler im eigenen Vorgehen
+
+Die Kollisionsprobe lief nur gegen **unvokalisierte** Zeilen. Dadurch wurde `1522 bnet` „Töchter"
+nach der Vokalisierung identisch mit `4111 bnat` „Mädchen (Pl.)" (beide بْنَاتْ, beide Lektion 35)
+und riss Gruppe-A-Check 10 auf. بنات trägt im Tunesischen beide Bedeutungen — echtes Bedeutungspaar,
+mit `homonym_ok` auf beiden aufgelöst. In `tools/README.md` als Pflichtfilter 6 festgehalten.
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 323 | **273** |
+| Check 23 | 0 | **0** |
+| Check 24 / 25 | 0 / 0 | **0 / 0** |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+| Schadda auf ا korpusweit | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 1 | **1** (unverändert `1819`/`3897`, wartet auf Entscheidung) |
+
+### Neu offen
+
+- **`768 aallha`** — `arabic_script` ist korrupt: `االله` mit **doppeltem Alif**, `darija` „aallha".
+  Richtig wäre الله / `allah` (TUNICO 1307). Zwei Felder an einem heiklen Wort, deshalb vorgelegt.
+- **`1522 bnet` gegen `4111 bnat`** — dasselbe Wort, zwei Umschriften. Als Homonym markiert, aber
+  die Umschrift-Uneinheitlichkeit bleibt eine Bestandsfrage.
+- 17 weitere geprüfte Kandidaten liegen fertig vor (aus den 67).
+
+---
+
+## Runde 64 — die restlichen 17, erweiterte Quellen, und wo die Quellen aufhören
+
+### Die 17 aus der Warteschlange
+
+Alle aus Runde 63 vorbereitet und geprüft, diesmal **mit Pflichtfilter 6** (Kollisionsprobe gegen
+bereits vokalisierte Zeilen), der in Runde 63 gefehlt hatte: `2145`, `2148`, `2450`, `2911`, `4180`,
+`4328`, `4333`, `4385`, `4387`, `4395`, `4399`, `4400`, `4401`, `4403`, `4429`, `4439`, `4440`.
+Alle 17 bestanden Rückrechnung, Buchstabengleichheit, Skelettgleichheit, Kollisionsprobe.
+`4333 qadhya` „Einkauf" war ein offener Punkt aus früheren Runden.
+
+### Quellen erweitert
+
+Für die nächste Tranche drei neue Zugänge erschlossen:
+
+1. **`tunico_import.inflected`** — die Flexionsformen mit Analysetag (`#n_pl`, `#n_dual`,
+   `#v_pres_sg_p3`). Das war die wichtigste Lücke: unser Bestand ist voller Plurale und Duale, und
+   TUNICOs *Lemma* ist immer der Singular. Deshalb scheiterte in Runde 63 `585 fnejin` an `finjan`
+   und `1075 mgharif` an `mgharfa` — mit den Flexionsformen treffen jetzt beide korrekt
+   (`fnajin` `#n_pl`, `mgharif` `#n_pl`).
+2. **`derja_ninja_entries.chatalpha` als reine Vokalquelle**, auch wo die Buchstaben abweichen.
+3. **Artikelbehandlung** — Zeilen mit `el-`/`esh-`/`ez-` in der `darija` trafen nie ein Quell-Lemma,
+   weil das Skelett den Artikel mitzählt. Artikel abtrennen, gegen das Lemma suchen, Artikel wieder
+   voranstellen: das holte `748 el-7imaya`, `775 el-baba`, `936 el qahwa`, `1479 el-lil` herein.
+
+### Zwei Filterkorrekturen
+
+**Der Vokalanzahl-Filter aus Runde 63 war zu scharf.** Er verlangte gleiche Silbenzahl in Quelle und
+`darija` — und blockierte damit genau den Normalfall, den Runde 63 selbst entdeckt hatte: dass die
+Quelle **mehr** Vokale hat als unsere verkürzte Umschrift (`qlam` gegen `qalam`). Jetzt differenziert
+nach Wortart: bei **Verben** bleibt die Silbenzahl strikt (sonst schlüpft die 1./3.-Person-
+Verwechslung `7raqt` → `7arqat` durch), bei allem anderen darf die Quelle voller sein.
+
+**Neuer Filter: kein zusätzlicher Endvokal.** Die Lockerung ließ Quellformen durch, die auf einen
+Vokal enden, den unser Wort nicht hat — der Solver hängte dann ein Fatha an den letzten Buchstaben,
+ohne dass ein Vokalträger folgt: `ka3k`→`ka3ka`, `shbih`→`shbiha`, `sikritir`→`sikritira`,
+`qrab`→`qaraba`. Alle vier sind andere Wortformen. Regel steht in `tools/README.md`.
+
+### 22 geschrieben, 9 verworfen
+
+Angenommen wurden fast ausschließlich Plurale und Duale mit passendem TUNICO-Analysetag
+(`585`, `626`, `899`, `1074`, `1075`, `1150`, `1159`, `1561`, `1578`, `2110`, `2158`, `2163`,
+`2353`, `4359`) plus die Artikelfälle und drei Einzelne (`388`, `612`, `843`, `1083`).
+
+Verworfen und **mit Begründung in `internal_note` festgehalten**, damit keine spätere Runde sie
+erneut vorschlägt:
+
+| id | | warum |
+|---|---|---|
+| 4480 | kibrit „ich wurde älter" | Ninja 807 كبريت ist **„Sulfur"** |
+| 1271 | nfiq „ich wache auf" | Ninja 393 ist „to drown, go down, die" |
+| 1291 | feqit „sie wachte auf" | Ninja 5131 ist فقط „only" |
+| 1576 | louza „Schwägerin" | Ninja 1107 ist „almond tree" |
+| 1113 | billehi „bitte" | Ninja setzt Fatha, wo `bi-` ein Kasra verlangt |
+| 1232 | talqa „du findest" | Ninja silbiert anders, Zuordnung unsicher |
+| 518 | el-irb3a „Mittwoch" | ergäbe الأرْبْعَاء mit Doppel-Sukun, weicht von الأَرْبِعَاء ab |
+| 1217 | toq3od „du bleibst" | PC-Vokalmuster `tqa3id` zu weit entfernt |
+| 4423 | skhun | Präzedenzfall in SKILL.md, TUNICO-Treffer ist `adj_pl` statt Verb |
+
+### Warum es 39 wurden und nicht 50
+
+Zusammensetzung der 256 offenen Zeilen zu Beginn der Runde:
+
+| | Anzahl |
+|---|---|
+| Skelett in TUNICO/Peace Corps vorhanden | 146 |
+| nur in Ninja | 19 |
+| **in gar keiner Quelle** | **91** |
+
+Die 91 sind kein Zufall, sondern eine Struktur: französische Lehnwörter (`sacoche`, `el-guichet`,
+`hotel`, `styloet`), Formen mit Pronominalsuffix (`ysalmik`, `ta3rafshi`, `blayiskom`) und
+zusammengesetzte Ausdrücke. Für die hilft kein Wörterbuch — die brauchen Semia.
+
+Von den 146 mit Skeletttreffer scheitern die meisten daran, dass sich die Quellform aus **unseren**
+Buchstaben nicht erzeugen lässt. Das ist kein Mangel des Verfahrens, sondern seine Schutzfunktion:
+es bedeutet, dass die Quelle eine andere Wortform meint. Der quellengestützte Weg ist damit weitgehend
+ausgeschöpft — weitere Vokalisierungen hier hieße, die Belegpflicht aufzuweichen.
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 273 | **234** |
+| Check 23 | 0 | **0** |
+| Check 24 / 25 | 0 / 0 | **0 / 0** |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+| Schadda auf ا korpusweit | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 1 | **1** (unverändert `1819`/`3897`) |
+
+---
+
+## Runde 65 — die offenen Punkte abgearbeitet
+
+### 768 — korruptes Arabisch, vierter Fall der Alif-Klasse
+
+```
+gespeichert  االله   = 0627 0627 0644 0644 0647   (ا ا ل ل ه — doppeltes Alif)
+richtig      اللَّه  = 0627 0644 0644 0651 064E 0647
+```
+
+`darija` war `aallha`, TUNICO 1307 `aḷḷāh` „Gott". Der Bestand schreibt das Wort überall sonst
+richtig (`600 الله يعينك`, `1460 بارَك اللَّه فِيك`), nur diese Zeile hatte ein Alif zu viel in
+Schrift **und** Umschrift. Beides korrigiert: `اللَّه` / `allah`. Ableitung ergibt `el-lah` (die
+Funktion nimmt den Artikel-Zweig, ل ist Sonnenbuchstabe), Skelett `llh` auf beiden Seiten.
+
+### 569 — unser Arabisch war das falsche Wort
+
+TUNICO trennt die beiden Bedeutungen sauber: **1715 `bānka` = „Bank" (Geldinstitut)**,
+**2015 `bank` = „Sitzbank"**. Peace Corps 415 `BANK` gibt `{ba:nka, ba:nka:t}`, Ninja 11175
+بَانْكَا. Unser `arabic_script` war بَنْكْ — also das **Möbelstück**, während die `darija` `banka`
+das Geldinstitut meint (deutsches „Bank" ist in beide Richtungen zweideutig und hat den Fehler
+gedeckt).
+
+**Das korrigiert eine eigene Entscheidung aus Runde 62.** Dort wurde `569` aus einem
+buchstabengleichen Ninja-Treffer vokalisiert (بنك → بَنْكْ). Buchstabentreu war das korrekt —
+aber die Buchstaben selbst waren schon falsch. Genau der Fall, für den seit dieser Sitzung in
+IMPORTS.md steht: **Buchstabengleichheit ist kein Wortnachweis.** `arabic_script` → بَانْكَا,
+Ableitung `banka` = `darija`.
+
+### 1130 — das Femininum hatte die Gemination nie bekommen
+
+| | Form | Quelle |
+|---|---|---|
+| m. | `435` ضَيَّق `dhayyaq` | im Bestand, mit Schadda |
+| f. | `1130` ضَيْقَة `dhayqa` | **ohne Schadda** |
+| Pl. | `1134` ضَيّْقِينْ `dhayyqin` | in Runde 62 korrigiert |
+
+Ninja 12727 **ضَيّْقَةْ** `dhayy9a` „tight, small" (ADJ) und Peace Corps 3092 `NARROW`
+`{dhiyyiq, dhiyyqa, dhiyyqi:n}` belegen die Gemination im Femininum unabhängig voneinander.
+Korrigiert zu ضَيّْقَة / `dhayyqa`. In Runde 63 war die Zeile noch bewusst ausgelassen worden
+(„bereits vokalisiert, nicht automatisch ändern") — mit zwei unabhängigen Quellen ist das jetzt
+kein automatischer Blockfix mehr, sondern ein Einzelbefund.
+
+### 1857/1858/1879 — die vierte Alif-Verschiebung
+
+TUNICO 4339 `tlazz` „gezwungen sein/werden" und 6941 `lazz` „zwingen": die Wurzel ist das
+geminierte ل-ز-ز, **ohne Alif**. Alle drei Zeilen trugen eins, und `1857` widersprach zusätzlich
+den beiden anderen mit einfachem `z` in der `darija`.
+
+| id | alt | neu |
+|---|---|---|
+| 1857 | يتلاز / `yetlaz` | **يِتْلَزّ** / `yetlazz` |
+| 1858 | تلازيت / `tlazzit` | **تْلَزِّيتْ** |
+| 1879 | تلازيت نرجع للدار | **تْلَزِّيتْ** نرجع للدار |
+
+Beim ersten Entwurf für `1858` stand die Schadda ohne Kasra (تْلَزّيتْ), was `tlazzyt` ableitet
+statt `tlazzit` — vor dem Schreiben gefangen und zu ز + Kasra + Schadda korrigiert.
+
+### 1819 — eigener Fehler aus Runde 62 behoben
+
+```
+3897  … 0634 0650 0651 …   ش + Kasra + Schadda   ← Hauskonvention
+1819  … 0634 0651 0650 …   ش + Schadda + Kasra   ← in Runde 62 von mir falsch herum gesetzt
+```
+
+SKILL.md verlangt das Vokalzeichen **vor** der Schadda; `3897` machte es richtig, meine
+Korrektur an `1819` nicht. Angeglichen. Nebenbefund: korpusweit tragen **26 Zeilen** die Schadda
+vor dem Vokalzeichen — eine eigene kleine Aufräumaufgabe, noch nicht angefasst.
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 234 | **231** |
+| Check 24 / 25 | 0 / 0 | **0 / 0** |
+| Schadda auf ا korpusweit | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Gruppe A | alle 0 | **1 offen** (Check 10, siehe unten) |
+
+### Der einzige verbliebene offene Punkt: `1819` / `3897`
+
+Nach der Korrektur sind beide Zeilen **zeichengleich** in `arabic_script` und `darija`
+(مِتْغَشِّشْ / `mitghashshish`), die Bedeutung ist dieselbe („wütend / böse" gegen
+„verärgert / zornig"), beide liegen im Topic „Befinden", die Lektionen unterscheiden sich (53/33).
+
+| id | Lektion | progress-Zeilen | Wiederholungen |
+|---|---|---|---|
+| 1819 | 53 | 4 | 9 |
+| 3897 | 33 | 1 | 8 |
+
+Keine der beiden hängt in `course_lessons.vocab_lesson_refs`. **Nicht gelöscht** — beide tragen
+Lernfortschritt, und Löschen ist irreversibel. Das ist eine Entscheidung über Nils' eigenes
+Lernmaterial, keine Datenkorrektur.
+
+---
+
+## Runde 66 — Dublette zusammengeführt, und was „nicht bestätigt" wirklich heißt
+
+### 1819 / 3897 zusammengeführt
+
+Auf Nils' Entscheidung: `1819` bleibt, `3897` gelöscht, Glossen vereint.
+
+| Schritt | |
+|---|---|
+| `german` auf `1819` | „wütend / böse" + „verärgert / zornig" → **„wütend / böse / verärgert / zornig"** |
+| `course_exercises` | 1 Übung von `3897` auf `1819` umgehängt |
+| `review_log` | 8 Einträge umgehängt (jetzt 10 auf `1819`) |
+| `progress` | die eine Zeile von `3897` gelöscht — derselbe Nutzer hatte auf `1819` bereits 9 Wiederholungen gegen 8 |
+| `vocabulary` | `3897` gelöscht, Begründung in `internal_note` von `1819` |
+
+Alle vier Fremdschlüssel-Tabellen (`review_log`, `progress`, `course_exercises`) vorher geprüft,
+keine verwaisten Verweise. Bestand 3.775 → **3.774**, Gruppe A wieder auf **0**.
+
+Das „/" im vereinten Gloss ist korrekt: alle vier sind echte Synonyme derselben Bedeutung, und
+`checkAnswer()` soll jedes davon akzeptieren (SKILL.md → `german`-Feld: „/" vs. „;").
+
+### Warum so viele Zeilen „nicht bestätigt" sind
+
+Nils' Verdacht am Beispiel `1175 t7eb` „du magst": *das muss es doch bei TUNICO geben.*
+
+**Er hat recht — und das Flag sagt trotzdem korrekt „nein".** `external_confirmed` ist laut
+SKILL.md (Abschnitt „external_confirmed/-source") ein **Exakt-Treffer-Flag**: gesetzt wird es nur,
+wenn Ninjas diakritikafreies `arabic_script` oder eine TUNICO-Form **zeichengleich** mit unserem
+Wert ist. Es beantwortet „steht dieser exakte String in einer Quelle?", nicht „gibt es dieses Wort?".
+
+Der Befund zu `t7eb` im Einzelnen:
+
+| | |
+|---|---|
+| `4176 7abb` (Grundform) | `external_confirmed=true` (ninja), `tunico_verb_id=5`, eigene Konjugationstabelle |
+| TUNICO 2164 `ḥabb` „lieben" | vorhanden — aber **nur eine** Flexionsform hinterlegt: `y7ibb` `#v_pres_sg_p3` |
+| `tunico_corpus_wordforms` (9.874 belegte Formen) | kein `t7eb`, kein `n7eb` — andere Vokalschreibung |
+| `1175 t7eb`, `1034 n7eb` | stehen wörtlich in der Konjugationstabelle von `4176` |
+
+TUNICO ist ein **Wörterbuch**, keine Konjugationstabelle: es führt das Lemma plus eine
+Beispielflexion. `t7eb` ist eine reguläre Flexion eines vollständig belegten Verbs — „unbestätigt"
+ist technisch wahr und inhaltlich irreführend.
+
+### Zusammensetzung der 1.213 unbestätigten Zeilen
+
+| Art | Anzahl | davon Verbformen |
+|---|---|---|
+| **mehrwortig** (Phrase/Satz) | **854 (70 %)** | 209 |
+| Einzelwort | 359 | 77 |
+
+Die 854 sind **strukturell nicht bestätigbar**: ein Wörterbuch hat kein Lemma für „ich war
+gezwungen nach Hause zu gehen". Das ist kein Datenmangel.
+
+Von den 359 Einzelwörtern hätten:
+
+| Quelle | Skelett-Treffer |
+|---|---|
+| TUNICO | 154 |
+| Derja Ninja | 159 |
+| Peace Corps | 149 |
+| **mindestens eine** | **198** |
+
+**198 von 359 haben also einen nie angesehenen Kandidaten** — sie sind nur deshalb unbestätigt,
+weil der Abgleich exakt vergleicht und die Vokale abweichen. 161 haben in keiner Quelle etwas.
+
+⚠️ **Ein Skelett-Treffer ist keine Bestätigung.** Diese 198 dürfen nicht im Block auf `true`
+gesetzt werden — genau daraus entstand `569 banka` (buchstabengleicher Ninja-Treffer, aber das
+falsche Wort) und die 10 Homograph-Zufälle aus Runde 62. Jeder Treffer braucht die Wortart- und
+Bedeutungsprüfung. Der Wert der Zahl liegt woanders: sie sagt, dass dort **198 ungeprüfte
+Kandidatenpaare** liegen — und die Erfahrung dieser Sitzung ist, dass in solchen Paaren echte
+Fehler stecken.
+
+---
+
+## Runde 67 — der dritte Belegzustand, und die 356 durchgearbeitet
+
+### Der dritte Zustand
+
+Auf Nils' Zustimmung eingeführt: `external_confirmed=false, external_confirmed_source='abgeleitet'`
+für Zeilen, deren **Form** in keiner Quelle steht, deren **Grundform** aber belegt ist und von der
+unsere Zeile eine reguläre Flexion oder reine Vokalvariante ist.
+
+Warum `external_confirmed` dabei `false` bleibt: die Spalte bedeutet „ein Beleg für genau diese
+Form existiert". Das ist für eine Flexionsform nicht wahr. Die Quelle sagt stattdessen, **warum wir
+trotzdem wissen, dass es das Wort gibt**. Das hat auch einen praktischen Vorteil — der
+Partner-Check sortiert serverseitig nach `external_confirmed`, abgeleitete Zeilen bleiben damit
+in derselben Vorab-Auswahl wie unbelegte und werden erst clientseitig dahinter einsortiert.
+
+Im Trainer: `belegStufe()` sortiert dreistufig (0 = gar kein Beleg, 1 = abgeleitet, 2 = direkt),
+`extConfirmIcon()` zeigt für abgeleitete Zeilen ein abgeschwächtes 🔗 mit eigenem Tooltip.
+
+**Der dritte Zustand ist keine Abkürzung.** `3281 yitba3` steht in der Konjugationstabelle von
+`2213 yitba3` — und ist trotzdem **nicht** davon abgeleitet: dort ist die Wurzel ط-ب-ع („drucken"),
+hier ب-ي-ع („verkauft werden"). Ein Formtreffer ohne Bedeutungsabgleich erzeugt hier dieselben
+Homograph-Zufälle wie überall. Von den 4 mechanischen Konjugations-Treffern blieben 3.
+
+### Die 356 unbestätigten Einzelwörter
+
+| | Anzahl | Ergebnis |
+|---|---|---|
+| exakter Formtreffer in einer Quelle | 11 | **10 direkt bestätigt** (beim Backfill übersehen), 1 offen |
+| TUNICO-Bedeutungstreffer | 55 | **54 abgeleitet bestätigt**, 1 verworfen |
+| nur englische Quellen (Ninja/PC) | 27 | **11 abgeleitet bestätigt**, 16 Zufälle |
+| Skelett-Kandidat ohne Bedeutungstreffer | 77 | nichts Verwertbares |
+| gar kein Kandidat | 186 | strukturell nicht bestätigbar |
+
+**Eine Lücke in meinem eigenen Filter:** der Bedeutungsabgleich lief nur gegen TUNICOs **deutsche**
+Glossen. Ninja- und Peace-Corps-Kandidaten wurden nie inhaltlich geprüft und landeten pauschal im
+Rest. Der Nachlauf über diese 27 brachte 11 weitere — darunter `435 dhayyaq` „eng (m.)", die
+Grundform der beiden Zeilen, die ich in Runde 62 und 65 korrigiert hatte.
+
+Die 16 Zufälle in derselben Gruppe zeigen, warum der Nachlauf einzeln laufen musste:
+`el-wta` „unten" gegen Ninjas `liwat`, `bakala` „Kabeljau" gegen `boukl` „Ohrring",
+`meyis` „verzweifelt" gegen den Frauennamen Maysa, `désolé` gegen `diesel`.
+
+### Zwei Funde nebenbei
+
+**`2391 batou` „Boot"** — unser `arabic_script` war بَا**ت**ُو, Ninja 19117 hat بَا**ط**ُو.
+Französisch *bateau* wird tunesisch mit emphatischem ط geschrieben. Beide Schreibungen ergeben in
+der Umschrift `batou` — **die Transliteration kann sie gar nicht unterscheiden**, und für genau
+diesen Fall (ط gegen ت) nennt SKILL.md Derja Ninja ausdrücklich als Tiebreaker. Korrigiert, damit
+jetzt direkt Ninja-belegt.
+
+**`612 annistou`** — Ninja 18369 hat dieselbe Umschrift, aber zwei Abweichungen: anderer
+Hamza-Träger (أنِّسْتُو gegen unser آنِّسْتُوْ) und eine andere Bedeutung („hi to those with you,
+may they be good company" = Begrüßung, unser Gloss sagt Verabschiedung). **Nicht bestätigt**, beide
+Fragen in der `internal_note` festgehalten — das ist eine für Semia.
+
+**`2763 maqla` „Pfanne"** nicht abgeleitet bestätigt: TUNICO kennt unter ق-ل-ي kein Nomen, nur die
+Partizipien `muqli` „in der Pfanne gebraten" und `mqulli` „gesotten". مقلاة ist hocharabisch und
+in keiner der drei Quellen belegt.
+
+### Stand der Belegstufen
+
+| Stufe | Zeilen | davon mehrwortig |
+|---|---|---|
+| direkt belegt | 2.571 | 154 |
+| **abgeleitet belegt** | **68** | 0 |
+| kein Beleg | 1.135 | **854** |
+
+Von den 1.135 ohne Beleg sind 854 mehrwortig — Phrasen und Sätze, für die ein Wörterbuch
+strukturell kein Lemma hat. Bleiben **281 Einzelwörter**, von denen 186 in keiner Quelle einen
+Skelett-Kandidaten haben und 77 nur einen ohne Bedeutungsbezug. Das ist der harte Rest: französische
+Lehnwörter, Formen mit Pronominalsuffix, regionale Wörter. Dafür gibt es nur Semia.
+
+### Gegenprobe
+
+| | |
+|---|---|
+| Trainer 🔤 Transliteration | **0** von 3.774, 23 Regeln |
+| Trainer 🔁 Duplikate | **0** |
+| Gruppe A (18 Checks) | alle 0 |
+| Check 24 / 25 | 0 / 0 |
+
+---
+
+## Runde 68 — Ableitungen über Affixe, und die Schadda-Reihenfolge
+
+### Possessivformen (Nils' Hinweis)
+
+Systematisch gesucht statt einzeln: Pronominalsuffix abtrennen, Grundform im eigenen bestätigten
+Bestand und in den drei Quellen suchen, Gloss muss das Possessivpronomen nennen.
+
+| id | | Grundform |
+|---|---|---|
+| 957 | `blastik` dein Platz | Bestand 534 `blasa` (ninja) — Femininendung wird vor dem Suffix zu `-t` |
+| 1484 | `nhari` mein Tag | Bestand 271 `nhar` (ninja) |
+| 1962 | `3zizhom` ihr Großvater | Bestand 685 `3ziz` (ninja) — Gloss-Abweichung vermerkt |
+| 2789 | `mte3i` meins | Bestand 1820 `mte3` (ninja) |
+| 2793 | `mte3hum` ihres | Bestand 1820 `mte3` (ninja) |
+| 3874 | `3umru` sein Alter | Peace Corps 1715 `3umr` |
+
+### Artikelformen — dieselbe Mechanik
+
+25 Treffer, **21 übernommen, 3 Zufälle, 1 Fund.** Die drei Zufälle zeigen, warum der
+Bedeutungsabgleich nicht wegzulassen ist:
+
+| id | | scheinbare Grundform | tatsächlich |
+|---|---|---|---|
+| 782 | `es-sala` das Gebet | TUNICO `sala` | **„Salon; Saal"** — صالة, nicht صلاة |
+| 784 | `es-sawm` das Fasten | TUNICO `sawm` | **„Preis; Summe"** — سوم, nicht صوم |
+| 2125 | `el-kasa` die Kasse | Bestand 4180 `kasa` | der **Waschhandschuh**, den ich zwei Runden vorher selbst bestätigt hatte |
+
+Zwei weitere hatten die falsche Grundform zugeordnet bekommen und wurden korrigiert: `785 el-7ajj`
+gehört zu TUNICO 2682 `ḥažž` (Verb „pilgern"), nicht zu `4190 حَاجّ` (der Pilger, anderes Wort);
+`3111 el-battal` zu TUNICO 3324/3329 `baṭṭāl` (Nomen/Adjektiv), nicht zu 2807 (Verb „aufhören").
+
+**Der Fund: `3741 el-wta`.** Das `arabic_script` اللوطا wirkte falsch (doppeltes ل), ist aber
+korrekt — Ninja 14304 belegt **لُوطَا** `louwta` „down, under, at the bottom". Falsch war die
+`darija`, die das ل unterschlagen hatte: `el-wta` → **`el-louta`**.
+
+### Die Schadda-Reihenfolge — meine Zahl war falsch
+
+In Runde 65 hatte ich „26 Zeilen mit Schadda vor dem Vokalzeichen" gemeldet. Nachgemessen sind es
+**9**. Der Regex hatte zwei verschiedene Dinge zusammengefasst:
+
+| Muster | Anzahl | Bewertung |
+|---|---|---|
+| Schadda **vor Vokalzeichen** (`ضّـَ`) | 9 | Konventionsabweichung — korrigiert |
+| Schadda **+ Sukun** (`مُرّْ` = `morr`) | 17 | **völlig korrekt** — wortfinaler Doppelkonsonant ohne Vokal |
+| Vokalzeichen vor Schadda | 815 | Hausstil |
+
+Die 9 normalisiert (jetzt 824 zu 0). Vier davon hatte ich in dieser Sitzung selbst so geschrieben
+(`356`, `651`, `893`, `768`), zwei stammen aus wörtlich übernommenen Ninja-Werten (`1266`, `1526`).
+Vor dem Schreiben geprüft, dass der Tausch die Ableitung **nicht** verändert — bei allen neun
+identisch, Buchstabenbestand unverändert.
+
+### Stand der Belegstufen
+
+| Stufe | vorher | jetzt |
+|---|---|---|
+| direkt belegt | 2.571 | 2.571 |
+| **abgeleitet belegt** | 68 | **96** |
+| kein Beleg | 1.135 | **1.107** (854 davon mehrwortig) |
+
+### Gegenprobe
+
+| | |
+|---|---|
+| Schadda vor Vokalzeichen | **0** (824 konform) |
+| Trainer 🔤 Transliteration | **0** von 3.774, 23 Regeln |
+| Trainer 🔁 Duplikate | **0** |
+| Gruppe A / Check 24 / Check 25 | 0 / 0 / 0 |
+
+---
+
+## Runde 69 — der dritte Zustand war in der Vokabelliste unsichtbar
+
+Nils fragte, wo „abgeleitet bestätigt" im Trainer zu sehen ist. Antwort beim Nachsehen: **auf der
+Karteikarte ja, in der Vokabelliste nein** — ein Fehler in meiner eigenen Umsetzung aus Runde 67.
+
+Die Liste rief so auf:
+
+```js
+v.au ? '🔊' : (v.xc ? extConfirmIcon(v) : '·')
+```
+
+Der Aufrufer prüft `v.xc` **vor** dem Funktionsaufruf ab. Abgeleitete Zeilen tragen aber bewusst
+`external_confirmed = false` — der Zweig in `extConfirmIcon()`, der genau diesen Fall behandelt,
+wurde dort also nie erreicht. Die Karteikarte (Zeile 2526) ruft ohne diesen Vorfilter auf, deshalb
+war das Icon dort sichtbar und in der Liste nicht.
+
+Behoben: der Vorfilter entfällt, die Funktion entscheidet selbst (sie gibt ohnehin `''` zurück,
+wenn nichts zutrifft).
+
+**Die Lehre:** ein Zustand, der absichtlich `false` in einem bestehenden Flag setzt, muss an *jeder*
+Stelle nachgezogen werden, die dieses Flag als Wächter benutzt — nicht nur dort, wo die neue Logik
+geschrieben wurde. Ein `grep` nach den Aufrufstellen hätte das sofort gezeigt.
+
+### Filter ergänzt
+
+Der Filter „nicht bestätigt" hätte die 96 abgeleiteten Zeilen mitgezählt und die Stufe damit
+unsichtbar gemacht. Jetzt drei getrennte Einträge:
+
+| Option | zeigt |
+|---|---|
+| 🔗 bestätigt | Audio vorhanden oder direkt belegt |
+| **🔗 abgeleitet belegt** | Grundform belegt, Form abgeleitet (96) |
+| gar kein Beleg | keine der beiden Stufen (1.107) |
+
+### Wo der Zustand jetzt sichtbar ist
+
+| Ort | |
+|---|---|
+| Vokabelliste | abgeschwächtes 🔗 (Deckkraft 55 %), Tooltip „Grundform belegt, Flexionsform abgeleitet" — **69 Zeilen** |
+| Karteikarte | dasselbe Icon im Audio-Slot |
+| Filter Vokabelliste | eigener Eintrag |
+| Partner-Check | nur in der Reihenfolge: gar kein Beleg → abgeleitet → direkt belegt |
+
+Bei den **27** abgeleiteten Zeilen **mit** Audio steht der 🔊-Knopf im selben Slot; das Icon
+entfällt dort wie bei direkt bestätigten Zeilen auch. Gegengeprüft, dass diese 27 zu Recht
+abgeleitet und nicht direkt belegt sind: keine einzige ist buchstabengleich mit einem
+Ninja-Eintrag, das Audio stammt jeweils von einer anders geschriebenen Zeile.
+
+---
+
+## Runde 70 — Plural- und Femininableitungen
+
+Dritte und letzte regelmäßige Affixklasse nach Possessiv und Artikel. Dieselbe Mechanik: Endung
+abtrennen, Grundform im bestätigten Bestand und in den Quellen suchen, Gloss muss Plural bzw.
+Femininum ausweisen.
+
+| id | | Ableitung |
+|---|---|---|
+| 283 | `pieset` Münzen | Bestand 282 `piesa` — `-et`, Femininendung fällt weg |
+| 584 | `kisen` Gläser | Bestand 393 `kaas` / TUNICO 1226 `kās` — كِيسَان ist der **gebrochene** Plural von كَاس |
+| 625 | `millimet` Millimes | TUNICO 1504 `millim` — `-et` |
+| 1089 | `7louin` süß (Pl.) | Bestand 378 `7lou` — `-in` |
+| 2118 | `m3abbyin` voll (Pl.) | TUNICO-flex 3042 `m3abbya` — `-in` |
+| 2157 | `kesin` zwei Gläser (Dual) | Bestand 393 `kaas` — كاسين ist der Dual |
+| 2168 | `jupet` Röcke | TUNICO 2062 `jup` — `-et` |
+| 2197 | `mayyitin` tot (Pl.) | Bestand 2290 `mayyit` — `-in` |
+| 2291 | `mayyita` tot (f.) | Bestand 2290 `mayyit` — Femininendung `-a` |
+
+**Ein Fehlgriff der Automatik, von Hand korrigiert:** `584 kisen` wurde zuerst Peace Corps' `kis`
+unter dem Stichwort **LIKE** zugeordnet — ein Zufall. Die richtige Grundform ist `kaas` „Glas",
+und beim Nachschlagen fiel `2157 kesin` (Dual desselben Wortes) mit auf, das die Automatik gar
+nicht gefunden hatte, weil `-in` nach `kes` kein bestätigtes Wort ergibt. **Gebrochene Plurale und
+Duale findet die Endungsregel prinzipiell nicht** — die brauchen den Blick auf das Wort.
+
+### Stand
+
+| Stufe | vorher | jetzt |
+|---|---|---|
+| direkt belegt | 2.571 | 2.571 |
+| abgeleitet belegt | 96 | **105** |
+| kein Beleg | 1.107 | **1.098** (854 mehrwortig, **244 einwortig**) |
+
+## Der Trainer zeigt den dritten Zustand noch nicht — er ist nicht deployed
+
+Nils sah bei `1482 7weyji` „meine Kleidung" und `1484 nhari` „mein Tag" nur `·` und fand keinen
+Statusfilter. Beides stimmt, und die Ursache liegt nicht im Code:
+
+`vercel.json` deployt den Trainer aus **`main`**. Der Branch
+`claude/trainer-analysis-aufbau-exy3vw` liegt **24 Commits vor `main`**, darunter alle drei, die
+`trainer.html` anfassen (Partner-Check-Sortierung, dritter Zustand, Icon- und Filterkorrektur).
+Der letzte Merge nach `main` war `49bc0ec` — zu Beginn dieser Sitzung.
+
+Live ist damit weiterhin der Stand von vorher: kein abgeschwächtes 🔗, kein Filtereintrag
+„abgeleitet belegt", und der Partner-Check sortiert noch nach Fälligkeit statt nach Belegstufe.
+**Ohne Merge nach `main` ändert sich daran nichts.**

@@ -22,6 +22,7 @@ Fokus dieser Datei: bestehende Trainer-Vokabeln prüfen, neue Vokabeln nachschla
 | Eigene Prüfabfrage bauen | Datenqualitäts-Checks → **C** (Regeln fürs Prüfen selbst) — erst lesen, drei der Fallen dort haben schon Prüfläufe stumm wertlos gemacht |
 | Vokabel ist ein Verb (prüfen ODER anlegen) | Verben → Verb-Konjugationsmodell (3-Zeilen-Ziel, `conjugation`, `conj_rotate`) — gilt auch bei geflaggten Einzelformen |
 | Was ist von früher noch unerledigt? | Offene Punkte (direkt unten) — **die Zahlen dort sind ein Schnappschuss, vor jeder Planung mit dem SQL daneben neu ziehen** |
+| Vokalisieren, Harakat setzen, Regeln gegen `trainer.html` laufen lassen | **`tools/`** — `extract.js` (TRANSLIT_RULES aus `trainer.html`), `chatalpha.js` (Port von `_arabic_to_chatalpha`), `vokalisierer.js` (Harakat-Solver). `tools/README.md` nennt die sieben Pflichtfilter — **vor dem ersten `UPDATE` lesen** |
 | PDF/Foto-Quelle auswerten, neue Quelle importieren | IMPORTS.md |
 | Kurs-Modus (course_lessons/course_exercises) oder Code-Änderung an trainer.html | COURSE_MODE.md |
 
@@ -39,7 +40,7 @@ Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nic
 SELECT * FROM public.qualitaets_checks WHERE treffer > 0 ORDER BY gruppe, nr;
 ```
 
-Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. **Stand am 2026-09-13 nach dem Umbau: A komplett 0; B = 2 ungültige Anfangs-Schadda, 21 Verb-Selbstcheck, 431 unvokalisierte Einzelwörter, 46 offene Vokalisierungs-Kandidaten, Check 20/24/25/30 auf 0, Check 21 bei 2 (beide bewusst offen), Check 22/23 bei 424/36.** Diese Zahlen sind der einzige Ort, an dem hier noch welche stehen, und auch sie gelten nur als Größenordnung.
+Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. Hier steht bewusst **kein** Schnappschuss mehr: die frühere Fassung nannte „Check 22/23 bei 424/36" und war zwei Tage später bei 234/0 — ein Absatz, der zum Zitieren einlädt und dabei falsch ist, richtet mehr Schaden an als eine fehlende Zahl. Die Sicht oben liefert den Stand in einer Abfrage.
 
 Was die Sicht **nicht** abdeckt und weiterhin von Hand zu ziehen ist:
 
@@ -194,6 +195,8 @@ Bei Eingang B gehört dieselbe Begründung in die `internal_note` der neuen Zeil
 
 **Nach dem Schreiben, Pflicht unaufgefordert** — immer bei Eingang B, bei A sobald `darija` oder `arabic_script` verändert wurde:
 1. Duplikat-Check UND Transliterations-Check laufen lassen: App-eigener „🔍 Duplikat-Prüfung"-Tab, oder bei Live-Zugriff das SQL aus **Datenqualitäts-Checks** selbst nachbauen — gründlicher als Ad-hoc-Stichproben vorher.
+   **Die Kollisionsprobe muss die bereits vokalisierten Zeilen einschließen**, nicht nur die unvokalisierten: sonst wird ein neu vokalisierter Wert identisch mit einem bestehenden und reißt Gruppe-A-Check 10 auf (passiert 2026-09-15 mit `1522`/`4111`).
+   **Und: eine Korrektur deckt regelmäßig eine verdeckte Dublette auf.** Dreimal an einem Tag passiert — `1174`/`252` (der Schrägstrich hielt den Schlüssel auseinander), `1819`/`3897` (die falsche Schreibung verdeckte den Zwilling), `1522`/`4111` (erst die Vokalisierung machte beide gleich). Das ist kein Unfall, sondern die erwartbare Folge: wer eine Schreibung korrigiert, führt sie mit der bereits korrekten Zwillingszeile zusammen. Vor dem Schreiben mitdenken, nach dem Schreiben prüfen.
 2. Bedeutungsfacetten-Check gegen `tunico_import`/`tunico_corpus_*` (Methodik: IMPORTS.md → TUNICO) — für JEDE Quelle, nicht nur TUNICO-eigene Batches.
 3. Nur bei neuen Zeilen: **`vocab_lesson_refs` und `progress` aktualisieren**, siehe COURSE_MODE.md → Kurs-Verknüpfung.
 
@@ -346,7 +349,7 @@ Aus der Uni-Wien-Lautlehre abgeleitete Prüfregeln, immer anwendbar wenn `arabic
 
 1. **Vokalqualität a/e und i/e (Imala) ist meist kein Fehler.** Fatha/Kasra werden je nach Umgebung mal als "a"/"i", mal als "e" ausgesprochen (حَارْ→"7ar" aber بَارْد→"berid", derselbe Fatha-Laut). Nur bei strukturellen Abweichungen (fehlende Silbe, anderer Konsonant, anderes Vokalmuster) nachhaken.
 2. **Gemination (Schadda) muss sich im Doppelbuchstaben spiegeln.** كَبُّوطْ→"kabbout" ✓. Doppelter Konsonant ohne Schadda (oder umgekehrt) → möglicher Vokalisierungsfehler.
-3. **Schadda-Gültigkeitsprüfung.** Nie auf dem ersten Buchstaben eines Wortes, nie auf einem reinen Langvokal-Buchstaben (ا) — beides ist ungültig und ein Warnsignal für kaputte Quelldaten.
+3. **Schadda-Gültigkeitsprüfung.** Nie auf dem ersten Buchstaben eines Wortes, nie auf einem reinen Langvokal-Buchstaben (ا) — beides ist ungültig und ein Warnsignal für kaputte Quelldaten. **Zeichenreihenfolge:** trägt derselbe Konsonant Schadda *und* ein Vokalzeichen, steht das **Vokalzeichen zuerst** (824 Zeilen so, seit Runde 68 ausnahmslos). Nicht zu verwechseln mit **Schadda + Sukun** (`مُرّْ` = `morr`, 17 Zeilen): das ist ein wortfinaler Doppelkonsonant ohne Vokal und völlig korrekt. Wer beides in einem Regex zusammenfasst, zählt 26 statt 9.
 4. **"Vollständig vokalisiert"** heißt: jeder Konsonant hat Harakat oder Sukun. Ein Wort mit nur einem Schadda, sonst ohne Fatha/Kasra/Damma, ist unvollständig.
 5. **Maß-I- vs. Maß-II-Verwechslung bei Verben aus externen Quellen.** Unsere Vergangenheitsform (3. Pers. m. Sg., Maß I) ist die Grundform. Externe Quellen listen oft die kausative Form (Maß II, mit Schadda) oder eine Nomen-Ableitung — gleiches Konsonantenskelett, andere Bedeutung (دَخِّلْ "hineinstecken" statt دْخَلْ "er trat ein"). Vor Übernahme immer Wortart/Verb-Maß gegen die deutsche Bedeutung prüfen, reiner Skelett-Match reicht nicht. Keine passende Variante in der Quelle → ausschließen, nicht raten.
 6. **Hamza (ء) ist ein eigener Laut, kein "3".** Bei anlautendem Vokal ohne erkennbaren Konsonanten prüfen, ob eigentlich أ gemeint ist.
@@ -354,6 +357,7 @@ Aus der Uni-Wien-Lautlehre abgeleitete Prüfregeln, immer anwendbar wenn `arabic
 8. **Betonungs-Algorithmus:** einsilbige Wörter immer betont; auslautender Vokal nie betont (außer einsilbig); genau ein schwerer Vokal → betont; mehrere schwere Vokale → der letzte.
 9. **Kolloquiale Vokal-Elision nur bei markiertem Sukun.** Reduktion nur dort, wo das Arabische selbst ein Sukun trägt (قْوِيَّة→"qwiyya"). Eine markierte Fatha/Kasra/Damma wird nicht gestrichen, auch wenn die Aussprache subjektiv reduziert klingt (صَيْدَلِيَّة→"sidaliyya").
 10. **Länderadjektiv vs. Ländername** ist eine Unterkategorie von Regel 5 — Konsonantenskelett-Match reicht nicht, Wortart genau prüfen.
+11. **Die eigene `darija` ist NIE das Vokalisierungsziel** (2026-09-15). Naheliegend wäre, das `arabic_script` so zu vokalisieren, dass `_arabic_to_chatalpha()` genau unsere `darija` zurückgibt — dann macht die Vokalisierung nur explizit, was wir ohnehin behaupten. **Gegenprobe an den 2.461 handvokalisierten Einzelwortzeilen: nur 554 hätte dieses Verfahren reproduziert.** Grund: unsere `darija` ist eine **verkürzte** Umschrift und lässt Vokale weg, die das Arabische braucht — قَلَم („qalam") steht bei uns als `qlam`, أَرْبَعَة („arba3a") als `arb3a`. Wer darauf vokalisiert, schreibt systematisch falsches Arabisch. Die `darija` darf die Vokalisierung nur **einschränken** (Konsonantenbestand, Gemination), nie bestimmen; die Vokale kommen aus TUNICO (`lemma_chatalpha`, `variants_chatalpha`, **`inflected`**) oder Peace Corps (`forms_chatalpha`). Werkzeug und Filter: `tools/README.md`.
 
 ## Topic (unwichtig — einfach setzen und nicht darüber reden)
 
@@ -479,8 +483,9 @@ Hier standen bis zum 2026-09-13 rund 250 Zeilen SQL. Sie sind in die Sicht gewan
 
 
 ```bash
-# scratchpad/extract.js zieht normalize/checkAnswer/TRANSLIT_RULES per Anker aus trainer.html
-node extract.js && node -e '
+# tools/extract.js zieht normalize/checkAnswer/TRANSLIT_RULES per Anker aus trainer.html
+# nach tools/lib.js und bricht selbst ab, wenn es nicht 23 Regeln werden.
+node tools/extract.js && node -e '
 const L=require("./lib.js"); const fs=require("fs");
 const rows=JSON.parse(fs.readFileSync("fresh_all.json","utf8"))
   .map(r=>({id:r.id,tr:r.darija||"",ar:r.arabic_script||"",en:r.german||""}));
@@ -493,7 +498,7 @@ console.log("betroffen: "+ids.size+" von "+rows.length+" ("+L.TRANSLIT_RULES.len
 
 **Zwei Pflicht-Plausibilitätsprüfungen bei jedem Harness-Lauf:**
 
-1. **`L.TRANSLIT_RULES.length` mit ausgeben.** Fällt der Extraktor auf einen Teilblock zurück, prüft man stumm eine gekürzte Regelliste. Präzedenzfall: PRECEDENTS.md → `extract.js`. **Der Anker ist zweimal danebengegangen** — beide Male, weil `indexOf("\n];")` zuerst das Ende von `CONSONANT_PAIRS` trifft. Immer von `const TRANSLIT_RULES = [` aus suchen.
+1. **`L.TRANSLIT_RULES.length` mit ausgeben.** Fällt der Extraktor auf einen Teilblock zurück, prüft man stumm eine gekürzte Regelliste. Präzedenzfall: PRECEDENTS.md → `extract.js`. **Der Anker ist zweimal danebengegangen** — beide Male, weil `indexOf("\n];")` zuerst das Ende von `CONSONANT_PAIRS` trifft. Immer von `const TRANSLIT_RULES = [` aus suchen. **Seit 2026-09-15 prüft `tools/extract.js` das selbst und bricht ab** (Sollzahl über `TRANSLIT_RULES_ERWARTET` anpassbar, wenn eine Regel dazukommt); der Extraktor liegt nicht mehr im Scratchpad, wo er jede Session neu gebaut werden musste.
 2. **Exportierte Zeilenzahl gegen `count(*)` halten.** Ein still unvollständiger Export meldet „0 Treffer" über den halben Bestand und sieht dabei aus wie ein sauberes Ergebnis.
 
 ### B · Verdachtslisten (mit Fehlalarmquote)
@@ -510,6 +515,8 @@ Vier Klassen, und nur zwei davon sind Befunde:
 | `konsonanten` | 8 (= Check 25) | verschiedene Laute. Die Hälfte sind französisch geschriebene Lehnwörter ohne `(frz.)`-Marker — mit Marker fallen sie heraus |
 | `lehnwort_pv` | 12 | **kein Befund**, p/v gegen ب/ف per Entscheidung vom 2026-09-13 |
 | `vokale` | ~1.000 | **kein Befund und kein Check.** Kurzvokale sind im Bestand nicht normiert; die Klasse steht nur für den Einzelfall zur Verfügung |
+
+**`vokalisierung_kandidaten` — Fehlalarmquote ~48 % (gemessen 2026-09-15).** Die Sicht verlangt buchstabengleiches Ninja-Arabisch und **genau eine** distinkte Ninja-Vokalisierung. Das `eindeutig` im Namen bezieht sich auf die **Vokalisierung, nicht auf das Wort**: beim vollständigen Durchgang waren **10 von 21** Kandidaten Homograph-Zufälle — die Eigennamen نَجِيب (Najib) und سَمَر (Samar) für `njib`/`smar`, der osmanische Titel بَايْ (Bey) für das Lehnwort „bye", die Maß-II-Form تْكَوِّن („geformt werden") für تْكُون („sein"), der Diminutiv صْغَيَّر für صغير, ein Verbalnomen statt eines Verbs — und ein Ninja-Quellwert mit **Tanwin statt Fatha** (تْقًابِلْ, Ableitung ergibt `tqanabil`). Jeder Treffer braucht die Wortart- und Bedeutungsprüfung nach Lautlehre-Regel 5. Verworfene Kandidaten bekommen `internal_note ~ 'ninja-vokalisierung verworfen'` — die Sicht schließt sie dadurch dauerhaft aus, und die nächste Sitzung sucht nicht noch einmal.
 
 Grundgesamtheit: 2.335 vokalisierte Einzelwörter. Die Klassen `vokale` und `lehnwort_pv` sind bewusst **nicht** in `qualitaets_checks`: eine Liste, die dauerhaft Bekanntes meldet, macht die scharfen Listen daneben unsichtbar.
 
@@ -737,6 +744,15 @@ ORDER BY id;
 
 **ت+ه an der Morphemgrenze wird `th` geschrieben — die Konvention existiert bereits.** 6 von 8 Bestandszeilen machen es so (`waqtha` وقتها, `shrobtha` شربتها, `mammethom`, `thimni` تْهِمِّني). Dass `th` auch der Digraph für ظ/ذ/ث ist, wird in Kauf genommen — gleiche Lage wie `tth` (Präfix-`t` vor `th`) und `thh` (`thhar` ظهر). Entschieden wird immer am `arabic_script`, nie an der Buchstabenfolge.
 
+**⚠️ Der Schrägstrich nimmt eine Zeile komplett aus `chatalpha_konflikte` (entdeckt 2026-09-15).** Die Sicht filtert `v.darija !~ '/'`, weil eine Zweivarianten-Zeile nicht 1:1 gegen eine Ableitung zu stellen ist. Folge: **26 Zeilen mit Schrägstrich, davon 21 vokalisiert, waren nie gegen ihre eigene Ableitung geprüft** — und genau dort saßen echte Fehler (`1174` trug mit `lbes` das Verb statt des Partizips, `1457 bishfa` unterschlug die Sonnenbuchstaben-Assimilation, die das eigene بِالشِّفا trägt). Dieselbe Blindheit gilt für jede Prüfung, die auf `chatalpha_konflikte` aufsetzt. Schrägstrich-Zeilen brauchen einen eigenen Durchgang:
+
+```sql
+SELECT id, darija, arabic_script, german FROM vocabulary
+WHERE darija ~ '/' AND arabic_script ~ '[\u064B-\u0652]' ORDER BY id;
+```
+
+**Hausstil bei zwei Varianten:** trägt die `darija` einen Schrägstrich, trägt ihn das `arabic_script` auch — 16 Zeilen machen es so (`2022 a7san / khir` → أَحْسَن / خِير). `checkAnswer()` splittet auf `/\s*\/\s*/`, beide Formen gelten also als richtige Antwort. Eine Mischform aus zwei Varianten in **einem** Wort ist immer ein Fehler (`894` trug قلامّات = Alif aus `qlām` plus Schadda aus `qlammāt`, in keiner Quelle belegt).
+
 **Lateinisches `x` gehört nicht ins Hausalphabet** — 5 Zeilen tragen es, alle französische Lehnwörter (`taxi`, `taxist`, `jeux vidéos`). Lösung ist **nicht** Umschrift zu `ks`, sondern die Lehnwort-Markierung im Gloss (`(frz.)`), damit `isLoanword()` greift. `taxi` wird auch von Tunesiern so geschrieben.
 
 **⚠️ Zeichenreihenfolge: Vokalzeichen stehen VOR der Schadda (entdeckt 2026-09-12).** Im Bestand steht die Schadda in **803** Zeilen nach dem Vokalzeichen (`ي` + Kasra + Schadda = `064a 0650 0651`) und nur in **16** davor. Die kanonische Unicode-Reihenfolge ist die umgekehrte. Folge: **jede Prüfregel der Form `<Buchstabe>ّ` verfehlt ~98 % des Bestands und meldet stillschweigend nichts** — dieselbe Falle wie `\b` statt `\y`. Immer die Vokalzeichen mit erlauben:
@@ -929,7 +945,24 @@ RETURNING id, english, darija, arabic_script, german, translit_skeleton, arabic_
   - `tunico_corpus_wordforms.form_chatalpha` (einzelne belegte Wortformen, größte Quelle an zusätzlichen Treffern)
 - sonst dasselbe für `source='peacecorps'`, wenn `darija` exakt einem beliebigen Element aus `peacecorps_dict_import.forms_chatalpha[]` entspricht — **nicht nur `forms_chatalpha[1]`**, das übersieht feminine/Imperativ/Perfekt/Colloquial-Formen, die laut `forms_roles` ebenfalls im Array stehen.
 - **Zusätzlich, wenn kein exakter String-Match greift:** `public._translit_skeleton(darija)` (Länge ≥ 4, sonst zu kollisionsanfällig) gegen `_translit_skeleton()` jeder Form aus denselben lexem-gebundenen Arrays vergleichen (`tunico_import.lemma_chatalpha`/`variants_chatalpha[]`/`inflected[].chatalpha`, `tunico_corpus_verbs/_adjectives/_nouns.forms_chatalpha[]`, `peacecorps_dict_import.forms_chatalpha[]`) — **NICHT** gegen `tunico_corpus_wordforms` (das ist eine korpusweite Flachliste ohne Lexem-Bindung, dort bleibt nur exakter String-Match sicher). Grund: TUNICOs automatische `chatalpha`-Konvertierung nutzt andere Vokale als unsere Imala-Regeln (z.B. `ytayyib` vs. unser `ytayyeb`, `yakul` vs. `yakol`) — ohne Skelett-Vergleich verfehlt der exakte String-Vergleich echte Treffer aus denselben Quellen. Sicher nur, weil jedes dieser Arrays garantiert zu einem einzigen Lexem gehört (kein Cross-Wort-Kollisionsrisiko wie bei einer globalen Skelett-Suche über den ganzen Bestand).
+- **sonst, seit 2026-09-15, der dritte Zustand:** `external_confirmed=false, external_confirmed_source='abgeleitet'`, wenn die **Form selbst** in keiner Quelle steht, aber eine belegte Grundform existiert, von der unsere Zeile eine **reguläre Flexion oder eine reine Vokalvariante** ist — Plural zu belegtem Singular, Femininum zu belegtem Maskulinum, Komparativ zum Adjektiv, Possessivform, Konjugationsform, oder dieselbe Form mit anderer Vokalschreibung (`twewil` gegen TUNICOs `twawil`). Die Grundform und ihre Fundstelle gehören in die `internal_note`.
 - sonst `external_confirmed=false, external_confirmed_source=NULL`.
+
+**Warum der dritte Zustand nötig war.** `external_confirmed` ist ein **Exakt-Treffer-Flag**: es beantwortet „steht dieser String in einer Quelle?", nicht „gibt es dieses Wort?". Beispiel `1175 t7eb` „du magst": die Grundform `4176 7abb` ist Ninja-belegt und über `tunico_verb_id` mit TUNICO verknüpft, TUNICO 2164 führt das Verb `ḥabb` vollständig — aber nur **eine** Beispielflexion (`y7ibb`). Auch `tunico_corpus_wordforms` (9.874 belegte Formen) kennt `t7eb` nicht, weil es andere Vokale schreibt. „Nicht bestätigt" war damit technisch wahr und inhaltlich irreführend, und der Partner-Check schickte solche Zeilen zu Semia, als wüsste niemand, ob es das Wort gibt.
+
+**So findet man die Ableitungen systematisch** (Runde 68): Affix abtrennen, Grundform im **eigenen bestätigten Bestand** und in den drei Quellen suchen, und zur Sicherheit das deutsche Gloss gegenprüfen. Drei Affixklassen sind regelmäßig genug dafür:
+
+| Klasse | Prüfung | Ausbeute Runde 68 |
+|---|---|---|
+| Pronominalsuffix (`-i` mein, `-ek/-ik` dein, `-ou/-u` sein, `-ha` ihr, `-na` unser, `-kom` euer, `-hom` ihr Pl.) | Gloss muss das Possessivpronomen nennen; Femininendung fällt vor dem Suffix zu `-t` (`blasa` → `blastik`) | 6 von 281 |
+| Artikel (`el-`, `esh-`, `ez-`, …) | Sonnenbuchstabe entdoppeln, dann Grundform suchen | 21 von 25 Treffern |
+| Flexion aus `conjugation` | Form muss in der Tabelle einer **bestätigten** Zeile stehen | 3 von 4 Treffern |
+
+Die Fehlalarmquote ist auch hier real: `es-sala` „das Gebet" trifft TUNICOs `sala` **„Salon; Saal"** (صالة statt صلاة), `es-sawm` „das Fasten" trifft `sawm` **„Preis; Summe"** (سوم statt صوم), `el-kasa` „die Kasse" den Waschhandschuh `kasa`. Ohne Bedeutungsabgleich wären das drei falsche Bestätigungen aus 25.
+
+**Der dritte Zustand ist keine Abkürzung.** Er verlangt dieselbe Wortprüfung wie eine direkte Bestätigung: `3281 yitba3` steht in der Konjugationstabelle von `2213 yitba3` — und ist trotzdem **nicht** davon abgeleitet, weil dort die Wurzel ط-ب-ع („drucken") steht und hier ب-ي-ع („verkauft werden"). Ein Skelett- oder Formtreffer ohne Bedeutungsabgleich erzeugt hier genauso Homograph-Zufälle wie überall sonst.
+
+**Wirkung im Trainer:** `belegStufe()` sortiert den Partner-Check dreistufig — gar kein Beleg zuerst (dort ist Semias Urteil die einzige Bestätigung, die es je geben wird), dann abgeleitet, dann direkt belegt (Zweitmeinung). Das 🔗-Icon erscheint für abgeleitete Zeilen abgeschwächt mit eigenem Tooltip.
 
 Präzedenzfälle 2026-09-05/06:
 - Bestands-Audit gegen `vocab_lookup.chatalpha`/`chatalpha_plural` allein fand nur 1693/3698 Treffer; Erweiterung auf alle Rohtabellen-Spalten (exakter Match) brachte 357 weitere (u.a. `dyar`, Plural von `dar`/Haus, nur in Peace Corps' zweitem `forms_chatalpha`-Element). `vocab_lookup` bleibt für den Cross-Source-Abgleich (Rezepte 1–4 oben) nützlich, ist für `external_confirmed` aber nicht ausreichend.

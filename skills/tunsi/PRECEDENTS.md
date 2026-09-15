@@ -573,3 +573,70 @@ Skeleton-Regel: lowercase Chat-Alphabet, dann `[aeiouwy\s\-\.\(\)àâäéèêë�
 ## Code-Änderungen — Fallgeschichte
 
 Performance-Fix `spellcheck="false"` (2026-08-05): `ei-tp` (Topic-Feld) hatte `autocomplete/autocorrect/autocapitalize/spellcheck` schon deaktiviert, die Nachbarfelder `ei-ar`/`ei-tr`/`ei-en` nicht — der gemeldete INP-Bug betraf nur `ei-ar`, aber dieselbe Fehlerklasse lauerte in allen dreien.
+
+## Die Alif-Verschiebung — vier Fälle, ein Muster (2026-09-15)
+
+Viermal in einer Sitzung gefunden: der Langvokalträger ا sitzt eine Position zu weit rechts oder
+links, und das Wort wird dadurch ein anderes.
+
+| id | gespeichert | richtig | was der falsche Wert bedeutet |
+|---|---|---|---|
+| 1777 | فراغ | **فارغ** | `farāgh` „Leere" (Nomen) statt `fāregh` „leer" (Partizip) |
+| 1521 | والد | **ولاد** | `wālid` „Vater" statt `wlād` „Söhne" |
+| 1858 | تلازيت | **تلزّيت** | Alif steht dort, wo die Gemination hingehört (TUNICO `tlazz`) |
+| 768 | االله | **الله** | doppeltes Alif, `darija` „aallha" statt `allah` |
+
+**Warum keine Prüfung das sieht:** `_arabic_skeleton()` und `_translit_skeleton()` streichen ا/و/ي.
+Für sie sind فراغ und فارغ dasselbe Wort. Die Fehlerklasse findet nur der Quellenabgleich — oder,
+und das war zweimal der schnellste Weg, **der eigene Bestand**: `1777` fiel auf, weil unser Plural
+`2120 فَارْغِينْ` das Alif vor dem ر hat, und die Korrektur ist exakt dessen Stamm. `1521` fiel auf,
+weil `1552` den Plural überall sonst `ولاد` schreibt.
+
+**Praktische Konsequenz:** bei jedem Wort mit ا/و/ي im Inneren prüfen, ob eine morphologisch
+verwandte Zeile im Bestand denselben Träger an derselben Stelle hat. Ein Ninja-Treffer mit
+abweichender Bedeutung ist dabei kein Störgeräusch, sondern der Hinweis: bei `1521` war Ninjas
+„father, dad" genau der Homograph, der den Fehler verraten hat.
+
+## Der Vokalisierungs-Solver — ein Ansatz, den die Validierung gekippt hat (2026-09-15)
+
+Für die restlichen unvokalisierten Einzelwörter entstand ein Solver, der nur Diakritika setzt
+(nie Buchstaben ändert) und dessen Ergebnis durch `_arabic_to_chatalpha` zurückgerechnet wird.
+Liegt in `tools/`.
+
+**Der erste Entwurf war falsch, und zwar auf eine Art, die beim Draufschauen richtig aussah:**
+als Zielumschrift die eigene `darija` nehmen. Das klingt zwingend — dann macht die Vokalisierung
+nur explizit, was die Zeile ohnehin behauptet, und erfindet nichts.
+
+**Die Probe, die es gekippt hat:** die 2.461 bereits **von Hand** vokalisierten Einzelwortzeilen
+entkleiden und neu lösen lassen. Nur 554 hätte der Solver identisch reproduziert.
+
+    256  Mensch: قَلَم (qalam)     Solver: قْلَمْ (qlam)
+    262  Mensch: أَرْبَعَة (arba3a)  Solver: أرْبْعَة (arb3a)
+    267  Mensch: تِسْعَة (tis3a)    Solver: تْسْعَة (ts3a)
+
+Unsere `darija` ist eine **verkürzte** Umschrift. Sie darf die Vokalisierung einschränken, nicht
+bestimmen. Als Ziel gehört eine echte Vokalquelle (TUNICO, Peace Corps). Steht jetzt als
+Lautlehre-Regel 11 in SKILL.md.
+
+Dieselbe Probe fing einen zweiten Fehler: die erste Fassung setzte ein **Sukun auf den
+Langvokalträger** (نْسَىْ, مْرَاْ) und verstieß damit gegen Lautlehre-Regel 3. Ursache war ein Bonus
+für „Sukun am Wortende" in der Bewertungsfunktion, der nicht zwischen Konsonant und Vokalträger
+unterschied.
+
+**Die verallgemeinerbare Lehre:** ein Verfahren, das den Bestand anfassen soll, zuerst gegen den
+**handgemachten** Teil des Bestands laufen lassen. Reproduziert es die Handarbeit nicht, stimmt
+das Verfahren nicht — und das sieht man an keiner Stichprobe des Ergebnisses, weil jedes einzelne
+Ergebnis für sich plausibel aussieht.
+
+## Der Partner-Check zeigte Quellenbestätigtes zuerst (2026-09-15)
+
+Der Fallback des Partner-Checks (Zeilen ohne `partner_status`, 3.449 Stück) sortierte nach
+Fälligkeit und dann zufällig; `external_confirmed` wurde gar nicht erst geladen. Damit landeten
+die **1.090 nicht quellenbestätigten** Zeilen nach Zufall irgendwo — obwohl genau dort Semias
+Urteil die einzige Bestätigung ist, die es je geben wird. Bei bestätigten Zeilen ist es eine
+Zweitmeinung.
+
+Umgestellt auf: quellenunbestätigt zuerst, dann Fälligkeit, dann Zufall. **Die primäre Sortierung
+gehört dabei auf den Server** (`order=external_confirmed.asc.nullsfirst`) — PostgREST liefert
+ohne `order` eine beliebige Reihenfolge, ein clientseitiges Sortieren hätte also nur die
+zufälligen 200 sortiert, die zurückkamen, statt die richtigen zu holen.
