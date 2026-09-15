@@ -3870,3 +3870,113 @@ Dry-Run vorab: ohne `homonym_ok` 1 neues Duplikat, mit `homonym_ok` auf beiden 0
 Offen bleiben unverändert: 6 Vokalisierungs-Kandidaten mit Strukturunterschied, 4
 `darija`-Geminationsfälle, 2 Maß-I/Maß-II-Fälle (`643`/`644`), 4 Zeilen ohne Quellentreffer,
 `4331 3izza`, `1777 feragh`.
+
+---
+
+## Runde 60–62 — selbstständiger Block, 30 Änderungen
+
+Ab hier auf Nils' Anweisung ohne Einzelbestätigung geschrieben („Bisher hat immer alles gepasst.
+Arbeite weiter und schreib auch. Mach dreißig und dann zeig mir eine Liste"). Prüftiefe unverändert:
+Quellenabgleich, Codepoint-Kontrolle, Dry-Run gegen die 23 Transliterationsregeln und den
+Duplikat-Check vor jedem Schreiben. Neue Vokabeln weiterhin nicht ungefragt angelegt.
+
+### Runde 60 — die beiden Maß-I/Maß-II-Fälle (erledigt, keine Fehler)
+
+| Quelle | `643 lbis` | `644 l3ab` |
+|---|---|---|
+| TUNICO | 2067 `lbis` **verb Maß I** „sich anziehen" (Maß II wäre 5709 `labbis` „j-n anziehen") | 2158 `lʕab` **verb Maß I** „spielen" |
+| Peace Corps | 4934 `WEAR (to)` / 1543 `DRESS (to)`: `{ilbis, lbis}`, Rollen imperativ/**perfekt** | 3494 `PLAY (to)`: `{al3ib, l3ab}`, Rollen imperativ/**perfekt** |
+
+Beide `darija`-Werte waren korrekt; unser Deutsch „er zog **sich** an" ist die reflexive Maß-I-
+Bedeutung, nicht die kausative. Da die Formen damit belegt sind, beide vokalisiert nach dem
+Hausstil für dreikonsonantige Perfektverben in Lektion 47 (9 von 12 so: Konsonant+Sukun,
+Mittelkonsonant+Vokal, Konsonant+Sukun — `541 rkib` رْكِبْ, `546 q3ad` قْعَدْ):
+`643` لبس → **لْبِسْ**, `644` لعب → **لْعَبْ**. Offener Punkt „2 Maß-I/Maß-II-Fälle" ist damit erledigt.
+
+### Runde 61 — `1777 feragh`, dritte Alif-Verschiebung
+
+| | Buchstabenfolge | Lesart |
+|---|---|---|
+| vorher | ف ر **ا** غ | `farāgh` — Nomen „Leere" |
+| nachher | ف **ا** ر غ | `fāregh` — Partizip „leer" |
+
+TUNICO kennt unter der Wurzel ف-ر-غ kein Nomen: 2391 `fāriġ` **activeParticiple** „leer",
+1062 `fraġ` verb „leer werden", 2616 `faṛṛaġ` verb „leeren". Ninja 5911 فَارْغ `fargh` (ADJ) „empty".
+Gegenbeleg für den falschen Freund: Ninja 20179 فَارَغْ الصَّبْرْ „Ungeduld" — das Nomen gibt es,
+es heißt nur „Leere", nicht „leer".
+
+Stärkste Bestätigung war intern: **فَارْغ ist exakt der Stamm unseres eigenen Plurals `2120`**
+(فَارْغِينْ), der Rest von `2120` nach diesen sechs Codepoints ist genau die Pluralendung
+Kasra+ي+ن+Sukun. `darija` unverändert — `feragh` gegen `ferghin` ist reguläre tunesische Epenthese.
+
+### Runde 62 — Check 23 vollständig abgearbeitet
+
+Die View `vokalisierung_kandidaten` verlangt buchstabengleiches Ninja-Arabisch und genau eine
+distinkte Ninja-Vokalisierung. **Wichtige Erkenntnis: sie ist nur bei der Vokalisierung eindeutig,
+nicht beim Wort — 10 der 21 Kandidaten waren Homograph-Zufälle.** Alle 10 mit Begründung in
+`internal_note` verworfen (die View schließt sie dadurch dauerhaft aus):
+
+| id | Ninja-Treffer | warum verworfen |
+|---|---|---|
+| 891 | „to write" | Verb statt Nomen-Plural „Bücher" (كتب) |
+| 1023 | صْغَيَّر | Diminutiv `sghayyar`, nicht صغير `sghir` |
+| 1199 | نَجِيب | Eigenname Najib |
+| 1405 | بَايْ | osmanischer Titel Bey, nicht das Lehnwort „bye" |
+| 1697 | تْكَوِّن | Maß II „geformt werden", nicht تْكُون „sein" |
+| 4385 | سَمَر | Eigenname Samar |
+| 4401 | تَفَاهُم | Verbalnomen statt Verb |
+| 4402 | كُبْر | Nomen „Hochmut" statt Verb |
+| 4413 | تْقًابِلْ | **Tanwin statt Fatha im Quellwert** (Ableitung ergibt `tqanabil`) |
+| 4448 | نْعِم | Verb „genießen", nicht نَعَمْ „ja" |
+
+Neun übernommen (`325`, `529`, `569`, `684`, `1057`, `1183`, `1266`, `1526`, `1817`), einer mit
+Zusatz: **`802`** bekam den Artikel, den die `darija` (`el-batala`) trägt — ohne ihn wäre
+`البْطَالَة` gegen `bṭāla` als Check-25-Treffer aufgeschlagen (Skelett `lbtl` gegen `btl`).
+Präzedenz dafür: `783 ez-zaka` الزّكاة.
+
+**`1521` war ein echter Fund:** `والد` (wālid = *Vater*) stand dort, wo `ولاد` (wlād = *Söhne*)
+hingehört — dieselbe Alif-Verschiebung wie `1777`, und Ninjas Treffer „father, dad" war genau der
+Homograph, der es verraten hat. Der Korpus schreibt den Plural überall sonst `ولاد` (`1552`).
+Ninja hat keinen ولاد-Eintrag, deshalb nur die Buchstabenkorrektur ohne Vokalisierung — die Zeile
+bleibt zu Recht in Check 22.
+
+**Geminationsfälle mit TUNICO-Lemmatreffer:** `356` `xaḏ̣ḏ̣āṛ` „Gemüse- und Obsthändler"
+(intern bestätigt durch `358 7awwet` حَوَّاتْ, dasselbe Berufsmuster فعّال), `651` `dillāʕ`
+„Wassermelonen", `893` `kuṛṛāsa` „Heft" (Singular `892` hatte die Schadda schon), `1819`
+`mitġaššiš` „verärgert", `1134` (Singular `435 dhayyaq` und TUNICO 2071 `ḏ̣ayyiq` tragen die
+Schadda, der Plural hatte sie nie bekommen). Bei `356` hätte die naheliegende `darija` `khaddhar`
+einen Check-24-Treffer erzeugt: ein doppeltes ض wird in unserer Konvention zu `dhdh`, nicht `ddh` —
+korrigiert zu `khadhdhar`, vor dem Schreiben nachgerechnet.
+
+`1825 mba3d` und `4343 b-zarba` als **Nicht-Befunde** bestätigt (TUNICO 2809 `baʕd` „dann",
+TUNICO 628 `zarba` „Schnelligkeit" — keine Gemination); `4343` nur vokalisiert. `4331 3izza`
+bleibt unbelegt, Ergebnis in `internal_note` festgehalten, damit die Suche nicht wiederholt wird.
+
+### Gegenprobe
+
+| | vor dem Block | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 343 | **323** |
+| Check 23 offene Ninja-Kandidaten | 24 | **0** |
+| Check 24/25 | 0 / 0 | **0 / 0** |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+| Schadda auf ا korpusweit | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **1** — siehe unten |
+
+### Offen, braucht Nils' Entscheidung
+
+1. **Echte Dublette `1819`/`3897`.** Nach der Korrektur von `1819` sind beide Zeilen in Schrift und
+   Umschrift identisch (مِتْغَشِّشْ / `mitghashshish`), die Bedeutung dieselbe („wütend / böse" vs.
+   „verärgert / zornig"), die Lektionen verschieden (53 vs. 33). `3897` war die ganze Zeit die
+   korrekt geschriebene Zwillingszeile; die falsche Schreibung von `1819` hat die Dublette verdeckt.
+   Nicht gelöscht — destruktiv, hängt an Lernfortschritt, und die Freigabe galt Korrekturen.
+2. **`1857`/`1858`/`1879` (`tlazz`-Cluster).** TUNICO 4339 `tlazz` „gezwungen sein/werden" hat
+   **kein Alif**, unsere Zeilen (تلازيت, يتلاز) schon — vierte Alif-Verschiebung. Zusätzlich
+   widersprechen sich unsere eigenen Zeilen: `1857 yetlaz` einfaches z, `1858 tlazzit` doppeltes.
+   Drei Zeilen auf einmal, deshalb nicht im Alleingang geschrieben.
+3. **`1130 dhayqa`** ضَيْقَة. Gehört ins Paradigma von `435 dhayyaq`/`1134 dhayyqin`, trägt aber
+   Sukun statt Schadda. Nicht geändert, weil es eine **bereits bewusst vokalisierte** Zeile ist und
+   die Regel „bereits korrekt vokalisierte Einträge nicht automatisch ändern" hier schwerer wiegt.
+4. **`569 banka`** gegen Ninjas بَنْكْ `bank`: nur vokalisiert, `darija` nicht angefasst. Ob der
+   Eintrag `banka` (ital. banca) oder `bank` heißen soll, ist eine Bestandsentscheidung.
