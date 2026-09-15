@@ -3980,3 +3980,83 @@ bleibt unbelegt, Ergebnis in `internal_note` festgehalten, damit die Suche nicht
    die Regel „bereits korrekt vokalisierte Einträge nicht automatisch ändern" hier schwerer wiegt.
 4. **`569 banka`** gegen Ninjas بَنْكْ `bank`: nur vokalisiert, `darija` nicht angefasst. Ob der
    Eintrag `banka` (ital. banca) oder `bank` heißen soll, ist eine Bestandsentscheidung.
+
+---
+
+## Runde 63 — 50 Vokalisierungen, und ein verworfener Ansatz
+
+Check 23 war nach Runde 62 leer, die Ninja-Quelle also erschöpft (nur noch 3 mehrdeutige Fälle,
+keiner davon über `chatalpha == darija` auflösbar). Für die restlichen 323 musste ein anderer Weg
+her: Harakat auf die **vorhandenen** Buchstaben setzen und das Ergebnis durch
+`_arabic_to_chatalpha` zurückrechnen lassen. Werkzeug dafür liegt jetzt in `tools/`.
+
+### Der erste Ansatz war falsch — und die Validierung hat es gezeigt
+
+Naheliegend war, als Ziel die eigene `darija` zu nehmen: dann ist die Vokalisierung nur noch das
+Explizitmachen dessen, was wir ohnehin behaupten. Gegenprobe an den **2.461 bereits von Hand
+vokalisierten** Einzelwortzeilen: nur 554 hätte der Solver identisch reproduziert. Die Abweichungen
+zeigen den Denkfehler:
+
+| id | Mensch | Solver mit `darija` als Ziel |
+|---|---|---|
+| 256 | قَلَم (`qalam`) | قْلَمْ (`qlam`) |
+| 262 | أَرْبَعَة (`arba3a`) | أرْبْعَة (`arb3a`) |
+| 267 | تِسْعَة (`tis3a`) | تْسْعَة (`ts3a`) |
+
+**Unsere `darija` ist eine verkürzte Umschrift.** Sie lässt Vokale weg, die das Arabische braucht.
+Wer die Vokalisierung auf sie zwingt, produziert systematisch falsches Arabisch — قْلَمْ statt قَلَم
+für „Stift". Die `darija` darf die Vokalisierung nur **einschränken** (Konsonanten, Gemination),
+nicht bestimmen. Ziel muss eine echte Vokalquelle sein: TUNICO oder Peace Corps.
+
+Ein zweiter Fehler kam aus derselben Probe: die erste Fassung setzte ein **Sukun auf den
+Langvokalträger** (نْسَىْ, مْرَاْ), was Lautlehre-Regel 3 verbietet. Ursache war ein Bonus für
+„Sukun am Wortende" in der Bewertung, der nicht zwischen Konsonant und Vokalträger unterschied.
+
+### Was dann funktioniert hat
+
+Quelle liefert die Vokale, unsere Buchstaben schränken ein, und fünf Filter sortieren aus —
+jeder einzelne hat echte Fehlpaarungen abgefangen:
+
+| Filter | fängt ab |
+|---|---|
+| Skelett `darija` = Skelett Ableitung | würde sonst Check 24/25 aufreißen |
+| **gleiche Vokalanzahl** | Wortform-Wechsel, die das Skelett nicht sieht: `shrit`→`shrita`, `7raqt`→`7arqat` (1. gegen 3. Person), `n3am`→`na3ma` |
+| Bedeutungsabgleich TUNICO-Glosse gegen unser `german` | das vokalfreie Skelett zieht sonst `esh-shta` (Winter) auf `shushit` (grillen) |
+| Lösbarkeit selbst | `fnejin` (Plural) gegen `finjan` (Singular) — aus unseren Buchstaben nicht erzeugbar, also kein Treffer |
+| Rückrechnung durch die DB-Funktion, nicht nur den Port | letzte Instanz vor dem `UPDATE` |
+
+Von 323 blieben 67 eindeutig lösbare Kandidaten, 50 davon geschrieben. Zwei bewusst ausgenommen:
+`4423 skhun` (Präzedenzfall in SKILL.md, nicht im Block anfassen) und `1217 toq3od` (Vokalmuster
+der Quelle weicht zu stark ab).
+
+**Zwei Zeilen aus Runde 62 kommen dadurch zurück:** `1023 sghir` und `4385 smar` hatte ich wegen
+Ninja verworfen (Diminutiv صْغَيَّر bzw. Eigenname سَمَر) — TUNICO liefert dort die richtige Form
+(`sghir` „klein; jung", `smar` „braun werden"). Die Ninja-Ablehnung war korrekt, die Vokalisierung
+kommt jetzt aus der besseren Quelle. `4401 tfahim` ebenso.
+
+### Ein Fehler im eigenen Vorgehen
+
+Die Kollisionsprobe lief nur gegen **unvokalisierte** Zeilen. Dadurch wurde `1522 bnet` „Töchter"
+nach der Vokalisierung identisch mit `4111 bnat` „Mädchen (Pl.)" (beide بْنَاتْ, beide Lektion 35)
+und riss Gruppe-A-Check 10 auf. بنات trägt im Tunesischen beide Bedeutungen — echtes Bedeutungspaar,
+mit `homonym_ok` auf beiden aufgelöst. In `tools/README.md` als Pflichtfilter 6 festgehalten.
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 323 | **273** |
+| Check 23 | 0 | **0** |
+| Check 24 / 25 | 0 / 0 | **0 / 0** |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+| Schadda auf ا korpusweit | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 1 | **1** (unverändert `1819`/`3897`, wartet auf Entscheidung) |
+
+### Neu offen
+
+- **`768 aallha`** — `arabic_script` ist korrupt: `االله` mit **doppeltem Alif**, `darija` „aallha".
+  Richtig wäre الله / `allah` (TUNICO 1307). Zwei Felder an einem heiklen Wort, deshalb vorgelegt.
+- **`1522 bnet` gegen `4111 bnat`** — dasselbe Wort, zwei Umschriften. Als Homonym markiert, aber
+  die Umschrift-Uneinheitlichkeit bleibt eine Bestandsfrage.
+- 17 weitere geprüfte Kandidaten liegen fertig vor (aus den 67).
