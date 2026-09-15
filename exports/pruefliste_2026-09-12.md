@@ -4246,3 +4246,76 @@ Nach der Korrektur sind beide Zeilen **zeichengleich** in `arabic_script` und `d
 Keine der beiden hängt in `course_lessons.vocab_lesson_refs`. **Nicht gelöscht** — beide tragen
 Lernfortschritt, und Löschen ist irreversibel. Das ist eine Entscheidung über Nils' eigenes
 Lernmaterial, keine Datenkorrektur.
+
+---
+
+## Runde 66 — Dublette zusammengeführt, und was „nicht bestätigt" wirklich heißt
+
+### 1819 / 3897 zusammengeführt
+
+Auf Nils' Entscheidung: `1819` bleibt, `3897` gelöscht, Glossen vereint.
+
+| Schritt | |
+|---|---|
+| `german` auf `1819` | „wütend / böse" + „verärgert / zornig" → **„wütend / böse / verärgert / zornig"** |
+| `course_exercises` | 1 Übung von `3897` auf `1819` umgehängt |
+| `review_log` | 8 Einträge umgehängt (jetzt 10 auf `1819`) |
+| `progress` | die eine Zeile von `3897` gelöscht — derselbe Nutzer hatte auf `1819` bereits 9 Wiederholungen gegen 8 |
+| `vocabulary` | `3897` gelöscht, Begründung in `internal_note` von `1819` |
+
+Alle vier Fremdschlüssel-Tabellen (`review_log`, `progress`, `course_exercises`) vorher geprüft,
+keine verwaisten Verweise. Bestand 3.775 → **3.774**, Gruppe A wieder auf **0**.
+
+Das „/" im vereinten Gloss ist korrekt: alle vier sind echte Synonyme derselben Bedeutung, und
+`checkAnswer()` soll jedes davon akzeptieren (SKILL.md → `german`-Feld: „/" vs. „;").
+
+### Warum so viele Zeilen „nicht bestätigt" sind
+
+Nils' Verdacht am Beispiel `1175 t7eb` „du magst": *das muss es doch bei TUNICO geben.*
+
+**Er hat recht — und das Flag sagt trotzdem korrekt „nein".** `external_confirmed` ist laut
+SKILL.md (Abschnitt „external_confirmed/-source") ein **Exakt-Treffer-Flag**: gesetzt wird es nur,
+wenn Ninjas diakritikafreies `arabic_script` oder eine TUNICO-Form **zeichengleich** mit unserem
+Wert ist. Es beantwortet „steht dieser exakte String in einer Quelle?", nicht „gibt es dieses Wort?".
+
+Der Befund zu `t7eb` im Einzelnen:
+
+| | |
+|---|---|
+| `4176 7abb` (Grundform) | `external_confirmed=true` (ninja), `tunico_verb_id=5`, eigene Konjugationstabelle |
+| TUNICO 2164 `ḥabb` „lieben" | vorhanden — aber **nur eine** Flexionsform hinterlegt: `y7ibb` `#v_pres_sg_p3` |
+| `tunico_corpus_wordforms` (9.874 belegte Formen) | kein `t7eb`, kein `n7eb` — andere Vokalschreibung |
+| `1175 t7eb`, `1034 n7eb` | stehen wörtlich in der Konjugationstabelle von `4176` |
+
+TUNICO ist ein **Wörterbuch**, keine Konjugationstabelle: es führt das Lemma plus eine
+Beispielflexion. `t7eb` ist eine reguläre Flexion eines vollständig belegten Verbs — „unbestätigt"
+ist technisch wahr und inhaltlich irreführend.
+
+### Zusammensetzung der 1.213 unbestätigten Zeilen
+
+| Art | Anzahl | davon Verbformen |
+|---|---|---|
+| **mehrwortig** (Phrase/Satz) | **854 (70 %)** | 209 |
+| Einzelwort | 359 | 77 |
+
+Die 854 sind **strukturell nicht bestätigbar**: ein Wörterbuch hat kein Lemma für „ich war
+gezwungen nach Hause zu gehen". Das ist kein Datenmangel.
+
+Von den 359 Einzelwörtern hätten:
+
+| Quelle | Skelett-Treffer |
+|---|---|
+| TUNICO | 154 |
+| Derja Ninja | 159 |
+| Peace Corps | 149 |
+| **mindestens eine** | **198** |
+
+**198 von 359 haben also einen nie angesehenen Kandidaten** — sie sind nur deshalb unbestätigt,
+weil der Abgleich exakt vergleicht und die Vokale abweichen. 161 haben in keiner Quelle etwas.
+
+⚠️ **Ein Skelett-Treffer ist keine Bestätigung.** Diese 198 dürfen nicht im Block auf `true`
+gesetzt werden — genau daraus entstand `569 banka` (buchstabengleicher Ninja-Treffer, aber das
+falsche Wort) und die 10 Homograph-Zufälle aus Runde 62. Jeder Treffer braucht die Wortart- und
+Bedeutungsprüfung. Der Wert der Zahl liegt woanders: sie sagt, dass dort **198 ungeprüfte
+Kandidatenpaare** liegen — und die Erfahrung dieser Sitzung ist, dass in solchen Paaren echte
+Fehler stecken.
