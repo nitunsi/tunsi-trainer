@@ -4319,3 +4319,85 @@ falsche Wort) und die 10 Homograph-Zufälle aus Runde 62. Jeder Treffer braucht 
 Bedeutungsprüfung. Der Wert der Zahl liegt woanders: sie sagt, dass dort **198 ungeprüfte
 Kandidatenpaare** liegen — und die Erfahrung dieser Sitzung ist, dass in solchen Paaren echte
 Fehler stecken.
+
+---
+
+## Runde 67 — der dritte Belegzustand, und die 356 durchgearbeitet
+
+### Der dritte Zustand
+
+Auf Nils' Zustimmung eingeführt: `external_confirmed=false, external_confirmed_source='abgeleitet'`
+für Zeilen, deren **Form** in keiner Quelle steht, deren **Grundform** aber belegt ist und von der
+unsere Zeile eine reguläre Flexion oder reine Vokalvariante ist.
+
+Warum `external_confirmed` dabei `false` bleibt: die Spalte bedeutet „ein Beleg für genau diese
+Form existiert". Das ist für eine Flexionsform nicht wahr. Die Quelle sagt stattdessen, **warum wir
+trotzdem wissen, dass es das Wort gibt**. Das hat auch einen praktischen Vorteil — der
+Partner-Check sortiert serverseitig nach `external_confirmed`, abgeleitete Zeilen bleiben damit
+in derselben Vorab-Auswahl wie unbelegte und werden erst clientseitig dahinter einsortiert.
+
+Im Trainer: `belegStufe()` sortiert dreistufig (0 = gar kein Beleg, 1 = abgeleitet, 2 = direkt),
+`extConfirmIcon()` zeigt für abgeleitete Zeilen ein abgeschwächtes 🔗 mit eigenem Tooltip.
+
+**Der dritte Zustand ist keine Abkürzung.** `3281 yitba3` steht in der Konjugationstabelle von
+`2213 yitba3` — und ist trotzdem **nicht** davon abgeleitet: dort ist die Wurzel ط-ب-ع („drucken"),
+hier ب-ي-ع („verkauft werden"). Ein Formtreffer ohne Bedeutungsabgleich erzeugt hier dieselben
+Homograph-Zufälle wie überall. Von den 4 mechanischen Konjugations-Treffern blieben 3.
+
+### Die 356 unbestätigten Einzelwörter
+
+| | Anzahl | Ergebnis |
+|---|---|---|
+| exakter Formtreffer in einer Quelle | 11 | **10 direkt bestätigt** (beim Backfill übersehen), 1 offen |
+| TUNICO-Bedeutungstreffer | 55 | **54 abgeleitet bestätigt**, 1 verworfen |
+| nur englische Quellen (Ninja/PC) | 27 | **11 abgeleitet bestätigt**, 16 Zufälle |
+| Skelett-Kandidat ohne Bedeutungstreffer | 77 | nichts Verwertbares |
+| gar kein Kandidat | 186 | strukturell nicht bestätigbar |
+
+**Eine Lücke in meinem eigenen Filter:** der Bedeutungsabgleich lief nur gegen TUNICOs **deutsche**
+Glossen. Ninja- und Peace-Corps-Kandidaten wurden nie inhaltlich geprüft und landeten pauschal im
+Rest. Der Nachlauf über diese 27 brachte 11 weitere — darunter `435 dhayyaq` „eng (m.)", die
+Grundform der beiden Zeilen, die ich in Runde 62 und 65 korrigiert hatte.
+
+Die 16 Zufälle in derselben Gruppe zeigen, warum der Nachlauf einzeln laufen musste:
+`el-wta` „unten" gegen Ninjas `liwat`, `bakala` „Kabeljau" gegen `boukl` „Ohrring",
+`meyis` „verzweifelt" gegen den Frauennamen Maysa, `désolé` gegen `diesel`.
+
+### Zwei Funde nebenbei
+
+**`2391 batou` „Boot"** — unser `arabic_script` war بَا**ت**ُو, Ninja 19117 hat بَا**ط**ُو.
+Französisch *bateau* wird tunesisch mit emphatischem ط geschrieben. Beide Schreibungen ergeben in
+der Umschrift `batou` — **die Transliteration kann sie gar nicht unterscheiden**, und für genau
+diesen Fall (ط gegen ت) nennt SKILL.md Derja Ninja ausdrücklich als Tiebreaker. Korrigiert, damit
+jetzt direkt Ninja-belegt.
+
+**`612 annistou`** — Ninja 18369 hat dieselbe Umschrift, aber zwei Abweichungen: anderer
+Hamza-Träger (أنِّسْتُو gegen unser آنِّسْتُوْ) und eine andere Bedeutung („hi to those with you,
+may they be good company" = Begrüßung, unser Gloss sagt Verabschiedung). **Nicht bestätigt**, beide
+Fragen in der `internal_note` festgehalten — das ist eine für Semia.
+
+**`2763 maqla` „Pfanne"** nicht abgeleitet bestätigt: TUNICO kennt unter ق-ل-ي kein Nomen, nur die
+Partizipien `muqli` „in der Pfanne gebraten" und `mqulli` „gesotten". مقلاة ist hocharabisch und
+in keiner der drei Quellen belegt.
+
+### Stand der Belegstufen
+
+| Stufe | Zeilen | davon mehrwortig |
+|---|---|---|
+| direkt belegt | 2.571 | 154 |
+| **abgeleitet belegt** | **68** | 0 |
+| kein Beleg | 1.135 | **854** |
+
+Von den 1.135 ohne Beleg sind 854 mehrwortig — Phrasen und Sätze, für die ein Wörterbuch
+strukturell kein Lemma hat. Bleiben **281 Einzelwörter**, von denen 186 in keiner Quelle einen
+Skelett-Kandidaten haben und 77 nur einen ohne Bedeutungsbezug. Das ist der harte Rest: französische
+Lehnwörter, Formen mit Pronominalsuffix, regionale Wörter. Dafür gibt es nur Semia.
+
+### Gegenprobe
+
+| | |
+|---|---|
+| Trainer 🔤 Transliteration | **0** von 3.774, 23 Regeln |
+| Trainer 🔁 Duplikate | **0** |
+| Gruppe A (18 Checks) | alle 0 |
+| Check 24 / 25 | 0 / 0 |

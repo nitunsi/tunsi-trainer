@@ -1732,6 +1732,16 @@ function partnerTabBar(active){
     '</div>';
 }
 
+// Belegstufe fuer die Reihenfolge im Partner-Check:
+// 0 = keine Quelle kennt das Wort (Semias Urteil ist die einzige Bestaetigung, die es je geben wird)
+// 1 = Flexionsform, deren Grundform belegt ist
+// 2 = direkt in einer Quelle belegt (hier ist es nur noch eine Zweitmeinung)
+function belegStufe(v){
+  if(v && v.external_confirmed) return 2;
+  if(v && v.external_confirmed_source === 'abgeleitet') return 1;
+  return 0;
+}
+
 async function partnerInit(containerId){
   _pContainerId = containerId || 'partner-main';
   const main=_pMain();
@@ -1745,7 +1755,7 @@ async function partnerInit(containerId){
 
   // Lade alle pending+skipped
   const pendingSkipped = await sbApi(
-    'vocabulary?partner_status=in.(pending,skipped)&select=id,darija,german,partner_status,external_confirmed,ninja_audio_url,ninja_audio_start,ninja_audio_end&limit=200'
+    'vocabulary?partner_status=in.(pending,skipped)&select=id,darija,german,partner_status,external_confirmed,external_confirmed_source,ninja_audio_url,ninja_audio_start,ninja_audio_end&limit=200'
   );
   // Lade progress für diese IDs um next_review zu kennen
   const ids = pendingSkipped.map(v=>v.id);
@@ -1775,10 +1785,10 @@ async function partnerInit(containerId){
     if(ga!==gb) return ga-gb;
     // Innerhalb fälliger Gruppen: nach next_review aufsteigend
     if(ga===0||ga===2) return new Date(a._nextReview)-new Date(b._nextReview);
-    // Innerhalb der unfaelligen Gruppen: quellenunbestaetigte zuerst - dort ist Semias Urteil
-    // die einzige Bestaetigung, die es je geben wird.
-    const xa=!a.external_confirmed, xb=!b.external_confirmed;
-    if(xa!==xb) return xa?-1:1;
+    // Innerhalb der unfaelligen Gruppen nach Belegstufe: gar kein Beleg zuerst, dann abgeleitet,
+    // dann direkt belegt - dort ist Semias Urteil die einzige Bestaetigung, die es je geben wird.
+    const ra=belegStufe(a), rb=belegStufe(b);
+    if(ra!==rb) return ra-rb;
     return Math.random()-.5;
   });
   batch = pendingSkipped.slice(0,10);
@@ -1788,7 +1798,7 @@ async function partnerInit(containerId){
     const need = 10 - batch.length;
     const existingIds = batch.map(v=>v.id);
     const fallback = await sbApi(
-      'vocabulary?partner_status=is.null&select=id,darija,german,partner_status,external_confirmed,ninja_audio_url,ninja_audio_start,ninja_audio_end&order=external_confirmed.asc.nullsfirst&limit=300'
+      'vocabulary?partner_status=is.null&select=id,darija,german,partner_status,external_confirmed,external_confirmed_source,ninja_audio_url,ninja_audio_start,ninja_audio_end&order=external_confirmed.asc.nullsfirst&limit=300'
     );
     // Annotate fallback mit next_review
     const fbIds = fallback.map(v=>v.id);
@@ -1804,8 +1814,8 @@ async function partnerInit(containerId){
     // je geben wird. Bei bestaetigten Zeilen ist es eine Zweitmeinung.
     const fbNow = new Date();
     fallback.sort((a,b)=>{
-      const aUn = !a.external_confirmed, bUn = !b.external_confirmed;
-      if(aUn !== bUn) return aUn ? -1 : 1;
+      const ra = belegStufe(a), rb = belegStufe(b);
+      if(ra !== rb) return ra - rb;
       const aFäl = a._nextReview && new Date(a._nextReview) <= fbNow;
       const bFäl = b._nextReview && new Date(b._nextReview) <= fbNow;
       if(aFäl && !bFäl) return -1;
@@ -2126,10 +2136,19 @@ function srsInfoBadge(vocab){
 }
 
 const EXT_SOURCE_LABEL = { ninja: 'Derja Ninja', tunico: 'TUNICO', peacecorps: 'Peace Corps' };
+// Dritter Bestaetigungszustand: die Form selbst steht in keiner Quelle, ist aber die regelmaessige
+// Flexion einer belegten Grundform (external_confirmed bleibt false, source = 'abgeleitet').
+// Beispiel: t7eb "du magst" -- TUNICO fuehrt das Verb 7abb vollstaendig, aber nur eine Beispiel-
+// flexion. "Nicht bestaetigt" waere technisch wahr und inhaltlich irrefuehrend.
+const EXT_ABGELEITET = 'abgeleitet';
+const istAbgeleitet = v => !!v && !v.xc && v.xcs === EXT_ABGELEITET;
 // Icon fürs selbe Slot wie der Audio-Button: nur wenn KEIN Audio vorhanden, aber extern (Ninja/TUNICO/Peace Corps) bestätigt.
 // Ist Audio vorhanden, ist eine Ninja-Bestätigung ohnehin impliziert — kein zusätzliches Icon nötig.
 function extConfirmIcon(v, style){
-  if(!v || v.au || !v.xc) return '';
+  if(!v || v.au) return '';
+  if(istAbgeleitet(v))
+    return `<span title="Grundform belegt, Flexionsform abgeleitet" style="${style||'color:var(--muted)'};opacity:.55">🔗</span>`;
+  if(!v.xc) return '';
   const label = EXT_SOURCE_LABEL[v.xcs] || 'externe Quelle';
   return `<span title="Extern bestätigt (${label}, keine Audio-Aufnahme)" style="${style||'color:var(--muted)'}">🔗</span>`;
 }
