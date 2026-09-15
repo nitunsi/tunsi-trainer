@@ -1745,7 +1745,7 @@ async function partnerInit(containerId){
 
   // Lade alle pending+skipped
   const pendingSkipped = await sbApi(
-    'vocabulary?partner_status=in.(pending,skipped)&select=id,darija,german,partner_status,ninja_audio_url,ninja_audio_start,ninja_audio_end&limit=200'
+    'vocabulary?partner_status=in.(pending,skipped)&select=id,darija,german,partner_status,external_confirmed,ninja_audio_url,ninja_audio_start,ninja_audio_end&limit=200'
   );
   // Lade progress für diese IDs um next_review zu kennen
   const ids = pendingSkipped.map(v=>v.id);
@@ -1775,6 +1775,10 @@ async function partnerInit(containerId){
     if(ga!==gb) return ga-gb;
     // Innerhalb fälliger Gruppen: nach next_review aufsteigend
     if(ga===0||ga===2) return new Date(a._nextReview)-new Date(b._nextReview);
+    // Innerhalb der unfaelligen Gruppen: quellenunbestaetigte zuerst - dort ist Semias Urteil
+    // die einzige Bestaetigung, die es je geben wird.
+    const xa=!a.external_confirmed, xb=!b.external_confirmed;
+    if(xa!==xb) return xa?-1:1;
     return Math.random()-.5;
   });
   batch = pendingSkipped.slice(0,10);
@@ -1784,7 +1788,7 @@ async function partnerInit(containerId){
     const need = 10 - batch.length;
     const existingIds = batch.map(v=>v.id);
     const fallback = await sbApi(
-      'vocabulary?partner_status=is.null&select=id,darija,german,partner_status,ninja_audio_url,ninja_audio_start,ninja_audio_end&limit=200'
+      'vocabulary?partner_status=is.null&select=id,darija,german,partner_status,external_confirmed,ninja_audio_url,ninja_audio_start,ninja_audio_end&order=external_confirmed.asc.nullsfirst&limit=300'
     );
     // Annotate fallback mit next_review
     const fbIds = fallback.map(v=>v.id);
@@ -1794,9 +1798,14 @@ async function partnerInit(containerId){
       fbProg.forEach(p=>{ fbProgressMap[p.vocabulary_id]=p.next_review; });
     }
     fallback.forEach(v=>{ v._nextReview = fbProgressMap[v.id]||null; });
-    // Sortierung: fällige zuerst (nach next_review), dann zufällig
+    // Sortierung: quellenunbestaetigte zuerst, dann faellige (nach next_review), dann zufaellig.
+    // Begruendung: bei external_confirmed=false hat keine der drei Quellen (TUNICO, Peace Corps,
+    // Derja Ninja) die Zeile bestaetigt - Semias Urteil ist dort die einzige Bestaetigung, die es
+    // je geben wird. Bei bestaetigten Zeilen ist es eine Zweitmeinung.
     const fbNow = new Date();
     fallback.sort((a,b)=>{
+      const aUn = !a.external_confirmed, bUn = !b.external_confirmed;
+      if(aUn !== bUn) return aUn ? -1 : 1;
       const aFäl = a._nextReview && new Date(a._nextReview) <= fbNow;
       const bFäl = b._nextReview && new Date(b._nextReview) <= fbNow;
       if(aFäl && !bFäl) return -1;
