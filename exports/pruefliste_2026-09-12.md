@@ -4521,3 +4521,51 @@ Bei den **27** abgeleiteten Zeilen **mit** Audio steht der 🔊-Knopf im selben 
 entfällt dort wie bei direkt bestätigten Zeilen auch. Gegengeprüft, dass diese 27 zu Recht
 abgeleitet und nicht direkt belegt sind: keine einzige ist buchstabengleich mit einem
 Ninja-Eintrag, das Audio stammt jeweils von einer anders geschriebenen Zeile.
+
+---
+
+## Runde 70 — Plural- und Femininableitungen
+
+Dritte und letzte regelmäßige Affixklasse nach Possessiv und Artikel. Dieselbe Mechanik: Endung
+abtrennen, Grundform im bestätigten Bestand und in den Quellen suchen, Gloss muss Plural bzw.
+Femininum ausweisen.
+
+| id | | Ableitung |
+|---|---|---|
+| 283 | `pieset` Münzen | Bestand 282 `piesa` — `-et`, Femininendung fällt weg |
+| 584 | `kisen` Gläser | Bestand 393 `kaas` / TUNICO 1226 `kās` — كِيسَان ist der **gebrochene** Plural von كَاس |
+| 625 | `millimet` Millimes | TUNICO 1504 `millim` — `-et` |
+| 1089 | `7louin` süß (Pl.) | Bestand 378 `7lou` — `-in` |
+| 2118 | `m3abbyin` voll (Pl.) | TUNICO-flex 3042 `m3abbya` — `-in` |
+| 2157 | `kesin` zwei Gläser (Dual) | Bestand 393 `kaas` — كاسين ist der Dual |
+| 2168 | `jupet` Röcke | TUNICO 2062 `jup` — `-et` |
+| 2197 | `mayyitin` tot (Pl.) | Bestand 2290 `mayyit` — `-in` |
+| 2291 | `mayyita` tot (f.) | Bestand 2290 `mayyit` — Femininendung `-a` |
+
+**Ein Fehlgriff der Automatik, von Hand korrigiert:** `584 kisen` wurde zuerst Peace Corps' `kis`
+unter dem Stichwort **LIKE** zugeordnet — ein Zufall. Die richtige Grundform ist `kaas` „Glas",
+und beim Nachschlagen fiel `2157 kesin` (Dual desselben Wortes) mit auf, das die Automatik gar
+nicht gefunden hatte, weil `-in` nach `kes` kein bestätigtes Wort ergibt. **Gebrochene Plurale und
+Duale findet die Endungsregel prinzipiell nicht** — die brauchen den Blick auf das Wort.
+
+### Stand
+
+| Stufe | vorher | jetzt |
+|---|---|---|
+| direkt belegt | 2.571 | 2.571 |
+| abgeleitet belegt | 96 | **105** |
+| kein Beleg | 1.107 | **1.098** (854 mehrwortig, **244 einwortig**) |
+
+## Der Trainer zeigt den dritten Zustand noch nicht — er ist nicht deployed
+
+Nils sah bei `1482 7weyji` „meine Kleidung" und `1484 nhari` „mein Tag" nur `·` und fand keinen
+Statusfilter. Beides stimmt, und die Ursache liegt nicht im Code:
+
+`vercel.json` deployt den Trainer aus **`main`**. Der Branch
+`claude/trainer-analysis-aufbau-exy3vw` liegt **24 Commits vor `main`**, darunter alle drei, die
+`trainer.html` anfassen (Partner-Check-Sortierung, dritter Zustand, Icon- und Filterkorrektur).
+Der letzte Merge nach `main` war `49bc0ec` — zu Beginn dieser Sitzung.
+
+Live ist damit weiterhin der Stand von vorher: kein abgeschwächtes 🔗, kein Filtereintrag
+„abgeleitet belegt", und der Partner-Check sortiert noch nach Fälligkeit statt nach Belegstufe.
+**Ohne Merge nach `main` ändert sich daran nichts.**
