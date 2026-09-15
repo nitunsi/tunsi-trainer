@@ -3772,3 +3772,101 @@ Rechnerisch stimmig: 344 − 1 = 343.
 Damit ist der gesamte Audio-Untersuchungsstrang (Runden 55–58) abgeschlossen. Offen bleiben:
 6 Vokalisierungs-Kandidaten mit Strukturunterschied, 4 `darija`-Geminationsfälle, 2 Maß-I/Maß-II-Fälle
 — alle einzeln benannt in Runde 55/56.
+
+---
+
+## Runde 59 — Audit der Sonnet-Runden + die Slash-Lücke
+
+### Audit der Runden 50–58
+
+Auf Nachfrage geprüft, ob die mit Sonnet gefahrenen Runden korrekt waren. Alle ~75 geschriebenen
+Zeilen sind vorhanden und wertgleich; die 30 Maß-II/V-Geminationen aus Runde 51 tragen die Schadda
+durchweg auf dem mittleren Radikal; korpusweit 0 Schadda auf ا; Check 24/25 bei 0; Gruppe A alle 0.
+
+Zwei eigene Verdachtsmomente im Audit getestet und **verworfen**: „Langvokal vor Schadda ist
+ungültig" (falsch — يّ/وّ sind geminierte Konsonanten, خاصّة/مادّة legitim) und „Ninjas Vokale zu
+übernehmen ist ein neues Problem" (falsch — Klasse `vokale` hat korpusweit 1.008 Zeilen und wird
+bewusst nicht gezählt).
+
+**Ein echter Fehler: `894 qlammet`.** Gespeichert war قلامّات:
+
+```
+0642=ق 0644=ل 0627=ا 0645=م 0651=ّ 0627=ا 062a=ت
+```
+
+Eine **Mischform aus TUNICOs zwei belegten Pluralen**: das ا nach dem ل stammt aus `qlām`
+(قلام, Langvokal, keine Gemination), die Schadda aus `qlammāt` (kurzes a, geminiertes م). Die
+Hybridform `qlāmmāt` ist in keiner Quelle belegt. `_arabic_to_chatalpha` verschluckt den Unterschied
+(liefert `qlammat`), deshalb hat die Prüfkette nicht angeschlagen.
+
+Auslöser war die Antwort auf „beide Varianten in einem Eintrag": die `darija` bekam beide Formen,
+das `arabic_script` aber nicht — dort wurden die beiden Formen ineinandergeschoben statt
+nebeneinandergestellt. Der Korpus hat dafür eine klare Konvention: **16 Zeilen führen den Slash
+auch im `arabic_script`** (`2022 a7san / khir` → أَحْسَن / خِير). `894` war die einzige Ausnahme.
+
+| id | Feld | alt | neu |
+|---|---|---|---|
+| 894 | `arabic_script` | قلامّات | **قْلَام / قْلَمَّات** |
+| 894 | `darija` | qlam/qlammet | **qlam / qlammet** (Leerzeichen wie bei allen anderen Slash-Zeilen) |
+
+Codepoints nach dem Schreiben: `0642 0652 0644 064e 0627 0645 | 0020 002f 0020 | 0642 0652 0644 064e 0645 064e 0651 0627 062a`
+— Schadda auf dem **م**, Vokalzeichen **vor** der Schadda (Hauskonvention), nie auf ا.
+Ableitung `qlam / qlammat`, Skelett beidseitig `qlmqlmmt`.
+
+### Die Slash-Lücke
+
+Nebenbefund aus dem Audit: **der Slash nimmt eine Zeile komplett aus `chatalpha_konflikte`**
+(die View filtert `darija !~ '/'`). Korpusweit 26 Zeilen, 21 davon vokalisiert — bis dahin gar nicht
+gegen ihre Ableitung geprüft. Diese 21 einzeln durchgesehen: **13 skelettgleich, 8 abweichend.**
+
+**Zwei Abweichungen sind Messartefakte, keine Fehler** (`477 محطة`, `1495 يتفرج`): beide zweiten
+Varianten sind unvokalisiert, und unvokalisiertes Arabisch schreibt einen geminierten Konsonanten
+einfach — die Schadda ist ein weggelassenes Diakritikum, kein fehlender Buchstabe. Der
+Skelett-Vergleich kann eine Schadda nicht sehen, die nicht geschrieben ist. **Vier weitere** sind
+legitime Struktur-Asymmetrien (`1406 ciao` Originalschreibung des Lehnworts, `1425`/`1427` Klammer
+statt Slash, `1492`/`1494` optionales `w`).
+
+**Befund 1 — `1174` enthielt ein fremdes Wort.**
+
+| Quelle | Form | Wortart | Bedeutung |
+|---|---|---|---|
+| TUNICO 5025 | `lābis` | activeParticiple | tragend (Kleidung) = unsere Zeile |
+| Ninja 16540 | لَابِسْ `labis` | (ADJ) | wearing |
+| TUNICO 2067 | `lbis` | **verb** | sich anziehen |
+
+`lbes` war nicht die zweite Aussprache des Partizips, sondern das **Verb** — das längst eine eigene
+Zeile hat (`643 lbis` لبس „er zog sich an"). Dieselbe Fehlerklasse wie der offene Fall `1777 feragh`.
+
+**Befund 2 — `1457` unterschlug den assimilierten Artikel.** صَحَّة / بِالشِّفا, Codepoints
+`0628 0650 0627 0644 0634 0650 0651 0641 0627` — die Schadda auf ش ist die
+Sonnenbuchstaben-Assimilation von ال. Der Hausstil schreibt die immer aus (`es-salaf`, `esh-shta`,
+`ez-zaka`, `715 bit et-toum` → بيت التّوم). `bishfa` mit einzelnem `sh` widersprach der eigenen
+Vokalisierung.
+
+| id | Feld | alt | neu |
+|---|---|---|---|
+| 1174 | `darija` | labes / lbes | **labes** |
+| 1457 | `darija` | sa77a / bishfa | **sa77a / bish-shfa** |
+| 252 | `homonym_ok` | false | **true** |
+| 1174 | `homonym_ok` | false | **true** |
+
+Die letzten beiden Zeilen sind die **Folge** des ersten Fixes und zeigen genau, was der Slash
+verdeckt hat: `1174` wird ohne `lbes` zu schlichtem `labes` und kollidiert dann mit `252 labes`
+(لْبَاس „Gut / Wie geht's?"). Zwei verschiedene Wörter, gleiche Umschrift — ein echtes Homonym-Paar,
+das nur deshalb unauffällig war, weil der Slash den Duplikat-Schlüssel auf `labeslbes` verschob.
+Dry-Run vorab: ohne `homonym_ok` 1 neues Duplikat, mit `homonym_ok` auf beiden 0.
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 343 | **343** (keine Vokalisierung angefasst) |
+| Check 23 offene Ninja-Kandidaten | 24 | **24** |
+| Check 24/25 | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | 0 | **0** von 3.775 |
+| Gruppe A (18 Checks) | alle 0 | **alle 0** |
+
+Offen bleiben unverändert: 6 Vokalisierungs-Kandidaten mit Strukturunterschied, 4
+`darija`-Geminationsfälle, 2 Maß-I/Maß-II-Fälle (`643`/`644`), 4 Zeilen ohne Quellentreffer,
+`4331 3izza`, `1777 feragh`.
