@@ -4471,3 +4471,53 @@ identisch, Buchstabenbestand unverändert.
 | Trainer 🔤 Transliteration | **0** von 3.774, 23 Regeln |
 | Trainer 🔁 Duplikate | **0** |
 | Gruppe A / Check 24 / Check 25 | 0 / 0 / 0 |
+
+---
+
+## Runde 69 — der dritte Zustand war in der Vokabelliste unsichtbar
+
+Nils fragte, wo „abgeleitet bestätigt" im Trainer zu sehen ist. Antwort beim Nachsehen: **auf der
+Karteikarte ja, in der Vokabelliste nein** — ein Fehler in meiner eigenen Umsetzung aus Runde 67.
+
+Die Liste rief so auf:
+
+```js
+v.au ? '🔊' : (v.xc ? extConfirmIcon(v) : '·')
+```
+
+Der Aufrufer prüft `v.xc` **vor** dem Funktionsaufruf ab. Abgeleitete Zeilen tragen aber bewusst
+`external_confirmed = false` — der Zweig in `extConfirmIcon()`, der genau diesen Fall behandelt,
+wurde dort also nie erreicht. Die Karteikarte (Zeile 2526) ruft ohne diesen Vorfilter auf, deshalb
+war das Icon dort sichtbar und in der Liste nicht.
+
+Behoben: der Vorfilter entfällt, die Funktion entscheidet selbst (sie gibt ohnehin `''` zurück,
+wenn nichts zutrifft).
+
+**Die Lehre:** ein Zustand, der absichtlich `false` in einem bestehenden Flag setzt, muss an *jeder*
+Stelle nachgezogen werden, die dieses Flag als Wächter benutzt — nicht nur dort, wo die neue Logik
+geschrieben wurde. Ein `grep` nach den Aufrufstellen hätte das sofort gezeigt.
+
+### Filter ergänzt
+
+Der Filter „nicht bestätigt" hätte die 96 abgeleiteten Zeilen mitgezählt und die Stufe damit
+unsichtbar gemacht. Jetzt drei getrennte Einträge:
+
+| Option | zeigt |
+|---|---|
+| 🔗 bestätigt | Audio vorhanden oder direkt belegt |
+| **🔗 abgeleitet belegt** | Grundform belegt, Form abgeleitet (96) |
+| gar kein Beleg | keine der beiden Stufen (1.107) |
+
+### Wo der Zustand jetzt sichtbar ist
+
+| Ort | |
+|---|---|
+| Vokabelliste | abgeschwächtes 🔗 (Deckkraft 55 %), Tooltip „Grundform belegt, Flexionsform abgeleitet" — **69 Zeilen** |
+| Karteikarte | dasselbe Icon im Audio-Slot |
+| Filter Vokabelliste | eigener Eintrag |
+| Partner-Check | nur in der Reihenfolge: gar kein Beleg → abgeleitet → direkt belegt |
+
+Bei den **27** abgeleiteten Zeilen **mit** Audio steht der 🔊-Knopf im selben Slot; das Icon
+entfällt dort wie bei direkt bestätigten Zeilen auch. Gegengeprüft, dass diese 27 zu Recht
+abgeleitet und nicht direkt belegt sind: keine einzige ist buchstabengleich mit einem
+Ninja-Eintrag, das Audio stammt jeweils von einer anders geschriebenen Zeile.

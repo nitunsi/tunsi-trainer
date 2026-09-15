@@ -3672,7 +3672,8 @@ function showVocabList(){
         <option value="with">🔊 mit Audio</option>
         <option value="without">· ohne Audio</option>
         <option value="confirmed">🔗 bestätigt</option>
-        <option value="unconfirmed">nicht bestätigt</option>
+        <option value="derived">🔗 abgeleitet belegt</option>
+        <option value="unconfirmed">gar kein Beleg</option>
       </select>
     </div>
     <div id="vocab-table"></div>
@@ -3759,7 +3760,9 @@ function filterVocabList(){
     else if(vocabAudioFilter === 'without') vocab = vocab.filter(v => !v.au);
     // "bestätigt" = Audio vorhanden (impliziert Ninja-Bestätigung) ODER external_confirmed gesetzt
     else if(vocabAudioFilter === 'confirmed') vocab = vocab.filter(v => !!v.au || !!v.xc);
-    else if(vocabAudioFilter === 'unconfirmed') vocab = vocab.filter(v => !v.au && !v.xc);
+    else if(vocabAudioFilter === 'derived') vocab = vocab.filter(v => istAbgeleitet(v));
+    // "gar kein Beleg" schliesst die abgeleiteten aus - sonst waere die Stufe unsichtbar
+    else if(vocabAudioFilter === 'unconfirmed') vocab = vocab.filter(v => !v.au && !v.xc && !istAbgeleitet(v));
   }
 
   // "Zuletzt geändert"-Filter (z.B. von Statistik → Prüf-Aktivität aus gesprungen)
@@ -3906,7 +3909,7 @@ function renderVocabTableRows(){
                  : ps==='suggested'?'<span title="Vorschlag" style="color:var(--blue)">💡</span>'
                  : '<span style="color:var(--border)">·</span>';
     h += '<td style="text-align:center;padding:.3rem">'+psIcon+'</td>';
-    const audioBtn = v.au ? '<button onclick="playVocabAudio(\''+v.au.replace(/'/g,"\\'")+'\',event,'+(v.aus||0)+','+(v.aue||0)+')" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.15rem .4rem;cursor:pointer;border-radius:3px">🔊</button>' : (v.xc ? extConfirmIcon(v) : '<span style="color:var(--border)">·</span>');
+    const audioBtn = v.au ? '<button onclick="playVocabAudio(\''+v.au.replace(/'/g,"\\'")+'\',event,'+(v.aus||0)+','+(v.aue||0)+')" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.15rem .4rem;cursor:pointer;border-radius:3px">🔊</button>' : (extConfirmIcon(v) || '<span style="color:var(--border)">·</span>');
     h += '<td style="text-align:center;padding:.3rem">'+audioBtn+'</td>';
     h += '<td style="padding:.3rem"><button onclick="openVocabEdit('+vid+','+i+')" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.65rem;padding:.15rem .4rem;cursor:pointer;border-radius:3px">✏️</button></td>';
     h += '</tr>';
