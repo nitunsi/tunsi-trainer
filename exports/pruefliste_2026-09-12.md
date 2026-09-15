@@ -4151,3 +4151,98 @@ ausgeschöpft — weitere Vokalisierungen hier hieße, die Belegpflicht aufzuwei
 | Schadda auf ا korpusweit | 0 | **0** |
 | Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
 | Trainer 🔁 Duplikate | 1 | **1** (unverändert `1819`/`3897`) |
+
+---
+
+## Runde 65 — die offenen Punkte abgearbeitet
+
+### 768 — korruptes Arabisch, vierter Fall der Alif-Klasse
+
+```
+gespeichert  االله   = 0627 0627 0644 0644 0647   (ا ا ل ل ه — doppeltes Alif)
+richtig      اللَّه  = 0627 0644 0644 0651 064E 0647
+```
+
+`darija` war `aallha`, TUNICO 1307 `aḷḷāh` „Gott". Der Bestand schreibt das Wort überall sonst
+richtig (`600 الله يعينك`, `1460 بارَك اللَّه فِيك`), nur diese Zeile hatte ein Alif zu viel in
+Schrift **und** Umschrift. Beides korrigiert: `اللَّه` / `allah`. Ableitung ergibt `el-lah` (die
+Funktion nimmt den Artikel-Zweig, ل ist Sonnenbuchstabe), Skelett `llh` auf beiden Seiten.
+
+### 569 — unser Arabisch war das falsche Wort
+
+TUNICO trennt die beiden Bedeutungen sauber: **1715 `bānka` = „Bank" (Geldinstitut)**,
+**2015 `bank` = „Sitzbank"**. Peace Corps 415 `BANK` gibt `{ba:nka, ba:nka:t}`, Ninja 11175
+بَانْكَا. Unser `arabic_script` war بَنْكْ — also das **Möbelstück**, während die `darija` `banka`
+das Geldinstitut meint (deutsches „Bank" ist in beide Richtungen zweideutig und hat den Fehler
+gedeckt).
+
+**Das korrigiert eine eigene Entscheidung aus Runde 62.** Dort wurde `569` aus einem
+buchstabengleichen Ninja-Treffer vokalisiert (بنك → بَنْكْ). Buchstabentreu war das korrekt —
+aber die Buchstaben selbst waren schon falsch. Genau der Fall, für den seit dieser Sitzung in
+IMPORTS.md steht: **Buchstabengleichheit ist kein Wortnachweis.** `arabic_script` → بَانْكَا,
+Ableitung `banka` = `darija`.
+
+### 1130 — das Femininum hatte die Gemination nie bekommen
+
+| | Form | Quelle |
+|---|---|---|
+| m. | `435` ضَيَّق `dhayyaq` | im Bestand, mit Schadda |
+| f. | `1130` ضَيْقَة `dhayqa` | **ohne Schadda** |
+| Pl. | `1134` ضَيّْقِينْ `dhayyqin` | in Runde 62 korrigiert |
+
+Ninja 12727 **ضَيّْقَةْ** `dhayy9a` „tight, small" (ADJ) und Peace Corps 3092 `NARROW`
+`{dhiyyiq, dhiyyqa, dhiyyqi:n}` belegen die Gemination im Femininum unabhängig voneinander.
+Korrigiert zu ضَيّْقَة / `dhayyqa`. In Runde 63 war die Zeile noch bewusst ausgelassen worden
+(„bereits vokalisiert, nicht automatisch ändern") — mit zwei unabhängigen Quellen ist das jetzt
+kein automatischer Blockfix mehr, sondern ein Einzelbefund.
+
+### 1857/1858/1879 — die vierte Alif-Verschiebung
+
+TUNICO 4339 `tlazz` „gezwungen sein/werden" und 6941 `lazz` „zwingen": die Wurzel ist das
+geminierte ل-ز-ز, **ohne Alif**. Alle drei Zeilen trugen eins, und `1857` widersprach zusätzlich
+den beiden anderen mit einfachem `z` in der `darija`.
+
+| id | alt | neu |
+|---|---|---|
+| 1857 | يتلاز / `yetlaz` | **يِتْلَزّ** / `yetlazz` |
+| 1858 | تلازيت / `tlazzit` | **تْلَزِّيتْ** |
+| 1879 | تلازيت نرجع للدار | **تْلَزِّيتْ** نرجع للدار |
+
+Beim ersten Entwurf für `1858` stand die Schadda ohne Kasra (تْلَزّيتْ), was `tlazzyt` ableitet
+statt `tlazzit` — vor dem Schreiben gefangen und zu ز + Kasra + Schadda korrigiert.
+
+### 1819 — eigener Fehler aus Runde 62 behoben
+
+```
+3897  … 0634 0650 0651 …   ش + Kasra + Schadda   ← Hauskonvention
+1819  … 0634 0651 0650 …   ش + Schadda + Kasra   ← in Runde 62 von mir falsch herum gesetzt
+```
+
+SKILL.md verlangt das Vokalzeichen **vor** der Schadda; `3897` machte es richtig, meine
+Korrektur an `1819` nicht. Angeglichen. Nebenbefund: korpusweit tragen **26 Zeilen** die Schadda
+vor dem Vokalzeichen — eine eigene kleine Aufräumaufgabe, noch nicht angefasst.
+
+### Gegenprobe
+
+| | vorher | jetzt |
+|---|---|---|
+| Check 22 unvokalisierte Einzelwörter | 234 | **231** |
+| Check 24 / 25 | 0 / 0 | **0 / 0** |
+| Schadda auf ا korpusweit | 0 | **0** |
+| Trainer 🔤 Transliteration | 0 | **0** von 3.775, 23 Regeln |
+| Gruppe A | alle 0 | **1 offen** (Check 10, siehe unten) |
+
+### Der einzige verbliebene offene Punkt: `1819` / `3897`
+
+Nach der Korrektur sind beide Zeilen **zeichengleich** in `arabic_script` und `darija`
+(مِتْغَشِّشْ / `mitghashshish`), die Bedeutung ist dieselbe („wütend / böse" gegen
+„verärgert / zornig"), beide liegen im Topic „Befinden", die Lektionen unterscheiden sich (53/33).
+
+| id | Lektion | progress-Zeilen | Wiederholungen |
+|---|---|---|---|
+| 1819 | 53 | 4 | 9 |
+| 3897 | 33 | 1 | 8 |
+
+Keine der beiden hängt in `course_lessons.vocab_lesson_refs`. **Nicht gelöscht** — beide tragen
+Lernfortschritt, und Löschen ist irreversibel. Das ist eine Entscheidung über Nils' eigenes
+Lernmaterial, keine Datenkorrektur.
