@@ -2911,10 +2911,9 @@ function showStats(){
   const notStarted = levelCount[0];
   const activeSRS = totalVocab - notStarted;
   // Lernphasen (bucket idx → level: idx1=L0, idx2=L1, ... idx7=L6)
-  const phaseAnfaenger = levelCount[1] + levelCount[2] + levelCount[3]; // L0-L2, echte Anzahl (Kachel + Meldungstext)
-  // Gewichteter Puffer nur für den Warn-Trigger: verbleibende Schritte bis zum Verlassen der Anfänger-Phase (L3).
-  // L0=3 Schritte, L1=2, L2=1 übrig — je näher am Verlassen, desto weniger "Puffer" bleibt übrig.
-  const phaseAnfaengerWeighted = (levelCount[1]*3 + levelCount[2]*2 + levelCount[3]*1) / 3;
+  const phaseAnfaenger = levelCount[1] + levelCount[2] + levelCount[3]; // L0-L2, echte Anzahl (Vokabel-Kachel)
+  // Der gewichtete Puffer (Warn-Trigger) zählt Vokabeln UND Kurs-Übungen — steht deshalb weiter
+  // unten, nach courseLevelCount (Suche: phaseAnfaengerWeighted).
   const phaseEditable  = levelCount[4] + levelCount[5];                  // L3-L4
   const phaseMeistert  = levelCount[6] + levelCount[7];                  // L5-L6
   // Punkte: idx1(L0)=0, idx2(L1)=1, ..., idx7(L6)=6
@@ -2932,6 +2931,17 @@ function showStats(){
   const coursePhaseAnfaenger = courseLevelCount[1] + courseLevelCount[2] + courseLevelCount[3];
   const coursePhaseEditable  = courseLevelCount[4] + courseLevelCount[5];
   const coursePhaseMeistert  = courseLevelCount[6] + courseLevelCount[7];
+  // Anfänger-Puffer als Warn-Trigger — Vokabeln UND Kurs-Übungen zusammen (Nutzerentscheidung
+  // 2026-09-15). Beides ist Anfängerstoff aus demselben täglichen Abfragestrom (Mix-Modus mischt
+  // sie ohnehin), und vorher zählten nur die Vokabeln: die Warnung schlug bei 53 Vokabeln an,
+  // obwohl 35 Kurs-Übungen in L0-L2 danebenstanden — zusammen 88, also gar kein knapper Puffer.
+  // Gewichtung = verbleibende Schritte bis zum Verlassen der Anfänger-Phase (L3): L0=3, L1=2, L2=1;
+  // je näher am Verlassen, desto weniger "Puffer" bleibt übrig.
+  // courseLevelCount ist nur bei cLesson==='all' befüllt — genau der Fall, in dem die Warnung erscheint.
+  const anfaengerGesamt = phaseAnfaenger + coursePhaseAnfaenger;
+  const phaseAnfaengerWeighted = ((levelCount[1] + courseLevelCount[1])*3
+                                + (levelCount[2] + courseLevelCount[2])*2
+                                + (levelCount[3] + courseLevelCount[3])*1) / 3;
   const courseTotalPoints = courseLevelCount[1]*0 + courseLevelCount[2]*1 + courseLevelCount[3]*2 + courseLevelCount[4]*3 + courseLevelCount[5]*4 + courseLevelCount[6]*5 + courseLevelCount[7]*6;
   const courseMaxPointsActive = courseActiveCount * 6;
   const coursePct       = courseTotalItems       ? Math.round(courseActiveCount  / courseTotalItems       * 100) : 0;
@@ -3103,9 +3113,9 @@ function showStats(){
 
     <div style="margin-bottom:.6rem;">
       <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:.4rem;">Gesamtfortschritt</div>
+      ${(cLesson === 'all' && phaseAnfaengerWeighted < 25) ? '<div style="margin-bottom:.6rem;padding:.4rem .6rem;background:rgba(201,76,76,.1);border:1px solid var(--red);font-size:.75rem;color:var(--red)">⚠️ Anfänger-Puffer wird knapp (noch ' + anfaengerGesamt + ' in L0-L2: ' + phaseAnfaenger + ' Vokabeln + ' + coursePhaseAnfaenger + ' Kurs-Übungen) — neuen Stoff hinzufügen</div>' : ''}
       <div style="background:var(--surface);border:1px solid var(--border);padding:.7rem;${cLesson==='all'?'margin-bottom:.5rem;':''}">
         ${cLesson==='all' ? '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:.5rem;">Vokabeln</div>' : ''}
-        ${(cLesson === 'all' && phaseAnfaengerWeighted < 25) ? '<div style="margin-bottom:.6rem;padding:.4rem .6rem;background:rgba(201,76,76,.1);border:1px solid var(--red);font-size:.75rem;color:var(--red)">⚠️ Anfänger-Puffer wird knapp (noch ' + phaseAnfaenger + ' Vokabeln in L0-L2) — neue Vokabeln hinzufügen</div>' : ''}
         <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.3rem;">
           <span style="font-size:1.3rem;font-weight:700;font-family:'Playfair Display',serif;color:var(--gold);min-width:3rem">${pct}%</span>
           <div style="flex:1;height:4px;background:var(--border);">
