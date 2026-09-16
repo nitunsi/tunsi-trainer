@@ -2852,20 +2852,14 @@ function showRes(){
 let forecastWindow = 7; // Anzahl Tage im Fälligkeits-Forecast
 let activityWindow = 7; // Anzahl Tage in der Lernaktivität-Statistik
 
-// Ein Balkensegment, das bei Bedarf einen Kurs-Anteil per Schraffur zeigt statt einer
-// zweiten Zahl — Herkunft (Vokabel/Kurs) bleibt so am Graphen ablesbar, ohne genaue
-// Kurs-Zahlen neben die Gesamtzahl zu stellen (Nutzerwunsch 2026-09-16).
-const COURSE_STRIPE = 'background-image:repeating-linear-gradient(135deg, rgba(255,255,255,.4) 0px, rgba(255,255,255,.4) 3px, transparent 3px, transparent 6px);';
-function courseStripedSegment(color, heightPct, total, courseCount){
-  if(!total || heightPct <= 0) return '';
-  if(courseCount > 0 && courseCount < total){
-    const coursePct = Math.round(courseCount / total * 100);
-    return `<div style="width:100%;height:${heightPct}%;min-height:3px;display:flex;flex-direction:column;">
-      <div style="width:100%;height:${coursePct}%;background-color:${color};${COURSE_STRIPE}"></div>
-      <div style="width:100%;height:${100-coursePct}%;background:${color};"></div>
-    </div>`;
-  }
-  return `<div style="width:100%;height:${heightPct}%;min-height:3px;background-color:${color};${courseCount>0?COURSE_STRIPE:''}"></div>`;
+// Mini-Gauge unter jedem Tagesbalken: Breite des Fülllbalkens zeigt den Kurs-Anteil
+// am Tagestotal (0-100%), ohne die Level-/Richtig-Falsch-Segmente selbst aufzuteilen
+// und ohne eine genaue Kurs-Zahl auszuweisen (Nutzerwunsch 2026-09-16).
+function courseShareGauge(courseCount, total){
+  const sharePct = total ? Math.round(courseCount / total * 100) : 0;
+  return `<div style="width:100%;height:4px;background:var(--border);border-radius:2px;overflow:hidden;">
+    <div style="height:100%;width:${sharePct}%;background:var(--blue);"></div>
+  </div>`;
 }
 
 function showStats(){
@@ -3005,19 +2999,20 @@ function showStats(){
     const d = new Date(today); d.setDate(d.getDate() + i);
     const name = i === 0 ? 'Heute' : i === 1 ? 'Morgen' : d.toLocaleDateString('de-DE',{weekday:'short'});
     const total = dayTotals[i];
+    const courseTotal = courseDueDays[i].reduce((s,x)=>s+x,0);
     const labelColor = i === 0 ? 'var(--red)' : i <= 2 ? 'var(--gold)' : 'var(--muted)';
-    // stacked segments: level 1–5 (skip 0 = nicht gestartet, kann nicht fällig sein); Kurs-Anteil
-    // je Level per Schraffur statt separater Zahl (courseStripedSegment).
+    // stacked segments: level 1–5 (skip 0 = nicht gestartet, kann nicht fällig sein)
     const segments = combined.map((cnt, li) => {
       if(li === 0 || cnt === 0) return '';
       const sh = Math.round(cnt / maxDay * 100);
-      return courseStripedSegment(levelColors[li], sh, cnt, courseDueDays[i][li]);
+      return `<div style="width:100%;height:${sh}%;min-height:3px;background:${levelColors[li]};"></div>`;
     }).reverse().join('');
     return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.2rem">
       <span style="font-size:.75rem;font-weight:700;color:${labelColor};line-height:1.1">${total||''}</span>
       <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden">
         ${total ? segments : ''}
       </div>
+      ${hasCourseInForecast ? courseShareGauge(courseTotal, total) : ''}
       <span style="font-size:.6rem;color:var(--muted);text-align:center">${name}</span>
     </div>`;
   }).join('');
@@ -3129,8 +3124,8 @@ function showStats(){
         </div>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);padding:.7rem .7rem .5rem;">
-        <div style="display:flex;gap:.4rem;align-items:flex-end;height:90px;margin-bottom:.4rem">${forecastBars}</div>
-        ${hasCourseInForecast ? `<div style="font-size:.62rem;color:var(--muted);margin-bottom:.5rem;display:flex;align-items:center;gap:.35rem;"><span style="display:inline-block;width:14px;height:10px;border-radius:2px;background-color:var(--gold);${COURSE_STRIPE}"></span>gestreift = 🎓 Kurs-Anteil</div>` : ''}
+        <div style="display:flex;gap:.4rem;align-items:flex-end;height:96px;margin-bottom:.4rem">${forecastBars}</div>
+        ${hasCourseInForecast ? `<div style="font-size:.62rem;color:var(--muted);margin-bottom:.5rem;display:flex;align-items:center;gap:.35rem;"><span style="display:inline-block;width:14px;height:4px;border-radius:2px;background:var(--blue);"></span>Balkenbreite = 🎓 Kurs-Anteil am Tag</div>` : ''}
         ${forecastBlockedCount > 0 ? `<div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem;" title="In deiner Partner-Review-Queue — aktuell nicht in der Karten-Abfrage">📬 ${forecastBlockedCount} gesperrt</div>` : ''}
         <div style="border-top:1px solid var(--border);padding-top:.5rem;display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;">
           <input id="pull-forward-count" type="number" min="1" max="200" value="20" style="width:3.5rem;padding:.3rem;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:.85rem;text-align:center;">
@@ -3277,24 +3272,21 @@ async function loadActivityStats(){
     // Pro Tag (Europe/Berlin-Kalendertag) aggregieren — Kurs-Antworten (mode='course')
     // zählen mit in attempts/correct rein, courseAttempts merkt sich zusätzlich nur,
     // an welchen Tagen Kurs-Übungen dabei waren (blauer Rahmen beim Rendern).
-    const days = {}; // { 'YYYY-MM-DD': {attempts, correct, vocabSet:Set, courseAttempts, courseCorrect} }
+    const days = {}; // { 'YYYY-MM-DD': {attempts, correct, vocabSet:Set, courseAttempts} }
     (rows||[]).forEach(r=>{
       const key = new Date(r.created_at).toLocaleDateString('en-CA', { timeZone: 'Europe/Berlin' });
-      if(!days[key]) days[key] = { attempts:0, correct:0, vocabSet:new Set(), courseAttempts:0, courseCorrect:0 };
+      if(!days[key]) days[key] = { attempts:0, correct:0, vocabSet:new Set(), courseAttempts:0 };
       days[key].attempts++;
       if(r.correct) days[key].correct++;
       if(r.vocabulary_id != null) days[key].vocabSet.add(r.vocabulary_id);
-      if(r.mode === 'course'){
-        days[key].courseAttempts++;
-        if(r.correct) days[key].courseCorrect++;
-      }
+      if(r.mode === 'course') days[key].courseAttempts++;
     });
 
     const dayList = Array.from({length:activityWindow}, (_,i)=>{
       const d = new Date(today); d.setDate(d.getDate() - (activityWindow - 1 - i));
       const key = d.toLocaleDateString('en-CA', { timeZone: 'Europe/Berlin' });
-      const entry = days[key] || { attempts:0, correct:0, vocabSet:new Set(), courseAttempts:0, courseCorrect:0 };
-      return { d, attempts: entry.attempts, correct: entry.correct, vocabCount: entry.vocabSet.size, courseAttempts: entry.courseAttempts, courseCorrect: entry.courseCorrect };
+      const entry = days[key] || { attempts:0, correct:0, vocabSet:new Set(), courseAttempts:0 };
+      return { d, attempts: entry.attempts, correct: entry.correct, vocabCount: entry.vocabSet.size, courseAttempts: entry.courseAttempts };
     });
 
     const totalAttempts = dayList.reduce((s,x)=>s+x.attempts,0);
@@ -3318,15 +3310,13 @@ async function loadActivityStats(){
       const labelColor = isToday ? 'var(--gold)' : 'var(--muted)';
       const pctDay = x.attempts ? Math.round(x.correct / x.attempts * 100) : null;
       const pctColor = pctDay === null ? 'var(--border)' : pctDay >= 80 ? 'var(--green)' : pctDay >= 50 ? 'var(--gold)' : 'var(--red)';
-      const courseWrong = x.courseAttempts - x.courseCorrect;
-      const wrongSeg = courseStripedSegment('var(--red)', Math.round(h*hWrong/100), wrong, courseWrong);
-      const correctSeg = courseStripedSegment('var(--green)', Math.round(h*hCorrect/100), x.correct, x.courseCorrect);
       return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.2rem">
         <span style="font-size:.75rem;font-weight:700;color:${labelColor};line-height:1.1">${x.attempts||''}</span>
         <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;position:relative">
           ${avgAttempts > 0 ? `<div style="position:absolute;left:0;right:0;bottom:${avgLinePct}%;border-top:1px dashed var(--gold);opacity:.7;z-index:2;"></div>` : ''}
-          ${wrongSeg}${correctSeg}
+          ${x.attempts ? `<div style="width:100%;height:${Math.round(h*hWrong/100)}%;min-height:${wrong?'3px':'0'};background:var(--red);"></div><div style="width:100%;height:${Math.round(h*hCorrect/100)}%;min-height:${x.correct?'3px':'0'};background:var(--green);"></div>` : ''}
         </div>
+        ${totalCourseAttempts ? courseShareGauge(x.courseAttempts, x.attempts) : ''}
         <span style="font-size:.6rem;color:var(--muted);text-align:center">${name}</span>
         <span style="font-size:.58rem;color:${pctColor};text-align:center;min-height:.75rem;display:block">${pctDay !== null ? pctDay+'%' : '&nbsp;'}</span>
       </div>`;
@@ -3334,8 +3324,8 @@ async function loadActivityStats(){
 
     el.innerHTML = totalAttempts === 0
       ? `<div style="color:var(--muted)">Noch keine Daten in diesem Zeitraum.</div>`
-      : `<div style="display:flex;gap:.4rem;align-items:flex-end;height:107px;margin-bottom:.4rem">${bars}</div>
-         ${totalCourseAttempts ? `<div style="font-size:.62rem;color:var(--muted);margin-bottom:.5rem;display:flex;align-items:center;gap:.35rem;"><span style="display:inline-block;width:14px;height:10px;border-radius:2px;background-color:var(--green);${COURSE_STRIPE}"></span>gestreift = 🎓 Kurs-Anteil</div>` : ''}
+      : `<div style="display:flex;gap:.4rem;align-items:flex-end;height:113px;margin-bottom:.4rem">${bars}</div>
+         ${totalCourseAttempts ? `<div style="font-size:.62rem;color:var(--muted);margin-bottom:.5rem;display:flex;align-items:center;gap:.35rem;"><span style="display:inline-block;width:14px;height:4px;border-radius:2px;background:var(--blue);"></span>Balkenbreite = 🎓 Kurs-Anteil am Tag</div>` : ''}
          <div style="border-top:1px solid var(--border);padding-top:.4rem;font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:.3rem">
            <span>${totalAttempts} Versuche · <span style="color:var(--green)">${pctCorrectAll}% richtig</span>${totalCourseAttempts ? ` · davon ${totalCourseAttempts} 🎓 Kurs` : ''}</span>
            <span>${totalVocabSet.size} Vokabeln geübt</span>
