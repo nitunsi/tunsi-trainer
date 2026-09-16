@@ -2,7 +2,7 @@
 
 Ausführliche Fallgeschichten, Bug-Berichte und Nachweise hinter den Regeln in `SKILL.md`. Nicht für den Alltagsbetrieb nötig — nur bei Bedarf nachschlagen.
 
-**Wann ein Eintrag hierher gehört und wann er schrumpfen darf.** Aufnehmen, wenn ein Fehler passiert ist, den die bestehenden Regeln nicht verhindert haben. **Kürzen, sobald ein mechanischer Wächter denselben Fehler unmöglich macht** — dann bleiben nur die übertragbare Lehre und die Verweise auf den Wächter, der Fallverlauf ist Archiv. Ein Beispiel: die ڨ-Geschichte war 16 Zeilen, seit `unbekannte_arabische_zeichen` und Regel 23 sind es 8. **Nie kürzen**, wenn der Fehler weiterhin von Hand vermeidbar sein muss — die Regex-Fallen (`\y` statt `\b`, Zeichenreihenfolge Vokal-vor-Schadda), der `extract.js`-Anker und der stille Export-Abbruch bleiben deshalb in voller Länge.
+**Wann ein Eintrag hierher gehört und wann er schrumpfen darf.** Aufnehmen, wenn ein Fehler passiert ist, den die bestehenden Regeln nicht verhindert haben. **Kürzen, sobald ein mechanischer Wächter denselben Fehler unmöglich macht** — dann bleiben nur die übertragbare Lehre und die Verweise auf den Wächter, der Fallverlauf ist Archiv. Ein Beispiel: die ڨ-Geschichte war 16 Zeilen, seit `unbekannte_arabische_zeichen` und Regel 23 sind es 8. **Nie kürzen**, wenn der Fehler weiterhin von Hand vermeidbar sein muss — die Regex-Fallen (`\y` statt `\b`, Zeichenreihenfolge Vokal-vor-Schadda, Wortgrenze an der falschen Stelle bei Präposition+Artikel), der `extract.js`-Anker und der stille Export-Abbruch bleiben deshalb in voller Länge.
 
 ## Datenregeln — Präsens-Verben-Gloss
 
@@ -640,3 +640,39 @@ Umgestellt auf: quellenunbestätigt zuerst, dann Fälligkeit, dann Zufall. **Die
 gehört dabei auf den Server** (`order=external_confirmed.asc.nullsfirst`) — PostgREST liefert
 ohne `order` eine beliebige Reihenfolge, ein clientseitiges Sortieren hätte also nur die
 zufälligen 200 sortiert, die zurückkamen, statt die richtigen zu holen.
+
+## Artikel-Assimilation hinter einer Präposition — `\y` sieht die Wortgrenze nicht (2026-09-16)
+
+Nils fragte zu einer Kurs-Übung („ena noskon fil-maghrib w khouya yoskon fil-jzayer") nach, ob
+`fil-jzayer` nicht assimiliert werden müsste. Ja — ج ist im Tunesischen ein Sonnenbuchstabe
+(siehe SKILL.md → Artikel-Assimilation, Sonderfall j), richtig ist `fij-jzayer`. Check 3
+(„Artikel vor Sonnenbuchstabe nicht assimiliert") stand dabei auf 0 — der Fehler war real, der
+Wächter hat ihn nicht gesehen.
+
+**Ursache:** Check 3 prüfte `\y(el|il)-(th|sh|d|t|z|s|j|n|r)`. `\y` ist in Postgres ein echter
+Wortgrenzen-Anker (anders als `\b`, siehe die Regel weiter oben in SKILL.md) — aber er verlangt
+eine Grenze *vor* `el`/`il`. Klebt eine einbuchstabige Präposition ohne Trenner davor (`fil-`,
+`bil-`, `bel-`, `lel-`, `mel-`), sitzt die Wortgrenze zwischen der Präposition und dem ganzen
+Wort, nicht zwischen Präposition und Artikel — `\y` feuert nie. Dieselbe Lücke steckt
+baugleich in Check 32 (`conjugation`-Tabellen) und in `TRANSLIT_RULES` (`trainer.html`, dort mit
+`\b` statt `\y`, aber identisches Problem).
+
+**Ausmaß beim Scan mit erweitertem Muster** (`(^|[^a-z0-9])[a-z]{0,2}-?(el|il)-(th|sh|d|t|z|s|j|n|r)`,
+das die Präposition mit erfasst): **6 `course_exercises`-Zeilen** (103, 146, 165, 1276, 1488, 1571)
+und **13 `vocabulary`-Zeilen** (1902, 1904, 2685, 2810, 3014, 3026, 3036, 3149, 3160, 3201, 3302,
+3303, 3603) korrigiert. Bei 11 der 13 Vokabelzeilen trug das eigene `arabic_script` das Schadda
+bereits korrekt (`لِلدِّنْيا`, `بِالنَّعْنَاع`, …) — der Fehler saß nur in der `darija`-Spalte, die
+`arabic_script`-Gegenprobe (Check 4) prüft diese Richtung nicht. Zwei Fälle (`mel-rwayeq` →
+`mer-rwayeq`, `bel-shwayya` → `besh-shwayya`) sind Konsonantencluster ohne Schadda im Arabischen —
+dort wurde die Regel trotzdem angewandt, in Konsultation mit Nils.
+
+**Fix:** Check 3 und 32 in `qualitaets_checks` sowie `TRANSLIT_RULES` in `trainer.html` auf das
+erweiterte Muster umgestellt. Gegenprobe nach dem Fix: beide Queries liefern über den gesamten
+Bestand **0 zusätzliche Treffer** (weder neue Fehlalarme noch übersehene echte Fälle) — die
+Erweiterung ist scharf, nicht nur breiter.
+
+**Lehre, die über diesen Fall hinausgeht:** ein korrekt gesetzter Wortgrenzen-Anker (`\y` statt
+`\b`) reicht nicht, wenn die Wortgrenze an der **falschen** Stelle im Suchmuster sitzt. Bei jeder
+Artikel-/Präfix-Regel testen, ob das Muster auch dann noch greift, wenn ein weiteres Präfix
+(Präposition, Konjunktion) direkt davorklebt — genau die Fälle, die im Alltagstext am häufigsten
+vorkommen (`fi`, `bi`, `li`, `min` + Artikel).
