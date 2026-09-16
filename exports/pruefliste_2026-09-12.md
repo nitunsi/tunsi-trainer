@@ -4569,3 +4569,91 @@ Der letzte Merge nach `main` war `49bc0ec` — zu Beginn dieser Sitzung.
 Live ist damit weiterhin der Stand von vorher: kein abgeschwächtes 🔗, kein Filtereintrag
 „abgeleitet belegt", und der Partner-Check sortiert noch nach Fälligkeit statt nach Belegstufe.
 **Ohne Merge nach `main` ändert sich daran nichts.**
+
+---
+
+## Runde 71 — Beispielsätze der Quellen gegen unsere Phrasen
+
+Nils' Frage: *in den Quellen gibt es komplette Sätze — sind die schon mit den Phrasen des Trainers
+verglichen worden?* Antwort: **nein, nie.** Die Arbeitsregeln erwähnen Beispielsätze nur als
+Nachschlagehilfe und fürs Audio-Timing; die Prüfliste enthält null Treffer für `example_`.
+
+### Was da liegt
+
+| Quelle | Sätze |
+|---|---|
+| `derja_ninja_entries.example_arabic` | **17.335** (jeder Eintrag hat einen), 17.242 mit Audio |
+| `peacecorps_dict_import.senses[].example_ph` | 3.095 |
+
+Gut 20.000 Sätze, nie gegen unsere 1.008 Phrasenzeilen gehalten.
+
+### Verglichen über die arabische Seite
+
+Nicht über die Umschrift — Ninja schreibt in eigener Konvention (`9` für ق, `ou`, `ch` für ش), ein
+Vergleich dort wäre reine Konventionsarbeit. Über `arabic_script` gegen `example_arabic`, beide
+diakritika- und satzzeichenfrei, Wortgrenzen erhalten.
+
+| | |
+|---|---|
+| Phrase **ist** ein ganzer Beispielsatz | 8 |
+| Phrase kommt **zusammenhängend darin vor** | **142** (14 %) |
+| davon heute ohne jeden Beleg | **60** |
+
+### Der Fund: `1811`/`1840` sagten „Abitur" statt „Park"
+
+`1811 fil parc` „im Park" matchte auf einen Satz über das Abitur — weil das `arabic_script`
+**في الباك** war, also `fil bāk`, das Bac. Dem Park fehlte das **ر**. `1840 titmasha fil parc`
+trug denselben Fehler.
+
+Die richtige Schreibung des Stamms stand die ganze Zeit im eigenen Bestand: **`931 parking`
+بَارْكِينْڨْ** (ninja-bestätigt). Beide korrigiert auf **في البارك**.
+
+Das ist der Punkt an diesem Vergleich: die Phrase hat auf den *falschen* Satz gematcht, und genau
+das hat den Fehler sichtbar gemacht. Ein Lemma-Abgleich hätte ihn nie gefunden — die Zeile ist
+mehrwortig und damit von jeder bisherigen Prüfung ausgenommen.
+
+### Neuer Belegweg: `ninja-satz`
+
+**59 Phrasen** bestätigt mit `external_confirmed = true, external_confirmed_source = 'ninja-satz'`.
+Begründung für die volle Bestätigung statt „abgeleitet": die exakte Wortfolge kommt
+zusammenhängend in einem muttersprachlichen Satz vor — für eine Phrase ist das der stärkste Beleg,
+den es geben kann, denn als Wörterbuch-Stichwort taucht sie nie auf.
+
+Zwei mit Einschränkung vermerkt, weil der Beleg eine andere Bedeutungsfacette zeigt:
+`2094 sa77a lihom` (dort „lucky them", nicht „bon appétit") und `2563 ma tudkhulsh` (dort in der
+Redensart „geht nicht in den Kopf", nicht als Verbotsschild). Form belegt, Verwendung nicht.
+
+### Audio ausdrücklich NICHT übernommen
+
+139 der 142 Treffer haben Satz-Audio. Trotzdem nicht angehängt: `example_term_start`/`_end` markieren
+den **ganzen Satz** in der mp3, nicht unsere Teilphrase. IMPORTS.md verbietet genau das
+(„`ninja_audio_url` nie ohne Start/End setzen, wenn die Quelle ein Satz-Audio ist"), und in Runde 56
+mussten 11 falsch verknüpfte Audios wieder entfernt werden.
+
+### Stand der Belegstufen
+
+| Quelle | Zeilen | davon mehrwortig |
+|---|---|---|
+| ninja | 1.436 | 96 |
+| tunico | 1.041 | 40 |
+| **ninja-satz** | **59** | **59** |
+| peacecorps | 94 | 18 |
+| abgeleitet | 105 | 0 |
+| kein Beleg | 1.040 | 795 |
+
+### Gegenprobe
+
+| | |
+|---|---|
+| Trainer 🔤 Transliteration | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | **0** |
+| Gruppe A / Check 24 / Check 25 | 0 / 0 / 0 |
+| Schadda vor Vokalzeichen / auf ا | 0 / 0 |
+
+### Nebenbei: `4595 7oriqa` „Qualle"
+
+Über Nacht von Nils angelegt — die ح-ر-ق-Wurzel („die Brennende"), die ich zu Beginn dieser Sitzung
+als semantisch plausibel, aber in keiner Quelle belegt vermutet hatte. Semia hat die Bedeutung
+bestätigt. Die Zeile ist vokalisiert, die Ableitung trifft die `darija` exakt, und die
+`internal_note` trennt sauber: die **Form** حريقة ist in allen drei Quellen belegt (als „Brand"),
+die **Bedeutung** „Qualle" nur durch Semia. Nichts daran zu ändern.

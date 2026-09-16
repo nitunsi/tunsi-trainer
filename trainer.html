@@ -2135,7 +2135,10 @@ function srsInfoBadge(vocab){
   return `<span style="color:${SRS_LEVEL_COLORS[level]};font-weight:700">${SRS_LEVEL_LABELS[level]}</span>${rc ? ' · 🔁 '+rc : ''}`;
 }
 
-const EXT_SOURCE_LABEL = { ninja: 'Derja Ninja', tunico: 'TUNICO', peacecorps: 'Peace Corps' };
+const EXT_SOURCE_LABEL = { ninja: 'Derja Ninja', tunico: 'TUNICO', peacecorps: 'Peace Corps',
+  // Phrasen stehen in keinem Woerterbuch als Stichwort. Belegt sind sie, wenn die exakte Wortfolge
+  // zusammenhaengend in einem muttersprachlichen Beispielsatz der Quelle vorkommt.
+  'ninja-satz': 'Derja Ninja (Beispielsatz)' };
 // Dritter Bestaetigungszustand: die Form selbst steht in keiner Quelle, ist aber die regelmaessige
 // Flexion einer belegten Grundform (external_confirmed bleibt false, source = 'abgeleitet').
 // Beispiel: t7eb "du magst" -- TUNICO fuehrt das Verb 7abb vollstaendig, aber nur eine Beispiel-
