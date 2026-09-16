@@ -4657,3 +4657,39 @@ als semantisch plausibel, aber in keiner Quelle belegt vermutet hatte. Semia hat
 bestätigt. Die Zeile ist vokalisiert, die Ableitung trifft die `darija` exakt, und die
 `internal_note` trennt sauber: die **Form** حريقة ist in allen drei Quellen belegt (als „Brand"),
 die **Bedeutung** „Qualle" nur durch Semia. Nichts daran zu ändern.
+
+---
+
+## Runde 72 — „Töchter konnte nicht bestätigt werden?"
+
+Nils' Frage, und sie traf einen echten Widerspruch:
+
+| id | darija | arabic_script | german | bestätigt |
+|---|---|---|---|---|
+| 4111 | `bnat` | بْنَاتْ | Mädchen (Pl.) | ja (tunico) |
+| 1522 | `bnet` | بْنَاتْ | Töchter | **nein** |
+
+**Zeichengleiches Arabisch** — dieselbe Zeichenfolge samt Diakritika. Der Unterschied lag allein in
+unserer Umschrift: der Backfill vergleicht die `darija` exakt gegen die Quellformen, und `bnat`
+trifft TUNICO, `bnet` nicht. Der Beleg gilt aber dem **Wort**, nicht unserer Schreibweise.
+
+`1522` auf `external_confirmed = true, source = 'tunico'` gesetzt, mit Begründung in der Notiz.
+
+### Die Regel — und ihr Falschtreffer
+
+Systematisch gesucht: unbestätigte Zeilen, deren `arabic_script` zeichengleich mit dem einer
+bestätigten Zeile ist. **Genau einer** im ganzen Bestand, nämlich `1522`. Kein systematisches Loch.
+
+Die naheliegende Lockerung (nur Buchstaben vergleichen, Diakritika weg) produziert sofort einen
+Falschtreffer:
+
+| | id | arabic_script | |
+|---|---|---|---|
+| ❌ | 3056 | يِشَ**بَّ**ع | `yshabbe3` „er sättigt" — **Maß II** |
+| | 3028 | يِشْبَع | `yishba3` „er wird satt" — Maß I, bestätigt |
+
+Gleiche Buchstaben ي ش ب ع, aber die Schadda trennt die Wortformen — Lautlehre-Regel 5. `3056`
+nicht übernommen, Begründung in der Notiz festgehalten.
+
+**Als Regel in SKILL.md aufgenommen**, mitsamt dem Gegenbeispiel: zeichengleich ja, buchstabengleich
+nein. Das ist dieselbe Lehre wie bei `569 banka` — nur eine Ebene tiefer.
