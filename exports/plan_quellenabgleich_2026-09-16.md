@@ -111,7 +111,10 @@ anzeigen, nicht verwischen — Lernmaterial wird nicht automatisch erzeugt.
 
 Reihenfolge ist bindend: 6 baut auf 5, 5 auf 2–4. Jedes Paket endet mit einem eigenen Commit.
 
-## P1 — `translit_skeleton` gegen das Veralten sichern (nur SQL)
+## P1 — `translit_skeleton` gegen das Veralten sichern (nur SQL) — ERLEDIGT 2026-09-16
+
+> **Abgenommen.** Beide Spalten sind `GENERATED ALWAYS ... STORED`, 0 Abweichungen bei 3.775 Zeilen (vorher 104 falsche + 9 leere `translit_skeleton` und — erst bei der Umsetzung gefunden — zusätzlich 100 falsche `arabic_skeleton`). Gruppe A weiter 0, Gruppe B unverändert (21=2, 22=231), `vokalisierung_kandidaten` 0 vorher wie nachher. Sicherung und angewandtes SQL liegen in `exports/viewdefs_vor_p1_2026-09-16.sql` und `exports/migration_p1_2026-09-16.sql`.
+> Folgearbeit, die dabei anfiel und miterledigt wurde: Rezept 4 in `SKILL.md` führte die beiden Spalten in der `INSERT`-Spaltenliste und wäre ab sofort gescheitert.
 
 `vocabulary.translit_skeleton` ist eine gewöhnliche Spalte ohne Trigger. Sie ist heute schon
 **bei 104 Zeilen falsch und bei 9 NULL** — dieselbe Schnappschuss-Krankheit, eine Ebene tiefer,

@@ -902,6 +902,8 @@ ORDER BY n.english, l.source;
 
 **Helper-Funktionen `public._translit_skeleton(darija text)` / `public._arabic_skeleton(arabic_script text)`** (seit 2026-09-05): berechnen `vocabulary.translit_skeleton`/`arabic_skeleton` exakt nach dem Bestandsformat — per Reverse-Engineering aus dem Bestand hergeleitet und validiert (3.686/3.688 bzw. 3.679/3.688 exakter Match, Rest sind Legacy-/Platzhalter-Ausreißer, keine Formelfehler; Details: PRECEDENTS.md → arabic_skeleton/translit_skeleton Herleitung). Nie von Hand nachbauen — diese Funktionen benutzen, auch außerhalb von Rezept 4.
 
+**Seit 2026-09-16 sind `vocabulary.translit_skeleton`/`arabic_skeleton` generierte Spalten** (`GENERATED ALWAYS AS (public._translit_skeleton(darija)) STORED` bzw. aus `arabic_script`). Postgres berechnet sie selbst und zieht sie bei jedem `UPDATE` der Quellspalte automatisch nach. Konsequenz: **beide Spalten dürfen in keinem `INSERT`/`UPDATE` mehr in der Spaltenliste stehen** — sonst bricht die Anweisung mit SQLSTATE `428C9` ab („cannot insert a non-DEFAULT value into column ... Column is a generated column“). In `RETURNING` und in jeder `SELECT`-Abfrage dagegen wie gewohnt benutzbar. **Warum umgestellt:** als gewöhnliche Spalten veralteten sie stillschweigend — am Umstellungstag 104 falsche und 9 leere `translit_skeleton` sowie 100 falsche `arabic_skeleton` bei 3.775 Zeilen, unsichtbar für jeden Skelett-Abgleich, der auf ihnen aufsetzt.
+
 **Rezept 4 — neue Vokabel anlegen, fertigen INSERT bauen:**
 ```sql
 -- Teil 1: Kandidaten aus allen 3 Quellen (wie Rezept 2a) — daraus darija/arabic_script/german von Hand auswählen
@@ -909,9 +911,9 @@ SELECT source, headword_display, source_translit, chatalpha, chatalpha_plural, g
        arabic_script, arabic_reconstructed, arabic_reconstruction_note, example_en, example_de, example_ph, audio_url, note
 FROM public.vocab_lookup WHERE english_key = lower('<wort>') ORDER BY source;
 
--- Teil 2: INSERT mit automatisch berechneten Skeletten
+-- Teil 2: INSERT. translit_skeleton/arabic_skeleton NICHT mitschicken, s. Hinweis ueber dem Block
 INSERT INTO public.vocabulary
-  (english, darija, arabic_script, german, ninja_id, ninja_audio_url, translit_skeleton, arabic_skeleton,
+  (english, darija, arabic_script, german, ninja_id, ninja_audio_url,
    external_confirmed, external_confirmed_source)
 VALUES (
   '<english>',
@@ -920,8 +922,6 @@ VALUES (
   '<german>',                    -- kein Feld liefert das automatisch, immer von Hand
   <ninja_id_oder_NULL>,
   <ninja_audio_url_oder_NULL>,
-  public._translit_skeleton('<darija>'),
-  public._arabic_skeleton(<arabic_script_oder_NULL>),
   <true_oder_false>,             -- s. external_confirmed unten
   <'ninja'|'tunico'|'peacecorps'_oder_NULL>
 )
