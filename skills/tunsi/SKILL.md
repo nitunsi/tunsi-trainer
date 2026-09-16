@@ -457,7 +457,7 @@ Hier standen bis zum 2026-09-13 rund 250 Zeilen SQL. Sie sind in die Sicht gewan
 |---|---|
 | 1 Ziffern 2/5/9, Großbuchstaben | Quellen-Schreibweise durchgerutscht (Ninjas `9`/`5`/`2`, Peace Corps' `H`/`S`/`T`) |
 | 2 `ch` statt `sh` | dito, oder ein unmarkiertes Lehnwort — dann `(frz.)` ins `german` |
-| 3 Artikel nicht assimiliert | `el-shatt` statt `esh-shatt` |
+| 3 Artikel nicht assimiliert | `el-shatt` statt `esh-shatt`. ⚠️ Muster nimmt vorgeklebte Präpositionen ohne Trenner mit (`fil-`, `bil-`, `bel-`, …) — reine `\y(el\|il)-`-Wortgrenze sieht diese Fälle nicht, siehe PRECEDENTS.md → Artikel-Assimilation hinter einer Präposition |
 | 4 Konsonanten-Gegencheck | `arabic_script` und `darija` nennen verschiedene Laute. **Richtung offen** — das Arabische kann der Fehler sein |
 | 5 `(f.)` ohne `-a` | unmarkiertes Femininum; die Ausnahmeliste im SQL deckt die bekannten ab |
 | 6 `wa`/`u` statt `w-` | Hausregel |
