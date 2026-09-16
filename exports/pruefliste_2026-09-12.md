@@ -4693,3 +4693,71 @@ nicht übernommen, Begründung in der Notiz festgehalten.
 
 **Als Regel in SKILL.md aufgenommen**, mitsamt dem Gegenbeispiel: zeichengleich ja, buchstabengleich
 nein. Das ist dieselbe Lehre wie bei `569 banka` — nur eine Ebene tiefer.
+
+---
+
+## Abschluss-Kontrolle der Sitzung (2026-09-16)
+
+Auf Nils' Frage, ob außer den Phrasen alles erledigt ist, jede in dieser Sitzung als offen benannte
+Zeile einzeln gegen den Bestand geprüft — nicht aus dem Gedächtnis.
+
+### Erledigt
+
+`325`, `356`, `569`, `643`, `644`, `651`, `768`, `802`, `893`, `1130`, `1134`, `1266`, `1521`,
+`1522`, `1777`, `1819`, `1857`, `1858`, `4333`, `4343` — alle vokalisiert und/oder korrigiert und
+belegt. Die früher offenen Gruppen (6 Vokalisierungs-Kandidaten mit Strukturunterschied, 4
+`darija`-Geminationsfälle, 2 Maß-I/Maß-II-Fälle) sind vollständig abgearbeitet.
+
+`625`, `1825`, `4331` bewusst so belassen: `625` abgeleitet belegt, `1825` als Nicht-Befund
+bestätigt, `4331` formseitig ninja-belegt (die *Bedeutung* „Eintopf mit Ei" steht in keiner Quelle,
+das hält die Notiz fest).
+
+### Ein loses Ende, das ich bemerkt und nicht festgehalten hatte
+
+**`1402 win 7ayyek?`** trägt das deutsche Gloss **„Wie hast du dich gemacht?"** — kein
+idiomatisches Deutsch. Ninjas Beleg 21193 übersetzt den Satz mit „how have you been?"; wörtlich
+heißt وين حَيِّك „wo ist dein Leben". Die fünf anderen Begrüßungszeilen im Bestand (`251`, `252`,
+`816`, `1396`, `3217`) sind idiomatisch glossiert — diese eine fällt heraus.
+
+Nicht geändert: ein deutsches Gloss ist Lernmaterial, keine Datenkorrektur. Vorschlag in der
+`internal_note` hinterlegt („Wie geht es dir?" / „Wo hast du gesteckt?").
+
+### Weiterhin offen, jeweils mit Begründung in der Notiz
+
+| id | | warum |
+|---|---|---|
+| 612 | `annistou` | anderer Hamza-Träger bei Ninja **und** abweichende Bedeutung (Begrüßung statt Verabschiedung) — Frage an Semia |
+| 2763 | `maqla` „Pfanne" | in keiner der drei Quellen belegt |
+| 1811 / 1840 | `fil parc` | Buchstaben korrigiert (البارك), aber Ninja kennt kein „Park" — bleibt unbelegt und unvokalisiert |
+| 1402 | `win 7ayyek?` | deutsches Gloss, siehe oben |
+
+Dazu strukturell: **244 einwortige** und **795 mehrwortige** Zeilen ohne Beleg. Für die einwortigen
+sind die drei regelmäßigen Affixklassen und alle Quellenwege ausgeschöpft; die mehrwortigen sind der
+Rest nach dem Beispielsatz-Abgleich.
+
+### Nicht erledigt, weil es eine Entscheidung braucht
+
+**Wortart als Feld.** 1.851 der 2.766 einwortigen Zeilen könnten eine `pos` aus den Quellen
+bekommen. Das ist die Fehlerklasse, die in dieser Sitzung am häufigsten zugeschlagen hat (`1174`,
+`1777`, `569`, `1811`, `3111`, `785`, `4401`) — jeder Fall zufällig gefunden. Braucht eine
+Schemaänderung, deshalb nicht im Alleingang.
+
+### Skill-Abgleich
+
+Alle 14 in dieser Sitzung zugesagten Ergänzungen im Repo verifiziert: Lautlehre-Regel 11 (die
+Lautlehre hat jetzt 11 Regeln), Schadda-Reihenfolge samt Abgrenzung zu Schadda+Sukun, Fehlalarmquote
+von `vokalisierung_kandidaten`, Schrägstrich-Lücke, Kollisionsprobe gegen vokalisierte Zeilen,
+verdeckte Dubletten, `tools/`-Verweise in Schnellzugriff und Harness-Block, dritter Belegzustand
+samt Affix-Methodik, `ninja-satz`, die Zeichengleichheits-Regel mit ihrem Maß-II-Gegenbeispiel.
+IMPORTS.md: Ninja-Vorrangregel mit Vorbedingung, TUNICO `inflected` und Artikelabtrennung.
+PRECEDENTS.md: Alif-Verschiebung, verworfener Solver-Ansatz, Partner-Check-Sortierung.
+
+### Gegenprobe zum Sitzungsende
+
+| | |
+|---|---|
+| Trainer 🔤 Transliteration | **0** von 3.775, 23 Regeln |
+| Trainer 🔁 Duplikate | **0** |
+| Gruppe A (18 Checks) | alle **0** |
+| Check 22 / 23 / 24 / 25 | 231 / 0 / 0 / 0 |
+| Schadda-Reihenfolge / Schadda auf ا | 0 / 0 |
