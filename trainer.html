@@ -6259,7 +6259,9 @@ const TRANSLIT_RULES = [
   { label: 'Gro\u00dfbuchstaben (Darija wird durchg\u00e4ngig kleingeschrieben)',
     test: v => /[A-Z]/.test(v.tr) },
   { label: 'Artikel nicht vor Sonnenbuchstabe verschmolzen (el-/il- statt es-/et-/ej-/...)',
-    test: v => /\b(el|il)-(th|sh|d|t|z|s|j|n|r)/.test(v.tr) },
+    // \b greift nicht, wenn eine Praeposition ohne Trenner vorgeklebt ist (fil-, bil-, bel-, lel-, mel-, ...) -
+    // (^|[^a-z0-9]) + optionales 1-2-Buchstaben-Praefix + optionaler Bindestrich faengt auch diese Faelle
+    test: v => /(^|[^a-z0-9])[a-z]{0,2}-?(el|il)-(th|sh|d|t|z|s|j|n|r)/i.test(v.tr) },
   // Konsonanten-Gegencheck: arabic_script enthält den Buchstaben, aber die Transliteration nicht die passende Schreibung
   { label: 'ح im Arabischen, aber kein "7" in der Transliteration',
     test: v => v.ar && /ح/.test(v.ar) && !/7/.test(v.tr) },
