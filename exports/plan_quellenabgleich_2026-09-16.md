@@ -134,7 +134,54 @@ _translit_skeleton(darija)` = 0, und Gruppe A der `qualitaets_checks` weiter auf
 **Achtung:** prüfen, ob `vocab_lookup` oder `qualitaets_checks` auf den Spalten liegen —
 dann in der richtigen Reihenfolge droppen/neu anlegen.
 
-## P2 — `vocab_tokens` (Wortebene des Bestands)
+## P2 — `vocab_tokens` (Wortebene des Bestands) — ERLEDIGT 2026-09-16
+
+> **Abgenommen.** `public._translit_tokens(text)` (IMMUTABLE) und View `public.vocab_tokens`
+> (`vocabulary_id, position, token, token_skeleton, skelett_laenge, ist_einwortig`), 5.826 Zeilen,
+> Rechte 1:1 von `vocab_lookup` übernommen. Gruppe A 0, Gruppe B unverändert (21=2, 22=231),
+> `vocabulary` unverändert 3.775. SQL in `exports/migration_p2_2026-09-16.sql`.
+>
+> **Laufzeit: 113–124 ms** (3 Läufe) gegen die 300-ms-Schwelle — der einfache View reicht,
+> die generierte Spalte `darija_tokens` mit GIN-Index war **nicht nötig** und wurde nicht gebaut.
+>
+> **Beide Abnahmerichtungen erfüllt:** `kull` hat 12 Baustein-Vorkommen in 9 mehrwortigen Zeilen
+> und keine eigene Zeile; `kif` 9 Vorkommen in 7 Zeilen, ebenfalls ohne eigene Zeile. Gegenprobe:
+> `ma3nitha`, `bnadim`, `7asilu` haben null Treffer — weder in `vocabulary` noch in `vocab_tokens`.
+> Der View findet also nicht einfach alles.
+>
+> **Ergebnis: 99 aufgetrennte Korpus-Lemmata (75 Skelette) fallen in `baustein`.**
+
+### Kollisionsanalyse aus P2 — Eingabe für die Bucket-Logik in P5
+
+Die `SKILL.md`-Regel „nie blind über Skelette joinen, `length(...) >= 4`" wurde für diesen Fall
+gemessen statt übernommen — sie hätte `kull` (`kll`, 3 Zeichen) und `kif` (`kf`, 2 Zeichen)
+weggeworfen. Alle Treffer der Längen 2 und 3 wurden einzeln gelesen, nicht stichprobenartig:
+
+| Skelettlänge | Lemmata | Befund | Umgang in P5 |
+|---|---|---|---|
+| 1 | — | 459 Ein-Buchstabe-Token im View (`m` aus `youm`) | **ausschließen** |
+| 2 | 27 | ~14 klare Zufallstreffer — Münzwurf-Niveau | **kein Score-Treiber**, höchstens manuelle Zusatzliste |
+| 3 | 46 | ~34 echt, ~8 Zufall, ~4 unklar (≈ 3 von 4) | anzeigen **mit Hinweis „kurzes Skelett, bitte prüfen"** |
+| 4–5 | 26 | wie in `SKILL.md` als sicher behandelt | normal werten |
+
+**Einschränkung, die mitgelesen werden muss:** `tunico_corpus_wordforms` hat keine Gloss-Spalte.
+Die Einordnung „echt / Zufall" beruht auf Transliterationsähnlichkeit und Wurzelverwandtschaft,
+nicht auf einer geprüften Übersetzung — die `~`-Zahlen sind Schätzungen, keine Messwerte.
+
+Schönste Belege für echte Zufallstreffer: **`kanada` kollidiert mit `weekend`** (beide → `knd`,
+weil `w` und die Vokale beim Skelettieren verschwinden), `quran` mit `qarn` (Horn/Jahrhundert),
+`lista` mit `el-wasat`, und Skelett `s7` kollidiert gleich fünffach
+(`sa7a`, `sa7i`, `saya7`, `siya7a` — keins davon ist das tatsächlich gefundene `sye7`).
+
+**Zusätzlicher Fund für P5:** die Schreibvariante `kol` (einfaches statt doppeltes L) ergibt
+Skelett `kl` — und das kollidiert bereits mit drei bestehenden Einwort-Zeilen (`kilo`, `kla` = aß,
+`yakol` = isst). Ein Korpus-Lemma `kol` liefe damit fälschlich als `vorhanden` statt `baustein`
+durch. Die Bucket-Logik darf sich also nicht allein auf „Skelett-Treffer = vorhanden" verlassen.
+
+**Nicht weggefiltert:** `skelett_laenge` steht in jeder `vocab_tokens`-Zeile, und die 300-ms-Messung
+lief ohne jeden Längenfilter — also inklusive der kurzen, kollisionsanfälligen Skelette.
+
+### Ursprüngliche Paketbeschreibung
 
 Braucht der `baustein`-Bucket, weil Phrasen-Skelette den ganzen Satz zusammenziehen.
 
