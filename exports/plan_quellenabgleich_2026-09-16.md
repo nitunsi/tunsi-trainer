@@ -14,11 +14,21 @@ Drei Konstruktionsfehler der heutigen Funktion, alle gemessen am 2026-09-16:
 2. **Zu enge Grundgesamtheit.** Kandidaten = Top-300 Verben + Top-300 Nomen + Top-64 Adjektive.
    Das Korpus hat 2.102 Lemmata (2.023 nach Auftrennen der Pipe-Bündel). Alles, was nicht
    Verb/Nomen/Adjektiv ist, konnte nie Kandidat werden — genau dort sitzen die größten Lücken:
-   `kull` (656×), `ma3nitha` (434×), `kif-ma` (293×), `kif` (221×), `bnadim` (127×),
+   `kull` (656×), `ma3nitha` (853×), `kif` (480×), `kif-ma` (293×), `bnadim` (127×),
    `ma-ysal-sh` (81×), `7asilu` (45×).
 3. **Eine Quelle, eine Rangachse.** Peace Corps hat eine unabhängige didaktische Rangliste
    (`freq` 1–5, 1 = wichtigstes) über 5.070 Einträge, im Trainer nirgends benutzt. Von 660
    Einträgen mit Rang 1 fehlen 149 ganz, bei Rang 2 weitere 238.
+
+> **Zahlenkorrektur 2026-09-17 (P3a).** Oben standen zuerst `ma3nitha` mit 434× und `kif` mit
+> 221×. Das war zu niedrig: die Ersterhebung nahm je Lemma nur die **stärkste einzelne
+> Wortform-Zeile** (`max`), statt über alle beitragenden Zeilen zu summieren. Korrekt sind
+> **853×** und **480×**; die übrigen Werte stimmen unverändert, weil dort nur je eine
+> Quellzeile beiträgt. Die naive Gegenrechnung (alle Pipe-Glieder aufsummieren) ist ebenfalls
+> falsch und ergäbe für `kif` 930× — die Zeile `kif|kif|kif|kif` (150×) würde vierfach
+> gezählt. Maßgeblich ist die Summe über **distinkte Quellzeilen**, wie sie
+> `quellen_lemmata.freq_korpus` jetzt führt. Der Befund wird dadurch deutlicher, nicht
+> schwächer.
 
 Nebenbefund: `matched_vocab_id` ist eine einzelne Spalte und kann Homonyme nicht abbilden
 (`sabb` passt gleichzeitig auf #4508 „er beleidigte" und #4506 „er goss").
@@ -92,13 +102,19 @@ sortierten Liste ansehen und die Gewichte einmal nachziehen, bevor das UI gebaut
 
 | Quelle | Lemma | Arabisch | Deutsch | Englisch | Audio | Wortart | Rang |
 |---|---|---|---|---|---|---|---|
-| `tunico_import` (7.543) | ✓ | ✓ | ✓ (`senses→de`) | ✓ | — | ✓ | — |
+| `tunico_import` (7.543) | ✓ | **—** | ✓ (`senses→de`) | ✓ | — | ✓ | — |
 | `tunico_corpus_wordforms` (9.874) | ✓ | — | — | — | — | ✓ (roh) | Korpusfrequenz |
 | `derja_ninja_entries` (17.335) | ✓ | ✓ | — | ✓ | ✓ | `pos_tag` | — |
 | `peacecorps_dict_import` (5.070) | ✓ (Lautschrift) | rekonstruiert, **kein Faktum** | — | ✓ (`headword`) | — | ✓ | `freq` 1–5 |
 
 Von den 263 wirklich noch offenen Kandidaten haben **143 einen Ninja-Eintrag mit Audio**
 und **124 einen Peace-Corps-Eintrag**.
+
+**Korrektur 2026-09-17 (P3a):** die Zeile `tunico_import` stand hier zunächst mit „Arabisch ✓".
+Das war falsch — **TUNICO hat überhaupt keine Arabisch-Spalte** (deckt sich mit `IMPORTS.md`:
+„Kein arabisches Original"). `quellen_lemmata.arabisch` bleibt für `quelle='tunico'` daher
+grundsätzlich NULL. Arabisch kommt ausschließlich von Ninja (echte Quelle) bzw. als
+ausdrücklich gekennzeichnete Rekonstruktion von Peace Corps.
 
 **Ehrliche Einschränkung:** „sofort komplett anlegbar" heißt Arabisch + Audio + Wortart + englische
 Glosse. Die **deutsche** Glosse kommt nur aus `tunico_import.senses→de`; bei Ninja-/PC-Treffern ohne
@@ -211,7 +227,35 @@ Gemeinsame Spalten: `quelle`, `quell_id`, `lemma`, `skeleton`, `freq_korpus`, `r
 `gloss_de`, `gloss_en`, `arabisch`, `audio_url`, `ist_toponym`, `freq_ist_obergrenze`.
 Index auf `skeleton`.
 
-### P3a — TUNICO-Seite (die eigentliche Normalisierungsarbeit)
+### P3a — TUNICO-Seite (die eigentliche Normalisierungsarbeit) — ERLEDIGT 2026-09-17
+
+> **Abgenommen.** `quellen_lemmata` steht mit **2.005 TUNICO-Zeilen**, Index auf `skeleton`,
+> Rechte identisch zu `vocab_lookup`/`vocab_tokens`. Kein Lemma enthält ein `|`, keine Dubletten,
+> die fünf Prüflemmata je genau einmal. Gruppe A 0, Gruppe B unverändert (21=2, 22=231),
+> `vocabulary` 3.775, Quelltabellen unverändert. SQL in `exports/migration_p3a_2026-09-17.sql`.
+>
+> **Herleitung der 2.005:** 2.102 rohe Werte → 2.023 distinkte Lemmata nach Pipe-Split
+> → minus 18 Klitika (`-kum`, `-hum`, `il-`, `ma-`, `w-` …) = 2.005. Kein unerklärter Schwund.
+>
+> **Wortart:** Nomen 918, Verb 535, Adjektiv 243, **unklar 125 (6,2 %)**, Partikel/Funktionswort 67,
+> Numerale 38, Adverb 37, Eigenname 34, Interjektion 8. Von den 125 `unklar` sind nur 13 ohne jede
+> `pos`-Angabe; 112 haben einen echten Widerspruch zwischen mehreren Kandidaten.
+> 33 Toponyme geflaggt, 371 Zeilen mit `freq_ist_obergrenze`.
+>
+> **Deutsche Glosse: 1.992 von 2.005 (99,4 %)** — 1.989 über exakten `lemma_chatalpha`-Treffer,
+> 4 über den Skelett-Fallback, 12 ohne. Wichtig für spätere Pakete: **das Skelett taugt hier nicht
+> als Erstschlüssel** — 1.455 der 2.005 Lemmata hätten darüber mehr als einen Treffer.
+>
+> **Positionsgleiche Wortart-Zuordnung geht auf:** TUNICO benutzt führende und mehrfache
+> Leerzeichen im `pos`-String als Platzhalter für leere Pipe-Segmente — ein **nicht kollabierender**
+> Leerzeichen-Split liefert dieselbe Teilezahl wie der Pipe-Split. 282 von 283 Bündeln sauber;
+> die eine Ausnahme (id 2058, `3ayyit|3ayyif` mit nur `verb`) wurde an beide Teile ausgestrahlt.
+>
+> **Laufzeit `REFRESH`: 4,7–4,8 s** — deutlich über P1/P2 (< 300 ms), aber unkritisch, weil der
+> Refresh nur nach einem Import läuft, nicht beim Öffnen des Trainers. **Hinweis für P3b:** zwei
+> weitere `UNION ALL`-Zweige werden das erhöhen — wenn es über ~15 s geht, die korrelierten
+> Subqueries für die Glossen durch einen Join ersetzen.
+
 
 Legt `quellen_lemmata` an, zunächst nur mit `quelle = 'tunico'`. Die Spalten `rang_pc`,
 `audio_url` bleiben hier leer, `gloss_en` wo vorhanden.
