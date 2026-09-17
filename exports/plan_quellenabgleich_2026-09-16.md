@@ -351,6 +351,36 @@ nicht Neuanlagen (SKILL.md → „Nie ohne Bestätigung in Supabase schreiben").
   statt `v.translit_skeleton`" (95 ms gegen Timeout).
 - `skills/tunsi/SKILL.md`: Schnellzugriff-Zeile auf den neuen View.
 
+## Offener Datenbefund aus P4 — 8 Entscheidungen zeigen ins Leere
+
+Bei der Migration der 379 Entscheidungen kam heraus: **8 der 378 übernommenen `vocabulary_id`-Werte
+zeigen auf Zeilen, die es nicht mehr gibt.** `tunico_candidates.vocabulary_id` hatte nie eine
+Fremdschlüssel-Constraint, und spätere Duplikat-Zusammenführungen haben die Zielzeile gelöscht,
+ohne die Entscheidung mitzuziehen. Verlustfrei mitmigriert (Treue zur Quelle vor Konsistenz zum
+heutigen Bestand), aber offen.
+
+Das Muster ist eindeutig: die Ersatzzeile ist fast immer der unmittelbare ID-Nachbar —
+also genau die Zeile, die beim Merge behalten wurde.
+
+| Lemma | tote ID | heutiger Ersatz | eindeutig? |
+|---|---|---|---|
+| `7abb` | 3781 | 4176 `7abb` = er liebte | ja |
+| `7abs` | 4144 | 4143 `7abs` = Gefängnis | ja |
+| `fannan` | 4158 | 4157 `fannan` = Künstler | ja |
+| `jim3a` | 272 | 275 `jim3a` = Freitag / Woche | ja |
+| `kammil` | 4174 | 4178 `kammil` = er beendete | ja |
+| `t3ashsha` | 4029 | 4519 `t3ashsha` = er aß zu Abend | ja |
+| `7lu` | 4159 | 378 `7lou` = süß (kein exakter Schreibtreffer) | **nein** |
+| `tayyib` | 4028 | 405 `ytayyeb` / 1646 `tayyab` | **nein** |
+
+**Vorschlag:** die 6 eindeutigen umbiegen, die 2 uneindeutigen Nils vorlegen. Betrifft nur
+`import_entscheidungen`, nicht `vocabulary` — also keine Vokabeldatenänderung. Noch nicht ausgeführt.
+
+**Und die Lehre für P5/P6:** die neue Tabelle braucht denselben Schutz nicht per FK (die
+Entscheidung soll eine gelöschte Zeile überleben), aber der Quellenabgleich muss tote
+`vocabulary_ids` **anzeigen** statt sie stumm zu schlucken — sonst wiederholt sich dasselbe
+Leck im neuen Werkzeug.
+
 ## Offene Entscheidungen für Nils
 
 1. **Name**: `Quellenabgleich` (Vorschlag), `Lücken` oder `Vorschläge`?
