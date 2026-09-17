@@ -109,7 +109,7 @@ anzeigen, nicht verwischen — Lernmaterial wird nicht automatisch erzeugt.
 
 # Arbeitspakete
 
-Reihenfolge ist bindend: 6 baut auf 5, 5 auf 2–4. Jedes Paket endet mit einem eigenen Commit.
+Reihenfolge ist bindend: 6 baut auf 5, 5 auf 2–4, P3b auf P3a. P3a und P4 sind voneinander unabhängig und können parallel laufen. Jedes Paket endet mit einem eigenen Commit.
 
 ## P1 — `translit_skeleton` gegen das Veralten sichern (nur SQL) — ERLEDIGT 2026-09-16
 
@@ -196,36 +196,60 @@ Bucket-Joins messen. Über ~300 ms stattdessen generierte Spalte `vocabulary.dar
 **Nebennutzen, der das Paket doppelt bezahlt:** `vocab_tokens` ist genau das Werkzeug, das für die
 noch offenen **795 mehrwortigen Zeilen ohne Beleg** aus dieser Session fehlt.
 
-## P3 — `quellen_lemmata` (materialisierter Quell-Union) — größtes Paket
+## P3 — `quellen_lemmata` (materialisierter Quell-Union) — in P3a/P3b geteilt
 
-Eine Zeile je (Quelle, Lemma). Materialized View, weil die Normalisierung teuer ist und sich die
-Quelltabellen praktisch nie ändern; `refresh materialized view` nur nach einem Import.
+**Warum geteilt (2026-09-17):** P3 war als größtes Paket geplant. Der P2-Lauf ist nach getaner
+Arbeit an einem Session-Limit abgebrochen — folgenlos, weil der Push davor durch war. Bei einem
+Paket dieser Größe wäre derselbe Abbruch teuer. Deshalb zwei Pakete mit je eigener Abnahme,
+auf **dieselbe** Zieltabelle.
 
-Spalten: `quelle`, `quell_id`, `lemma`, `skeleton`, `freq_korpus`, `rang_pc`, `wortart`,
+Gemeinsames Ziel: **eine Zeile je (Quelle, Lemma)**, als Materialized View, weil die Normalisierung
+teuer ist und sich die Quelltabellen praktisch nie ändern; `refresh materialized view` nur nach
+einem Import.
+
+Gemeinsame Spalten: `quelle`, `quell_id`, `lemma`, `skeleton`, `freq_korpus`, `rang_pc`, `wortart`,
 `gloss_de`, `gloss_en`, `arabisch`, `audio_url`, `ist_toponym`, `freq_ist_obergrenze`.
+Index auf `skeleton`.
 
-Zu erledigende Normalisierungen — das ist echte Arbeit, keine Kosmetik:
+### P3a — TUNICO-Seite (die eigentliche Normalisierungsarbeit)
+
+Legt `quellen_lemmata` an, zunächst nur mit `quelle = 'tunico'`. Die Spalten `rang_pc`,
+`audio_url` bleiben hier leer, `gloss_en` wo vorhanden.
 
 - **Pipe-Bündel auftrennen.** `tunico_corpus_wordforms.lemma_chatalpha` packt Homographen in ein
   Feld: `waqt-illi|illi|illi`, `|7atta|7atta|7atta`, `wa7id|wa7id|wa7id`. Ohne Auftrennen erscheinen
   ~25 Hochfrequenz-Lemmata fälschlich als „fehlt". 2.102 Rohlemmata → 2.023 echte.
 - **`freq` eines Bündel-Mitglieds ist eine Obergrenze, keine eigene Zählung.** `kull shayy` und
   `7atta shayy` kommen beide mit 239× aus demselben Bündel. Spalte `freq_ist_obergrenze` setzen und
-  im UI kenntlich machen.
+  später im UI kenntlich machen.
 - **Pipe-Präfixe verwerfen** (`-kum`, `l-`): Suffixe/Klitika, keine eigenständigen Vokabeln.
 - **Wortart normalisieren.** 116 verschiedene `pos`-Werte, viele verkettet (`verb verb`,
   `noun adjective`, `noun indefinite  `). Mapping-Tabelle auf die Trainer-Klassen; Rest auf `unklar`.
 - **Toponyme flaggen, nicht löschen** (30 Lemmata mit `pos` = `toponym`).
+- **`tunico_import.senses`** ist `[{de:[…], en:[…], fr:[…]}]` — `de` ist die deutsche Glosse.
+  Verknüpfung zwischen Korpus-Lemma und Wörterbucheintrag über `lemma_chatalpha`/`translit_skeleton`.
+
+**Abnahme P3a:** `kull`, `ma3nitha`, `kif`, `bnadim`, `7asilu` sind je **genau einmal** enthalten;
+**kein Lemma enthält mehr ein `|`**; die Zahl der TUNICO-Zeilen liegt in der Größenordnung 2.023;
+`wortart` ist für den überwiegenden Teil gesetzt, der Rest sauber auf `unklar` (Anteil berichten).
+
+### P3b — Peace Corps und Derja Ninja ergänzen
+
+Erweitert dieselbe Materialized View um `quelle in ('peacecorps','ninja')`. Setzt P3a voraus.
+
 - **Peace Corps:** je Eintrag über `forms_chatalpha`/`forms_skeleton` (Arrays); `is_synonym_set=true`
   heißt echte Synonyme, `false` grammatische Varianten — nur die erste Form als Lemma nehmen,
-  die übrigen als Formen mitführen. `arabic_script_reconstructed` **nie** als Faktum ausgeben
-  (siehe PRECEDENTS.md → Peace-Corps-Arabisch-Rekonstruktion).
-- **`tunico_import.senses`** ist `[{de:[…], en:[…], fr:[…]}]` — `de` ist die deutsche Glosse.
+  die übrigen als Formen mitführen. `rang_pc` aus `freq` (1–5, **1 = wichtigstes**).
+  `arabic_script_reconstructed` **nie** als Faktum ausgeben
+  (siehe PRECEDENTS.md → Peace-Corps-Arabisch-Rekonstruktion) — gesondert kennzeichnen.
+- **Ninja:** `translit_skeleton` ist bereits vorhanden und indiziert; `arabic_script` ist die
+  einzige zuverlässig vokalisierte Quelle, `audio_url` das Unterscheidungsmerkmal für die
+  Anlege-Reife im Score.
+- Falls die PC-Seite bremst: GIN-Index auf `peacecorps_dict_import.forms_skeleton`.
 
-Index auf `skeleton`. Falls die PC-Seite bremst: GIN auf `peacecorps_dict_import.forms_skeleton`.
-
-**Abnahme:** `kull`, `ma3nitha`, `kif`, `bnadim`, `7asilu` sind je genau einmal je Quelle enthalten;
-kein Lemma enthält mehr ein `|`.
+**Abnahme P3b:** die 143 offenen Kandidaten mit Ninja-Audio und die 124 mit Peace-Corps-Eintrag
+(Messung vom 2026-09-16, vor der Arbeit frisch nachzählen) sind über `quellen_lemmata` wiederfindbar;
+Peace-Corps-Rang 1 umfasst größenordnungsmäßig 660 Einträge; kein Lemma enthält ein `|`.
 
 ## P4 — `import_entscheidungen` (Protokoll) + Migration
 
