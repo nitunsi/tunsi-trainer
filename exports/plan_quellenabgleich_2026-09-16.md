@@ -251,7 +251,50 @@ Erweitert dieselbe Materialized View um `quelle in ('peacecorps','ninja')`. Setz
 (Messung vom 2026-09-16, vor der Arbeit frisch nachzählen) sind über `quellen_lemmata` wiederfindbar;
 Peace-Corps-Rang 1 umfasst größenordnungsmäßig 660 Einträge; kein Lemma enthält ein `|`.
 
-## P4 — `import_entscheidungen` (Protokoll) + Migration
+## P4 — `import_entscheidungen` (Protokoll) + Migration — ERLEDIGT 2026-09-17
+
+> **Abgenommen.** Tabelle `public.import_entscheidungen` angelegt (`skeleton` als generierte
+> Spalte `GENERATED ALWAYS AS (_translit_skeleton(lemma)) STORED` — dieselbe
+> Schnappschuss-Absicherung wie bei `vocabulary.translit_skeleton`/`arabic_skeleton` aus P1),
+> Rechte/RLS 1:1 von `tunico_candidates` übernommen (RLS an, eine Policy `app_access`
+> PERMISSIVE FOR ALL TO anon, authenticated USING/WITH CHECK true, GRANT ALL an
+> postgres/anon/authenticated/service_role, Owner postgres).
+>
+> **Nachgezählt statt übernommen:** 954 Zeilen gesamt, 575 `pending`, **379 entschieden**
+> (`activated` 338, `added` 40, `skipped` 1) — deckt sich exakt mit dem im Plan genannten
+> Stand, keine Abweichung. Migriert wurden genau diese 379 Zeilen, **eine Quellzeile = eine
+> Zielzeile** (nicht nach `skeleton`/`lemma` gruppiert — 56 (lemma_chatalpha, status)-Paare
+> kommen unter den entschiedenen Zeilen mehrfach vor, 48 davon mit unterschiedlichem
+> `vocabulary_id`; eine Gruppierung hätte Zeilen/IDs gekostet und die Abnahme verletzt).
+> `vocabulary_ids` ist deshalb bei 378 von 379 Zeilen ein Einelement-Array; die eine
+> `skipped`-Zeile ohne `vocabulary_id` bekam `'{}'` (leeres Array, NOT NULL) statt NULL —
+> „entschieden, verknüpfte Menge leer" ist ein anderer Zustand als „nicht gesetzt", und
+> künftige Schreiber müssen so nie auf NULL prüfen.
+>
+> **Abnahme 1–6 exakt:** `count(*) import_entscheidungen` = 379; Gegenprobe je Entscheidungsart
+> exakt gleich (338/40/1); `EXCEPT`-Vergleich der `vocabulary_id`-Werte in beide Richtungen
+> leer (378=378); `tunico_candidates` unverändert 954 Zeilen mit identischer
+> Statusverteilung; `vocabulary` unverändert 3775; `qualitaets_checks` Gruppe A weiterhin
+> 0/18, Gruppe B unverändert (nr21=2, nr22=231, Rest 0).
+>
+> **Abnahme 7 (Homonymfall) mit dem echten Beispiel aus dem Plan getestet:** in einer nie
+> committeten Transaktion (BEGIN; INSERT; SELECT; ROLLBACK — keine COMMIT im ganzen Testlauf)
+> eine Zeile `lemma='sabb'`, `vocabulary_ids=ARRAY[4506,4508]` angelegt; `skeleton` wurde
+> korrekt zu `sbb` generiert, der Join `v.id = ANY(vocabulary_ids)` löste innerhalb der
+> Transaktion beide Homonyme auf (4506 „er goss", 4508 „er beleidigte"). Unabhängiger
+> Folgeaufruf bestätigt: 0 Testzeilen übrig, Tabelle weiterhin exakt 379 Zeilen.
+>
+> **Nebenbefund (nicht Teil von P4, nicht angefasst):** 8 der 378 migrierten
+> `vocabulary_id`-Werte zeigen auf inzwischen nicht mehr existierende `vocabulary`-Zeilen
+> (vermutlich durch spätere Duplikat-Merges gelöscht — `tunico_candidates.vocabulary_id` hatte
+> nie eine FK-Constraint). Unverändert mitmigriert, wie von der Aufgabe verlangt
+> (Verlustfreiheit gegenüber der Quelle, nicht Konsistenz gegenüber dem heutigen Bestand).
+> Betroffene `tunico_candidates.id`: 5, 31, 106, 166, 325, 416, 454, 564.
+>
+> `tunico_candidates` bleibt unangetastet als Sicherheitsnetz stehen (nur `SELECT` darauf,
+> kein `UPDATE`/`DELETE`/`DROP`). SQL in `exports/migration_p4_2026-09-17.sql`.
+
+### Ursprüngliche Paketbeschreibung
 
 Neue Tabelle: `skeleton` (Schlüssel), `lemma`, `entscheidung` (`verknuepft`/`angelegt`/`uebersprungen`),
 `vocabulary_ids int[]`, `comment`, `decided_at`.
