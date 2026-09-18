@@ -568,6 +568,32 @@ Beide Regeln als SQL-Funktionen `public._translit_skeleton()`/`public._arabic_sk
 
 **Lehre, über diesen Fall hinaus:** eine abgeleitete Spalte ohne Generierung oder Trigger ist ein eingefrorener Schnappschuss, genau wie `tunico_candidates.auto_verdict`. Wo eine Spalte aus einer anderen berechnet wird und die Formel als `IMMUTABLE`-Funktion vorliegt, gehört sie generiert — sonst ist die Frage nicht *ob* sie auseinanderläuft, sondern wann es jemand merkt. Und gemerkt hätte es hier niemand: die falschen Skelette sind für jeden Abgleich unsichtbar, der auf ihnen aufsetzt.
 
+## Ninjas translit_skeleton folgt Ninjas Konvention, nicht unserer (2026-09-18)
+
+Gefunden bei der Abnahme von P3b (Quellenabgleich): eine Kontrollzahl, die nur bestätigt werden
+sollte, stieg von 143 auf 206. Ursache war kein Zählfehler.
+
+**`derja_ninja_entries.translit_skeleton` ist aus `darija` berechnet, also aus Ninjas eigener
+Transliteration** (14.287 von 16.577 Zeilen stimmen exakt mit `_translit_skeleton(darija)`
+überein), nicht aus der in unsere Konvention übersetzten Spalte `chatalpha`. Ninja schreibt `ch`
+für ش (wir `sh`), `9` für ق (wir `q`), `2` für Hamza. Das Skelett streicht nur Vokale und behält
+die Konsonanten — genau diese Unterschiede überleben also: `jaych`→`jch` gegen `jaysh`→`jsh`,
+`t3amma9`→`t3mm9` gegen `t3ammaq`→`t3mmq`, `rach 3laha`→`rch3lh` gegen `rash 3laha`→`rsh3lh`.
+
+**Ausmaß: 5.577 von 16.577 Zeilen (33,6 %)**, und nicht zufällig gestreut, sondern systematisch
+bei jedem Wort mit ش, ق oder Hamza. `vocab_lookup` reicht dieselbe Spalte durch (ninja 5.577 von
+16.577 betroffen, peacecorps 62 von 5.817, tunico 0 von 10.811) — also auch Rezept 1 und Rezept 4.
+
+**Dieselbe Fehlerklasse wie der ڒ-Fund oben, nur achtmal so groß:** eine Spalte, die aussieht wie
+ein fertiges Vergleichsmerkmal, ist in Wahrheit im Maßsystem der Quelle berechnet. **Regel daraus:
+ein vorberechnetes Skelett einer Fremdquelle nie ungeprüft als Joinschlüssel nehmen** — erst
+prüfen, aus welcher Spalte es stammt und in wessen Konvention diese geschrieben ist. Der
+Ein-Zeilen-Test: `count(*) filter (where translit_skeleton is distinct from
+_translit_skeleton(chatalpha))` gegen die Quelle laufen lassen.
+
+`quellen_lemmata` (P3b) ist nicht betroffen, weil es das Skelett dort aus `chatalpha` berechnet.
+Offen: der Ninja-Zweig von `vocab_lookup` (rein additiver Fix, findet mehr und nie weniger).
+
 ## Peace Corps forms_chatalpha/forms_skeleton — Nachbefüllung (2026-09-05)
 
 Ausgangslage: nur 1.241/5.070 Zeilen hatten `forms_chatalpha`/`forms_skeleton` befüllt (aus früheren Einzel-Transkriptionssitzungen), der Rest der Tabelle (importiert aus dem rohen PDF-Extrakt) nicht — und die Konvertierungsregel von `forms_phonetic` (Original-Lautschrift) zu unserem Chat-Alphabet war nirgendwo dokumentiert. Statt zu raten: Regel per Reverse-Engineering aus den 1.241 bereits korrekt konvertierten Zeilen abgeleitet (Diff zwischen `forms_phonetic` und `forms_chatalpha` Zeichen für Zeichen verglichen), dann **vor** dem Bulk-Update gegen alle 1.241 Zeilen auf 100%-exakten Match getestet — nicht auf Stichproben verlassen.

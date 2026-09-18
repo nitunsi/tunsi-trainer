@@ -277,7 +277,37 @@ Legt `quellen_lemmata` an, zunächst nur mit `quelle = 'tunico'`. Die Spalten `r
 **kein Lemma enthält mehr ein `|`**; die Zahl der TUNICO-Zeilen liegt in der Größenordnung 2.023;
 `wortart` ist für den überwiegenden Teil gesetzt, der Rest sauber auf `unklar` (Anteil berichten).
 
-### P3b — Peace Corps und Derja Ninja ergänzen
+### P3b — Peace Corps und Derja Ninja ergänzen — ERLEDIGT 2026-09-18
+
+> **Abgenommen.** `quellen_lemmata` steht jetzt bei **22.356 Zeilen**: tunico 2.005,
+> peacecorps 4.043, ninja 16.308. Kein Lemma enthält ein `|`, keine Dubletten je Quelle.
+> Gruppe A 0, Gruppe B unverändert (21=2, 22=231), `vocabulary` 3.775, `tunico_candidates` 954,
+> `import_entscheidungen` 379, Rechte identisch wiederhergestellt.
+> SQL in `exports/migration_p3b_2026-09-18.sql`.
+>
+> **Die TUNICO-Zeilen sind nachweislich unverändert**, nicht nur der Anzahl nach: vor dem Umbau
+> wurde `md5(string_agg(zeile::text))` über alle 2.005 TUNICO-Zeilen gebildet
+> (`bc65a059f3dddd3251314ac482cb8d29`) und danach — sowie nochmals nach einem `REFRESH` —
+> identisch wiedergefunden. Der TUNICO-Block wurde per Skript aus der P3a-Datei extrahiert,
+> nicht abgetippt.
+>
+> **Laufzeit `REFRESH`: 5,0 s** (P3a allein: 4,7–4,8 s). Die beiden neuen Zweige kosten also
+> zusammen rund 0,3 s, weil sie mit reinem `GROUP BY` statt mit korrelierten Subqueries
+> aggregieren. Die 15-s-Schwelle aus dem Plan wurde nicht annähernd erreicht — der dort
+> vorgesehene Umbau auf Joins ist nicht nötig.
+>
+> **Mehrfachbelegung — die Score-Achse, um die es ging:**
+>
+> | in wie vielen Quellen | Skelette |
+> |---|---|
+> | alle drei | **800** |
+> | zwei | **1.439** |
+> | nur eine | 10.538 |
+>
+> **Peace-Corps-Rang 1: 532 Lemmata** (nicht 660). Die 660 aus der Ersterhebung waren *Einträge*;
+> nach Dedup gleicher Lemmata über mehrere englische Stichwörter und nach der Erstform-Regel
+> bleiben 532. Kein Verlust, eine andere Zähleinheit.
+
 
 Erweitert dieselbe Materialized View um `quelle in ('peacecorps','ninja')`. Setzt P3a voraus.
 
@@ -394,6 +424,48 @@ nicht Neuanlagen (SKILL.md → „Nie ohne Bestätigung in Supabase schreiben").
   (auto_verdict/matched_vocab_id, 156 von 374 falsch rot) und „`_translit_skeleton(v.darija)`
   statt `v.translit_skeleton`" (95 ms gegen Timeout).
 - `skills/tunsi/SKILL.md`: Schnellzugriff-Zeile auf den neuen View.
+
+## Datenbefund aus P3b — Ninjas Skelette passen nicht zu unserer Konvention
+
+Bei der Abnahme von P3b sprang eine Zahl nach oben, die eigentlich nur bestätigt werden sollte:
+von den 263 wirklich offenen Kandidaten haben **206 einen Ninja-Eintrag mit Audio**, nicht die
+am 2026-09-16 gemessenen 143. Die Ursache ist kein Zählfehler, sondern ein systematischer.
+
+**`derja_ninja_entries.translit_skeleton` ist aus Ninjas EIGENER Transliteration berechnet**,
+nicht aus der in unsere Konvention übersetzten `chatalpha`-Spalte (gemessen: 14.287 der 16.577
+Zeilen stimmen exakt mit `_translit_skeleton(darija)` überein). Ninja schreibt aber `ch` für ش
+(wir `sh`), `9` für ق (wir `q`) und `2` für Hamza. Da das Skelett die Konsonanten behält und nur
+die Vokale streicht, überleben genau diese Unterschiede:
+
+| Ninja `darija` | Skelett gespeichert | unsere `chatalpha` | Skelett korrekt |
+|---|---|---|---|
+| `jaych` | `jch` | `jaysh` | `jsh` |
+| `t3amma9` | `t3mm9` | `t3ammaq` | `t3mmq` |
+| `rach 3laha` | `rch3lh` | `rash 3laha` | `rsh3lh` |
+| `27sin` | `7sn` | `a7sin` | `7sn` (hier zufällig gleich) |
+
+**Ausmaß: 5.577 von 16.577 Zeilen (33,6 %)** haben ein gespeichertes Skelett, das nicht zu ihrer
+eigenen `chatalpha` passt. Jeder Skelett-Join gegen diese Spalte verfehlt sie zwangsläufig —
+und zwar lautlich nicht zufällig verteilt, sondern **genau bei allen Wörtern mit ش, ق oder Hamza**.
+
+**Das betrifft nicht nur P3b, sondern den dokumentierten Arbeitsablauf.** `vocab_lookup` — die
+View hinter Rezept 1 und Rezept 4 in `SKILL.md` — reicht dieselbe Spalte durch:
+
+| `vocab_lookup` | Zeilen | Skelett passt nicht zur eigenen `chatalpha` |
+|---|---|---|
+| ninja | 16.577 | **5.577** |
+| peacecorps | 5.817 | 62 |
+| tunico | 10.811 | 0 |
+
+Dieselbe Fehlerklasse wie der ڒ-Fund (PRECEDENTS.md: 699 Zeilen für jeden Abgleich unsichtbar),
+nur achtmal so groß. `quellen_lemmata` ist davon **nicht** betroffen — P3b berechnet das Skelett
+dort aus `chatalpha`, also aus unserer Konvention.
+
+**Nicht behoben, weil außerhalb von P3b und an lebendem Code:** `vocab_lookup` wird vom Trainer
+an vier Stellen gelesen. Der Fix wäre klein (im Ninja-Zweig `_translit_skeleton(chatalpha)` statt
+der gespeicherten Spalte) und rein additiv — er findet mehr, nie weniger. Gehört als eigenes
+kleines Paket vor P5, weil P5s Bucket-Logik sonst auf einer Quelle aufsetzt, die ein Drittel
+ihrer Treffer verschluckt.
 
 ## Datenbefund aus P4 — 8 Entscheidungen zeigten ins Leere (6 erledigt, 2 offen)
 
