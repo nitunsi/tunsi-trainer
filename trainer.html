@@ -4160,7 +4160,14 @@ async function showSourceCheck(){
 
     const orParts = [];
     if(v.arabic_skeleton && v.arabic_skeleton.length >= 4) orParts.push('arabic_skeleton.eq.'+encodeURIComponent(v.arabic_skeleton));
-    if(v.translit_skeleton && v.translit_skeleton.length >= 4) orParts.push('translit_skeleton.eq.'+encodeURIComponent(v.translit_skeleton));
+    if(v.translit_skeleton && v.translit_skeleton.length >= 4){
+      orParts.push('translit_skeleton.eq.'+encodeURIComponent(v.translit_skeleton));
+      // translit_skeleton_src ist das Skelett in der EIGENEN Konvention der Quelle. Bei Ninja
+      // weicht das ab (ch statt sh, 9 statt q, 2 statt Hamza); ohne diese zweite Achse verliert
+      // der Abgleich Treffer wie tfadhdhal (Ninja setzt dort faelschlich th fuer Dad) oder
+      // Eintraege, deren Ninja-Pendant den Artikel mitfuehrt. Siehe PRECEDENTS.md.
+      orParts.push('translit_skeleton_src.eq.'+encodeURIComponent(v.translit_skeleton));
+    }
     let skeleton = [];
     if(orParts.length){
       const raw = await sbApi('vocab_lookup?select='+selectCols+'&or=('+orParts.join(',')+')') || [];
