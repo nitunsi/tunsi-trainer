@@ -395,7 +395,7 @@ nicht Neuanlagen (SKILL.md → „Nie ohne Bestätigung in Supabase schreiben").
   statt `v.translit_skeleton`" (95 ms gegen Timeout).
 - `skills/tunsi/SKILL.md`: Schnellzugriff-Zeile auf den neuen View.
 
-## Offener Datenbefund aus P4 — 8 Entscheidungen zeigen ins Leere
+## Datenbefund aus P4 — 8 Entscheidungen zeigten ins Leere (6 erledigt, 2 offen)
 
 Bei der Migration der 379 Entscheidungen kam heraus: **8 der 378 übernommenen `vocabulary_id`-Werte
 zeigen auf Zeilen, die es nicht mehr gibt.** `tunico_candidates.vocabulary_id` hatte nie eine
@@ -417,8 +417,24 @@ also genau die Zeile, die beim Merge behalten wurde.
 | `7lu` | 4159 | 378 `7lou` = süß (kein exakter Schreibtreffer) | **nein** |
 | `tayyib` | 4028 | 405 `ytayyeb` / 1646 `tayyab` | **nein** |
 
-**Vorschlag:** die 6 eindeutigen umbiegen, die 2 uneindeutigen Nils vorlegen. Betrifft nur
-`import_entscheidungen`, nicht `vocabulary` — also keine Vokabeldatenänderung. Noch nicht ausgeführt.
+**Erledigt 2026-09-18:** die **6 eindeutigen umgebogen**
+(`exports/migration_p4b_verwaiste_ids_2026-09-18.sql`). Die Ersatz-ID wird in der `UPDATE`-Anweisung
+selbst ermittelt, nicht als Literal eingesetzt — die Eindeutigkeitsbedingung (genau **ein** exakter
+Schreibtreffer auf `lower(darija)`) ist damit Teil des ausgeführten SQL, nicht nur eine Behauptung
+im Kommentar. Jede geänderte Zeile trägt die alte ID in ihrem `comment`.
+Danach gemessen: 379 Zeilen, 378 Verknüpfungen, **noch 2 verwaist**, `tunico_candidates` unverändert
+954, `vocabulary` unverändert 3.775, Gruppe A 0.
+
+**Die 2 offenen — Entscheidung liegt bei Nils.** Beide haben keinen exakten Schreibtreffer, aber die
+Wortart des ursprünglichen Kandidaten löst sie faktisch auf:
+
+| Lemma | tote ID | Kandidat | Vorschlag | Alternativen |
+|---|---|---|---|---|
+| `tayyib` | 4028 | #106, **`verb_pres`**, „kochen / gut / ordentlich" | **405 `ytayyeb` = er kocht** (Präsens, passt zur Kategorie) | 1646 `tayyab` = er kochte (Vergangenheit), 2921 `tayeb` = gar/gekocht (Adj.) |
+| `7lu` | 4159 | #325, **`adj`**, „süß / hübsch / reizend / schön" | **378 `7lou` = süß / mild** (Maskulinum, nur andere Vokalschreibung) | 1086 `7loua` = süß (f.), 3892 `7alwa` = Süßigkeit |
+
+Nicht eigenmächtig ausgeführt, weil beide auf einer Auslegung beruhen (Kategorie bzw. Vokalschreibung)
+und nicht auf einem Schreibtreffer — genau die Grenze, ab der die Maschine raten würde.
 
 **Und die Lehre für P5/P6:** die neue Tabelle braucht denselben Schutz nicht per FK (die
 Entscheidung soll eine gelöschte Zeile überleben), aber der Quellenabgleich muss tote
