@@ -7270,7 +7270,7 @@ const QA_BUCKET_LABEL = {
 };
 const QA_QUELLE_LABEL = { tunico:'TUNICO', ninja:'Ninja', peacecorps:'Peace Corps' };
 
-let _qaBucket='fehlt', _qaQuelle='all', _qaWortart='all',
+let _qaBucket='fehlt', _qaQuelle='all', _qaWortart='all', _qaRang='all',
     _qaNurAudio=false, _qaNurDeutsch=false, _qaMehrfach=false,
     _qaOffset=0, _qaBatch=15, _qaCounts={};
 
@@ -7306,6 +7306,11 @@ function _qaQuery(){
   let q = 'quellen_abgleich?select=*&bucket=eq.'+_qaBucket;
   if(_qaQuelle !== 'all')  q += '&quellen=cs.{'+_qaQuelle+'}';
   if(_qaWortart !== 'all') q += '&wortart=eq.'+encodeURIComponent(_qaWortart);
+  // Positive Auswahl statt Ausblenden: Rang 4/5 sinken durch den Score ohnehin nach unten
+  // (Schnitt 38 bzw. 24 gegen 87 bei Rang 1), ein Ausblende-Schalter waere Bedienlast ohne
+  // Nutzen. Wertvoll ist der umgekehrte Griff — "zeig mir nur, was Peace Corps zuerst
+  // beibringt". lte schliesst Zeilen ohne Rang mit aus, genau so gemeint.
+  if(_qaRang !== 'all') q += '&rang_pc=lte.'+_qaRang;
   if(_qaNurAudio)   q += '&audio_url=not.is.null';
   if(_qaNurDeutsch) q += '&gloss_de=not.is.null';
   if(_qaMehrfach)   q += '&n_quellen=gte.2';
@@ -7347,6 +7352,11 @@ function _qaRenderShell(){
           ${['Verb','Nomen','Adjektiv','Adverb','Numerale','Interjektion','Eigenname','Partikel/Funktionswort','unklar']
             .map(w=>'<option value="'+escHtml(w)+'"'+(_qaWortart===w?' selected':'')+'>'+escHtml(w)+'</option>').join('')}
         </select>
+        <select id="qa-rang" title="Peace Corps ordnet seinen Wortschatz nach Lernwichtigkeit, 1 ist die wichtigste Stufe" style="padding:.35rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;font-size:.78rem">
+          <option value="all"${_qaRang==='all'?' selected':''}>Jeder PC-Rang</option>
+          <option value="2"${_qaRang==='2'?' selected':''}>PC-Rang 1–2 (wichtigste)</option>
+          <option value="3"${_qaRang==='3'?' selected':''}>PC-Rang 1–3</option>
+        </select>
         <label style="font-size:.74rem;color:var(--muted);cursor:pointer"><input type="checkbox" id="qa-audio"${_qaNurAudio?' checked':''}> 🔊 nur mit Audio</label>
         <label style="font-size:.74rem;color:var(--muted);cursor:pointer"><input type="checkbox" id="qa-deutsch"${_qaNurDeutsch?' checked':''}> nur mit dt. Glosse</label>
         <label style="font-size:.74rem;color:var(--muted);cursor:pointer"><input type="checkbox" id="qa-mehrfach"${_qaMehrfach?' checked':''}> mehrfach belegt</label>
@@ -7361,6 +7371,7 @@ function _qaRenderShell(){
   const bind = (id, fn) => { const el=document.getElementById(id); if(el) el.addEventListener('change', e=>{ fn(e.target); _qaRenderShell(); _qaLoadBatch(true); }); };
   bind('qa-quelle',   t => _qaQuelle  = t.value);
   bind('qa-wortart',  t => _qaWortart = t.value);
+  bind('qa-rang',     t => _qaRang    = t.value);
   bind('qa-audio',    t => _qaNurAudio   = t.checked);
   bind('qa-deutsch',  t => _qaNurDeutsch = t.checked);
   bind('qa-mehrfach', t => _qaMehrfach   = t.checked);
