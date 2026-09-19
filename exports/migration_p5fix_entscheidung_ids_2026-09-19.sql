@@ -1,0 +1,43 @@
+-- FEHLERKORREKTUR am quellen_abgleich-View (2026-09-19)
+-- Migration: p5_fix_entscheidung_ids_typ_und_absturz
+--
+-- SYMPTOM im Trainer: der Screen baute sich auf (die Bucket-Zahlen kamen durch), aber
+-- die Zeilenabfrage brach ab mit
+--   2202E: cannot accumulate arrays of different dimensionality
+--
+-- URSACHE, erster Fehler: die ent-CTE holte die juengste Entscheidung je Skelett mit
+--   (array_agg(vocabulary_ids ORDER BY decided_at DESC))[1]
+-- vocabulary_ids ist selbst ein int[]; array_agg stapelt daraus ein int[][], und das
+-- geht nur, wenn alle Elemente gleich lang sind. Skelett "3sh" hat vier Entscheidungen
+-- mit den Laengen [0,1,1,1] -- die uebersprungene Zeile (3ayyish) traegt ein leeres
+-- Array neben drei einelementigen. Genau dort bricht Postgres ab.
+--
+-- URSACHE, zweiter (stiller) Fehler im selben Ausdruck: [1] auf einem int[][] liefert
+-- ein EINZELNES int, nicht das innere Array. Die Spalte war deshalb als integer
+-- typisiert statt als integer[] -- bei Homonymen haette sie ohnehin nur eine ID
+-- gezeigt und damit genau den Mangel reproduziert, wegen dem vocabulary_ids ueberhaupt
+-- ein Array ist (sabb -> #4508 "er beleidigte" UND #4506 "er goss").
+-- Deshalb DROP + CREATE statt CREATE OR REPLACE: der Spaltentyp aendert sich.
+-- quellen_abgleich_zaehler haengt daran und wurde unveraendert neu angelegt.
+--
+-- WARUM DIE TESTS ES NICHT GEFUNDEN HABEN: sowohl die SQL-Stichproben als auch die vier
+-- HTTP-Tests fragten benannte Spalten ab (select=lemma,bucket,score). Postgres schneidet
+-- ungenutzte CTE-Spalten weg, der Ausdruck wurde nie ausgewertet. Der Trainer ruft
+-- select=* -- erst da faellt es an.
+--
+-- LEHRE: eine View, die per select=* gelesen wird, muss auch per select=* getestet
+-- werden, nicht nur ueber die Spalten, die man gerade interessant findet. Ein
+-- Spaltenfilter im Test kann einen Laufzeitfehler komplett unsichtbar machen.
+--
+-- FIX: DISTINCT ON statt array_agg --
+--   SELECT DISTINCT ON (skeleton) skeleton AS sk, entscheidung,
+--          vocabulary_ids AS entscheidung_ids
+--   FROM import_entscheidungen ORDER BY skeleton, decided_at DESC, id DESC
+-- Gleiche Semantik (juengste Entscheidung je Skelett), ein Scan ueber 379 Zeilen,
+-- keine gestapelten Arrays, richtiger Typ.
+--
+-- ABNAHME (ueber echtes HTTP mit select=*, also exakt wie der Trainer ruft):
+--   alle vier Buckets     je 15 Zeilen, kein Fehler
+--   Filterkombinationen   quellen=cs.{ninja} / wortart+audio / n_quellen+gloss_de / offset
+--   skeleton=eq.3sh       der Ausloeser -- liefert jetzt entscheidung_ids [3990] als Array
+--   Zaehler-View          unveraendert
