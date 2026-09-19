@@ -562,6 +562,57 @@ Nach allen vier Fixes: 3.679/3.688 exakter Match. Die 9 verbleibenden Abweichung
 
 Beide Regeln als SQL-Funktionen `public._translit_skeleton()`/`public._arabic_skeleton()` hinterlegt (siehe Abschnitt "vocab_lookup — Cross-Source-Abgleich", Rezept 4) statt die Herleitung bei jedem `INSERT` erneut von Hand nachzubauen.
 
+**Nachtrag 2026-09-16 — die Spalten berechnen sich jetzt selbst.** Die hier hergeleiteten Formeln gelten unverändert, aber `vocabulary.translit_skeleton`/`arabic_skeleton` sind seither generierte Spalten (`GENERATED ALWAYS AS (public._translit_skeleton(darija)) STORED` bzw. aus `arabic_script`). Rezept 4 führt sie deshalb **nicht mehr in der `INSERT`-Spaltenliste** — stehen sie dort, bricht die Anweisung ab.
+
+**Der eigentliche Befund dahinter:** der Satz oben — „vermutlich immer per Hand/Adhoc-Skript nachgezogen“ — war zutreffend und die Folge war teurer als gedacht. Es gab weder Trigger noch Generierung, also veralteten die Spalten stillschweigend bei jeder späteren `darija`-Korrektur. Am Umstellungstag: **104 falsche und 9 leere `translit_skeleton`, dazu 100 falsche `arabic_skeleton`** bei 3.775 Zeilen. Genau die zwei Abweichungen, die oben 2026-09-05 noch als harmlose Einzelfälle notiert sind (`bit q3ad`/4356, `s7aba`/4214), waren der Anfang davon — kein Ausreißer, sondern ein Leck, das mit jeder Korrekturrunde größer wurde.
+
+**Lehre, über diesen Fall hinaus:** eine abgeleitete Spalte ohne Generierung oder Trigger ist ein eingefrorener Schnappschuss, genau wie `tunico_candidates.auto_verdict`. Wo eine Spalte aus einer anderen berechnet wird und die Formel als `IMMUTABLE`-Funktion vorliegt, gehört sie generiert — sonst ist die Frage nicht *ob* sie auseinanderläuft, sondern wann es jemand merkt. Und gemerkt hätte es hier niemand: die falschen Skelette sind für jeden Abgleich unsichtbar, der auf ihnen aufsetzt.
+
+## Der eingefrorene Kandidaten-Schnappschuss (2026-09-16)
+
+`tunico_candidates.auto_verdict` und `.matched_vocab_id` wurden am 8.–11. August 2026 einmal
+berechnet und nie wieder. Bis zum 16. September waren 373 Vokabeln dazugekommen. Ergebnis:
+von 575 offenen Kandidaten hatten **312 (54 %) längst einen Skelett-Treffer**, und **156 der 374
+rot als „fehlt“ markierten Zeilen waren vorhanden**. Die Liste argumentierte gegen sich selbst.
+
+Dieselbe Krankheit lag eine Ebene tiefer: `vocabulary.translit_skeleton` war eine gewöhnliche
+Spalte ohne Trigger und bei 104 Zeilen falsch, `arabic_skeleton` bei 100 (P1, 2026-09-16).
+
+**Regel daraus:** eine abgeleitete Spalte oder eine vorberechnete Liste ohne Generierung ist ein
+Schnappschuss, und die Frage ist nicht *ob* sie auseinanderläuft, sondern wann es jemand merkt.
+Wo die Formel als `IMMUTABLE`-Funktion vorliegt, gehört die Spalte **generiert**; wo eine Liste
+aus mehreren Tabellen entsteht, gehört sie als **View** berechnet statt gespeichert. Gespeichert
+wird nur, was eine Entscheidung festhält (`import_entscheidungen`), nie ein Zwischenergebnis.
+
+**Gegenprobe vor jeder Aussage über so eine Liste:** die Trefferzahl gegen den heutigen Bestand
+neu ziehen, nicht die gespeicherte Bewertung zitieren.
+
+## Ninjas translit_skeleton folgt Ninjas Konvention, nicht unserer (2026-09-18)
+
+Gefunden bei der Abnahme von P3b (Quellenabgleich): eine Kontrollzahl, die nur bestätigt werden
+sollte, stieg von 143 auf 206. Ursache war kein Zählfehler.
+
+**`derja_ninja_entries.translit_skeleton` ist aus `darija` berechnet, also aus Ninjas eigener
+Transliteration** (14.287 von 16.577 Zeilen stimmen exakt mit `_translit_skeleton(darija)`
+überein), nicht aus der in unsere Konvention übersetzten Spalte `chatalpha`. Ninja schreibt `ch`
+für ش (wir `sh`), `9` für ق (wir `q`), `2` für Hamza. Das Skelett streicht nur Vokale und behält
+die Konsonanten — genau diese Unterschiede überleben also: `jaych`→`jch` gegen `jaysh`→`jsh`,
+`t3amma9`→`t3mm9` gegen `t3ammaq`→`t3mmq`, `rach 3laha`→`rch3lh` gegen `rash 3laha`→`rsh3lh`.
+
+**Ausmaß: 5.577 von 16.577 Zeilen (33,6 %)**, und nicht zufällig gestreut, sondern systematisch
+bei jedem Wort mit ش, ق oder Hamza. `vocab_lookup` reicht dieselbe Spalte durch (ninja 5.577 von
+16.577 betroffen, peacecorps 62 von 5.817, tunico 0 von 10.811) — also auch Rezept 1 und Rezept 4.
+
+**Dieselbe Fehlerklasse wie der ڒ-Fund oben, nur achtmal so groß:** eine Spalte, die aussieht wie
+ein fertiges Vergleichsmerkmal, ist in Wahrheit im Maßsystem der Quelle berechnet. **Regel daraus:
+ein vorberechnetes Skelett einer Fremdquelle nie ungeprüft als Joinschlüssel nehmen** — erst
+prüfen, aus welcher Spalte es stammt und in wessen Konvention diese geschrieben ist. Der
+Ein-Zeilen-Test: `count(*) filter (where translit_skeleton is distinct from
+_translit_skeleton(chatalpha))` gegen die Quelle laufen lassen.
+
+`quellen_lemmata` (P3b) ist nicht betroffen, weil es das Skelett dort aus `chatalpha` berechnet.
+Offen: der Ninja-Zweig von `vocab_lookup` (rein additiver Fix, findet mehr und nie weniger).
+
 ## Peace Corps forms_chatalpha/forms_skeleton — Nachbefüllung (2026-09-05)
 
 Ausgangslage: nur 1.241/5.070 Zeilen hatten `forms_chatalpha`/`forms_skeleton` befüllt (aus früheren Einzel-Transkriptionssitzungen), der Rest der Tabelle (importiert aus dem rohen PDF-Extrakt) nicht — und die Konvertierungsregel von `forms_phonetic` (Original-Lautschrift) zu unserem Chat-Alphabet war nirgendwo dokumentiert. Statt zu raten: Regel per Reverse-Engineering aus den 1.241 bereits korrekt konvertierten Zeilen abgeleitet (Diff zwischen `forms_phonetic` und `forms_chatalpha` Zeichen für Zeichen verglichen), dann **vor** dem Bulk-Update gegen alle 1.241 Zeilen auf 100%-exakten Match getestet — nicht auf Stichproben verlassen.

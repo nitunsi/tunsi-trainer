@@ -1,0 +1,94 @@
+-- P5 -- quellen_abgleich: der Live-View mit Buckets und Score
+-- Projekt: lzecflvfalxkodytnwzf, angewandt am 2026-09-19 in vier Migrationen:
+--   p5_skelett_varianten_funktion
+--   p5_vocabulary_skelett_varianten_spalte
+--   p5_quellen_abgleich_lemma_einheit
+--   p5_variante_nur_laengendifferenz
+--
+-- Kernidee des Umbaus: die Vorschlagsliste wird NICHT gespeichert, sondern bei jedem
+-- Oeffnen berechnet -- deshalb ein gewoehnlicher View. Eine Materialized View waere
+-- wieder derselbe eingefrorene Schnappschuss wie tunico_candidates.auto_verdict.
+--
+-- =============================== VORARBEITEN ===============================
+--
+-- _skelett_varianten(text) -> text[]  (IMMUTABLE)
+--   Skelett plus alle Ein-Zeichen-Loeschungen, erst ab Laenge 4.
+--   Zweck: levenshtein() gegen alle Vokabeln lief in einen Timeout > 60 s
+--   (~12.000 Quellskelette x 3.775 Vokabeln). Der Loeschungs-Trick macht daraus
+--   Gleichheitsvergleiche: zwei Strings haben Abstand <= 1 genau dann, wenn sich
+--   ihre Loeschungsmengen schneiden.
+--
+-- vocabulary.skelett_varianten text[] GENERATED ALWAYS ... STORED + GIN-Index
+--   Generiert statt gewoehnlich, aus demselben Grund wie in P1: eine abgeleitete
+--   Spalte ohne Generierung ist ein eingefrorener Schnappschuss.
+--   Hinweis: generierte Spalten duerfen nicht auf andere generierte Spalten
+--   verweisen, deshalb _skelett_varianten(_translit_skeleton(darija)) statt
+--   _skelett_varianten(translit_skeleton).
+--
+-- ========================= ZWEI KORREKTUREN AM ENTWURF =========================
+--
+-- (1) EINHEIT: Lemma statt Skelett.
+--     Die erste Fassung gruppierte nach Skelett. Beim Sichten der ersten 25 Zeilen
+--     sofort aufgefallen: "kayyif" erschien mit freq_korpus 480 und der Glosse
+--     "als; Freude; Genuss; so...wie; wenn; wie". Die 480 gehoeren "kif", die Glosse
+--     ist ein Gemisch. Skelett "kf" fasst kif/kayyif zusammen, "st" fasst
+--     sawwit/sout/wast zusammen.
+--     Das Skelett ist das richtige Werkzeug, um gegen den BESTAND zu vergleichen --
+--     dafuer ist es gebaut. Es ist das falsche Werkzeug, um Quelleintraege
+--     untereinander zu einer Vorschlagszeile zu buendeln.
+--     Jetzt: Einheit = lower(lemma), Skelett nur noch Vergleichsachse.
+--     n_quellen zaehlt Quellen mit genau diesem Lemma (Score-Achse),
+--     n_quellen_skelett das ganze Skelett (nur Anzeige, schwaecheres Signal).
+--
+-- (2) VARIANTE: nur Laengendifferenz, keine Ersetzung.
+--     Der Plan sagte "Levenshtein <= 1". Gemessen war das viel zu weit: khrif
+--     (Herbst, "khrf") bekam 27 "aehnliche" Bestandszeilen -- khraj (er ging raus),
+--     khfif (leicht), khater (weil), nkhaf (ich habe Angst). Formal alle Abstand 1,
+--     inhaltlich voellig andere Woerter. 5.890 Zeilen landeten in variante.
+--     Der Grund ist sprachlich: das Skelett besteht nur aus Konsonanten, und im
+--     Arabischen tragen genau die die Wurzel. EIN getauschter Konsonant ist fast
+--     immer eine andere Wurzel. Eine Schreibvariante fuegt dagegen ein Zeichen hinzu
+--     oder laesst eines weg:
+--       inshalla / inshallah   nshll / nshllh   (angehaengtes h)
+--       tlatha   / thletha     tlth  / thlth    (eingefuegtes h)
+--     Wo wirklich ein Laut anders geschrieben wird (th/dh), sind das Digraphen --
+--     das Skelett aendert sich dann um zwei Zeichen.
+--     Danach: variante 4.359 statt 5.890, im Schnitt 2,9 Kandidaten statt Dutzenden.
+--     khrif findet jetzt el-khriyf (der Herbst), inshalla findet inshallah.
+--
+-- =============================== DIE VIER BUCKETS ===============================
+--   vorhanden  vocabulary-Zeile mit genau diesem Skelett
+--   baustein   nur INNERHALB mehrwortiger Zeilen, nie als eigene Zeile. Der Fall, der
+--              den Umbau ausgeloest hat: "kull" steckt in 15 Phrasen ohne eigene Zeile.
+--              Braucht vocab_tokens (P2), weil Phrasenskelette zusammenziehen.
+--   variante   Laengendifferenz 1 zu einer bestehenden Zeile -> kein neuer Eintrag,
+--              sondern ein geschenkter external_confirmed-Treffer auf eine bestehende.
+--   fehlt      nichts davon.
+--
+-- =============================== SCORE ===============================
+--   ln(1+freq_korpus)*10   TUNICO-Korpus: was in Tunis tatsaechlich gesagt wurde
+--   (6-rang_pc)*12         Peace Corps: was ein Lehrwerk zuerst beibringt (1 -> 60)
+--   (n_quellen-1)*25       Mehrfachbelegung -- NUR ab Skelettlaenge 4 (P2-Kollisions-
+--                          analyse: bei Laenge 2 ist ein Treffer Muenzwurf-Niveau,
+--                          kanada und weekend ergeben beide "knd")
+--   audio ? 20             Anlege-Reife: mit Ninja-Audio sofort vollstaendig anlegbar
+--   baustein ? 30          schliesst Phrasen auf, die schon im Trainer stehen
+--   Alle Komponenten sind einzeln als Spalten da, damit das UI die Begruendung zeigen
+--   kann statt nur eine Zahl.
+--
+-- =============================== PERFORMANCE ===============================
+-- Gemessen 476 ms ueber alle Skelette. Ausschliesslich Hash-Joins, KEINE korrelierten
+-- EXISTS-Subqueries -- die erzwingen eine Neuauswertung je Zeile und liefen in einen
+-- Timeout > 60 s. Wer diesen View aendert: die CTE-Struktur mit anschliessenden LEFT
+-- JOINs ist kein Stil, sondern die Bedingung dafuer, dass er live benutzbar ist.
+--
+-- =============================== ERGEBNIS ===============================
+--   fehlt      9.620
+--   vorhanden  5.244
+--   variante   4.359
+--   baustein     572
+--
+-- Die volle, tatsaechlich angewandte View-Definition steht in der Migration
+-- p5_variante_nur_laengendifferenz (letzte Fassung) und ist per
+--   select pg_get_viewdef('public.quellen_abgleich'::regclass, true)
+-- jederzeit abrufbar.

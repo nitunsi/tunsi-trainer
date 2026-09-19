@@ -1,0 +1,58 @@
+-- Fix: vocab_lookup -- Ninja-Skelett folgte Ninjas eigener Konvention
+-- Projekt: lzecflvfalxkodytnwzf, angewandt am 2026-09-18 in zwei Migrationen:
+--   fix_vocab_lookup_ninja_translit_skeleton
+--   vocab_lookup_translit_skeleton_src
+--
+-- BEFUND (bei der Abnahme von P3b gefunden, siehe PRECEDENTS.md):
+-- derja_ninja_entries.translit_skeleton ist aus Ninjas eigener darija berechnet
+-- (ch fuer Schin, 9 fuer Qaf, 2 fuer Hamza), nicht aus der in unsere Konvention
+-- uebersetzten chatalpha-Spalte. 5.577 von 16.577 Zeilen (33,6 %) hatten dadurch ein
+-- Skelett, das mit unserem nie zusammenfand -- systematisch bei jedem Wort mit
+-- Schin, Qaf oder Hamza.
+--
+-- Betroffen war nicht nur der Claude-Arbeitsablauf (SKILL.md Rezept 1/4), sondern der
+-- Trainer selbst: showSourceCheck() filtert vocab_lookup auf
+-- translit_skeleton.eq.<vocabulary.translit_skeleton>, also gegen unsere Konvention.
+--
+-- SCHRITT 1 -- translit_skeleton korrigieren.
+-- COALESCE, damit die 758 Ninja-Zeilen ohne chatalpha ihr bisheriges Skelett behalten
+-- statt NULL zu werden. Definition NICHT abgetippt, sondern serverseitig aus dem
+-- Katalog geholt und per replace() geaendert (Technik aus P1, kein Transkriptionsrisiko).
+--
+--   alt: '    n.translit_skeleton,\n'
+--   neu: '    COALESCE(public._translit_skeleton(n.chatalpha), n.translit_skeleton) AS translit_skeleton,\n'
+--   mit Eindeutigkeitspruefung (genau 1 Treffer; der TUNICO-Zweig fuehrt
+--   "t.translit_skeleton", Peace Corps "p.forms_skeleton[1] AS translit_skeleton").
+--
+-- MESSUNG NACH SCHRITT 1: ninja 0 von 16.577 Abweichungen (vorher 5.577), keine NULLs.
+-- ABER: 380 Vokabeln gewannen Ninja-Treffer, 5 VERLOREN welche -- dort passte der alte,
+-- aus Ninjas darija berechnete Wert zufaellig besser:
+--   2967 "sacha poubal"  -- unser Eintrag schreibt ch statt sh und verletzt damit die
+--                           eigene Hauskonvention; Ninjas "sasha poubal" ist das Richtige
+--   1394 / 2095 "tfadhdhal" -- Ninjas chatalpha macht aus dh (Dad) faelschlich th,
+--                           das bei uns fuer Dhal/Za reserviert ist -- hier irrt Ninja
+--   3603 / 1919          -- Ninjas chatalpha zieht den Artikel mit ("es-sghar")
+--
+-- SCHRITT 2 -- damit nichts verlorengeht: zusaetzliche Spalte translit_skeleton_src mit
+-- dem Skelett in der EIGENEN Konvention der Quelle, in allen drei Zweigen (bei TUNICO und
+-- Peace Corps identisch zu translit_skeleton, damit ein OR ueber beide Spalten
+-- quellenuebergreifend ohne Sonderfaelle funktioniert). Neue Spalten muessen bei
+-- CREATE OR REPLACE VIEW ans Ende, deshalb je Zweig hinter arabic_reconstruction_note
+-- angehaengt, mit Pruefung auf genau 3 erweiterte Zweige.
+--
+-- trainer.html: showSourceCheck() sucht jetzt auf beiden Achsen
+-- (translit_skeleton.eq + translit_skeleton_src.eq im selben or=).
+--
+-- ABNAHME (gemessen, Vokabeln mit Skelettlaenge >= 4, davon 2.221 Stueck):
+--   Vokabeln mit mindestens einem Ninja-Treffer   vorher 522  ->  jetzt 902
+--   davon verloren                                0
+--   davon dazugewonnen                            380
+--   vocab_lookup Zeilen gesamt                    34.747 (unveraendert)
+--   ninja-Zeilen mit Skelett != _translit_skeleton(chatalpha)   5.577 -> 0
+--
+-- Peace Corps behaelt 62 von 5.817 Abweichungen. Andere Ursache, harmlos: dort steckt
+-- Platzhalter-Notation in der Form ("ma 3and + p.e. sh zhar"), und das gespeicherte
+-- forms_skeleton hat "+" und "'" behalten, die _translit_skeleton() streicht. Keine
+-- Konventionsverwechslung, nicht angefasst.
+--
+-- ROLLBACK: beide Bloecke mit vertauschten replace()-Argumenten laufen lassen.
