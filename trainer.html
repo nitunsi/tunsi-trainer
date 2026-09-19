@@ -318,7 +318,7 @@ body.hide-latin .chat-opt .latin {
     <button class="lesson-chip" onclick="setMode('dupes',this);closeNav()">🔍 Prüfungen</button>
     <button class="lesson-chip" onclick="setMode('partnerqueue',this);closeNav()">📬 Partner-Queue</button>
     <button class="lesson-chip" onclick="setMode('partnercheck',this);closeNav()">🙋 Partner-Check</button>
-    <button class="lesson-chip" onclick="setMode('tunico',this);closeNav()">🗂️ TUNICO</button>
+    <button class="lesson-chip" onclick="setMode('quellen',this);closeNav()">🧭 Quellenabgleich</button>
     <button class="lesson-chip" onclick="setMode('lessons',this);closeNav()">📖 Lektionen</button>
     <button class="lesson-chip" onclick="setMode('export',this);closeNav()">💾 Export</button>
   </div>
@@ -2309,7 +2309,7 @@ function setMode(m,el){
   hideAllStickyBars();
   clearTimeout(_modeDispatchTimer);
   _modeDispatchTimer=setTimeout(()=>{
-    if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='tunico'){showTunicoCandidates();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}if(m==='coursesrs'){goCourseSrs();return;}if(m==='mix'){goMix();return;}go();
+    if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='quellen'){showQuellenAbgleich();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}if(m==='coursesrs'){goCourseSrs();return;}if(m==='mix'){goMix();return;}go();
   },0);
 }
 function updScore(){/* Score-Anzeige in nav-strip entfernt — score.c/w/st werden weiterhin für Ergebnis-Screen und SRS-Streak gepflegt */}
@@ -7250,446 +7250,316 @@ async function _actActivate(){
   btn.textContent='✓ Jetzt fällig setzen';btn.disabled=_actSelected.size===0;
 }
 
-// ===== TUNICO-Kandidaten: Frequenz-Lücken-Analyse, batch-weise abarbeiten =====
-// lessons.id der Pseudo-Lektion "L90 TUNICO-Import (unsortiert)" — Ziel fuer neu angelegte Vokabeln,
-// bis sie manuell einer echten Lektion zugeordnet werden. Nie null verwenden: mehrere Stellen im Code
-// (z.B. showAddVocab-Dropdown) erwarten v.ls immer als "L<nr>"-String, nie null.
-const TUNICO_UNSORTED_LESSON_ID = 29;
-// Verben werden in der Kandidaten-Queue in zwei Kandidaten aufgeteilt (cat 'verb_pres'/'verb_past'),
-// da der Trainer fuer jedes Verb sowohl eine Praesens- (L17) als auch eine Vergangenheits-Vokabel (L18)
-// fuehrt, TUNICO aber pro Verb nur die Vergangenheitsform als lemma_chatalpha liefert.
-const TUNICO_VERB_PRESENT_LESSON_ID = 46;
-const TUNICO_VERB_PAST_LESSON_ID = 47;
-let _tnCat='all', _tnStatus='pending', _tnVerdict='all', _tnOffset=0, _tnBatch=10, _tnCounts={};
+// ===== Quellenabgleich: was die Quellen kennen und der Trainer (noch) nicht =====
+// Loest den alten TUNICO-Kandidaten-Screen ab. Der hiess nach einer QUELLE, nicht nach
+// einer Taetigkeit — als einzige Schaltflaeche im Menue — und seine Liste war ein
+// eingefrorener Schnappschuss vom August: 156 von 374 rot als "fehlt" markierten
+// Zeilen waren laengst vorhanden. Jetzt wird die Liste bei jedem Oeffnen aus
+// quellen_abgleich berechnet (Live-View, siehe exports/migration_p5_2026-09-19.sql).
+//
+// lessons.id der Pseudo-Lektion "L90 TUNICO-Import (unsortiert)" — Ziel fuer neu
+// angelegte Vokabeln, bis sie manuell einer echten Lektion zugeordnet werden. Nie null
+// verwenden: mehrere Stellen im Code erwarten v.ls immer als "L<nr>"-String.
+const QA_UNSORTED_LESSON_ID = 29;
 
-async function showTunicoCandidates(){
+const QA_BUCKET_LABEL = {
+  fehlt:     { icon:'✖', text:'fehlt',      hint:'Weder als eigene Zeile noch in einer Phrase vorhanden.' },
+  baustein:  { icon:'🧩', text:'Baustein',   hint:'Steckt nur in mehrwortigen Zeilen, hat aber keine eigene Vokabel.' },
+  variante:  { icon:'≈', text:'Variante',   hint:'Unterscheidet sich von einer bestehenden Zeile um genau ein Zeichen.' },
+  vorhanden: { icon:'✓', text:'vorhanden',  hint:'Es gibt bereits eine Vokabel mit diesem Skelett.' }
+};
+const QA_QUELLE_LABEL = { tunico:'TUNICO', ninja:'Ninja', peacecorps:'Peace Corps' };
+
+let _qaBucket='fehlt', _qaQuelle='all', _qaWortart='all',
+    _qaNurAudio=false, _qaNurDeutsch=false, _qaMehrfach=false,
+    _qaOffset=0, _qaBatch=15, _qaCounts={};
+
+async function showQuellenAbgleich(){
   document.getElementById('act-screen').style.display='none';
   document.getElementById('act-screen').style.pointerEvents='none';
   const _ab=document.getElementById('act-batch-bar'); if(_ab) _ab.style.display='none';
   const area = document.getElementById('exercise-screen');
   if(area) area.style.display='block';
   const sticky = document.getElementById('sticky-next'); if(sticky) sticky.classList.remove('show');
-  document.getElementById('ex-type-label').textContent = '🗂️ TUNICO-Kandidaten';
+  document.getElementById('ex-type-label').textContent = '🧭 Quellenabgleich';
   document.getElementById('ex-progress').textContent = '';
   const np = document.getElementById('nav-progress'); if(np) np.style.visibility='hidden';
   const c = document.getElementById('exercise-content');
-  if(c) c.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Lade…</div>';
-  await _tnLoadCounts();
-  _tnRenderShell();
-  await _tnLoadBatch(true);
+  if(c) c.innerHTML = '<div style="padding:2rem;color:var(--muted)">Lade…</div>';
+  await _qaLoadCounts();
+  _qaRenderShell();
+  await _qaLoadBatch(true);
 }
 
-// Verb-Kandidaten laufen intern unter 'verb_pres'/'verb_past' (Praesens/Vergangenheit-Split),
-// zaehlen fuer den "Verben"-Chip aber weiterhin zusammen als ein Bucket.
-function _tnCatBucket(cat){ return (cat==='verb_pres'||cat==='verb_past') ? 'verb' : cat; }
-
-async function _tnLoadCounts(){
-  const verdictFilter = _tnVerdict==='all' ? '' : '&auto_verdict=eq.'+_tnVerdict;
-  const counts = {all:0, verb:0, adj:0, noun:0};
-  if(_tnStatus === 'linked_inactive'){
-    // Kein direkter SQL-Filter moeglich (next_review sitzt in progress, nicht in tunico_candidates) —
-    // alle verknuepften Kandidaten laden und clientseitig gegen srsProgress zaehlen, exakt wie beim Laden der Liste.
-    const rows = await sbApi('tunico_candidates?select=cat,vocabulary_id&status=eq.activated'+verdictFilter);
-    (rows||[]).forEach(r=>{
-      if(r.vocabulary_id && !(srsProgress[r.vocabulary_id] && srsProgress[r.vocabulary_id].next_review)){
-        counts.all++; const b=_tnCatBucket(r.cat); counts[b]=(counts[b]||0)+1;
-      }
-    });
-  } else {
-    const statusFilter = _tnStatus==='all' ? '' : '&status=eq.'+_tnStatus;
-    const rows = await sbApi('tunico_candidates?select=cat'+statusFilter+verdictFilter);
-    (rows||[]).forEach(r=>{ counts.all++; const b=_tnCatBucket(r.cat); counts[b]=(counts[b]||0)+1; });
-  }
-  _tnCounts = counts;
+async function _qaLoadCounts(){
+  try{
+    const rows = await sbApi('quellen_abgleich_zaehler?select=*') || [];
+    _qaCounts = {};
+    rows.forEach(r => { _qaCounts[r.bucket] = r; });
+  }catch(e){ _qaCounts = {}; }
 }
 
-async function _tnRefreshCountsAndShell(){
-  await _tnLoadCounts();
-  _tnRenderShell();
-  await _tnLoadBatch(true);
+// PostgREST liefert ohne explizites order= eine beliebige Reihenfolge — die Sortierung
+// nach Score MUSS serverseitig passieren, sonst sortiert man nur die zufaellig
+// gelieferten 15 Zeilen (Praezedenzfall: PRECEDENTS.md -> Partner-Check-Sortierung).
+function _qaQuery(){
+  let q = 'quellen_abgleich?select=*&bucket=eq.'+_qaBucket;
+  if(_qaQuelle !== 'all')  q += '&quellen=cs.{'+_qaQuelle+'}';
+  if(_qaWortart !== 'all') q += '&wortart=eq.'+encodeURIComponent(_qaWortart);
+  if(_qaNurAudio)   q += '&audio_url=not.is.null';
+  if(_qaNurDeutsch) q += '&gloss_de=not.is.null';
+  if(_qaMehrfach)   q += '&n_quellen=gte.2';
+  return q + '&order=score.desc,lemma.asc';
 }
 
-function _tnRenderShell(){
+function _qaRenderShell(){
   const c = document.getElementById('exercise-content');
   if(!c) return;
-  const catLabels = {all:'Alle', verb:'Verben', adj:'Adjektive', noun:'Nomen'};
+  const chip = (b) => {
+    const meta = QA_BUCKET_LABEL[b], n = (_qaCounts[b] && _qaCounts[b].n) || 0;
+    const on = b === _qaBucket;
+    return '<button class="qa-chip" data-bucket="'+b+'" title="'+escHtml(meta.hint)+'" style="padding:.4rem .8rem;border:1px solid '+(on?'var(--gold)':'var(--border)')+';border-radius:6px;background:'+(on?'rgba(201,168,76,.12)':'transparent')+';color:'+(on?'var(--gold2)':'var(--muted)')+';font-family:inherit;font-size:.78rem;cursor:pointer">'+meta.icon+' '+meta.text+' <span style="opacity:.7">('+n+')</span></button>';
+  };
+  const cnt = _qaCounts[_qaBucket] || {};
   c.innerHTML = `
     <div style="padding:.5rem 0 5rem">
       <div style="font-size:.75rem;color:var(--muted);margin-bottom:.7rem;line-height:1.5">
-        Kandidaten aus den häufigsten Wörtern des TUNICO-Korpus, nach Häufigkeit sortiert. Pro Wort: verknüpfen falls schon vorhanden (setzt es sofort fällig), neu anlegen (geflaggt, wartet auf Ninja-Check fürs Arabische), oder überspringen.
+        Alle Wörter aus TUNICO, Peace Corps und Derja Ninja, abgeglichen gegen den aktuellen Bestand —
+        <b style="color:var(--text)">bei jedem Öffnen neu berechnet</b>, nicht gespeichert.
+        Sortiert nach einem Score aus Korpushäufigkeit, Peace-Corps-Rang, Mehrfachbelegung und Anlege-Reife.
       </div>
-      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem" id="tn-cat-chips">
-        ${['all','verb','adj','noun'].map(cat=>{
-          const n = _tnCounts[cat]||0;
-          const active = cat===_tnCat;
-          return '<button class="tn-chip" data-cat="'+cat+'" style="padding:.4rem .8rem;border:1px solid '+(active?'var(--gold)':'var(--border)')+';border-radius:6px;background:'+(active?'rgba(201,168,76,.12)':'transparent')+';color:'+(active?'var(--gold2)':'var(--muted)')+';font-family:inherit;font-size:.78rem;cursor:pointer">'+catLabels[cat]+' <span style="opacity:.7">('+n+')</span></button>';
-        }).join('')}
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem" id="qa-bucket-chips">
+        ${['fehlt','baustein','variante','vorhanden'].map(chip).join('')}
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:.6rem;padding:.4rem .6rem;background:var(--surface);border-left:2px solid var(--border);border-radius:0 4px 4px 0">
+        ${escHtml(QA_BUCKET_LABEL[_qaBucket].hint)}
+        ${cnt.n_mit_audio!==undefined ? ' · '+cnt.n_mit_audio+' mit Audio · '+cnt.n_mit_deutsch+' mit deutscher Glosse · '+cnt.n_mehrfach+' mehrfach belegt' : ''}
       </div>
       <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center">
-        <select id="tn-status-sel" style="padding:.35rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;font-size:.78rem">
-          <option value="pending"${_tnStatus==='pending'?' selected':''}>Offen</option>
-          <option value="added"${_tnStatus==='added'?' selected':''}>Neu angelegt</option>
-          <option value="activated"${_tnStatus==='activated'?' selected':''}>Verknüpft</option>
-          <option value="linked_inactive"${_tnStatus==='linked_inactive'?' selected':''}>Verknüpft, aber inaktiv</option>
-          <option value="skipped"${_tnStatus==='skipped'?' selected':''}>Übersprungen</option>
-          <option value="all"${_tnStatus==='all'?' selected':''}>Alle</option>
+        <select id="qa-quelle" style="padding:.35rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;font-size:.78rem">
+          <option value="all"${_qaQuelle==='all'?' selected':''}>Alle Quellen</option>
+          <option value="tunico"${_qaQuelle==='tunico'?' selected':''}>TUNICO</option>
+          <option value="ninja"${_qaQuelle==='ninja'?' selected':''}>Derja Ninja</option>
+          <option value="peacecorps"${_qaQuelle==='peacecorps'?' selected':''}>Peace Corps</option>
         </select>
-        <select id="tn-verdict-sel" style="padding:.35rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;font-size:.78rem">
-          <option value="all"${_tnVerdict==='all'?' selected':''}>Alle Einschätzungen</option>
-          <option value="missing"${_tnVerdict==='missing'?' selected':''}>Fehlt</option>
-          <option value="found"${_tnVerdict==='found'?' selected':''}>Vermutlich vorhanden</option>
-          <option value="risky"${_tnVerdict==='risky'?' selected':''}>Unsicher</option>
+        <select id="qa-wortart" style="padding:.35rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;font-size:.78rem">
+          <option value="all"${_qaWortart==='all'?' selected':''}>Alle Wortarten</option>
+          ${['Verb','Nomen','Adjektiv','Adverb','Numerale','Interjektion','Eigenname','Partikel/Funktionswort','unklar']
+            .map(w=>'<option value="'+escHtml(w)+'"'+(_qaWortart===w?' selected':'')+'>'+escHtml(w)+'</option>').join('')}
         </select>
-        <span style="font-size:.7rem;color:var(--muted);margin-left:auto">nach Korpus-Häufigkeit sortiert</span>
+        <label style="font-size:.74rem;color:var(--muted);cursor:pointer"><input type="checkbox" id="qa-audio"${_qaNurAudio?' checked':''}> 🔊 nur mit Audio</label>
+        <label style="font-size:.74rem;color:var(--muted);cursor:pointer"><input type="checkbox" id="qa-deutsch"${_qaNurDeutsch?' checked':''}> nur mit dt. Glosse</label>
+        <label style="font-size:.74rem;color:var(--muted);cursor:pointer"><input type="checkbox" id="qa-mehrfach"${_qaMehrfach?' checked':''}> mehrfach belegt</label>
+        <span style="font-size:.7rem;color:var(--muted);margin-left:auto">nach Score sortiert</span>
       </div>
-      <div id="tn-list" style="display:flex;flex-direction:column;gap:.7rem"></div>
-      <div id="tn-loadmore-wrap" style="text-align:center;margin-top:1rem"></div>
+      <div id="qa-list" style="display:flex;flex-direction:column;gap:.7rem"></div>
+      <div id="qa-loadmore-wrap" style="text-align:center;margin-top:1rem"></div>
     </div>`;
-  document.querySelectorAll('#tn-cat-chips .tn-chip').forEach(b=>{
-    b.addEventListener('click', ()=>{ _tnCat=b.dataset.cat; _tnRenderShell(); _tnLoadBatch(true); });
+  document.querySelectorAll('#qa-bucket-chips .qa-chip').forEach(b=>{
+    b.addEventListener('click', ()=>{ _qaBucket=b.dataset.bucket; _qaRenderShell(); _qaLoadBatch(true); });
   });
-  document.getElementById('tn-status-sel').addEventListener('change', e=>{ _tnStatus=e.target.value; _tnRefreshCountsAndShell(); });
-  document.getElementById('tn-verdict-sel').addEventListener('change', e=>{ _tnVerdict=e.target.value; _tnRefreshCountsAndShell(); });
+  const bind = (id, fn) => { const el=document.getElementById(id); if(el) el.addEventListener('change', e=>{ fn(e.target); _qaRenderShell(); _qaLoadBatch(true); }); };
+  bind('qa-quelle',   t => _qaQuelle  = t.value);
+  bind('qa-wortart',  t => _qaWortart = t.value);
+  bind('qa-audio',    t => _qaNurAudio   = t.checked);
+  bind('qa-deutsch',  t => _qaNurDeutsch = t.checked);
+  bind('qa-mehrfach', t => _qaMehrfach   = t.checked);
 }
 
-// "Verknüpft, aber inaktiv": kein direkter SQL-Filter moeglich (next_review sitzt in progress, nicht in
-// tunico_candidates) — stattdessen client-seitig gegen srsProgress filtern. Scannt in Roh-Seiten durch
-// alle status=activated-Kandidaten und sammelt die inaktiven in einem Puffer, damit "weitere laden" auch
-// bei duennen Trefferquoten nicht Eintraege verliert oder doppelt scannt.
-let _tnRawOffset = 0, _tnInactiveBuffer = [], _tnRawExhausted = false;
-
-async function _tnLoadInactiveLinked(catFilter, verdictFilter){
-  const RAW_CHUNK = 200;
-  while(_tnInactiveBuffer.length < _tnBatch && !_tnRawExhausted){
-    const chunk = await sbApi('tunico_candidates?select=*&status=eq.activated'+catFilter+verdictFilter+'&order=frequency.desc&limit='+RAW_CHUNK+'&offset='+_tnRawOffset) || [];
-    _tnRawOffset += chunk.length;
-    if(chunk.length < RAW_CHUNK) _tnRawExhausted = true;
-    if(!chunk.length) break;
-    const inactive = chunk.filter(r => r.vocabulary_id && !(srsProgress[r.vocabulary_id] && srsProgress[r.vocabulary_id].next_review));
-    _tnInactiveBuffer.push(...inactive);
-  }
-  const take = _tnInactiveBuffer.splice(0, _tnBatch);
-  const exhausted = _tnRawExhausted && _tnInactiveBuffer.length === 0;
-  return {rows: take, exhausted};
-}
-
-async function _tnLoadBatch(reset){
-  const listEl = document.getElementById('tn-list');
+async function _qaLoadBatch(reset){
+  const listEl = document.getElementById('qa-list');
   if(!listEl) return;
-  if(reset){ _tnOffset = 0; _tnRawOffset = 0; _tnInactiveBuffer = []; _tnRawExhausted = false; listEl.innerHTML=''; }
-  const catFilter = _tnCat==='all' ? '' : _tnCat==='verb' ? '&cat=in.(verb,verb_pres,verb_past)' : '&cat=eq.'+_tnCat;
-  const verdictFilter = _tnVerdict==='all' ? '' : '&auto_verdict=eq.'+_tnVerdict;
-  const wrap = document.getElementById('tn-loadmore-wrap');
+  if(reset){ _qaOffset = 0; listEl.innerHTML = ''; }
+  const wrap = document.getElementById('qa-loadmore-wrap');
   wrap.innerHTML = '<span style="font-size:.75rem;color:var(--muted)">Lade…</span>';
-  let rows, exhausted;
+  let rows;
   try{
-    if(_tnStatus === 'linked_inactive'){
-      const res = await _tnLoadInactiveLinked(catFilter, verdictFilter);
-      rows = res.rows; exhausted = res.exhausted;
-    } else {
-      const statusFilter = _tnStatus==='all' ? '' : '&status=eq.'+_tnStatus;
-      rows = await sbApi('tunico_candidates?select=*'+catFilter+statusFilter+verdictFilter+'&order=frequency.desc&limit='+_tnBatch+'&offset='+_tnOffset) || [];
-      _tnOffset += rows.length;
-      exhausted = rows.length < _tnBatch;
-    }
+    rows = await sbApi(_qaQuery()+'&limit='+_qaBatch+'&offset='+_qaOffset) || [];
   }catch(e){ wrap.innerHTML=''; showToast('Fehler: '+e.message,'err'); return; }
-  const vocabIds = [...new Set(rows.flatMap(r=>[r.matched_vocab_id, r.vocabulary_id]).filter(Boolean))];
-  let matchMap = {};
-  if(vocabIds.length){
-    const mv = await sbApi('vocabulary?select=id,darija,german&id=in.('+vocabIds.join(',')+')');
-    (mv||[]).forEach(v=>matchMap[v.id]=v);
-  }
-  rows.forEach(r=>listEl.insertAdjacentHTML('beforeend', _tnRowHtml(r, matchMap[r.matched_vocab_id], matchMap[r.vocabulary_id])));
-  const alreadyShown = listEl.querySelectorAll('.tn-row').length;
-  if(exhausted){
-    wrap.innerHTML = (alreadyShown===0)
+  _qaOffset += rows.length;
+  const basis = listEl.querySelectorAll('.qa-row').length;
+  rows.forEach((r,i) => { r._idx = basis + i; listEl.insertAdjacentHTML('beforeend', _qaRowHtml(r)); });
+  const gezeigt = listEl.querySelectorAll('.qa-row').length;
+  if(rows.length < _qaBatch){
+    wrap.innerHTML = gezeigt===0
       ? '<div style="padding:2rem;color:var(--muted)">Keine Einträge für diese Filter.</div>'
       : '<div style="padding:1rem;color:var(--muted);font-size:.8rem">— Ende der Liste —</div>';
   } else {
-    wrap.innerHTML = '<button onclick="_tnLoadBatch(false)" style="padding:.6rem 1.4rem;border:1px solid var(--gold);border-radius:6px;background:transparent;color:var(--gold2);font-family:inherit;font-size:.82rem;cursor:pointer">+'+_tnBatch+' weitere laden</button>';
+    wrap.innerHTML = '<button onclick="_qaLoadBatch(false)" style="padding:.6rem 1.4rem;border:1px solid var(--gold);border-radius:6px;background:transparent;color:var(--gold2);font-family:inherit;font-size:.82rem;cursor:pointer">+'+_qaBatch+' weitere laden</button>';
   }
-  _tnBindRowEvents(rows);
+  _qaBindRowEvents(rows);
 }
 
-function _tnRowHtml(r, matchedVocab, linkedVocab){
-  const catLabel = r.cat==='verb'?'Verb':r.cat==='verb_pres'?'Verb (Präs.)':r.cat==='verb_past'?'Verb (Vergang.)':r.cat==='adj'?'Adj':'Nomen';
-  const verdictBadge = r.auto_verdict==='found'
-    ? '<span style="color:var(--muted)">vermutlich vorhanden</span>'
-    : r.auto_verdict==='risky'
-      ? '<span style="color:var(--gold2)">unsicher, bitte prüfen</span>'
-      : '<span style="color:var(--red)">fehlt</span>';
-  const pending = r.status==='pending';
-  const hint = (matchedVocab && pending)
-    ? '<div style="font-size:.75rem;color:var(--muted);margin-top:.3rem">💡 evtl. schon da: <b style="color:var(--text)">'+escHtml(matchedVocab.darija||'')+'</b> — '+escHtml(matchedVocab.german||'')+' (#'+matchedVocab.id+')</div>'
-    : '';
-  const linkedInfo = (r.vocabulary_id && linkedVocab)
-    ? '<div style="font-size:.75rem;color:var(--muted);margin-top:.3rem">🔗 verknüpft mit: <b style="color:var(--text)">'+escHtml(linkedVocab.darija||'')+'</b> — '+escHtml(linkedVocab.german||'')+' (#'+linkedVocab.id+')</div>'
-    : '';
-  const inactiveLinkedMode = _tnStatus === 'linked_inactive';
+// Treffer/Phrasen/Aehnliche kommen als jsonb-Array aus dem View — immer ALLE anzeigen,
+// nie nur den ersten. Der alte Screen hatte dafuer eine einzelne matched_vocab_id und
+// konnte Homonyme nicht abbilden (sabb passt auf #4508 "er beleidigte" UND #4506 "er goss").
+function _qaTrefferHtml(titel, arr, farbe){
+  if(!arr || !arr.length) return '';
+  return '<div style="font-size:.75rem;color:var(--muted);margin-top:.35rem">'+titel+' '
+    + arr.map(t=>'<span style="display:inline-block;margin:.1rem .3rem .1rem 0;padding:.1rem .4rem;border:1px solid var(--border);border-radius:4px"><b style="color:'+farbe+'">'+escHtml(t.darija||'')+'</b> — '+escHtml(t.german||'')+' <span style="opacity:.6">#'+t.id+'</span></span>').join('')
+    + '</div>';
+}
+
+function _qaRowHtml(r){
+  const meta = QA_BUCKET_LABEL[r.bucket] || QA_BUCKET_LABEL.fehlt;
+  const quellen = (r.quellen||[]).map(q=>'<span style="padding:.05rem .35rem;border:1px solid var(--border);border-radius:3px;font-size:.66rem">'+escHtml(QA_QUELLE_LABEL[q]||q)+'</span>').join(' ');
+  // Score-Begruendung aufklappbar: eine nackte Zahl ist keine Begruendung.
+  const teile = [];
+  if(+r.score_freq)     teile.push('Korpus '+r.freq_korpus+'× → '+r.score_freq);
+  if(+r.score_rang)     teile.push('Peace-Corps-Rang '+r.rang_pc+' → '+r.score_rang);
+  if(+r.score_quellen)  teile.push(r.n_quellen+' Quellen → '+r.score_quellen);
+  if(+r.score_audio)    teile.push('Audio vorhanden → '+r.score_audio);
+  if(+r.score_baustein) teile.push('schließt Phrasen auf → '+r.score_baustein);
+  if(r.kurzes_skelett)  teile.push('kurzes Skelett ('+r.skelett_laenge+') — Mehrfachbelegung zählt hier nicht, weil sie über Zufallstreffer entstehen kann');
+
+  const warnungen = [];
+  if(r.freq_ist_obergrenze) warnungen.push('Häufigkeit ist eine Obergrenze (aus einem Mehrwort-Bündel)');
+  if(r.ist_toponym)         warnungen.push('Ortsname');
+  if(r.wortart==='unklar')  warnungen.push('Wortart in den Quellen widersprüchlich');
+
+  const aktionen = r.bucket==='variante'
+    ? '<button class="qa-btn-beleg" style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">✓ Beleg auf bestehende Zeile</button>'
+      + '<button class="qa-btn-neu" style="padding:.35rem .7rem;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--gold2);font-family:inherit;font-size:.75rem;cursor:pointer">➕ trotzdem neu anlegen</button>'
+    : r.bucket==='vorhanden'
+      ? ''
+      : '<button class="qa-btn-neu" style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">➕ '+(r.bucket==='baustein'?'Als Einzelwort anlegen':'Neu anlegen')+'</button>';
+
   return `
-  <div class="tn-row" data-id="${r.id}" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.8rem .9rem;${(pending||inactiveLinkedMode)?'':'opacity:.6'}">
-    <div style="display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap">
-      <span style="font-size:.68rem;color:var(--muted);font-family:'IBM Plex Mono',monospace">#${r.source_rank} · ${r.frequency}×</span>
-      <span style="font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">${catLabel}</span>
-      <span style="font-size:.68rem">${verdictBadge}</span>
+  <div class="qa-row" data-idx="${r._idx}" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.8rem .9rem${r.entscheidung?';opacity:.55':''}">
+    <div style="display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap">
+      <span title="${escHtml(teile.join(' · '))}" style="font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--gold2);border:1px solid var(--gold);border-radius:4px;padding:.05rem .4rem;cursor:help">${r.score}</span>
+      <span style="font-size:.68rem;color:var(--muted)">${meta.icon} ${meta.text}</span>
+      ${quellen}
+      ${r.wortart ? '<span style="font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">'+escHtml(r.wortart)+'</span>' : ''}
+      ${r.audio_url ? '<span style="font-size:.7rem" title="Ninja-Audio vorhanden">🔊</span>' : ''}
     </div>
     <div style="margin-top:.35rem;display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap">
-      <span style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1rem;color:var(--gold2)">${escHtml(r.lemma_chatalpha)}</span>
-      <span style="font-size:.78rem;color:var(--muted)">${escHtml(r.lemma_orig||'')}</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1rem;color:var(--gold2)">${escHtml(r.lemma)}</span>
+      ${r.arabisch ? '<span style="font-size:1.05rem">'+escHtml(r.arabisch)+'</span>' : ''}
     </div>
-    <div style="font-size:.85rem;margin-top:.25rem">${escHtml(r.de_gloss||'—')}</div>
-    ${hint}
-    ${linkedInfo}
-    <div class="tn-status-note" style="font-size:.72rem;color:var(--green);margin-top:.3rem;display:${(pending||inactiveLinkedMode)?'none':'block'}">${_tnStatusLabel(r)}${r.status==='activated' ? ' <button class="tn-btn-unlink" style="margin-left:.5rem;padding:.15rem .5rem;border:1px solid var(--red);border-radius:4px;background:transparent;color:var(--red);font-family:inherit;font-size:.68rem;cursor:pointer;vertical-align:middle">🔓 Entknüpfen</button>' : ''}</div>
-    ${inactiveLinkedMode ? `
-    <div class="tn-actions" style="display:flex;gap:.4rem;margin-top:.6rem;flex-wrap:wrap">
-      <button class="tn-btn-activate-linked" style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">▶ Jetzt aktivieren</button>
-    </div>` : `
-    <div class="tn-actions" style="display:${pending?'flex':'none'};gap:.4rem;margin-top:.6rem;flex-wrap:wrap">
-      <button class="tn-btn-link" style="padding:.35rem .7rem;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--gold2);font-family:inherit;font-size:.75rem;cursor:pointer">🔗 Vorhanden</button>
-      <button class="tn-btn-new" style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">➕ Neu anlegen</button>
-      <button class="tn-btn-skip" style="padding:.35rem .7rem;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--muted);font-family:inherit;font-size:.75rem;cursor:pointer">⏭ Überspringen</button>
+    <div style="font-size:.85rem;margin-top:.25rem">${escHtml(r.gloss_de || '—')}</div>
+    ${r.gloss_en && !r.gloss_de ? '<div style="font-size:.78rem;color:var(--muted);margin-top:.1rem">'+escHtml(r.gloss_en)+'</div>' : ''}
+    ${_qaTrefferHtml('✓ im Bestand:', r.treffer, 'var(--green)')}
+    ${_qaTrefferHtml('🧩 steckt in:', r.phrasen, 'var(--text)')}
+    ${_qaTrefferHtml('≈ ähnlich:', r.aehnliche, 'var(--gold2)')}
+    ${warnungen.length ? '<div style="font-size:.7rem;color:var(--gold2);margin-top:.3rem">⚠ '+warnungen.map(escHtml).join(' · ')+'</div>' : ''}
+    ${r.entscheidung ? '<div style="font-size:.72rem;color:var(--green);margin-top:.3rem">✓ bereits entschieden: '+escHtml(r.entscheidung)+(r.entscheidung_ids&&r.entscheidung_ids.length?' (#'+r.entscheidung_ids.join(', #')+')':'')+'</div>' : `
+    <div class="qa-actions" style="display:flex;gap:.4rem;margin-top:.6rem;flex-wrap:wrap">
+      ${aktionen}
+      <button class="qa-btn-skip" style="padding:.35rem .7rem;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--muted);font-family:inherit;font-size:.75rem;cursor:pointer">⏭ Überspringen</button>
     </div>`}
-    <div class="tn-linkbox" style="display:none;margin-top:.5rem">
-      <input type="text" class="tn-link-search" placeholder="Suche nach Darija oder Deutsch…" style="width:100%;box-sizing:border-box;padding:.4rem .6rem;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:.8rem"/>
-      <div class="tn-link-results" style="display:flex;flex-direction:column;gap:.2rem;margin-top:.3rem;max-height:9rem;overflow-y:auto"></div>
-    </div>
-    <textarea class="tn-comment" placeholder="Kommentar (optional)…" style="width:100%;box-sizing:border-box;margin-top:.5rem;min-height:2.2rem;padding:.35rem .5rem;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:inherit;font-size:.75rem;font-family:inherit;resize:vertical" ${pending?'':'readonly'}>${escHtml(r.comment||'')}</textarea>
+    <div class="qa-note" style="display:none;font-size:.72rem;margin-top:.4rem"></div>
   </div>`;
 }
 
-function _tnStatusLabel(r){
-  const label = r.status==='added'?'neu angelegt':r.status==='activated'?'verknüpft & aktiviert':r.status==='skipped'?'übersprungen':'';
-  return label ? ('✓ '+label+(r.vocabulary_id?' (#'+r.vocabulary_id+')':'')) : '';
-}
-
-function _tnBindRowEvents(rows){
+function _qaBindRowEvents(rows){
   rows.forEach(r=>{
-    const row = document.querySelector('.tn-row[data-id="'+r.id+'"]');
+    const row = document.querySelector('.qa-row[data-idx="'+r._idx+'"]');
     if(!row) return;
-    const linkBox = row.querySelector('.tn-linkbox');
-    const linkBtn = row.querySelector('.tn-btn-link');
-    if(linkBtn) linkBtn.addEventListener('click', ()=>{
-      const open = linkBox.style.display!=='none';
-      linkBox.style.display = open?'none':'block';
-      if(!open){
-        const search = row.querySelector('.tn-link-search');
-        if(r.matched_vocab_id && !search.value){ search.value = r.lemma_chatalpha; }
-        _tnRenderLinkResults(row, r);
-        search.focus();
-      }
-    });
-    const searchInput = row.querySelector('.tn-link-search');
-    if(searchInput) searchInput.addEventListener('input', ()=>_tnRenderLinkResults(row, r));
-    const newBtn = row.querySelector('.tn-btn-new');
-    if(newBtn) newBtn.addEventListener('click', ()=>_tnAddNew(r, row));
-    const skipBtn = row.querySelector('.tn-btn-skip');
-    if(skipBtn) skipBtn.addEventListener('click', ()=>_tnSkip(r, row));
-    const activateLinkedBtn = row.querySelector('.tn-btn-activate-linked');
-    if(activateLinkedBtn) activateLinkedBtn.addEventListener('click', ()=>_tnActivateLinked(r, row));
-    const unlinkBtn = row.querySelector('.tn-btn-unlink');
-    if(unlinkBtn) unlinkBtn.addEventListener('click', ()=>_tnUnlink(r, row));
+    const skip = row.querySelector('.qa-btn-skip');
+    if(skip) skip.addEventListener('click', ()=>_qaEntscheiden(r, row, 'uebersprungen', []));
+    const beleg = row.querySelector('.qa-btn-beleg');
+    if(beleg) beleg.addEventListener('click', ()=>_qaBelegSetzen(r, row));
+    const neu = row.querySelector('.qa-btn-neu');
+    if(neu) neu.addEventListener('click', ()=>_qaNeuAnlegen(r, row));
   });
 }
 
-async function _tnActivateLinked(r, row){
-  const btn = row.querySelector('.tn-btn-activate-linked');
-  if(btn){ btn.disabled = true; btn.textContent = '…'; }
+// Schreibt ins Entscheidungs-Protokoll. Die Vorschlagsliste selbst wird NICHT
+// fortgeschrieben — sie entsteht beim naechsten Oeffnen neu aus den Quellen minus
+// Bestand minus Protokoll. Genau das war der Zweck des ganzen Umbaus.
+async function _qaEntscheiden(r, row, entscheidung, vocabIds, kommentar){
+  const note = row.querySelector('.qa-note');
   try{
-    const wasSet = await _tnSetDueIfMissing(r.vocabulary_id);
-    showToast(wasSet ? '✓ Fällig gesetzt (#'+r.vocabulary_id+')' : '✓ War schon fällig','ok');
-    row.style.opacity = '.4';
-    if(btn) btn.remove();
-    const note = row.querySelector('.tn-status-note');
-    if(note){ note.textContent = '✓ jetzt aktiv'; note.style.display = 'block'; }
+    await sbApi('import_entscheidungen', 'POST', {
+      lemma: r.lemma, entscheidung: entscheidung,
+      vocabulary_ids: vocabIds || [], comment: kommentar || null,
+      decided_at: new Date().toISOString()
+    });
+    row.style.opacity = '.45';
+    const act = row.querySelector('.qa-actions'); if(act) act.style.display='none';
+    if(note){ note.style.display='block'; note.style.color='var(--green)';
+      note.textContent = '✓ '+entscheidung+(vocabIds&&vocabIds.length?' (#'+vocabIds.join(', #')+')':''); }
+    showToast('✓ '+entscheidung,'ok');
   }catch(e){
+    if(note){ note.style.display='block'; note.style.color='var(--red)'; note.textContent='Fehler: '+e.message; }
     showToast('Fehler: '+e.message,'err');
-    if(btn){ btn.disabled = false; btn.textContent = '▶ Jetzt aktivieren'; }
   }
 }
 
-function _tnRenderLinkResults(row, r){
-  const q = row.querySelector('.tn-link-search').value.trim().toLowerCase();
-  const resBox = row.querySelector('.tn-link-results');
-  if(q.length < 2){ resBox.innerHTML=''; return; }
-  const hits = ALL_VOCAB.filter(v=> (v.tr||'').toLowerCase().includes(q) || (v.en||'').toLowerCase().includes(q)).slice(0,8);
-  resBox.innerHTML = hits.map(v=>'<button class="tn-link-pick" data-vid="'+v.id+'" style="text-align:left;padding:.35rem .6rem;border:1px solid var(--border);border-radius:4px;background:var(--surface2);color:var(--text);font-family:inherit;font-size:.78rem;cursor:pointer">'+escHtml(v.tr)+' — '+escHtml(v.en)+' <span style="color:var(--muted)">#'+v.id+'</span></button>').join('') || '<div style="font-size:.75rem;color:var(--muted);padding:.3rem">Keine Treffer</div>';
-  resBox.querySelectorAll('.tn-link-pick').forEach(btn=>{
-    btn.addEventListener('click', ()=>_tnLink(r, row, parseInt(btn.dataset.vid)));
-  });
+// variante: die Quelle belegt eine BESTEHENDE Zeile, es entsteht keine neue Vokabel.
+// Bei mehreren Kandidaten muss Nils waehlen — die Maschine raet hier nicht.
+async function _qaBelegSetzen(r, row){
+  const kand = r.aehnliche || [];
+  if(!kand.length){ showToast('Keine ähnliche Zeile gefunden','warn'); return; }
+  const note = row.querySelector('.qa-note');
+  if(kand.length > 1){
+    note.style.display='block'; note.style.color='var(--muted)';
+    note.innerHTML = 'Welche Zeile belegt „'+escHtml(r.lemma)+'"? '
+      + kand.map(k=>'<button class="qa-pick" data-id="'+k.id+'" style="margin:.15rem;padding:.2rem .5rem;border:1px solid var(--gold);border-radius:4px;background:transparent;color:var(--gold2);font-family:inherit;font-size:.72rem;cursor:pointer">'+escHtml(k.darija)+' #'+k.id+'</button>').join('');
+    note.querySelectorAll('.qa-pick').forEach(b=>b.addEventListener('click', ()=>_qaBelegAuf(r, row, parseInt(b.dataset.id))));
+    return;
+  }
+  _qaBelegAuf(r, row, kand[0].id);
 }
 
-// Setzt next_review NUR, wenn die Vokabel noch keine Faelligkeit hat (kein progress-Row oder next_review
-// leer) — genau wie "withProgress" in showActivate() definiert "aktiv". Eine bereits laufende Faelligkeit
-// (auch in der Vergangenheit, also ueberfaellig) wird nie ueberschrieben. Rueckgabe: true wenn neu gesetzt,
-// false wenn die Vokabel schon eine Faelligkeit hatte und unveraendert blieb.
-async function _tnSetDueIfMissing(vocabId){
-  const now = new Date().toISOString();
-  const p = srsProgress[vocabId];
-  if(p && p.next_review) return false; // schon aktiv, nicht anfassen
-  if(p && p.id){
-    await sbApi('progress?id=eq.'+p.id, 'PATCH', {next_review: now});
-  } else {
-    try{
-      await sbApi('progress', 'POST', {user_id: currentUser.id, vocabulary_id: vocabId, correct_count:0, wrong_count:0, review_count:0, next_review: now});
-    }catch(e){
-      if(String(e.message).includes('23505')){
-        const fetched = await sbApi('progress?user_id=eq.'+currentUser.id+'&vocabulary_id=eq.'+vocabId+'&select=id,next_review');
-        if(fetched && fetched.length){
-          if(fetched[0].next_review) return false; // Race: zwischenzeitlich woanders schon faellig gesetzt
-          await sbApi('progress?id=eq.'+fetched[0].id, 'PATCH', {next_review: now});
-        }
-      } else throw e;
+async function _qaBelegAuf(r, row, vocabId){
+  const quelle = (r.quellen && r.quellen[0]) || null;
+  try{
+    // external_confirmed nur setzen, wenn die Zeile noch keinen Beleg hat — einen
+    // bestehenden Beleg nie ueberschreiben.
+    const vs = await sbApi('vocabulary?id=eq.'+vocabId+'&select=external_confirmed,external_confirmed_source');
+    const v = vs && vs[0];
+    if(v && !v.external_confirmed){
+      await sbApi('vocabulary?id=eq.'+vocabId, 'PATCH',
+        {external_confirmed:true, external_confirmed_source: quelle});
     }
-  }
-  if(!srsProgress[vocabId]) srsProgress[vocabId] = {level:0, correct_count:0, review_count:0};
-  srsProgress[vocabId].next_review = new Date(now);
-  return true;
-}
-
-async function _tnLink(r, row, vocabId){
-  try{
-    const comment = row.querySelector('.tn-comment').value.trim();
-    const wasSet = await _tnSetDueIfMissing(vocabId);
-    await sbApi('tunico_candidates?id=eq.'+r.id, 'PATCH', {status:'activated', vocabulary_id:vocabId, comment: comment||null, decided_at: new Date().toISOString()});
-    showToast(wasSet ? '✓ Verknüpft & fällig gesetzt (#'+vocabId+')' : '✓ Verknüpft (#'+vocabId+') — war schon fällig, nicht verändert','ok');
-    r.status='activated'; r.vocabulary_id=vocabId;
-    _tnCollapseRow(row, r);
+    await _qaEntscheiden(r, row, 'verknuepft', [vocabId], 'Schreibvariante, belegt #'+vocabId);
   }catch(e){ showToast('Fehler: '+e.message,'err'); }
 }
 
-// Macht eine falsche "Verknüpfen"-Entscheidung rückgängig: Kandidat geht zurück auf pending,
-// vocabulary_id/matched_vocab_id werden geleert. Der verlinkte Vokabel-Eintrag selbst wird NICHT
-// angefasst (er kann weiterhin für einen anderen Kandidaten korrekt sein, wie im kallim/t3adda-Fall).
-async function _tnUnlink(r, row){
-  const btn = row.querySelector('.tn-btn-unlink');
-  if(btn){ btn.disabled = true; btn.textContent = '…'; }
-  try{
-    await sbApi('tunico_candidates?id=eq.'+r.id, 'PATCH', {status:'pending', vocabulary_id:null, matched_vocab_id:null, decided_at:null});
-    r.status='pending'; r.vocabulary_id=null; r.matched_vocab_id=null;
-    row.outerHTML = _tnRowHtml(r, null, null);
-    _tnBindRowEvents([r]);
-    showToast('🔓 Entknüpft — Kandidat wieder offen','ok');
-  }catch(e){
-    showToast('Fehler: '+e.message,'err');
-    if(btn){ btn.disabled=false; btn.textContent='🔓 Entknüpfen'; }
-  }
-}
-
-async function _tnAddNew(r, row){
-  if(r.cat==='verb'||r.cat==='verb_pres'){ await _tnOpenVerbEditor(r, row); return; }
-  const german = r.de_gloss || r.lemma_orig || r.lemma_chatalpha;
-  await _tnAddNewWithValues(r, row, r.lemma_chatalpha, german);
-}
-
-// Trainer-Konvention bei Verben: 3. Person Singular Präsens MIT y-/t-Präfix ("yfakkar"="er denkt nach"),
-// TUNICOs lemma_chatalpha ist dagegen die bloße Stammform ("khammim"). Die belegten Flexionsformen aus
-// tunico_corpus_verbs.forms_chatalpha enthalten aber meistens genau die passende y-Form — hier als
-// Vorschlag herausgesucht, aber immer editierbar, bevor gespeichert wird (Heuristik, kein Grammatik-Parser).
-function _tnGuessVerbForm(forms, lemma){
-  if(!forms || !forms.length) return null;
-  // Plural-Formen enden fast immer auf -u (ausgeschlossen), Perfekt-Formen (ich/du gelernt...) fast immer
-  // auf -t (bevorzugt ausgeschlossen, als Notloesung aber erlaubt). Bei Verbwurzeln, die selbst schon mit
-  // "t" beginnen (reflexive tfa33al-Muster), zaehlt die unveraenderte Stammform NICHT als Treffer — sonst
-  // wird die Praefix-losigkeit faelschlich als "schon richtig" durchgewunken.
-  const base = f => f && !/u$/.test(f) && f !== lemma;
-  const pick = pool => pool.length ? pool.slice().sort((a,b)=>a.length-b.length)[0] : null;
-  for(const prefix of ['y','t']){
-    const strict = forms.filter(f=>new RegExp('^'+prefix).test(f) && base(f) && !/t$/.test(f));
-    const found = pick(strict);
-    if(found) return found;
-  }
-  for(const prefix of ['y','t']){
-    const loose = forms.filter(f=>new RegExp('^'+prefix).test(f) && base(f));
-    const found = pick(loose);
-    if(found) return found;
-  }
-  return null;
-}
-
-async function _tnOpenVerbEditor(r, row){
-  let box = row.querySelector('.tn-verbeditbox');
-  if(box){ box.style.display = box.style.display==='none' ? 'block' : 'none'; return; }
-  box = document.createElement('div');
-  box.className = 'tn-verbeditbox';
-  box.style.cssText = 'margin-top:.5rem;padding:.6rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;display:flex;flex-direction:column;gap:.4rem';
-  box.innerHTML = `
-    <div style="font-size:.7rem;color:var(--muted)">Verben brauchen die 3.-Person-Form mit y-/t-Präfix, nicht die bloße Stammform — bitte prüfen/anpassen:</div>
-    <input type="text" class="tn-verb-darija" placeholder="z.B. yfakkar" style="width:100%;box-sizing:border-box;padding:.35rem .5rem;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:.82rem;font-family:'IBM Plex Mono',monospace"/>
-    <input type="text" class="tn-verb-german" placeholder="z.B. er denkt nach" style="width:100%;box-sizing:border-box;padding:.35rem .5rem;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:.82rem"/>
-    <div style="display:flex;gap:.4rem">
-      <button class="tn-verb-confirm" style="flex:1;padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">✓ Übernehmen</button>
-      <button class="tn-verb-cancel" style="padding:.35rem .7rem;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--muted);font-family:inherit;font-size:.75rem;cursor:pointer">Abbrechen</button>
+// Neuanlage: oeffnet einen vorbefuellten Editor statt direkt zu schreiben. Darija und
+// Arabisch kommen aus den Quellen, die deutsche Glosse ist ein VORSCHLAG aus
+// tunico_import.senses->de und oft nicht die fertige Lernuebersetzung — deshalb wird
+// sie hier bewusst zur Bestaetigung vorgelegt und nicht stillschweigend uebernommen.
+function _qaNeuAnlegen(r, row){
+  const note = row.querySelector('.qa-note');
+  note.style.display='block'; note.style.color='var(--muted)';
+  note.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:.3rem;margin-top:.2rem">
+      <input class="qa-f-darija" value="${escHtml(r.lemma)}" placeholder="darija" style="padding:.35rem .5rem;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:.8rem">
+      <input class="qa-f-arab" value="${escHtml(r.arabisch||'')}" placeholder="arabisch (nur aus Ninja, sonst leer lassen)" style="padding:.35rem .5rem;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:.9rem">
+      <input class="qa-f-de" value="${escHtml(r.gloss_de||'')}" placeholder="deutsch — Vorschlag aus der Quelle, bitte prüfen" style="padding:.35rem .5rem;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:.8rem">
+      <div style="display:flex;gap:.3rem">
+        <button class="qa-f-ok" style="padding:.3rem .8rem;border:1px solid var(--green);border-radius:4px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">Anlegen</button>
+        <button class="qa-f-abbruch" style="padding:.3rem .8rem;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--muted);font-family:inherit;font-size:.75rem;cursor:pointer">Abbrechen</button>
+      </div>
     </div>`;
-  row.querySelector('.tn-comment').insertAdjacentElement('beforebegin', box);
-  const darijaInput = box.querySelector('.tn-verb-darija');
-  const germanInput = box.querySelector('.tn-verb-german');
-  darijaInput.value = 'lädt Vorschlag…';
-  germanInput.value = r.de_gloss || r.lemma_orig || r.lemma_chatalpha;
-  try{
-    const rows = await sbApi('tunico_corpus_verbs?lemma_chatalpha=eq.'+encodeURIComponent(r.lemma_chatalpha)+'&select=forms_chatalpha&limit=1');
-    const guess = rows && rows[0] ? _tnGuessVerbForm(rows[0].forms_chatalpha, r.lemma_chatalpha) : null;
-    darijaInput.value = guess || r.lemma_chatalpha;
-  }catch(e){ darijaInput.value = r.lemma_chatalpha; }
-  box.querySelector('.tn-verb-cancel').addEventListener('click', ()=>{ box.style.display='none'; });
-  box.querySelector('.tn-verb-confirm').addEventListener('click', ()=>{
-    const darijaVal = darijaInput.value.trim() || r.lemma_chatalpha;
-    const germanVal = germanInput.value.trim() || r.de_gloss || r.lemma_chatalpha;
-    _tnAddNewWithValues(r, row, darijaVal, germanVal);
+  note.querySelector('.qa-f-abbruch').addEventListener('click', ()=>{ note.style.display='none'; note.innerHTML=''; });
+  note.querySelector('.qa-f-ok').addEventListener('click', async ()=>{
+    const darija = note.querySelector('.qa-f-darija').value.trim();
+    const arab   = note.querySelector('.qa-f-arab').value.trim();
+    const de     = note.querySelector('.qa-f-de').value.trim();
+    if(!darija || !de){ showToast('darija und deutsch sind Pflicht','warn'); return; }
+    try{
+      // translit_skeleton/arabic_skeleton NICHT mitschicken — seit P1 generierte Spalten
+      // (siehe SKILL.md -> Rezept 4). Postgres berechnet sie selbst.
+      const neu = await sbApi('vocabulary', 'POST', {
+        lesson_id: QA_UNSORTED_LESSON_ID, darija: darija,
+        arabic_script: arab || null, german: de,
+        english: r.gloss_en || null,
+        ninja_audio_url: r.audio_url || null,
+        external_confirmed: true,
+        external_confirmed_source: (r.quellen && r.quellen[0]) || null,
+        flagged: true,
+        internal_note: 'Quellenabgleich '+new Date().toISOString().slice(0,10)
+          +' — Score '+r.score+', Quellen: '+(r.quellen||[]).join('/')
+          +(r.freq_ist_obergrenze ? ' — Häufigkeit ist Obergrenze' : '')
+      });
+      const id = neu && neu[0] && neu[0].id;
+      await _qaEntscheiden(r, row, 'angelegt', id?[id]:[]);
+    }catch(e){ showToast('Fehler: '+e.message,'err'); }
   });
-}
-
-async function _tnAddNewWithValues(r, row, darijaVal, germanVal){
-  try{
-    const comment = row.querySelector('.tn-comment').value.trim();
-    // Praesens-/Vergangenheit-Split-Kandidaten landen direkt in der richtigen Verben-Lektion (L17/L18)
-    // statt im unsortierten L90 — alle anderen Kategorien wie bisher.
-    let topic, lessonId, lsLabel;
-    if(r.cat==='verb_pres'){ topic='Verben-Konjugation'; lessonId=TUNICO_VERB_PRESENT_LESSON_ID; lsLabel='L17'; }
-    else if(r.cat==='verb_past'){ topic='Vergangenheit'; lessonId=TUNICO_VERB_PAST_LESSON_ID; lsLabel='L18'; }
-    else { topic = r.cat==='verb' ? 'Verben' : r.cat==='adj' ? 'Adjektive' : 'Allgemein'; lessonId=TUNICO_UNSORTED_LESSON_ID; lsLabel='L90'; }
-    const note = 'TUNICO-Import: '+r.lemma_orig+' (Rang #'+r.source_rank+', '+r.frequency+'× im Korpus) — Arabisch noch per Ninja zu prüfen.'
-      + (darijaVal!==r.lemma_chatalpha ? ' Darija von "'+r.lemma_chatalpha+'" auf 3.-Person-Form angepasst.' : '');
-    const res = await sbApi('vocabulary', 'POST', {
-      darija: darijaVal,
-      german: germanVal,
-      arabic_script: null,
-      lesson_id: lessonId,
-      topic: topic,
-      flagged: true,
-      internal_note: note
-    });
-    const newId = res[0].id;
-    const newEntry = {id:newId, ar:'', tr:darijaVal, en:germanVal, ls:lsLabel, tp:topic, ps:null, pc:null, psu:null, au:null, aus:0, aue:0, hok:false, nt:note};
-    ALL_VOCAB.push(newEntry);
-    VOCAB_BY_ID[newId] = newEntry;
-    vocabIdMap[darijaVal] = newId;
-    flaggedVocab.add(darijaVal);
-    await sbApi('tunico_candidates?id=eq.'+r.id, 'PATCH', {status:'added', vocabulary_id:newId, comment: comment||null, decided_at: new Date().toISOString()});
-    showToast('✓ Neu angelegt (#'+newId+') — geflaggt zum Prüfen','ok');
-    r.status='added'; r.vocabulary_id=newId;
-    _tnCollapseRow(row, r);
-  }catch(e){ showToast('Fehler: '+e.message,'err'); }
-}
-
-async function _tnSkip(r, row){
-  try{
-    const comment = row.querySelector('.tn-comment').value.trim();
-    await sbApi('tunico_candidates?id=eq.'+r.id, 'PATCH', {status:'skipped', comment: comment||null, decided_at: new Date().toISOString()});
-    showToast('Übersprungen','ok');
-    r.status='skipped';
-    _tnCollapseRow(row, r);
-  }catch(e){ showToast('Fehler: '+e.message,'err'); }
-}
-
-function _tnCollapseRow(row, r){
-  row.style.opacity='.6';
-  const actions = row.querySelector('.tn-actions'); if(actions) actions.style.display='none';
-  const linkBox = row.querySelector('.tn-linkbox'); if(linkBox) linkBox.style.display='none';
-  const verbBox = row.querySelector('.tn-verbeditbox'); if(verbBox) verbBox.remove();
-  const note = row.querySelector('.tn-status-note');
-  if(note){ note.textContent=_tnStatusLabel(r); note.style.display='block'; }
-  const comment = row.querySelector('.tn-comment'); if(comment) comment.setAttribute('readonly','readonly');
 }
 
 function showToast(msg,type){
