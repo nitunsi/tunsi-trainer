@@ -7584,11 +7584,25 @@ function _qaNeuAnlegen(r, row){
     try{
       // translit_skeleton/arabic_skeleton NICHT mitschicken — seit P1 generierte Spalten
       // (siehe SKILL.md -> Rezept 4). Postgres berechnet sie selbst.
+      // Audio-Offsets erst hier holen, nicht im View mitschleppen: Ninjas Aufnahmen sind
+      // ganze Saetze, das Wort selbst dauert im Schnitt 2,9 s. Ohne term_start/term_end
+      // spielt der Trainer die komplette Datei ab. audio_url ist je Ninja-Eintrag
+      // eindeutig (17.242 Zeilen, 17.242 distinkte URLs, keine mit abweichenden
+      // Offsets) — der Treffer ist also genau die Zeile, aus der die URL stammt.
+      let aStart = null, aEnd = null;
+      if(r.audio_url){
+        try{
+          const nj = await sbApi('derja_ninja_entries?select=term_start,term_end&audio_url=eq.'
+                                 + encodeURIComponent(r.audio_url) + '&limit=1');
+          if(nj && nj[0]){ aStart = nj[0].term_start; aEnd = nj[0].term_end; }
+        }catch(e){ /* Offsets sind ein Plus, kein Muss — ohne sie laeuft die ganze Datei */ }
+      }
       const neu = await sbApi('vocabulary', 'POST', {
         lesson_id: QA_UNSORTED_LESSON_ID, darija: darija,
         arabic_script: arab || null, german: de,
         english: r.gloss_en || null,
         ninja_audio_url: r.audio_url || null,
+        ninja_audio_start: aStart, ninja_audio_end: aEnd,
         external_confirmed: true,
         external_confirmed_source: (r.quellen && r.quellen[0]) || null,
         // Geflaggt NUR, wenn das Arabische fehlt. Genau dafuer war die Flagge im alten
