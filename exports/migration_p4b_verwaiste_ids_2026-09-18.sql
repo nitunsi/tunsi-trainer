@@ -65,3 +65,23 @@ WHERE e.id = d.id
 --   tunico_candidates              954 Zeilen   (unveraendert)
 --   vocabulary                    3775 Zeilen   (unveraendert)
 --   qualitaets_checks    Gruppe A 0, Gruppe B 21=2 / 22=231 (unveraendert)
+
+-- =============================================================================
+-- NACHTRAG 2026-09-19 -- die beiden offenen Faelle entschieden (auf Zuruf des Nutzers).
+-- Beide hatten keinen exakten Schreibtreffer, aber die WORTART des urspruenglichen
+-- Kandidaten loest sie eindeutig auf:
+--
+--   tayyib #4028 -> 405  ytayyeb "er kocht"
+--     Kandidat 106 hat cat=verb_pres, ist also die Praesensform. Damit scheiden
+--     1646 tayyab (Vergangenheit) und 2921 tayeb (Adjektiv "gar/gekocht") aus.
+--
+--   7lu #4159 -> 378  7lou "suess / mild"
+--     Kandidat 325 hat cat=adj und die Glosse "suess / huebsch / reizend / schoen",
+--     ist also das Maskulinum. Damit scheiden 1086 7loua (Femininum) und
+--     3892 7alwa (Nomen "Suessigkeit") aus.
+--
+-- Die Begruendung steht jeweils im comment der Zeile, nicht nur hier.
+--
+-- ABNAHME: import_entscheidungen 379 Zeilen, 378 Verknuepfungen,
+--          davon verwaist 0 (vorher 2), vocabulary unveraendert 3775,
+--          tunico_candidates unveraendert 954.

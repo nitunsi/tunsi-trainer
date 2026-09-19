@@ -525,7 +525,12 @@ im Kommentar. Jede geänderte Zeile trägt die alte ID in ihrem `comment`.
 Danach gemessen: 379 Zeilen, 378 Verknüpfungen, **noch 2 verwaist**, `tunico_candidates` unverändert
 954, `vocabulary` unverändert 3.775, Gruppe A 0.
 
-**Die 2 offenen — Entscheidung liegt bei Nils.** Beide haben keinen exakten Schreibtreffer, aber die
+**Erledigt 2026-09-19 — beide entschieden** (auf Zuruf): `tayyib` → **405 `ytayyeb`** (Kandidat 106
+ist `verb_pres`, also die Präsensform), `7lu` → **378 `7lou`** (Kandidat 325 ist `adj`, also das
+Maskulinum). Die Begründung steht im `comment` der jeweiligen Zeile. Damit **0 verwaiste
+Verknüpfungen**; `vocabulary` unverändert 3.775, `tunico_candidates` unverändert 954.
+
+Die Ausgangslage, zur Nachvollziehbarkeit: Beide haben keinen exakten Schreibtreffer, aber die
 Wortart des ursprünglichen Kandidaten löst sie faktisch auf:
 
 | Lemma | tote ID | Kandidat | Vorschlag | Alternativen |
