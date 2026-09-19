@@ -183,6 +183,80 @@ Zwei Supabase-Tabellen, Rohextrakt aus dem "Peace Corps English-Tunisian Arabic 
 
 **Nutzen beim Prüfen:** dritte Offline-Quelle in Schritt 3 (siehe SKILL.md → Der Prozess) — nach `derja_ninja_entries` und `tunico_import` durchsuchen, v.a. bei älterem/ungewöhnlichem Lehrbuchvokabular.
 
+## Quellenabgleich (`quellen_abgleich`) — seit 2026-09-19
+
+Loest den alten TUNICO-Kandidaten-Screen ab. **Die Vorschlagsliste wird nicht mehr gespeichert,
+sondern bei jedem Öffnen berechnet** — Quellen minus Bestand minus Entscheidungsprotokoll.
+`tunico_candidates` ist nur noch Altbestand und wird nicht mehr beschrieben.
+
+**Warum:** `tunico_candidates.auto_verdict` und `.matched_vocab_id` waren ein Schnappschuss vom
+8.–11. August 2026. Bis Mitte September waren 373 Vokabeln dazugekommen; **156 der 374 rot als
+„fehlt“ markierten Zeilen waren längst vorhanden**. Dazu kam, dass die Grundgesamtheit auf
+Top-300-Verben/Nomen und Top-64-Adjektive beschnitten war — das häufigste fehlende Wort des
+Korpus (`kull`, 656×) konnte strukturell nie vorgeschlagen werden.
+
+### Die Objekte
+
+| Objekt | Art | Inhalt |
+|---|---|---|
+| `quellen_lemmata` | Materialized View, 22.356 Zeilen | eine Zeile je (Quelle, Lemma): tunico 2.005, peacecorps 4.043, ninja 16.308. `refresh materialized view` **nur nach einem Import** — 5,0 s |
+| `vocab_tokens` | View | der Bestand auf Wortebene (5.826 Zeilen), Grundlage des `baustein`-Buckets |
+| `quellen_abgleich` | **View, live** | die Vorschlagsliste mit Bucket und Score, 476 ms |
+| `quellen_abgleich_zaehler` | View | die vier Bucket-Zahlen für die Chips im Trainer |
+| `import_entscheidungen` | Tabelle | das Protokoll: was beurteilt wurde. `vocabulary_ids` ist ein **Array** — `sabb` passt auf #4508 „er beleidigte“ UND #4506 „er goss“ |
+
+### Die vier Buckets
+
+| Bucket | Bedeutung | Aktion |
+|---|---|---|
+| `fehlt` | weder eigene Zeile noch in einer Phrase | neu anlegen |
+| `baustein` | steckt nur **innerhalb** mehrwortiger Zeilen | als Einzelwort nachziehen |
+| `variante` | Skelett unterscheidet sich um **ein eingefügtes/fehlendes Zeichen** | Beleg auf die bestehende Zeile, keine Neuanlage |
+| `vorhanden` | es gibt eine Zeile mit diesem Skelett | — |
+
+**`baustein` ist die didaktisch wertvollste Gruppe:** sie schließt Phrasen auf, die schon im
+Trainer stehen. `kull` steckt in 15 Phrasen (`kol youm`, `koll we7id w karhabtou`) und hat keine
+eigene Zeile; `kif` genauso.
+
+### Zwei Fallen, die beim Bau zugeschlagen haben
+
+**Das Skelett ist die Vergleichsachse, nicht die Bündelungsachse.** Eine erste Fassung gruppierte
+die Quelleinträge nach Skelett. Ergebnis: `kayyif` erschien mit der Korpushäufigkeit von `kif`
+(480) und einer Glosse aus beiden Wörtern. Skelett `kf` fasst `kif`/`kayyif` zusammen, `st` fasst
+`sawwit`/`sout`/`wast` zusammen. Einheit ist deshalb das **Lemma**; das Skelett vergleicht nur
+gegen den Bestand.
+
+**„Levenshtein ≤ 1“ ist für Konsonantenskelette zu weit.** Als `variante` so definiert war, bekam
+`khrif` (Herbst) 27 „ähnliche“ Zeilen: `khraj` (er ging raus), `khfif` (leicht), `khater` (weil),
+`nkhaf` (ich habe Angst). Formal alle Abstand 1. Der Grund ist sprachlich: **das Skelett besteht
+nur aus Konsonanten, und im Arabischen tragen genau die die Wurzel** — ein getauschter Konsonant
+ist fast immer ein anderes Wort. Eine echte Schreibvariante fügt dagegen ein Zeichen ein oder
+lässt eines weg (`inshalla`/`inshallah`, `tlatha`/`thletha`); wo wirklich ein Laut anders
+geschrieben wird (`th`/`dh`), sind es Digraphen und das Skelett ändert sich um **zwei** Zeichen.
+`variante` zählt deshalb nur Längendifferenzen — danach 4.359 statt 5.890 Zeilen und im Schnitt
+2,9 Kandidaten statt Dutzenden.
+
+### Der Score
+
+`ln(1+freq_korpus)*10` (Korpushäufigkeit) + `(6-rang_pc)*12` (Peace-Corps-Rang, 1 → 60)
++ `(n_quellen-1)*25` (Mehrfachbelegung) + 20 bei Ninja-Audio + 30 für `baustein`.
+Alle Komponenten stehen einzeln als Spalten im View und hängen im Trainer als Tooltip an der Zahl.
+
+**Die Mehrfachbelegung zählt erst ab Skelettlänge 4.** Kurze Skelette kollidieren zufällig
+(`kanada` und `weekend` ergeben beide `knd`) — ein Wort über Zufallstreffer nach oben zu spülen
+wäre genau der Fehler, den der Score vermeiden soll. Betroffene Zeilen tragen `kurzes_skelett`.
+
+### Beim Arbeiten damit beachten
+
+- **Nie korrelierte `EXISTS`-Subqueries in diesen View bauen.** Die CTE-Struktur mit `LEFT JOIN`s
+  ist kein Stil, sondern die Bedingung dafür, dass er live läuft: 476 ms gegen Timeout > 60 s.
+- **`freq_ist_obergrenze`** heisst, die Häufigkeit stammt aus einem Mehrwort-Bündel und gehört
+  dem Lemma nicht exklusiv (`kull shayy` und `7atta shayy` teilen sich 239).
+- **`arabisch` kommt nur von Ninja.** TUNICO hat gar keine Arabisch-Spalte, Peace Corps nur
+  Rekonstruktionen — die stehen bewusst **nicht** in dieser Spalte.
+- **`gloss_de` ist ein Vorschlag**, keine fertige Lernübersetzung. Nur TUNICO liefert Deutsch
+  (`senses→de`); der Trainer legt deshalb nichts ohne Bestätigung an.
+
 ### uniwien_source_pages
 
 Tabelle `uniwien_source_pages` (270 Zeilen) — wörtliche Seiten-Transkription der Uni-Wien-Lehrskripte, eine Zeile pro PDF-Seite, per Claude Vision erfasst (Bild gelesen, nicht OCR). Spalten: `book`, `pdf_page`, `printed_page`, `lesson_number`, `section`, `content`, `has_nontext_content` (Flag für Seiten mit Bildern/Tabellen, von der Text-Transkription nicht vollständig erfasst), `transcribed_by`, `transcribed_at`.

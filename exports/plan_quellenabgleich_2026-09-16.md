@@ -383,7 +383,16 @@ Neue Tabelle: `skeleton` (Schlüssel), `lemma`, `entscheidung` (`verknuepft`/`an
 - `tunico_candidates` **nicht löschen**, nur nicht mehr beschreiben. Erst nach einer produktiven
   Woche mit dem neuen View wegräumen, und dann nur nach ausdrücklicher Zusage.
 
-## P5 — View `quellen_abgleich`
+## P5 — View `quellen_abgleich` — ERLEDIGT 2026-09-19
+
+> **Abgenommen.** Live-View, 476 ms. fehlt 9.620, vorhanden 5.244, variante 4.359, baustein 572.
+> Zwei Entwurfsfehler beim Sichten der ersten Zeilen gefunden und behoben: die Einheit war das
+> Skelett statt des Lemmas (`kayyif` erbte die 480 von `kif`), und `variante` als „Levenshtein ≤ 1“
+> war für Konsonantenskelette viel zu weit (`khrif` bekam 27 „ähnliche“) — zählt jetzt nur
+> Längendifferenzen. Details in `exports/migration_p5_2026-09-19.sql`.
+> Die Gewichte blieben wie geplant; die Tuning-Runde ging stattdessen in die beiden Strukturfehler,
+> die vorher gar nicht sichtbar waren.
+
 
 Gruppiert `quellen_lemmata` nach `skeleton`, joint gegen `vocabulary.translit_skeleton`,
 `vocab_tokens` und `import_entscheidungen`, berechnet `bucket` und `score`.
@@ -398,7 +407,20 @@ alle Treffer als JSON-Array (`[{id, darija, german}]`), Arabisch/Audio/Glossen, 
 - die 43 Kandidaten mit exaktem Treffer von heute stehen *nicht* mehr unter „fehlt"
 - danach: **Gewichte einmal an den ersten 50 Zeilen nachziehen**, vor Paket 6
 
-## P6 — UI in `trainer.html`
+## P6 — UI in `trainer.html` — ERLEDIGT 2026-09-19
+
+> **Abgenommen.** 441 Zeilen alter `_tn`-Block durch 310 Zeilen `_qa` ersetzt, Syntaxcheck ok.
+> Nav-Button „Quellenabgleich“, Mode-Key `quellen`, vier Bucket-Chips, Filter nach Quelle/Wortart/
+> Audio/deutscher Glosse/Mehrfachbelegung, Sortierung serverseitig über `&order=score.desc`.
+> Score mit aufklappbarer Begründung; Treffer, Phrasen und ähnliche Zeilen immer vollständig
+> (Homonymfall). `variante` bietet „Beleg auf bestehende Zeile“ statt Neuanlage und überschreibt
+> ein bestehendes `external_confirmed` nie.
+>
+> **Bewusst entfallen:** der Verb-Splitter (Präsens/Vergangenheit als zwei Kandidaten) und der
+> Verbform-Editor. Beide hingen an `tunico_corpus_verbs.forms_chatalpha`, also an einer einzelnen
+> Quelle; im Mehrquellen-View brauchen sie ein neues Konzept. Neue Zeilen landen bis dahin
+> geflaggt in der unsortierten Lektion. **Offen — falls das fehlt, wieder aufnehmen.**
+
 
 `showTunicoCandidates()` und den kompletten `_tn*`-Block ersetzen. Umbenennung wie oben.
 
@@ -416,7 +438,13 @@ alle Treffer als JSON-Array (`[{id, darija, german}]`), Arabisch/Audio/Glossen, 
 **Pflicht:** neue Vokabeln nur nach Rückfrage anlegen — die Lockerung dieser Session galt Korrekturen,
 nicht Neuanlagen (SKILL.md → „Nie ohne Bestätigung in Supabase schreiben").
 
-## P7 — Dokumentation
+## P7 — Dokumentation — ERLEDIGT 2026-09-19
+
+> **Abgenommen.** `IMPORTS.md` hat einen eigenen Abschnitt „Quellenabgleich“ (Objekte, die vier
+> Buckets, die zwei Fallen, der Score, Arbeitshinweise). `SKILL.md` hat eine Schnellzugriff-Zeile.
+> `PRECEDENTS.md` hat zwei neue Einträge: „Der eingefrorene Kandidaten-Schnappschuss“ und
+> „Ninjas translit_skeleton folgt Ninjas Konvention“.
+
 
 - `skills/tunsi/IMPORTS.md`: Abschnitt „Quellenabgleich" — die drei Buckets, der Score, die
   Pipe-Bündel-Falle, `freq_ist_obergrenze`, wann `refresh materialized view` nötig ist.

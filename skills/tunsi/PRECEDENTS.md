@@ -568,6 +568,25 @@ Beide Regeln als SQL-Funktionen `public._translit_skeleton()`/`public._arabic_sk
 
 **Lehre, über diesen Fall hinaus:** eine abgeleitete Spalte ohne Generierung oder Trigger ist ein eingefrorener Schnappschuss, genau wie `tunico_candidates.auto_verdict`. Wo eine Spalte aus einer anderen berechnet wird und die Formel als `IMMUTABLE`-Funktion vorliegt, gehört sie generiert — sonst ist die Frage nicht *ob* sie auseinanderläuft, sondern wann es jemand merkt. Und gemerkt hätte es hier niemand: die falschen Skelette sind für jeden Abgleich unsichtbar, der auf ihnen aufsetzt.
 
+## Der eingefrorene Kandidaten-Schnappschuss (2026-09-16)
+
+`tunico_candidates.auto_verdict` und `.matched_vocab_id` wurden am 8.–11. August 2026 einmal
+berechnet und nie wieder. Bis zum 16. September waren 373 Vokabeln dazugekommen. Ergebnis:
+von 575 offenen Kandidaten hatten **312 (54 %) längst einen Skelett-Treffer**, und **156 der 374
+rot als „fehlt“ markierten Zeilen waren vorhanden**. Die Liste argumentierte gegen sich selbst.
+
+Dieselbe Krankheit lag eine Ebene tiefer: `vocabulary.translit_skeleton` war eine gewöhnliche
+Spalte ohne Trigger und bei 104 Zeilen falsch, `arabic_skeleton` bei 100 (P1, 2026-09-16).
+
+**Regel daraus:** eine abgeleitete Spalte oder eine vorberechnete Liste ohne Generierung ist ein
+Schnappschuss, und die Frage ist nicht *ob* sie auseinanderläuft, sondern wann es jemand merkt.
+Wo die Formel als `IMMUTABLE`-Funktion vorliegt, gehört die Spalte **generiert**; wo eine Liste
+aus mehreren Tabellen entsteht, gehört sie als **View** berechnet statt gespeichert. Gespeichert
+wird nur, was eine Entscheidung festhält (`import_entscheidungen`), nie ein Zwischenergebnis.
+
+**Gegenprobe vor jeder Aussage über so eine Liste:** die Trefferzahl gegen den heutigen Bestand
+neu ziehen, nicht die gespeicherte Bewertung zitieren.
+
 ## Ninjas translit_skeleton folgt Ninjas Konvention, nicht unserer (2026-09-18)
 
 Gefunden bei der Abnahme von P3b (Quellenabgleich): eine Kontrollzahl, die nur bestätigt werden
