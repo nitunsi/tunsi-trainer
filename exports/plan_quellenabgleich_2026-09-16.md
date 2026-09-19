@@ -551,6 +551,18 @@ Leck im neuen Werkzeug.
 1. **Name**: `Quellenabgleich` (Vorschlag), `Lücken` oder `Vorschläge`?
 2. **Wortart als Feld** in `vocabulary`: aus P3 fällt die normalisierte Wortart für 1.851 von 2.766
    einwortigen Zeilen ohnehin ab. Schemaänderung — steht seit dieser Session unentschieden.
-3. **Peace-Corps-Rang 4/5 überhaupt anzeigen?** 1.045 zusätzliche fehlende Einträge, nach
-   Peace-Corps-eigenem Urteil die unwichtigsten. Vorschlag: als Filter vorhanden, aber
-   standardmäßig ausgeblendet.
+3. ~~**Peace-Corps-Rang 4/5 überhaupt anzeigen?**~~ **Erledigt 2026-09-19, anders als
+   vorgeschlagen.** Der Vorschlag war, Rang 4/5 standardmäßig auszublenden. Die Messung
+   widerlegt ihn: Rang 4 und 5 haben im Schnitt **Score 38 bzw. 24** gegen **87** bei Rang 1 —
+   der Score sortiert sie ohnehin ans Ende. Ein Ausblende-Schalter wäre Bedienlast ohne Nutzen.
+   Eingebaut wurde stattdessen der umgekehrte Griff: ein Filter **„PC-Rang 1–2 / 1–3"**, also
+   eine positive Auswahl dessen, was Peace Corps zuerst beibringt (1.092 bzw. 2.137 Zeilen).
+
+| PC-Rang | Zeilen | davon `fehlt` | Ø Score |
+|---|---|---|---|
+| 1 | 531 | 78 | **87** |
+| 2 | 561 | 129 | 67 |
+| 3 | 1.045 | 269 | 52 |
+| 4 | 881 | 266 | 38 |
+| 5 | 567 | 203 | 24 |
+| kein Rang | 16.210 | 8.669 | 21 |

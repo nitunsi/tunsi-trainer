@@ -27,8 +27,16 @@
 -- MESSUNG NACH SCHRITT 1: ninja 0 von 16.577 Abweichungen (vorher 5.577), keine NULLs.
 -- ABER: 380 Vokabeln gewannen Ninja-Treffer, 5 VERLOREN welche -- dort passte der alte,
 -- aus Ninjas darija berechnete Wert zufaellig besser:
---   2967 "sacha poubal"  -- unser Eintrag schreibt ch statt sh und verletzt damit die
---                           eigene Hauskonvention; Ninjas "sasha poubal" ist das Richtige
+--   2967 "sacha poubal"  -- KORREKTUR 2026-09-19: hier stand zuerst, unser Eintrag
+--                           verletze mit "ch" die Hauskonvention und Ninjas "sasha poubal"
+--                           sei das Richtige. Das war falsch. SKILL.md -> Lehnwoerter
+--                           (Ausnahme) sagt ausdruecklich: franzoesische/internationale
+--                           Lehnwoerter behalten ihre Originalschreibung (guichet,
+--                           sacoche, chapeau, marche, piscine ...), markiert mit (frz.)
+--                           im german-Feld. 2967 ist genau so gefuehrt und steht neben
+--                           2966 "poubal" und 635 "sacoche". Nicht die Zeile ist falsch,
+--                           sondern Ninjas Umschrift greift hier nicht -- sie behandelt
+--                           das franzoesische "ch" als Schin. Nichts zu aendern.
 --   1394 / 2095 "tfadhdhal" -- Ninjas chatalpha macht aus dh (Dad) faelschlich th,
 --                           das bei uns fuer Dhal/Za reserviert ist -- hier irrt Ninja
 --   3603 / 1919          -- Ninjas chatalpha zieht den Artikel mit ("es-sghar")
