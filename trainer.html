@@ -7421,7 +7421,9 @@ function _qaRowHtml(r){
     ? '<button class="qa-btn-beleg" style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">✓ Beleg auf bestehende Zeile</button>'
       + '<button class="qa-btn-neu" style="padding:.35rem .7rem;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--gold2);font-family:inherit;font-size:.75rem;cursor:pointer">➕ trotzdem neu anlegen</button>'
     : r.bucket==='vorhanden'
-      ? ''
+      ? ((r.treffer||[]).length
+          ? '<button class="qa-btn-faellig" style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">▶ Fällig setzen</button>'
+          : '')
       : '<button class="qa-btn-neu" style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">➕ '+(r.bucket==='baustein'?'Als Einzelwort anlegen':'Neu anlegen')+'</button>';
 
   return `
@@ -7462,7 +7464,44 @@ function _qaBindRowEvents(rows){
     if(beleg) beleg.addEventListener('click', ()=>_qaBelegSetzen(r, row));
     const neu = row.querySelector('.qa-btn-neu');
     if(neu) neu.addEventListener('click', ()=>_qaNeuAnlegen(r, row));
+    const faellig = row.querySelector('.qa-btn-faellig');
+    if(faellig) faellig.addEventListener('click', ()=>_qaFaelligSetzen(r, row));
   });
+}
+
+// Setzt next_review NUR, wenn die Vokabel noch keine Faelligkeit hat. Eine laufende
+// Faelligkeit (auch eine ueberfaellige) wird nie ueberschrieben — sonst wuerde ein Klick
+// hier den Lernstand zuruecksetzen.
+async function _qaFaelligSetzen(r, row){
+  const note = row.querySelector('.qa-note');
+  const ids = (r.treffer||[]).map(t=>t.id);
+  if(!ids.length) return;
+  const now = new Date().toISOString();
+  let gesetzt = 0, schon = 0;
+  try{
+    for(const id of ids){
+      const p = srsProgress[id];
+      if(p && p.next_review){ schon++; continue; }
+      if(p && p.id){ await sbApi('progress?id=eq.'+p.id, 'PATCH', {next_review: now}); }
+      else {
+        try{
+          await sbApi('progress', 'POST', {user_id: currentUser.id, vocabulary_id: id,
+            correct_count:0, wrong_count:0, review_count:0, next_review: now});
+        }catch(e){
+          if(!String(e.message).includes('23505')) throw e;
+          const f = await sbApi('progress?user_id=eq.'+currentUser.id+'&vocabulary_id=eq.'+id+'&select=id,next_review');
+          if(f && f.length && !f[0].next_review) await sbApi('progress?id=eq.'+f[0].id, 'PATCH', {next_review: now});
+          else { schon++; continue; }
+        }
+      }
+      if(!srsProgress[id]) srsProgress[id] = {level:0, correct_count:0, review_count:0};
+      srsProgress[id].next_review = new Date(now);
+      gesetzt++;
+    }
+    if(note){ note.style.display='block'; note.style.color='var(--green)';
+      note.textContent = '✓ '+gesetzt+' fällig gesetzt'+(schon?', '+schon+' war schon fällig':''); }
+    showToast('✓ '+gesetzt+' fällig gesetzt'+(schon?' ('+schon+' war schon)':''),'ok');
+  }catch(e){ showToast('Fehler: '+e.message,'err'); }
 }
 
 // Schreibt ins Entscheidungs-Protokoll. Die Vorschlagsliste selbst wird NICHT
@@ -7532,6 +7571,7 @@ function _qaNeuAnlegen(r, row){
       <input class="qa-f-de" value="${escHtml(r.gloss_de||'')}" placeholder="deutsch — Vorschlag aus der Quelle, bitte prüfen" style="padding:.35rem .5rem;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:.8rem">
       <div style="display:flex;gap:.3rem">
         <button class="qa-f-ok" style="padding:.3rem .8rem;border:1px solid var(--green);border-radius:4px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">Anlegen</button>
+        <span style="font-size:.68rem;color:var(--muted);align-self:center">→ Lektion „unsortiert", nicht fällig${r.arabisch?'':', geflaggt bis das Arabische da ist'}</span>
         <button class="qa-f-abbruch" style="padding:.3rem .8rem;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--muted);font-family:inherit;font-size:.75rem;cursor:pointer">Abbrechen</button>
       </div>
     </div>`;
@@ -7551,7 +7591,10 @@ function _qaNeuAnlegen(r, row){
         ninja_audio_url: r.audio_url || null,
         external_confirmed: true,
         external_confirmed_source: (r.quellen && r.quellen[0]) || null,
-        flagged: true,
+        // Geflaggt NUR, wenn das Arabische fehlt. Genau dafuer war die Flagge im alten
+        // TUNICO-Screen gedacht ("wartet auf Ninja-Check fuers Arabische"); eine Zeile, die
+        // Ninjas vokalisiertes Arabisch samt Audio mitbringt, wartet auf nichts mehr.
+        flagged: !arab,
         internal_note: 'Quellenabgleich '+new Date().toISOString().slice(0,10)
           +' — Score '+r.score+', Quellen: '+(r.quellen||[]).join('/')
           +(r.freq_ist_obergrenze ? ' — Häufigkeit ist Obergrenze' : '')
