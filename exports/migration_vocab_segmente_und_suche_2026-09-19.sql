@@ -1,0 +1,46 @@
+-- vocab_segmente + Suche im Quellenabgleich (2026-09-19)
+-- Migrationen: vocab_segmente_varianten_in_einem_feld,
+--              quellen_abgleich_arabisch_roh_fuer_suche
+--
+-- ============================ BEFUND 1: Varianten in einem Feld ============================
+-- Vom Nutzer bemerkt: der Quellenabgleich zeigte "wist liblad" (downtown) als FEHLEND,
+-- obwohl der Bestand es hat -- als #3734 "wust il-blad, wust il-mdina"
+-- ("Stadtzentrum, Stadtmitte").
+--
+-- URSACHE: die Zeile fuehrt ZWEI Varianten in einem darija-Feld, durch Komma getrennt.
+-- Ihr translit_skeleton ist die Verkettung beider ("stlbldstlmdn") und trifft damit
+-- weder "stlbld" noch "stlmdn". Auch die beiden anderen Achsen greifen nicht:
+--   vocab_tokens zerlegt in EINZELWOERTER -- die gesuchte Einheit ist hier aber eine
+--     zweiwortige Variante;
+--   der variante-Bucket erlaubt Laengendifferenz 1 -- hier sind es 6.
+--
+-- AUSMASS: 50 von 3.777 Zeilen fuehren Varianten (25 mit Komma, 25 mit Schraegstrich),
+-- zusammen 100 Segmente. 25 Quellwoerter standen dadurch faelschlich als nicht vorhanden.
+--
+-- FIX: vocab_segmente -- eine Zeile je Variante, mit eigenem Skelett. Fuer Zeilen ohne
+-- Trennzeichen ist das Segment die ganze darija; der View ersetzt die Bestandsseite im
+-- Quellenabgleich deshalb vollstaendig, statt sie zu ergaenzen.
+--
+-- DREI GRANULARITAETEN, die sich nicht ersetzen -- beim Erweitern nicht verwechseln:
+--   vocabulary.translit_skeleton   ganze Zeile            exakte Gleichheit
+--   vocab_segmente                 Variante (Komma / "/") "eine der Schreibungen"
+--   vocab_tokens                   Einzelwort             baustein-Bucket
+--
+-- ERGEBNIS: wist liblad ist jetzt "vorhanden" mit Treffer #3734.
+-- Bucket-Verschiebung: vorhanden 5.244 -> 5.274, baustein 572 -> 551, fehlt 9.620 -> 9.610.
+--
+-- ============================ BEFUND 2: Suche liefert nichts auf Arabisch ============
+-- Die neue Suche durchsucht Lemma, Bedeutung, Arabisch und Skelett. Ninjas Arabisch ist
+-- aber durchgaengig VOKALISIERT (وِسْطْ لِبْلَادْ) -- wer وسط eintippt, fand nichts.
+-- Ein Suchfeld, das stillschweigend leer bleibt, ist schlimmer als keins.
+--
+-- FIX: Spalte arabisch_roh im View -- Arabisch ohne Harakat. Gestrippt werden
+-- U+064B-U+0652 (Harakat, Tanwin, Schadda, Sukun), U+0670 (hochgestelltes Alif)
+-- und U+0640 (Tatweel). Die Suche prueft beide Spalten, also funktioniert vokalisierte
+-- wie unvokalisierte Eingabe.
+--
+-- ABNAHME (ueber echtes HTTP mit select=*):
+--   "wist"    -> wist (baustein), wist liblad (vorhanden)
+--   "Stadt"   -> blad, majlis, 3asma
+--   "وسط"    -> wist, wist liblad, mitwassit     (unvokalisiert)
+--   "وِسْط"  -> wist, wist liblad, wistiyya      (vokalisiert)

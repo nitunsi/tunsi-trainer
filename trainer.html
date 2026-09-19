@@ -7270,7 +7270,7 @@ const QA_BUCKET_LABEL = {
 };
 const QA_QUELLE_LABEL = { tunico:'TUNICO', ninja:'Ninja', peacecorps:'Peace Corps' };
 
-let _qaBucket='fehlt', _qaQuelle='all', _qaWortart='all', _qaRang='all',
+let _qaBucket='fehlt', _qaSuche='', _qaQuelle='all', _qaWortart='all', _qaRang='all',
     _qaNurAudio=false, _qaNurDeutsch=false, _qaMehrfach=false,
     _qaOffset=0, _qaBatch=15, _qaCounts={};
 
@@ -7303,7 +7303,14 @@ async function _qaLoadCounts(){
 // nach Score MUSS serverseitig passieren, sonst sortiert man nur die zufaellig
 // gelieferten 15 Zeilen (Praezedenzfall: PRECEDENTS.md -> Partner-Check-Sortierung).
 function _qaQuery(){
-  let q = 'quellen_abgleich?select=*&bucket=eq.'+_qaBucket;
+  // Bei aktiver Suche KEIN Bucket-Filter: wer ein Wort sucht, will es finden, egal in
+  // welchem Bucket es steckt. Der Bucket steht ohnehin in jeder Zeile.
+  let q = 'quellen_abgleich?select=*' + (_qaSuche ? '' : '&bucket=eq.'+_qaBucket);
+  if(_qaSuche){
+    // Klammern und Kommas wuerden die or=()-Syntax zerlegen, deshalb raus.
+    const t = encodeURIComponent('*'+_qaSuche.replace(/[(),*]/g,'')+'*');
+    q += '&or=(lemma.ilike.'+t+',gloss_de.ilike.'+t+',gloss_en.ilike.'+t+',arabisch.ilike.'+t+',arabisch_roh.ilike.'+t+',skeleton.ilike.'+t+')';
+  }
   if(_qaQuelle !== 'all')  q += '&quellen=cs.{'+_qaQuelle+'}';
   if(_qaWortart !== 'all') q += '&wortart=eq.'+encodeURIComponent(_qaWortart);
   // Positive Auswahl statt Ausblenden: Rang 4/5 sinken durch den Score ohnehin nach unten
@@ -7333,12 +7340,13 @@ function _qaRenderShell(){
         <b style="color:var(--text)">bei jedem Öffnen neu berechnet</b>, nicht gespeichert.
         Sortiert nach einem Score aus Korpushäufigkeit, Peace-Corps-Rang, Mehrfachbelegung und Anlege-Reife.
       </div>
-      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem" id="qa-bucket-chips">
+      <input id="qa-suche" type="search" value="${escHtml(_qaSuche)}" placeholder="Suchen — Lemma, Bedeutung, Arabisch oder Skelett (sucht über alle Buckets)" style="width:100%;box-sizing:border-box;margin-bottom:.6rem;padding:.45rem .6rem;background:var(--bg);border:1px solid ${_qaSuche?'var(--gold)':'var(--border)'};border-radius:6px;color:var(--text);font-family:inherit;font-size:.82rem">
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem;${_qaSuche?'opacity:.4;pointer-events:none':''}" id="qa-bucket-chips">
         ${['fehlt','baustein','variante','vorhanden'].map(chip).join('')}
       </div>
       <div style="font-size:.72rem;color:var(--muted);margin-bottom:.6rem;padding:.4rem .6rem;background:var(--surface);border-left:2px solid var(--border);border-radius:0 4px 4px 0">
-        ${escHtml(QA_BUCKET_LABEL[_qaBucket].hint)}
-        ${cnt.n_mit_audio!==undefined ? ' · '+cnt.n_mit_audio+' mit Audio · '+cnt.n_mit_deutsch+' mit deutscher Glosse · '+cnt.n_mehrfach+' mehrfach belegt' : ''}
+        ${_qaSuche ? 'Suche nach „'+escHtml(_qaSuche)+'" — über alle Buckets, Bucket-Filter ruht.' : escHtml(QA_BUCKET_LABEL[_qaBucket].hint)}
+        ${!_qaSuche && cnt.n_mit_audio!==undefined ? ' · '+cnt.n_mit_audio+' mit Audio · '+cnt.n_mit_deutsch+' mit deutscher Glosse · '+cnt.n_mehrfach+' mehrfach belegt' : ''}
       </div>
       <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center">
         <select id="qa-quelle" style="padding:.35rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;font-size:.78rem">
@@ -7372,6 +7380,23 @@ function _qaRenderShell(){
   bind('qa-quelle',   t => _qaQuelle  = t.value);
   bind('qa-wortart',  t => _qaWortart = t.value);
   bind('qa-rang',     t => _qaRang    = t.value);
+  const suche = document.getElementById('qa-suche');
+  if(suche){
+    let timer = null;
+    const los = () => {
+      const neu = suche.value.trim();
+      if(neu === _qaSuche) return;
+      _qaSuche = neu;
+      const pos = suche.selectionStart;
+      _qaRenderShell();
+      const f = document.getElementById('qa-suche');
+      if(f){ f.focus(); try{ f.setSelectionRange(pos, pos); }catch(e){} }
+      _qaLoadBatch(true);
+    };
+    // Entprellt, sonst laeuft je Tastendruck eine Abfrage ueber 19.795 Zeilen.
+    suche.addEventListener('input', ()=>{ clearTimeout(timer); timer = setTimeout(los, 350); });
+    suche.addEventListener('change', ()=>{ clearTimeout(timer); los(); });
+  }
   bind('qa-audio',    t => _qaNurAudio   = t.checked);
   bind('qa-deutsch',  t => _qaNurDeutsch = t.checked);
   bind('qa-mehrfach', t => _qaMehrfach   = t.checked);
