@@ -4419,15 +4419,34 @@ async function deleteVocabSheet(){
   }
 }
 
-async function toggleFlag(tr, btn){
-  const isFlagged = flaggedVocab.has(tr);
-  const vocabId = vocabIdMap[tr];
+// Flaggen ueber die vocabulary.id statt ueber die Schreibweise. vocabIdMap ist auf die
+// darija geschluesselt und kollidiert, wo zwei Zeilen dieselbe Schreibung haben (siehe
+// Kommentar bei VOCAB_BY_ID) — dann flaggt der Knopf die falsche Zeile. Im Kurs-Modus
+// haengt die id direkt an der Uebung, da muss nicht ueber den Text zurueckgeraten werden.
+async function toggleFlagById(vocabId, btn){
   if(!vocabId) return;
+  const v = VOCAB_BY_ID[vocabId];
+  const tr = v ? v.tr : null;
+  const isFlagged = tr ? flaggedVocab.has(tr) : !!(btn && btn.classList.contains('flagged'));
   try {
     await sbApi('vocabulary?id=eq.'+vocabId, 'PATCH', {flagged: !isFlagged});
-    if(isFlagged){ flaggedVocab.delete(tr); btn.classList.remove('flagged'); btn.title='Als fehlerhaft markieren'; }
-    else { flaggedVocab.add(tr); btn.classList.add('flagged'); btn.title='Markierung entfernen'; }
+    if(tr){ if(isFlagged) flaggedVocab.delete(tr); else flaggedVocab.add(tr); }
+    if(btn){
+      btn.classList.toggle('flagged', !isFlagged);
+      // Auch das Symbol wechseln, nicht nur die Deckkraft (.flag-btn.flagged): sonst steht
+      // nach dem Klick weiter die weisse Fahne da, obwohl die Zeile jetzt markiert ist.
+      btn.innerHTML = !isFlagged ? '&#128681;' : '&#127987;&#65039;';
+      btn.title = !isFlagged ? 'Markierung entfernen' : 'Als fehlerhaft markieren';
+    }
   } catch(e){ console.error(e); }
+}
+
+// Altaufrufer mit der Schreibweise statt der id — loest sie auf und geht denselben Weg,
+// damit es nicht zwei Fassungen derselben Logik gibt.
+async function toggleFlag(tr, btn){
+  const vocabId = vocabIdMap[tr];
+  if(!vocabId) return;
+  await toggleFlagById(vocabId, btn);
 }
 
 
@@ -4911,8 +4930,27 @@ function correctPreviousCourseEx(){
             +' jetzt als '+(newOk?'richtig':'falsch')+' gewertet', newOk?'ok':'warn');
 }
 
+// ✎ Bearbeiten und 🚩 Flaggen zu einer Kurs-Übung — nur wenn eine Vokabel dranhängt;
+// bei reinen Grammatik-Übungen gäbe es nichts zu bearbeiten. Zwei Aufrufer mit
+// unterschiedlicher Optik (Prüfen-Leiste: Ghost-Knöpfe über die Klasse, Weiter-Leiste:
+// volle Balkenhöhe über style), deshalb kommt das Aussehen von außen und nur die Logik
+// von hier. Geflaggt wird über die id, siehe toggleFlagById().
+function courseVocabIconsHtml(exercise, cls, style){
+  const v = exercise && exercise.vocabulary;
+  if(!v || !v.id) return '';
+  const flagged = flaggedVocab.has(v.darija||'');
+  const attr = (extra)=>{
+    const c = [cls, extra].filter(Boolean).join(' ');
+    return (c ? ' class="'+c+'"' : '') + (style ? ' style="'+style+'"' : '');
+  };
+  return '<button onclick="openVocabEdit('+v.id+')" title="Vokabel bearbeiten"'+attr('')+'>&#9998;</button>'
+       + '<button onclick="toggleFlagById('+v.id+',this)"'
+       + ' title="'+(flagged?'Markierung entfernen':'Als fehlerhaft markieren')+'"'
+       + attr('flag-btn'+(flagged?' flagged':''))+'>'+(flagged?'&#128681;':'&#127987;&#65039;')+'</button>';
+}
+
 // Eigene "Weiter"-Leiste für Kurs-Karten (Pendant zu showFlashNextBar), mit derselben
-// "War doch richtig/falsch"-Korrekturzeile, aber ohne die vokabelspezifischen Edit-/Flag-Icons.
+// "War doch richtig/falsch"-Korrekturzeile und denselben Vokabel-Icons (courseVocabIconsHtml).
 function showCourseNextBar(exercise, ok){
   const sn = document.getElementById('sticky-next');
   if(sn){ sn.classList.remove('show'); sn.style.display='none'; }
@@ -4926,15 +4964,8 @@ function showCourseNextBar(exercise, ok){
   // Haengt die Uebung an einer Vokabel, gehoeren Bearbeiten und Flaggen auch hier hin --
   // ein Fehler faellt beim Ueben auf, und ohne die Knoepfe muesste man ihn sich merken und
   // spaeter in der Vokabelliste suchen. Bei Uebungen ohne Vokabelbezug entfallen sie.
-  const v = exercise && exercise.vocabulary;
   const S = 'padding:.9rem .95rem;border:none;border-left:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1.1rem;cursor:pointer;flex-shrink:0';
-  let icons = '';
-  if(v && v.id){
-    const flagged = flaggedVocab.has(v.darija||'');
-    const trSafe = (v.darija||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    icons = '<button onclick="openVocabEdit(' + v.id + ')" title="Vokabel bearbeiten" style="' + S + '">&#9998;</button>'
-          + '<button onclick="toggleFlag(\'' + trSafe + '\',this)" title="Als fehlerhaft markieren" class="flag-btn' + (flagged?' flagged':'') + '" style="' + S + '">' + (flagged?'&#128681;':'&#127987;&#65039;') + '</button>';
-  }
+  const icons = courseVocabIconsHtml(exercise, '', S);
   bar.innerHTML = overrideRow +
     '<div style="display:flex;width:100%">' +
     '<button onclick="hideFlashActionBar();stickyNext()" style="flex:1;padding:.9rem;border:none;background:var(--gold);color:#0e0c0a;font-weight:700;font-size:.9rem;text-transform:uppercase;letter-spacing:1px;cursor:pointer">Weiter &#8594;</button>' +
@@ -5084,7 +5115,8 @@ function rCourseEx(ex, el){
     const inner = document.getElementById('sticky-check-inner');
     if(inner){
       inner.innerHTML = '<button class="sticky-check-btn" onclick="courseSrsReveal()">Lösung zeigen</button>'
-                      + prevBtnHtml();
+                      + prevBtnHtml()
+                      + courseVocabIconsHtml(exercise, 'sticky-check-ghost', '');
       document.getElementById('sticky-check').style.display='block';
     }
   } else {
@@ -5095,7 +5127,8 @@ function rCourseEx(ex, el){
     const inner = document.getElementById('sticky-check-inner');
     if(inner){
       inner.innerHTML = '<button class="sticky-check-btn" onclick="hideStickyCheck();chkCourseEx()">Prüfen</button>'
-                      + prevBtnHtml();
+                      + prevBtnHtml()
+                      + courseVocabIconsHtml(exercise, 'sticky-check-ghost', '');
       document.getElementById('sticky-check').style.display='block';
     }
     setTimeout(()=>{ const inp=document.getElementById('course-input'); if(inp) inp.focus({preventScroll:true}); }, 80);
