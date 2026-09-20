@@ -2568,7 +2568,7 @@ function rFlash(ex,el){
     inner.innerHTML =
       '<button class="sticky-check-btn" onclick="hideStickyCheck();chkFlash()">Prüfen</button>' +
       '<button class="sticky-check-ghost" onclick="skipFlash()" title="Überspringen">⏭</button>' +
-      flashPrevBtnHtml() +
+      prevBtnHtml() +
       '<button class="sticky-check-ghost" id="latin-toggle" onclick="toggleLatin()">' + latinLabel + '</button>' +
       '<button class="sticky-check-ghost flag-btn ' + (flagged ? 'flagged' : '') + '" onclick="toggleFlag(\'' + vtr + '\',this)">' + (flagged ? '🚩' : '🏳️') + '</button>';
     document.getElementById('sticky-check').style.display = 'block';
@@ -2615,6 +2615,7 @@ function chkFlash(){
   ok?(score.c++,score.st++,score.t++):(score.w++,score.st=0,score.t++);
   updScore();
   window._lastFlashVocab = {v: v, ok: ok};
+  window._lastAnsweredKind = 'flash';
   showNext();
   showFlashNextBar(v, ok);
 }
@@ -2795,25 +2796,52 @@ function markFlashWrong(){
   showFlashNextBar(last.v, false);
 }
 
+// ── Der ⏮-Knopf zeigt auf die zuletzt beantwortete Karte — egal welcher Art.
+//    Im Mix wechseln sich Vokabel- und Kurs-Karten ab; wuerde jede Leiste nur
+//    ihre eigene Art kennen, zeigte der Knopf auf einer Kurs-Karte auf die
+//    letzte KURS-Uebung, obwohl dazwischen laengst eine Vokabel beantwortet
+//    wurde — und die tatsaechlich letzte Antwort waere nicht korrigierbar.
+//    _lastAnsweredKind wird in chkFlash() bzw. chkCourseEx() gesetzt.
+function lastAnsweredItem(){
+  if(window._lastAnsweredKind === 'course'){
+    const c = window._lastCourseAnswer;
+    return c ? {kind:'course', ok:c.ok, label:courseExShortLabel(c.exercise)} : null;
+  }
+  if(window._lastAnsweredKind === 'flash'){
+    const f = window._lastFlashVocab;
+    return f ? {kind:'flash', ok:f.ok, label:f.v.tr} : null;
+  }
+  return null;
+}
+
 // Button-HTML für ⏮ — Rahmen/Icon-Farbe zeigt den Status der zuletzt
-// beantworteten Vokabel: grün = war richtig, rot = war falsch, grau = noch
+// beantworteten Karte: grün = war richtig, rot = war falsch, grau = noch
 // keine Antwort in dieser Session.
-function flashPrevBtnHtml(){
-  const last = window._lastFlashVocab;
-  const known = !!last;
-  const ok = known ? last.ok : null;
-  const color = !known ? 'var(--muted)' : (ok ? 'var(--green)' : 'var(--red)');
-  const title = !known ? 'Keine vorherige Antwort' : ('Letzte Antwort ('+last.v.tr+') war '+(ok?'richtig':'falsch')+' — antippen zum Korrigieren');
-  return '<button class="sticky-check-ghost" id="flash-prev-btn" onclick="correctPreviousFlashCard()" title="'+title+'" style="border-color:'+color+';color:'+color+'">⏮</button>';
+function prevBtnHtml(){
+  const last = lastAnsweredItem();
+  const color = !last ? 'var(--muted)' : (last.ok ? 'var(--green)' : 'var(--red)');
+  const title = !last ? 'Keine vorherige Antwort'
+    : ('Letzte Antwort ('+last.label+') war '+(last.ok?'richtig':'falsch')+' — antippen zum Korrigieren');
+  // escHtml() laesst Anfuehrungszeichen stehen (textContent→innerHTML) — im
+  // title-Attribut wuerde ein " aus einem Uebungstext das Attribut sprengen.
+  const titleAttr = escHtml(title).replace(/"/g,'&quot;');
+  return '<button class="sticky-check-ghost" id="prev-answer-btn" onclick="correctPreviousAnswer()" title="'+titleAttr+'" style="border-color:'+color+';color:'+color+'">⏮</button>';
 }
 // Aktualisiert nur den ⏮-Button in-place (ohne die ganze Leiste neu zu bauen)
-function refreshFlashPrevBtn(){
-  const btn = document.getElementById('flash-prev-btn');
+function refreshPrevBtn(){
+  const btn = document.getElementById('prev-answer-btn');
   if(!btn) return;
   const tmp = document.createElement('div');
-  tmp.innerHTML = flashPrevBtnHtml();
+  tmp.innerHTML = prevBtnHtml();
   const newBtn = tmp.firstElementChild;
   btn.replaceWith(newBtn);
+}
+// Weiche: korrigiert die zuletzt beantwortete Karte, Vokabel oder Kurs-Uebung.
+function correctPreviousAnswer(){
+  const last = lastAnsweredItem();
+  if(!last){ showToast('Keine vorherige Antwort zum Korrigieren','warn'); return; }
+  if(last.kind === 'course') correctPreviousCourseEx();
+  else correctPreviousFlashCard();
 }
 
 // ── Korrektur der zuletzt beantworteten Karte, auch nachdem schon zur
@@ -2832,7 +2860,7 @@ function correctPreviousFlashCard(){
   updScore();
   const vid = last.v.id;
   const orig = window._lastFlashOrigProgress;
-  refreshFlashPrevBtn(); // Button-Farbe sofort umschalten
+  refreshPrevBtn(); // Button-Farbe sofort umschalten
   (async ()=>{
     if(window._lastFlashSrsPromise){
       try{ await window._lastFlashSrsPromise; }catch(e){}
@@ -4824,20 +4852,63 @@ async function courseCorrectAnswer(exercise, toOk, orig){
   courseEnsureFrontierUnlocked().catch(()=>{});
 }
 
-// "War doch richtig/falsch" — Gegenstück zu markFlashCorrect/markFlashWrong bei Vokabeln.
-function courseCorrectLast(toOk){
+// Kurzbezeichnung einer Kurs-Übung für Tooltip und Toast — die Übung hat keinen
+// Namen, also den Aufgabentext gekürzt (Lückentexte sind teils sehr lang).
+function courseExShortLabel(ex){
+  const t = ((ex && (ex.prompt || ex.instruction || ex.solution)) || '').replace(/\s+/g,' ').trim();
+  if(!t) return 'Kurs-Übung';
+  return t.length > 30 ? t.slice(0,29)+'…' : t;
+}
+
+// Zustand + Datenbank der Kurs-Korrektur, ohne Oberfläche. Gemeinsame Basis von
+// "War doch richtig/falsch" (gleiche Karte, mit Feedback-Text) und dem ⏮-Knopf auf
+// einer späteren Karte (nur Toast) — die beiden Wege dürfen nicht auseinanderlaufen.
+// Gibt die betroffene Antwort zurück, oder null wenn es nichts zu korrigieren gibt.
+function _applyCourseCorrection(toOk){
   const last = window._lastCourseAnswer;
-  if(!last || last.ok === toOk) return;
+  if(!last || last.ok === toOk) return null;
   last.ok = toOk;
   if(toOk){ score.c++; score.w = Math.max(0, score.w-1); score.st++; }
   else { score.w++; score.c = Math.max(0, score.c-1); score.st = 0; }
   updScore();
-  courseCorrectAnswer(last.exercise, toOk, window._lastCourseOrigProgress).catch(()=>{});
-  if(window._lastCourseLogId) sbApi('review_log?id=eq.'+window._lastCourseLogId, 'PATCH', {correct:toOk}).catch(()=>{});
+  const exercise = last.exercise, orig = window._lastCourseOrigProgress;
+  (async ()=>{
+    // Erst den Schreibvorgang der ursprünglichen Antwort abwarten — sonst überschreibt
+    // er die Korrektur, und die review_log-Zeile ist noch gar nicht angelegt
+    // (_lastCourseLogId wird erst in dessen .then() gesetzt). Gleiche Reihenfolge wie
+    // bei den Vokabeln (_lastFlashSrsPromise in markFlashCorrect).
+    if(window._lastCourseWritePromise){ try{ await window._lastCourseWritePromise; }catch(e){} }
+    await courseCorrectAnswer(exercise, toOk, orig).catch(()=>{});
+    if(window._lastCourseLogId){
+      sbApi('review_log?id=eq.'+window._lastCourseLogId, 'PATCH', {correct:toOk}).catch(()=>{});
+    }
+  })();
+  return last;
+}
+
+// "War doch richtig/falsch" — Gegenstück zu markFlashCorrect/markFlashWrong bei Vokabeln.
+function courseCorrectLast(toOk){
+  const last = _applyCourseCorrection(toOk);
+  if(!last) return;
   const fb = document.getElementById('feedback');
   if(fb){ fb.className = 'feedback show '+(toOk?'correct':'wrong'); fb.innerHTML = toOk ? '✓ Als richtig gewertet.' : '✗ Als falsch gewertet.'; }
   hideFlashActionBar();
   showCourseNextBar(last.exercise, toOk);
+}
+
+// ── Korrektur der zuletzt beantworteten Kurs-Übung, auch nachdem schon zur nächsten
+//    Karte weitergeblättert wurde (⏮-Knopf in der Prüfen-Leiste). Pendant zu
+//    correctPreviousFlashCard(); rührt bewusst weder Feedback-Bereich noch Weiter-Leiste
+//    an — die gehören der Karte, die gerade auf dem Schirm steht, nicht der korrigierten.
+function correctPreviousCourseEx(){
+  const cur = window._lastCourseAnswer;
+  if(!cur){ showToast('Keine vorherige Antwort zum Korrigieren','warn'); return; }
+  const newOk = !cur.ok;
+  const last = _applyCourseCorrection(newOk);
+  if(!last) return;
+  refreshPrevBtn(); // Button-Farbe sofort umschalten
+  showToast((newOk?'✓ Korrigiert: ':'✗ Korrigiert: ')+courseExShortLabel(last.exercise)
+            +' jetzt als '+(newOk?'richtig':'falsch')+' gewertet', newOk?'ok':'warn');
 }
 
 // Eigene "Weiter"-Leiste für Kurs-Karten (Pendant zu showFlashNextBar), mit derselben
@@ -5012,7 +5083,8 @@ function rCourseEx(ex, el){
     el.innerHTML = h;
     const inner = document.getElementById('sticky-check-inner');
     if(inner){
-      inner.innerHTML = '<button class="sticky-check-btn" onclick="courseSrsReveal()">Lösung zeigen</button>';
+      inner.innerHTML = '<button class="sticky-check-btn" onclick="courseSrsReveal()">Lösung zeigen</button>'
+                      + prevBtnHtml();
       document.getElementById('sticky-check').style.display='block';
     }
   } else {
@@ -5022,7 +5094,8 @@ function rCourseEx(ex, el){
     el.innerHTML = h;
     const inner = document.getElementById('sticky-check-inner');
     if(inner){
-      inner.innerHTML = '<button class="sticky-check-btn" onclick="hideStickyCheck();chkCourseEx()">Prüfen</button>';
+      inner.innerHTML = '<button class="sticky-check-btn" onclick="hideStickyCheck();chkCourseEx()">Prüfen</button>'
+                      + prevBtnHtml();
       document.getElementById('sticky-check').style.display='block';
     }
     setTimeout(()=>{ const inp=document.getElementById('course-input'); if(inp) inp.focus({preventScroll:true}); }, 80);
@@ -5066,7 +5139,10 @@ function chkCourseEx(selfCorrect){
   }
   window._lastCourseOrigProgress = COURSE_EX_PROGRESS[exercise.id] ? JSON.parse(JSON.stringify(COURSE_EX_PROGRESS[exercise.id])) : null;
   window._lastCourseAnswer = {exercise, ok};
-  courseExAnswer(exercise, ok).then(logId=>{ window._lastCourseLogId = logId; }).catch(()=>{});
+  window._lastAnsweredKind = 'course';
+  window._lastCourseLogId = null;
+  window._lastCourseWritePromise =
+    courseExAnswer(exercise, ok).then(logId=>{ window._lastCourseLogId = logId; }).catch(()=>{});
   ok?(score.c++,score.st++,score.t++):(score.w++,score.st=0,score.t++);
   updScore();
   showCourseNextBar(exercise, ok);
