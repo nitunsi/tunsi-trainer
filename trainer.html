@@ -7261,6 +7261,10 @@ async function _actActivate(){
 // angelegte Vokabeln, bis sie manuell einer echten Lektion zugeordnet werden. Nie null
 // verwenden: mehrere Stellen im Code erwarten v.ls immer als "L<nr>"-String.
 const QA_UNSORTED_LESSON_ID = 29;
+// L17 "Verben — Präsens" und L18 "Verben — Vergangenheit". Der Trainer fuehrt je Verb
+// ZWEI Vokabeln; ein Verb als eine Zeile anzulegen laesst die Haelfte fehlen.
+const QA_VERB_PRAESENS_LESSON_ID = 46;
+const QA_VERB_VERGANGENHEIT_LESSON_ID = 47;
 
 const QA_BUCKET_LABEL = {
   fehlt:     { icon:'✖', text:'fehlt',      hint:'Weder als eigene Zeile noch in einer Phrase vorhanden.' },
@@ -7604,33 +7608,104 @@ async function _qaBelegAuf(r, row, vocabId){
   }catch(e){ showToast('Fehler: '+e.message,'err'); }
 }
 
+// Praesensform eines Verbs aus tunico_import.inflected. Die Annotation #v_pres_sg_p3
+// benennt die 3. Person Singular Praesens ausdruecklich -- der alte TUNICO-Screen musste
+// sie noch aus einer unannotierten Formenliste RATEN (_tnGuessVerbForm). TUNICOs Lemma
+// selbst ist die Vergangenheitsform. Gegengeprueft an Paaren, die der Trainer schon
+// fuehrt: 7ka/ya7ki, 3ayyit/y3ayyit, nba7/yinba7, ghanna/yghanni.
+async function _qaPraesensform(lemma){
+  try{
+    const r = await sbApi('tunico_import?select=inflected&lemma_chatalpha=eq.'
+                          + encodeURIComponent(lemma) + '&inflected=not.is.null&limit=1');
+    const inf = r && r[0] && r[0].inflected;
+    if(!Array.isArray(inf)) return null;
+    const t = inf.find(f => f && f.ana === '#v_pres_sg_p3');
+    return (t && t.chatalpha) || null;
+  }catch(e){ return null; }
+}
+
+// Legt EINE Vokabelzeile an. Gemeinsamer Weg fuer Einzelwort und Verbpaar, damit die
+// beiden Faelle nicht auseinanderlaufen koennen.
+async function _qaZeileAnlegen(r, felder){
+  // translit_skeleton/arabic_skeleton NICHT mitschicken — seit P1 generierte Spalten
+  // (siehe SKILL.md -> Rezept 4). Postgres berechnet sie selbst.
+  const neu = await sbApi('vocabulary', 'POST', {
+    lesson_id: felder.lesson_id,
+    darija: felder.darija,
+    arabic_script: felder.arab || null,
+    german: felder.de,
+    english: felder.english || null,
+    ninja_audio_url: felder.audio_url || null,
+    ninja_audio_start: felder.audio_start, ninja_audio_end: felder.audio_end,
+    external_confirmed: !!felder.belegt,
+    external_confirmed_source: felder.belegt ? ((r.quellen && r.quellen[0]) || null) : null,
+    // Geflaggt NUR, wenn das Arabische fehlt. Genau dafuer war die Flagge im alten
+    // TUNICO-Screen gedacht ("wartet auf Ninja-Check fuers Arabische"); eine Zeile, die
+    // Ninjas vokalisiertes Arabisch samt Audio mitbringt, wartet auf nichts mehr.
+    flagged: !felder.arab,
+    internal_note: 'Quellenabgleich ' + new Date().toISOString().slice(0,10)
+      + ' — Score ' + r.score + ', Quellen: ' + (r.quellen||[]).join('/')
+      + (felder.note ? ' — ' + felder.note : '')
+      + (r.freq_ist_obergrenze ? ' — Häufigkeit ist Obergrenze' : '')
+  });
+  return neu && neu[0] && neu[0].id;
+}
+
 // Neuanlage: oeffnet einen vorbefuellten Editor statt direkt zu schreiben. Darija und
 // Arabisch kommen aus den Quellen, die deutsche Glosse ist ein VORSCHLAG aus
 // tunico_import.senses->de und oft nicht die fertige Lernuebersetzung — deshalb wird
 // sie hier bewusst zur Bestaetigung vorgelegt und nicht stillschweigend uebernommen.
-function _qaNeuAnlegen(r, row){
+//
+// Bei Verben zusaetzlich das PAAR: der Trainer fuehrt je Verb zwei Vokabeln (L17
+// Praesens, L18 Vergangenheit). Ein Verb als eine Zeile anzulegen laesst die Haelfte
+// fehlen — genau deshalb hatte schon der alte TUNICO-Screen einen Verb-Splitter.
+async function _qaNeuAnlegen(r, row){
   const note = row.querySelector('.qa-note');
   note.style.display='block'; note.style.color='var(--muted)';
+  note.innerHTML = '<span style="font-size:.72rem">Lade Formen…</span>';
+
+  // TUNICOs Lemma ist die Vergangenheitsform; die Praesensform steht annotiert daneben.
+  const praesens = (r.wortart === 'Verb') ? await _qaPraesensform(r.lemma) : null;
+  const feld = (cls, val, ph, mono) =>
+    '<input class="'+cls+'" value="'+escHtml(val||'')+'" placeholder="'+escHtml(ph)+'" style="padding:.35rem .5rem;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:'+(mono?'.8rem':'.85rem')+(mono?";font-family:'IBM Plex Mono',monospace":'')+'">';
+
   note.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:.3rem;margin-top:.2rem">
-      <input class="qa-f-darija" value="${escHtml(r.lemma)}" placeholder="darija" style="padding:.35rem .5rem;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:.8rem">
-      <input class="qa-f-arab" value="${escHtml(r.arabisch||'')}" placeholder="arabisch (nur aus Ninja, sonst leer lassen)" style="padding:.35rem .5rem;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:.9rem">
-      <input class="qa-f-de" value="${escHtml(r.gloss_de||'')}" placeholder="deutsch — Vorschlag aus der Quelle, bitte prüfen" style="padding:.35rem .5rem;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:.8rem">
-      <div style="display:flex;gap:.3rem">
+      ${praesens ? '<div style="font-size:.7rem;color:var(--gold2)">Verb — der Trainer führt Präsens und Vergangenheit getrennt</div>' : ''}
+      ${feld('qa-f-darija', r.lemma, praesens ? 'darija (Vergangenheit)' : 'darija', true)}
+      ${feld('qa-f-arab', r.arabisch, 'arabisch (nur aus Ninja, sonst leer lassen)')}
+      ${feld('qa-f-de', r.gloss_de, praesens ? 'deutsch (Vergangenheit) — Vorschlag aus der Quelle, bitte prüfen' : 'deutsch — Vorschlag aus der Quelle, bitte prüfen')}
+      ${praesens ? `
+      <label style="font-size:.72rem;color:var(--muted);cursor:pointer;margin-top:.2rem">
+        <input type="checkbox" class="qa-f-paar" checked> auch die Präsensform anlegen
+      </label>
+      <div class="qa-f-praesensbox" style="display:flex;flex-direction:column;gap:.3rem;padding-left:.8rem;border-left:2px solid var(--border)">
+        ${feld('qa-f-p-darija', praesens, 'darija (Präsens)', true)}
+        ${feld('qa-f-p-de', '', 'deutsch (Präsens) — z. B. „er arbeitet"')}
+      </div>` : ''}
+      <div style="display:flex;gap:.3rem;flex-wrap:wrap">
         <button class="qa-f-ok" style="padding:.3rem .8rem;border:1px solid var(--green);border-radius:4px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">Anlegen</button>
-        <span style="font-size:.68rem;color:var(--muted);align-self:center">→ Lektion „unsortiert", nicht fällig${r.arabisch?'':', geflaggt bis das Arabische da ist'}</span>
         <button class="qa-f-abbruch" style="padding:.3rem .8rem;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--muted);font-family:inherit;font-size:.75rem;cursor:pointer">Abbrechen</button>
+        <span style="font-size:.68rem;color:var(--muted);align-self:center">→ ${praesens ? 'L18 Vergangenheit + L17 Präsens' : 'Lektion „unsortiert"'}, nicht fällig${r.arabisch?'':', geflaggt bis das Arabische da ist'}</span>
       </div>
     </div>`;
+
   note.querySelector('.qa-f-abbruch').addEventListener('click', ()=>{ note.style.display='none'; note.innerHTML=''; });
+  const paar = note.querySelector('.qa-f-paar');
+  const pbox = note.querySelector('.qa-f-praesensbox');
+  if(paar && pbox) paar.addEventListener('change', ()=>{ pbox.style.display = paar.checked ? 'flex' : 'none'; });
+
   note.querySelector('.qa-f-ok').addEventListener('click', async ()=>{
     const darija = note.querySelector('.qa-f-darija').value.trim();
     const arab   = note.querySelector('.qa-f-arab').value.trim();
     const de     = note.querySelector('.qa-f-de').value.trim();
     if(!darija || !de){ showToast('darija und deutsch sind Pflicht','warn'); return; }
+    const mitPaar = !!(paar && paar.checked);
+    const pDarija = mitPaar ? note.querySelector('.qa-f-p-darija').value.trim() : '';
+    const pDe     = mitPaar ? note.querySelector('.qa-f-p-de').value.trim() : '';
+    if(mitPaar && (!pDarija || !pDe)){ showToast('Für die Präsensform fehlt darija oder deutsch','warn'); return; }
+
     try{
-      // translit_skeleton/arabic_skeleton NICHT mitschicken — seit P1 generierte Spalten
-      // (siehe SKILL.md -> Rezept 4). Postgres berechnet sie selbst.
       // Audio-Offsets erst hier holen, nicht im View mitschleppen: Ninjas Aufnahmen sind
       // ganze Saetze, das Wort selbst dauert im Schnitt 2,9 s. Ohne term_start/term_end
       // spielt der Trainer die komplette Datei ab. audio_url ist je Ninja-Eintrag
@@ -7644,24 +7719,32 @@ function _qaNeuAnlegen(r, row){
           if(nj && nj[0]){ aStart = nj[0].term_start; aEnd = nj[0].term_end; }
         }catch(e){ /* Offsets sind ein Plus, kein Muss — ohne sie laeuft die ganze Datei */ }
       }
-      const neu = await sbApi('vocabulary', 'POST', {
-        lesson_id: QA_UNSORTED_LESSON_ID, darija: darija,
-        arabic_script: arab || null, german: de,
-        english: r.gloss_en || null,
-        ninja_audio_url: r.audio_url || null,
-        ninja_audio_start: aStart, ninja_audio_end: aEnd,
-        external_confirmed: true,
-        external_confirmed_source: (r.quellen && r.quellen[0]) || null,
-        // Geflaggt NUR, wenn das Arabische fehlt. Genau dafuer war die Flagge im alten
-        // TUNICO-Screen gedacht ("wartet auf Ninja-Check fuers Arabische"); eine Zeile, die
-        // Ninjas vokalisiertes Arabisch samt Audio mitbringt, wartet auf nichts mehr.
-        flagged: !arab,
-        internal_note: 'Quellenabgleich '+new Date().toISOString().slice(0,10)
-          +' — Score '+r.score+', Quellen: '+(r.quellen||[]).join('/')
-          +(r.freq_ist_obergrenze ? ' — Häufigkeit ist Obergrenze' : '')
+
+      const ids = [];
+      // Der Beleg gilt nur fuer die Schreibung, die tatsaechlich in der Quelle steht.
+      // Wurde die darija im Feld veraendert, ist sie nicht mehr belegt.
+      const unveraendert = darija.toLowerCase() === (r.lemma||'').toLowerCase();
+      const id1 = await _qaZeileAnlegen(r, {
+        lesson_id: mitPaar ? QA_VERB_VERGANGENHEIT_LESSON_ID : QA_UNSORTED_LESSON_ID,
+        darija, arab, de, english: r.gloss_en, belegt: unveraendert,
+        audio_url: r.audio_url, audio_start: aStart, audio_end: aEnd,
+        note: mitPaar ? 'Vergangenheitsform des Verbpaars' : null
       });
-      const id = neu && neu[0] && neu[0].id;
-      await _qaEntscheiden(r, row, 'angelegt', id?[id]:[]);
+      if(id1) ids.push(id1);
+
+      if(mitPaar){
+        // Praesensform: Audio und Arabisch gehoeren der Vergangenheitsform, nicht ihr --
+        // deshalb bewusst ohne. Belegt ist sie ueber tunico_import.inflected.
+        const id2 = await _qaZeileAnlegen(r, {
+          lesson_id: QA_VERB_PRAESENS_LESSON_ID,
+          darija: pDarija, arab: '', de: pDe, english: r.gloss_en,
+          belegt: pDarija.toLowerCase() === (praesens||'').toLowerCase(),
+          audio_url: null, audio_start: null, audio_end: null,
+          note: 'Präsensform (3. Pers. Sg.) aus tunico_import.inflected #v_pres_sg_p3'
+        });
+        if(id2) ids.push(id2);
+      }
+      await _qaEntscheiden(r, row, 'angelegt', ids);
     }catch(e){ showToast('Fehler: '+e.message,'err'); }
   });
 }

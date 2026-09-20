@@ -246,6 +246,30 @@ Alle Komponenten stehen einzeln als Spalten im View und hängen im Trainer als T
 (`kanada` und `weekend` ergeben beide `knd`) — ein Wort über Zufallstreffer nach oben zu spülen
 wäre genau der Fehler, den der Score vermeiden soll. Betroffene Zeilen tragen `kurzes_skelett`.
 
+### Verben: immer zwei Zeilen
+
+Der Trainer führt je Verb **zwei** Vokabeln (L17 Präsens, L18 Vergangenheit). Ein Verb als eine
+Zeile anzulegen lässt die Hälfte fehlen.
+
+**TUNICOs Lemma ist die Vergangenheitsform**, die Präsensform steht annotiert in
+`tunico_import.inflected`:
+
+```json
+[{"ana": "#v_pres_sg_p3", "orig": "yṣaffaq", "chatalpha": "ysaffaq"}]
+```
+
+`#v_pres_sg_p3` = Verb, Präsens, Singular, 3. Person — 1.847 Einträge. **Ablesen, nicht raten.**
+`tunico_corpus_verbs.forms_chatalpha` führt zwar auch Formen, aber unannotiert und
+durcheinander (`fhimt, fhimt, fhimtu, ifhim, nifhm, nifhim, …`); der alte TUNICO-Screen brauchte
+deshalb eine Rate-Funktion. Nicht mehr verwenden, wo `inflected` vorhanden ist.
+
+Gegengeprüft an Paaren, die der Trainer schon führt: `7ka`/`ya7ki`, `3ayyit`/`y3ayyit`,
+`nba7`/`yinba7`, `ghanna`/`yghanni`, `faqqas`/`yfaqqas`.
+
+**Vorsicht:** das TUNICO-Lemma ist nicht immer eine Verbform — `b3id` führt der Trainer als
+Adjektiv „weit/entfernt", `sarraf` als Nomen „Geldwechsler". Die Präsensform daneben
+(`yib3id`, `ysarraf`) ist trotzdem korrekt. Also vorlegen, nicht automatisch anlegen.
+
 ### Beim Arbeiten damit beachten
 
 - **Nie korrelierte `EXISTS`-Subqueries in diesen View bauen.** Die CTE-Struktur mit `LEFT JOIN`s
