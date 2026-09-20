@@ -1,0 +1,36 @@
+-- Belegrunde mehrwortige Zeilen ueber vocab_segmente (2026-09-20)
+--
+-- ANLASS: 795 mehrwortige Zeilen ohne Beleg waren der groesste offene Posten. Der neue
+-- View vocab_segmente (aus dem wist-liblad-Fund) macht erstmals die EINZELNEN Varianten
+-- einer Zeile vergleichbar statt nur die verkettete Gesamtzeile.
+--
+-- METHODE: je Segment gegen quellen_lemmata, und zwar NUR mit BUCHSTABENGLEICHHEIT
+-- (lower(segment) = lower(lemma)), nicht ueber das Skelett. external_confirmed ist laut
+-- SKILL.md ein Exakt-Treffer-Flag ("steht dieser String so in einer Quelle?"), kein
+-- Existenzurteil. Der Unterschied ist nicht theoretisch -- die Skelett-Treffer enthielten
+-- Paare wie "el beqi" gegen "labaqa" und "jib li" gegen "jabaliyya": gleiches Skelett,
+-- voellig andere Woerter.
+--
+-- ERGEBNIS von 50 Skelett-Treffern:
+--   5 Zeilen  ALLE Segmente buchstabengleich belegt  -> external_confirmed = true
+--   8 Zeilen  EINE Variante belegt, die andere nicht -> external_confirmed_source
+--             = 'abgeleitet' (der dritte Zustand), mit der belegten Variante im
+--             internal_note -- true waere gelogen, gar nichts waere Verschwendung
+--  37 Zeilen  nur Skelett-Zufall                     -> nichts
+--
+-- Die 5 vollstaendigen: itwi/tabbaq, shadd s7i7, dqiqa barka, rottila/3ankbout (alle
+-- Ninja) und ma3qul,lojik (Peace Corps).
+-- Die 8 teilweisen: m7atta, sa77a, a7san/khir, korkom, we7id tay bin-na3na3 3ayshik,
+-- babboush, ih 3ayshik, ya 7lili.
+--
+-- AUDIO: nur fuer die zwei EINWORTIGEN unter den bestaetigten (shadd s7i7, dqiqa barka)
+-- mitgezogen. Bei Zeilen mit mehreren Varianten waere unklar, zu welcher Variante die
+-- Aufnahme gehoert -- da wird nicht geraten.
+--
+-- ABNAHME: Gruppe A 0, Gruppe B unveraendert (21=2, 22=231), vocabulary 3.777.
+-- Mehrwortig ohne Beleg 795 -> 782, 'abgeleitet' 105 -> 113.
+--
+-- EHRLICHE EINORDNUNG: 13 von 795 ist ein bescheidener Ertrag. Die Quellen fuehren fast
+-- nur Einzelwoerter; unsere mehrwortigen Zeilen sind ueberwiegend Saetze und
+-- Redewendungen, fuer die es in einem Woerterbuch keinen Eintrag GIBT. Der Weg dorthin
+-- fuehrt ueber Ninjas Beispielsaetze, nicht ueber seine Lemmata -- und der steht noch aus.
