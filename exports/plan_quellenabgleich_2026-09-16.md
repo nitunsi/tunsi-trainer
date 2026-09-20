@@ -416,10 +416,16 @@ alle Treffer als JSON-Array (`[{id, darija, german}]`), Arabisch/Audio/Glossen, 
 > (Homonymfall). `variante` bietet „Beleg auf bestehende Zeile“ statt Neuanlage und überschreibt
 > ein bestehendes `external_confirmed` nie.
 >
-> **Bewusst entfallen:** der Verb-Splitter (Präsens/Vergangenheit als zwei Kandidaten) und der
-> Verbform-Editor. Beide hingen an `tunico_corpus_verbs.forms_chatalpha`, also an einer einzelnen
-> Quelle; im Mehrquellen-View brauchen sie ein neues Konzept. Neue Zeilen landen bis dahin
-> geflaggt in der unsortierten Lektion. **Offen — falls das fehlt, wieder aufnehmen.**
+> **Verb-Splitter: entfallen, dann 2026-09-20 zurückgeholt — und besser als vorher.**
+> Zunächst weggefallen, weil er an `tunico_corpus_verbs.forms_chatalpha` hing, also an einer
+> einzelnen Quelle. Die Neufassung nutzt stattdessen **`tunico_import.inflected`**, und das ist
+> **annotiert**: `ana = '#v_pres_sg_p3'` benennt die 3. Person Singular Präsens ausdrücklich
+> (1.847 Einträge). Der alte Splitter musste sie aus einer unannotierten Formenliste *raten*
+> (`fhimt, fhimt, fhimtu, ifhim, nifhm, …`) — die Neufassung liest sie ab.
+> TUNICOs Lemma selbst ist die Vergangenheitsform. Gegengeprüft an Paaren, die der Trainer schon
+> führt: `7ka`/`ya7ki`, `3ayyit`/`y3ayyit`, `nba7`/`yinba7`, `ghanna`/`yghanni`.
+> Bei `wortart = 'Verb'` bietet der Anlegen-Dialog jetzt beide Formen an → L18 Vergangenheit
+> und L17 Präsens; ohne Verb bleibt es bei einer Zeile in „unsortiert".
 
 
 `showTunicoCandidates()` und den kompletten `_tn*`-Block ersetzen. Umbenennung wie oben.
