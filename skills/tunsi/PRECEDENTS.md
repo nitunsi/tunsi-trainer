@@ -125,6 +125,17 @@ Dritte Runde 2026-08-06: vorbestehende „;"-Einträge, die nie Teil des 108er-S
 
 **vocab_lesson_refs-Formatfehler, Präzedenzfall:** Lektion 5 (2026-08-02) wurde erst mit falschem Format (`"3841,3842,3843"` statt `ids:...|darija:...`) geschrieben, zeigte im Trainer "keine Vokabeln verknüpft", trotz korrekt befüllter Spalte in der DB — erst durch Lesen von `trainer.html` (`grep parseCourseVocabRefs`) gefunden und korrigiert.
 
+**Eine leere Spalte ist nicht automatisch eine Lücke (2026-09-20).** `course_exercises.vocabulary_id`
+ist zu 91,5 % nicht gesetzt, und daraus wurde zunächst „das müsste man füllen" — falsch. COURSE_MODE.md
+legt fest, dass das Feld an die **`pronunciation`**-Übungen gehört, und genau die sind vom Kurs-SRS
+ausgenommen (`COURSE_SRS_TYPES`). Die SRS-Typen sind Satzübungen (`translate_de_tn` 679 Zeilen, davon
+1 verknüpft; Lösung z. B. „mistir mizyana, ama zghira."); bei einem Satz ist keine einzelne Vokabel
+gemeint. Gegenprobe gemessen: ein Textabgleich Lösung→`vocabulary.darija` bringt über alle SRS-Typen
+zusammen **4** weitere Treffer. Die echte Lücke waren 21 der 105 `pronunciation`-Übungen.
+
+**Lehre:** bevor eine leere Spalte zur Aufgabe erklärt wird, erst nachlesen, für welche Zeilen sie
+überhaupt vorgesehen ist. Der Füllstand über die ganze Tabelle beantwortet die Frage nicht.
+
 ## derja_ninja_import — abgelöst, aber nicht wertlos (bis 2026-09-02)
 
 Ersetzt durch `derja_ninja_entries`; **nicht gelöscht**, weil ~19 % ihrer Konsonantenskelette dort fehlen (größtenteils mehrwortige Phrasen — anderer Scraping-Zweck, kein Ersatz). Für neue Abfragen nicht mehr benutzen, auch nicht als Fallback. Aktuelle Methodik: IMPORTS.md → Abgleich mit Derja Ninja.
