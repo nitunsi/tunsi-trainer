@@ -125,6 +125,24 @@ Dritte Runde 2026-08-06: vorbestehende „;"-Einträge, die nie Teil des 108er-S
 
 **vocab_lesson_refs-Formatfehler, Präzedenzfall:** Lektion 5 (2026-08-02) wurde erst mit falschem Format (`"3841,3842,3843"` statt `ids:...|darija:...`) geschrieben, zeigte im Trainer "keine Vokabeln verknüpft", trotz korrekt befüllter Spalte in der DB — erst durch Lesen von `trainer.html` (`grep parseCourseVocabRefs`) gefunden und korrigiert.
 
+**Mit dem Skelett der QUELLSCHREIBUNG suchen findet den Bestand nicht (2026-09-21).** Bei den
+Aussprache-Übungen aus L4 wurden 8 Wörter als „fehlt im Bestand" gemeldet. Zwei davon gab es längst:
+
+| Kurswort | gesucht als | unsere Zeile | Skelett dort |
+|---|---|---|---|
+| `samahni` | `smhn` | 563 `sama7ni` سَمَحْنِي | `sm7n` |
+| `sba7` | `sb7` | 1478 `es-sbe7` الصُّبَاح | `ssb7` |
+
+Zwei verschiedene Ursachen, dieselbe Wirkung: Uni-Wien schreibt ح als `h`, unsere Konvention als
+`7` — das Skelett ist dadurch ein anderes. Und ein Artikel (`es-`) steckt bei uns mit im `darija`,
+verändert das Skelett also ebenfalls. `tools/README.md` nennt den Artikel-Fall schon („den Artikel
+vor der Suche abtrennen"); der Sonderzeichen-Fall stand nirgends.
+
+**Regel daraus:** ein Wort aus einer fremden Quelle nie nur über das Skelett seiner eigenen
+Schreibung suchen. Vorher in unsere Konvention übersetzen (`h`→`7`, `kh`/`sh`/`th` beachten), den
+Artikel abtrennen — und in jedem Fall zusätzlich über die deutsche Glosse suchen, mit Wortstamm
+und `\y`. Bei `samahni` hätte `\yentschuldig` die Zeile sofort geliefert.
+
 **Eine leere Spalte ist nicht automatisch eine Lücke (2026-09-20).** `course_exercises.vocabulary_id`
 ist zu 91,5 % nicht gesetzt, und daraus wurde zunächst „das müsste man füllen" — falsch. COURSE_MODE.md
 legt fest, dass das Feld an die **`pronunciation`**-Übungen gehört, und genau die sind vom Kurs-SRS
