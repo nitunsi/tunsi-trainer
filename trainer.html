@@ -7413,8 +7413,17 @@ const QA_BUCKET_LABEL = {
 const QA_QUELLE_LABEL = { tunico:'TUNICO', ninja:'Ninja', peacecorps:'Peace Corps' };
 
 let _qaBucket='fehlt', _qaSuche='', _qaQuelle='all', _qaWortart='all', _qaRang='all',
-    _qaNurAudio=false, _qaNurDeutsch=false, _qaMehrfach=false,
+    _qaNurAudio=false, _qaNurDeutsch=false, _qaMehrfach=false, _qaNurUnfaellig=false,
     _qaOffset=0, _qaBatch=15, _qaCounts={};
+
+// Der Faelligkeits-Filter greift nur im Bucket "vorhanden": nur dort hat eine Zeile
+// ueberhaupt Treffer im Bestand, deren Faelligkeit man pruefen koennte. Bei aktiver
+// Suche ruht der Bucket-Filter, dann wuerde der Haken alle Zeilen ohne Treffer
+// wegwerfen — deshalb beides in einer Bedingung. Der Haken bleibt dabei gesetzt und
+// greift wieder, sobald man in den Bucket zurueckgeht.
+function _qaUnfaelligAktiv(){
+  return _qaNurUnfaellig && !_qaSuche && _qaBucket === 'vorhanden';
+}
 
 async function showQuellenAbgleich(){
   document.getElementById('act-screen').style.display='none';
@@ -7510,6 +7519,7 @@ function _qaRenderShell(){
         <label style="font-size:.74rem;color:var(--muted);cursor:pointer"><input type="checkbox" id="qa-audio"${_qaNurAudio?' checked':''}> 🔊 nur mit Audio</label>
         <label style="font-size:.74rem;color:var(--muted);cursor:pointer"><input type="checkbox" id="qa-deutsch"${_qaNurDeutsch?' checked':''}> nur mit dt. Glosse</label>
         <label style="font-size:.74rem;color:var(--muted);cursor:pointer"><input type="checkbox" id="qa-mehrfach"${_qaMehrfach?' checked':''}> mehrfach belegt</label>
+        ${(!_qaSuche && _qaBucket==='vorhanden') ? '<label style="font-size:.74rem;color:'+(_qaNurUnfaellig?'var(--green)':'var(--muted)')+';cursor:pointer" title="Zeigt nur Zeilen, deren Treffer noch keine Fälligkeit haben — also genau die, bei denen „Fällig setzen“ etwas bewirkt."><input type="checkbox" id="qa-unfaellig"'+(_qaNurUnfaellig?' checked':'')+'> ▶ nur ohne Fälligkeit</label>' : ''}
         <span style="font-size:.7rem;color:var(--muted);margin-left:auto">nach Score sortiert</span>
       </div>
       <div id="qa-list" style="display:flex;flex-direction:column;gap:.7rem"></div>
@@ -7542,6 +7552,7 @@ function _qaRenderShell(){
   bind('qa-audio',    t => _qaNurAudio   = t.checked);
   bind('qa-deutsch',  t => _qaNurDeutsch = t.checked);
   bind('qa-mehrfach', t => _qaMehrfach   = t.checked);
+  bind('qa-unfaellig',t => _qaNurUnfaellig = t.checked);
 }
 
 async function _qaLoadBatch(reset){
@@ -7550,22 +7561,51 @@ async function _qaLoadBatch(reset){
   if(reset){ _qaOffset = 0; listEl.innerHTML = ''; }
   const wrap = document.getElementById('qa-loadmore-wrap');
   wrap.innerHTML = '<span style="font-size:.75rem;color:var(--muted)">Lade…</span>';
-  let rows;
-  try{
-    rows = await sbApi(_qaQuery()+'&limit='+_qaBatch+'&offset='+_qaOffset) || [];
-  }catch(e){ wrap.innerHTML=''; showToast('Fehler: '+e.message,'err'); return; }
-  _qaOffset += rows.length;
-  const basis = listEl.querySelectorAll('.qa-row').length;
-  rows.forEach((r,i) => { r._idx = basis + i; listEl.insertAdjacentHTML('beforeend', _qaRowHtml(r)); });
-  const gezeigt = listEl.querySelectorAll('.qa-row').length;
-  if(rows.length < _qaBatch){
-    wrap.innerHTML = gezeigt===0
-      ? '<div style="padding:2rem;color:var(--muted)">Keine Einträge für diese Filter.</div>'
-      : '<div style="padding:1rem;color:var(--muted);font-size:.8rem">— Ende der Liste —</div>';
-  } else {
-    wrap.innerHTML = '<button onclick="_qaLoadBatch(false)" style="padding:.6rem 1.4rem;border:1px solid var(--gold);border-radius:6px;background:transparent;color:var(--gold2);font-family:inherit;font-size:.82rem;cursor:pointer">+'+_qaBatch+' weitere laden</button>';
+  // Der Faelligkeits-Filter laeuft im Client, nicht als &-Bedingung an PostgREST: die
+  // Faelligkeit steht in progress (pro Nutzer) und kommt im View gar nicht vor. Ihn
+  // serverseitig zu machen hiesse, je Treffer-id in progress nachzuschlagen — also
+  // genau die korrelierte Unterabfrage, die den View von 476 ms auf Timeout bringt
+  // (IMPORTS.md -> Quellenabgleich).
+  //
+  // Weil dadurch Zeilen aus einer geladenen Seite herausfallen, wird nachgeladen, bis
+  // eine volle Seite zusammen ist. Ohne das kaeme eine fast leere Liste, und
+  // "+15 weitere laden" saehe aus wie ein Ende, das keines ist. Gemessen kommen im
+  // Bucket "vorhanden" 3.004 von 5.278 Zeilen durch (57 %), eine Extrarunde reicht
+  // also meist; gedeckelt ist die Schleife trotzdem, damit eine Filterkombination mit
+  // sehr wenigen Treffern nicht die halbe Tabelle durchblaettert.
+  const filtern = _qaUnfaelligAktiv();
+  const neue = [];
+  let erschoepft = false, verworfen = 0;
+  for(let runde = 0; runde < 12; runde++){
+    let rows;
+    try{
+      rows = await sbApi(_qaQuery()+'&limit='+_qaBatch+'&offset='+_qaOffset) || [];
+    }catch(e){ wrap.innerHTML=''; showToast('Fehler: '+e.message,'err'); return; }
+    _qaOffset += rows.length;
+    if(rows.length < _qaBatch) erschoepft = true;
+    if(filtern){
+      const durch = rows.filter(r => _qaOhneFaelligkeit(r).length > 0);
+      verworfen += rows.length - durch.length;
+      neue.push(...durch);
+    } else {
+      neue.push(...rows);
+    }
+    if(erschoepft || neue.length >= _qaBatch) break;
   }
-  _qaBindRowEvents(rows);
+
+  const basis = listEl.querySelectorAll('.qa-row').length;
+  neue.forEach((r,i) => { r._idx = basis + i; listEl.insertAdjacentHTML('beforeend', _qaRowHtml(r)); });
+  const gezeigt = listEl.querySelectorAll('.qa-row').length;
+  const rest = (filtern && verworfen)
+    ? '<div style="font-size:.7rem;color:var(--muted);margin-top:.4rem">'+verworfen+' bereits fällige übersprungen</div>' : '';
+  if(erschoepft){
+    wrap.innerHTML = (gezeigt===0
+      ? '<div style="padding:2rem;color:var(--muted)">Keine Einträge für diese Filter.</div>'
+      : '<div style="padding:1rem;color:var(--muted);font-size:.8rem">— Ende der Liste —</div>') + rest;
+  } else {
+    wrap.innerHTML = '<button onclick="_qaLoadBatch(false)" style="padding:.6rem 1.4rem;border:1px solid var(--gold);border-radius:6px;background:transparent;color:var(--gold2);font-family:inherit;font-size:.82rem;cursor:pointer">+'+_qaBatch+' weitere laden</button>' + rest;
+  }
+  _qaBindRowEvents(neue);
 }
 
 // Treffer/Phrasen/Aehnliche kommen als jsonb-Array aus dem View — immer ALLE anzeigen,

@@ -153,3 +153,17 @@ where cl.id = a.id;
 --   pronunciation ohne vocabulary_id     4   (vorher 12)
 --   vocab_lesson_refs L2 / L4       120 / 82 ids, Pflichtformat intakt
 --   verwaiste ids in L2/L4-refs          3   (unveraendert, Altbestand)
+
+-- =============================================================================
+-- NACHTRAG 2026-09-21 -- der offene Fall 702 entschieden (auf Zuruf des Nutzers)
+--
+-- 702 "la bas" = "es geht gut" -> 252 labes لْبَاس "Gut / Wie geht's? (Zustand)".
+-- Dasselbe Lexem: die Kursvorlage schreibt لا باس getrennt und mit Alif, unsere Zeile
+-- zusammen und ohne. Bedeutung deckungsgleich, deshalb verknuepft statt neu angelegt.
+
+update course_exercises set vocabulary_id = 252
+where id = 702 and exercise_type = 'pronunciation' and vocabulary_id is null;
+
+-- ERGEBNIS: pronunciation ohne vocabulary_id 4 -> 3. Die verbleibenden 3 sind die
+-- Eigennamen 481 mas3oud, 694 sami, 696 samir -- die gehoeren nicht in den
+-- Vokabelbestand, die Luecke ist dort also die richtige Antwort.
