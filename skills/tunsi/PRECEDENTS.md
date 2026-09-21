@@ -125,6 +125,35 @@ Dritte Runde 2026-08-06: vorbestehende „;"-Einträge, die nie Teil des 108er-S
 
 **vocab_lesson_refs-Formatfehler, Präzedenzfall:** Lektion 5 (2026-08-02) wurde erst mit falschem Format (`"3841,3842,3843"` statt `ids:...|darija:...`) geschrieben, zeigte im Trainer "keine Vokabeln verknüpft", trotz korrekt befüllter Spalte in der DB — erst durch Lesen von `trainer.html` (`grep parseCourseVocabRefs`) gefunden und korrigiert.
 
+## „Keine Treffer" hiess in Wahrheit „nicht gesucht" (2026-09-21)
+
+`kima` wurde über den Quellenabgleich angelegt — also aus Ninja und Peace Corps vorgeschlagen.
+Der Cross-Source-Abgleich in der Vokabelkarte meldete danach **null Treffer**. Beide Suchachsen
+gingen daneben, jede aus eigenem Grund:
+
+| Achse | warum sie nicht griff |
+|---|---|
+| Bedeutung (`english_key`) | `vocabulary.english` stand auf `"like, as \| SUCH"` — der Quellenabgleich schreibt dort die Glossen **aller** Quellen mit `" \| "` verkettet. Kein Quellenschlüssel sieht so aus. |
+| Skelett | `translit_skeleton` ist `km`, zwei Zeichen. Die Achse setzt bewusst erst ab Länge 4 an, also lief sie gar nicht erst. |
+
+Dabei führen **Ninja und Peace Corps das Wort**: `chatalpha = 'kima'` liefert drei Zeilen.
+
+**Zwei Lehren, beide allgemein:**
+
+1. **Eine Suche, die eine Achse überspringt, muss das sagen.** „Keine Treffer" und „danach wurde
+   nicht gesucht" sind verschiedene Aussagen; die Oberfläche hat sie zusammengeworfen und damit
+   eine falsche Auskunft gegeben. Der Screen nennt das kurze Skelett jetzt beim Namen.
+2. **Die exakte Schreibung ist die verlässlichste Achse und fehlte ganz.** Sie hängt nicht an der
+   Skelettlänge und kollidiert nicht — ein voller Zeichenvergleich statt eines Konsonantengerüsts.
+   Sie ist jetzt die dritte Achse, vor dem Skelett einsortiert.
+
+**Und eine Datenregel:** `vocabulary.english` wird in der ganzen App an **genau einer** Stelle
+gelesen — als `english_key` für diesen Abgleich. Ein Feld, dessen einziger Zweck ein Schlüssel ist,
+darf keinen zusammengesetzten Wert bekommen. Betroffen waren alle drei bis dahin so angelegten
+Zeilen. Beim Kürzen zeigte sich: „einfach Segment 1" reicht nicht — bei `binzart` hat Segment 1
+(`Bizerta; Bizerte`, TUNICOs Schreibweise) **null** Treffer, Segment 2 einen. Gesetzt wird deshalb
+das erste Segment, das **wirklich** ein Schlüssel ist.
+
 **Mit dem Skelett der QUELLSCHREIBUNG suchen findet den Bestand nicht (2026-09-21).** Bei den
 Aussprache-Übungen aus L4 wurden 8 Wörter als „fehlt im Bestand" gemeldet. Zwei davon gab es längst:
 

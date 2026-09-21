@@ -4187,7 +4187,7 @@ async function showSourceCheck(){
   resultsEl.style.display = '';
   resultsEl.innerHTML = '<div style="padding:.5rem;color:var(--muted);font-size:.72rem">Lade…</div>';
   try{
-    const rows = await sbApi('vocabulary?id=eq.'+vocabId+'&select=english,translit_skeleton,arabic_skeleton');
+    const rows = await sbApi('vocabulary?id=eq.'+vocabId+'&select=darija,english,translit_skeleton,arabic_skeleton');
     const v = rows && rows[0];
     if(!v){ resultsEl.innerHTML = '<div style="padding:.5rem;color:var(--red);font-size:.72rem">Eintrag nicht gefunden</div>'; return; }
 
@@ -4197,6 +4197,20 @@ async function showSourceCheck(){
     let meaning = [];
     if(englishKey){
       meaning = await sbApi('vocab_lookup?select='+selectCols+'&english_key=eq.'+encodeURIComponent(englishKey)) || [];
+    }
+
+    // Dritte Achse: die EXAKTE Schreibung. Sie haengt nicht an der Skelettlaenge und kann
+    // nicht zufaellig kollidieren — es ist ein voller Zeichenvergleich, kein
+    // Konsonantengeruest. Genau die fehlte: "kima" hat das Skelett "km" (zwei Zeichen,
+    // unter der Schwelle von 4) und aus dem Quellenabgleich ein zusammengesetztes english
+    // ("like, as | SUCH", in keiner Quelle ein Schluessel) — also griff keine der beiden
+    // alten Achsen, obwohl Ninja UND Peace Corps das Wort fuehren. Der Screen meldete
+    // "keine Treffer", ohne ueberhaupt danach gesucht zu haben.
+    let schreibung = [];
+    if(v.darija){
+      const d = v.darija.trim().toLowerCase();
+      schreibung = (await sbApi('vocab_lookup?select='+selectCols+'&chatalpha=eq.'+encodeURIComponent(d)) || [])
+                   .filter(x => x.english_key !== englishKey);
     }
 
     const orParts = [];
@@ -4212,16 +4226,25 @@ async function showSourceCheck(){
     let skeleton = [];
     if(orParts.length){
       const raw = await sbApi('vocab_lookup?select='+selectCols+'&or=('+orParts.join(',')+')') || [];
-      skeleton = raw.filter(r => r.english_key !== englishKey);
+      const schonDa = new Set(schreibung.map(_vsKey));
+      skeleton = raw.filter(r => r.english_key !== englishKey && !schonDa.has(_vsKey(r)));
     }
 
-    renderSourceCheckResults(englishKey, meaning, skeleton);
+    // Wurde die Skelettachse uebersprungen, gehoert das gesagt — sonst liest sich
+    // "keine Treffer" wie "gibt es nirgends", obwohl gar nicht gesucht wurde.
+    const skelettZuKurz = !orParts.length && !!(v.translit_skeleton || v.arabic_skeleton);
+    renderSourceCheckResults(englishKey, meaning, schreibung, skeleton,
+                             skelettZuKurz ? (v.translit_skeleton || v.arabic_skeleton) : null);
   }catch(e){
     resultsEl.innerHTML = '<div style="padding:.5rem;color:var(--red);font-size:.72rem">Fehler: '+(e.message||e)+'</div>';
   }
 }
 
-function _vsRowHtml(r, unsicher){
+// Dieselbe Quellzeile kann ueber zwei Achsen hereinkommen — ohne Schluessel staende sie
+// doppelt in der Liste.
+const _vsKey = r => [r.source, r.chatalpha, r.english_key, r.arabic_script].join('\u0001');
+
+function _vsRowHtml(r, hinweis){
   const arabicPart = r.arabic_script
     ? '<span style="color:var(--gold2)">'+r.arabic_script+'</span>'
     : (r.arabic_reconstructed
@@ -4230,25 +4253,30 @@ function _vsRowHtml(r, unsicher){
   return '<div style="padding:.4rem .5rem;border-bottom:1px solid var(--border);font-size:.76rem;line-height:1.4">'
     + '<div style="display:flex;justify-content:space-between;gap:.5rem">'
     +   '<b style="color:var(--gold)">'+(VS_SOURCE_LABEL[r.source]||r.source)+'</b>'
-    +   (unsicher ? '<span style="color:var(--muted);font-size:.68rem">nur Lautschrift, unsicher</span>' : '')
+    +   (hinweis ? '<span style="color:var(--muted);font-size:.68rem">'+hinweis+'</span>' : '')
     + '</div>'
     + '<div>'+arabicPart+' · '+(r.chatalpha||r.source_translit||'—')+'</div>'
     + (r.example_en ? '<div style="color:var(--muted);font-size:.7rem;margin-top:.1rem">'+r.example_en+'</div>' : '')
     + '</div>';
 }
 
-function renderSourceCheckResults(englishKey, meaning, skeleton){
+function renderSourceCheckResults(englishKey, meaning, schreibung, skeleton, kurzesSkelett){
   const resultsEl = document.getElementById('vs-results');
+  const hinweis = t => '<div style="padding:.4rem .5rem;color:var(--muted);font-size:.7rem">'+t+'</div>';
   let html = '';
   if(!englishKey){
-    html += '<div style="padding:.4rem .5rem;color:var(--muted);font-size:.7rem">Kein Deutsch/Englisch-Gloss hinterlegt — nur Lautschrift-Treffer möglich (unsicherer als ein Bedeutungstreffer).</div>';
+    html += hinweis('Kein Englisch-Gloss hinterlegt — gesucht wurde nach Schreibung und Lautschrift (unsicherer als ein Bedeutungstreffer).');
   } else if(!meaning.length){
-    html += '<div style="padding:.4rem .5rem;color:var(--muted);font-size:.7rem">Kein Bedeutungstreffer in Ninja/TUNICO/Peace Corps.</div>';
+    html += hinweis('Kein Bedeutungstreffer in Ninja/TUNICO/Peace Corps.');
   }
-  html += meaning.map(r => _vsRowHtml(r, false)).join('');
-  html += skeleton.map(r => _vsRowHtml(r, true)).join('');
-  if(!meaning.length && !skeleton.length){
-    html += '<div style="padding:.4rem .5rem;color:var(--muted);font-size:.7rem">Keine Treffer in einer der drei Quellen.</div>';
+  html += meaning.map(r => _vsRowHtml(r, '')).join('');
+  html += schreibung.map(r => _vsRowHtml(r, 'gleiche Schreibung')).join('');
+  html += skeleton.map(r => _vsRowHtml(r, 'nur Lautschrift, unsicher')).join('');
+  if(!meaning.length && !schreibung.length && !skeleton.length){
+    html += hinweis('Keine Treffer in einer der drei Quellen.');
+  }
+  if(kurzesSkelett){
+    html += hinweis('Das Konsonantenskelett („'+escHtml(kurzesSkelett)+'") ist kürzer als vier Zeichen — danach wird bewusst nicht gesucht, weil kurze Skelette zufällig kollidieren. Gesucht wurde nach Bedeutung und exakter Schreibung.');
   }
   resultsEl.innerHTML = html;
 }
@@ -7701,36 +7729,68 @@ function _qaOhneFaelligkeit(r){
 // Setzt next_review NUR, wenn die Vokabel noch keine Faelligkeit hat. Eine laufende
 // Faelligkeit (auch eine ueberfaellige) wird nie ueberschrieben — sonst wuerde ein Klick
 // hier den Lernstand zuruecksetzen.
+//
+// Gemeinsamer Kern zweier Wege: des Knopfs im Bucket "vorhanden" und des Hakens beim
+// Neuanlegen. Sonst laege die 23505-Behandlung (die progress-Zeile existiert doch schon)
+// in zwei Fassungen vor, und eine davon liefe frueher oder spaeter hinterher.
+async function _qaFaelligMachen(ids){
+  const now = new Date().toISOString();
+  let gesetzt = 0, schon = 0;
+  for(const id of ids){
+    const p = srsProgress[id];
+    if(p && p.next_review){ schon++; continue; }
+    if(p && p.id){ await sbApi('progress?id=eq.'+p.id, 'PATCH', {next_review: now}); }
+    else {
+      try{
+        await sbApi('progress', 'POST', {user_id: currentUser.id, vocabulary_id: id,
+          correct_count:0, wrong_count:0, review_count:0, next_review: now});
+      }catch(e){
+        if(!String(e.message).includes('23505')) throw e;
+        const f = await sbApi('progress?user_id=eq.'+currentUser.id+'&vocabulary_id=eq.'+id+'&select=id,next_review');
+        if(f && f.length && !f[0].next_review) await sbApi('progress?id=eq.'+f[0].id, 'PATCH', {next_review: now});
+        else { schon++; continue; }
+      }
+    }
+    if(!srsProgress[id]) srsProgress[id] = {level:0, correct_count:0, review_count:0};
+    srsProgress[id].next_review = new Date(now);
+    gesetzt++;
+  }
+  return {gesetzt, schon};
+}
+
 async function _qaFaelligSetzen(r, row){
   const note = row.querySelector('.qa-note');
   const ids = _qaOhneFaelligkeit(r);
   if(!ids.length){ showToast('Alle Treffer sind schon fällig','warn'); return; }
-  const now = new Date().toISOString();
-  let gesetzt = 0, schon = 0;
   try{
-    for(const id of ids){
-      const p = srsProgress[id];
-      if(p && p.next_review){ schon++; continue; }
-      if(p && p.id){ await sbApi('progress?id=eq.'+p.id, 'PATCH', {next_review: now}); }
-      else {
-        try{
-          await sbApi('progress', 'POST', {user_id: currentUser.id, vocabulary_id: id,
-            correct_count:0, wrong_count:0, review_count:0, next_review: now});
-        }catch(e){
-          if(!String(e.message).includes('23505')) throw e;
-          const f = await sbApi('progress?user_id=eq.'+currentUser.id+'&vocabulary_id=eq.'+id+'&select=id,next_review');
-          if(f && f.length && !f[0].next_review) await sbApi('progress?id=eq.'+f[0].id, 'PATCH', {next_review: now});
-          else { schon++; continue; }
-        }
-      }
-      if(!srsProgress[id]) srsProgress[id] = {level:0, correct_count:0, review_count:0};
-      srsProgress[id].next_review = new Date(now);
-      gesetzt++;
-    }
+    const {gesetzt, schon} = await _qaFaelligMachen(ids);
     if(note){ note.style.display='block'; note.style.color='var(--green)';
       note.textContent = '✓ '+gesetzt+' fällig gesetzt'+(schon?', '+schon+' war schon fällig':''); }
     showToast('✓ '+gesetzt+' fällig gesetzt'+(schon?' ('+schon+' war schon)':''),'ok');
   }catch(e){ showToast('Fehler: '+e.message,'err'); }
+}
+
+// gloss_en buendelt im View die Glossen ALLER Quellen mit " | ". Als vocabulary.english
+// taugt das nicht: dieses Feld wird in der ganzen App an genau EINER Stelle gelesen,
+// naemlich als english_key fuer den Quellenabgleich in der Vokabelkarte — und
+// "like, as | SUCH" ist in keiner Quelle ein Schluessel.
+//
+// Einfach das erste Segment zu nehmen reicht nicht: bei binzart hat Segment 1
+// ("Bizerta; Bizerte", TUNICOs Schreibweise) null Treffer, Segment 2 einen. Deshalb wird
+// gefragt, welches Segment wirklich ein Schluessel ist; erst wenn keins passt, faellt es
+// auf das erste zurueck.
+async function _qaEnglishKey(glossEn){
+  if(!glossEn) return null;
+  const teile = String(glossEn).split('|').map(t=>t.trim()).filter(Boolean);
+  if(!teile.length) return null;
+  for(const t of teile){
+    try{
+      const hit = await sbApi('vocab_lookup?select=english_key&english_key=eq.'
+                              + encodeURIComponent(t.toLowerCase()) + '&limit=1');
+      if(hit && hit.length) return t;
+    }catch(e){ break; }   // Netzproblem: nicht weiter fragen, das erste Segment tut es auch
+  }
+  return teile[0];
 }
 
 // Schreibt ins Entscheidungs-Protokoll. Die Vorschlagsliste selbst wird NICHT
@@ -7861,15 +7921,19 @@ async function _qaNeuAnlegen(r, row){
         ${feld('qa-f-p-darija', praesens, 'darija (Präsens)', true)}
         ${feld('qa-f-p-de', '', 'deutsch (Präsens) — z. B. „er arbeitet"')}
       </div>` : ''}
+      <label style="font-size:.72rem;color:var(--muted);cursor:pointer;margin-top:.2rem">
+        <input type="checkbox" class="qa-f-faellig"> sofort fällig setzen${praesens ? ' (beide Formen)' : ''}
+      </label>
       <div style="display:flex;gap:.3rem;flex-wrap:wrap">
         <button class="qa-f-ok" style="padding:.3rem .8rem;border:1px solid var(--green);border-radius:4px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">Anlegen</button>
         <button class="qa-f-abbruch" style="padding:.3rem .8rem;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--muted);font-family:inherit;font-size:.75rem;cursor:pointer">Abbrechen</button>
-        <span style="font-size:.68rem;color:var(--muted);align-self:center">→ ${praesens ? 'L18 Vergangenheit + L17 Präsens' : 'Lektion „unsortiert"'}, nicht fällig${r.arabisch?'':', geflaggt bis das Arabische da ist'}</span>
+        <span style="font-size:.68rem;color:var(--muted);align-self:center">→ ${praesens ? 'L18 Vergangenheit + L17 Präsens' : 'Lektion „unsortiert"'}${r.arabisch?'':', geflaggt bis das Arabische da ist'}</span>
       </div>
     </div>`;
 
   note.querySelector('.qa-f-abbruch').addEventListener('click', ()=>{ note.style.display='none'; note.innerHTML=''; });
   const paar = note.querySelector('.qa-f-paar');
+  const faellig = note.querySelector('.qa-f-faellig');
   const pbox = note.querySelector('.qa-f-praesensbox');
   if(paar && pbox) paar.addEventListener('change', ()=>{ pbox.style.display = paar.checked ? 'flex' : 'none'; });
 
@@ -7898,13 +7962,15 @@ async function _qaNeuAnlegen(r, row){
         }catch(e){ /* Offsets sind ein Plus, kein Muss — ohne sie laeuft die ganze Datei */ }
       }
 
+      const englishKey = await _qaEnglishKey(r.gloss_en);
+
       const ids = [];
       // Der Beleg gilt nur fuer die Schreibung, die tatsaechlich in der Quelle steht.
       // Wurde die darija im Feld veraendert, ist sie nicht mehr belegt.
       const unveraendert = darija.toLowerCase() === (r.lemma||'').toLowerCase();
       const id1 = await _qaZeileAnlegen(r, {
         lesson_id: mitPaar ? QA_VERB_VERGANGENHEIT_LESSON_ID : QA_UNSORTED_LESSON_ID,
-        darija, arab, de, english: r.gloss_en, belegt: unveraendert,
+        darija, arab, de, english: englishKey, belegt: unveraendert,
         audio_url: r.audio_url, audio_start: aStart, audio_end: aEnd,
         note: mitPaar ? 'Vergangenheitsform des Verbpaars' : null
       });
@@ -7915,13 +7981,25 @@ async function _qaNeuAnlegen(r, row){
         // deshalb bewusst ohne. Belegt ist sie ueber tunico_import.inflected.
         const id2 = await _qaZeileAnlegen(r, {
           lesson_id: QA_VERB_PRAESENS_LESSON_ID,
-          darija: pDarija, arab: '', de: pDe, english: r.gloss_en,
+          darija: pDarija, arab: '', de: pDe, english: englishKey,
           belegt: pDarija.toLowerCase() === (praesens||'').toLowerCase(),
           audio_url: null, audio_start: null, audio_end: null,
           note: 'Präsensform (3. Pers. Sg.) aus tunico_import.inflected #v_pres_sg_p3'
         });
         if(id2) ids.push(id2);
       }
+
+      // Faellig setzen gleich hier, nicht als zweiter Gang ueber die Vokabelliste. Ueber
+      // denselben Weg wie der Knopf im Bucket "vorhanden", damit eine schon bestehende
+      // Faelligkeit auch hier nie ueberschrieben wird (bei frisch angelegten Zeilen kann
+      // es keine geben, aber die Regel soll nicht an zwei Stellen verschieden gelten).
+      if(faellig && faellig.checked && ids.length){
+        try{
+          const {gesetzt} = await _qaFaelligMachen(ids);
+          showToast('✓ angelegt und '+gesetzt+(gesetzt===1?' Zeile':' Zeilen')+' fällig gesetzt','ok');
+        }catch(e){ showToast('Angelegt, aber fällig setzen schlug fehl: '+e.message,'err'); }
+      }
+
       await _qaEntscheiden(r, row, 'angelegt', ids);
     }catch(e){ showToast('Fehler: '+e.message,'err'); }
   });
