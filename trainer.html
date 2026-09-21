@@ -7809,15 +7809,81 @@ async function _qaFaelligMachen(ids){
 }
 
 async function _qaFaelligSetzen(r, row){
-  const note = row.querySelector('.qa-note');
   const ids = _qaOhneFaelligkeit(r);
   if(!ids.length){ showToast('Alle Treffer sind schon fällig','warn'); return; }
+  // Bei genau EINEM offenen Treffer waere eine Auswahl nur ein Klick mehr ohne
+  // Entscheidung — das ist mit 1.885 von 2.999 bedienbaren Zeilen der haeufigste Fall.
+  if(ids.length === 1){ await _qaFaelligAusfuehren(r, row, ids); return; }
+  _qaFaelligAuswahl(r, row, ids);
+}
+
+// Auswahl, WELCHE der offenen Treffer faellig werden. Noetig, weil ein Quelllemma ueber
+// das Konsonantenskelett mehrere Bestandszeilen trifft, und die koennen verschiedene
+// Woerter sein: "maktib" trifft maktab (Schule), maktoub (Brief) und maktba (Bibliothek).
+// "Alle faellig" ist da selten gemeint. 1.114 der 2.999 bedienbaren Zeilen haben zwei
+// oder mehr offene Treffer, bei 26 sind es sieben.
+function _qaFaelligAuswahl(r, row, ids){
+  const note = row.querySelector('.qa-note');
+  if(!note) return;
+  const nach = {}; (r.treffer||[]).forEach(t => { nach[t.id] = t; });
+  const knopf = (cls, farbe, text) =>
+    '<button class="'+cls+'" style="padding:.3rem .8rem;border:1px solid '+farbe
+    + ';border-radius:4px;background:transparent;color:'+farbe
+    + ';font-family:inherit;font-size:.75rem;cursor:pointer">'+text+'</button>';
+
+  note.style.display = 'block';
+  note.style.color = 'var(--muted)';
+  note.innerHTML = '<div style="display:flex;flex-direction:column;gap:.25rem;margin-top:.2rem">'
+    + '<div style="font-size:.72rem">Welche sollen fällig werden?</div>'
+    + ids.map(id => {
+        const t = nach[id] || {};
+        return '<label style="font-size:.75rem;color:var(--text);cursor:pointer">'
+          + '<input type="checkbox" class="qa-f-sel" value="'+id+'" checked> '
+          + '<b style="color:var(--green)">'+escHtml(t.darija || ('#'+id))+'</b>'
+          + (t.german ? ' — '+escHtml(t.german) : '')
+          + ' <span style="opacity:.6">#'+id+'</span></label>';
+      }).join('')
+    + '<div style="display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.2rem">'
+    +   knopf('qa-f-sel-ok', 'var(--green)', 'Fällig setzen')
+    +   knopf('qa-f-sel-ab', 'var(--border)', 'Abbrechen')
+    + '</div></div>';
+
+  note.querySelector('.qa-f-sel-ab').addEventListener('click', ()=>{
+    note.style.display='none'; note.innerHTML='';
+  });
+  note.querySelector('.qa-f-sel-ok').addEventListener('click', async ()=>{
+    const gewaehlt = [...note.querySelectorAll('.qa-f-sel')].filter(c=>c.checked).map(c => +c.value);
+    if(!gewaehlt.length){ showToast('Nichts ausgewählt','warn'); return; }
+    await _qaFaelligAusfuehren(r, row, gewaehlt);
+  });
+}
+
+async function _qaFaelligAusfuehren(r, row, ids){
   try{
     const {gesetzt, schon} = await _qaFaelligMachen(ids);
-    if(note){ note.style.display='block'; note.style.color='var(--green)';
-      note.textContent = '✓ '+gesetzt+' fällig gesetzt'+(schon?', '+schon+' war schon fällig':''); }
     showToast('✓ '+gesetzt+' fällig gesetzt'+(schon?' ('+schon+' war schon)':''),'ok');
+    // Zeile neu zeichnen: die gruenen ▶-Markierungen und die Zahl im Knopf muessen zum
+    // neuen Stand passen. Sonst bietet der Knopf weiter an, was gerade gesetzt wurde --
+    // und bei einer Teilauswahl staende dort eine Zahl, die es nicht mehr gibt.
+    const neu = _qaRowRefresh(r, row);
+    const note = neu && neu.querySelector('.qa-note');
+    if(note){
+      note.style.display='block'; note.style.color='var(--green)';
+      note.textContent = '✓ '+gesetzt+' fällig gesetzt'+(schon?', '+schon+' war schon fällig':'');
+    }
   }catch(e){ showToast('Fehler: '+e.message,'err'); }
+}
+
+// Baut eine einzelne Zeile aus dem aktuellen Stand neu auf und haengt ihre Ereignisse
+// wieder an. data-idx bleibt gleich, deshalb findet _qaBindRowEvents die neue Zeile.
+function _qaRowRefresh(r, row){
+  const tmp = document.createElement('div');
+  tmp.innerHTML = _qaRowHtml(r);
+  const neu = tmp.firstElementChild;
+  if(!neu) return row;
+  row.replaceWith(neu);
+  _qaBindRowEvents([r]);
+  return neu;
 }
 
 // gloss_en buendelt im View die Glossen ALLER Quellen mit " | ". Als vocabulary.english
