@@ -7676,6 +7676,21 @@ function _qaRowHtml(r){
   if(r.ist_toponym)         warnungen.push('Ortsname');
   if(r.wortart==='unklar')  warnungen.push('Wortart in den Quellen widersprüchlich');
 
+  // "Faellig setzen" einmal bauen, weil es an ZWEI Stellen gebraucht wird: bei
+  // unentschiedenen Zeilen in der Aktionsleiste, bei entschiedenen daneben. Eine
+  // Entscheidung beantwortet naemlich die IMPORT-Frage ("soll daraus eine eigene
+  // Vokabelzeile werden?") -- ueber die Faelligkeit der vorhandenen Zeilen sagt sie
+  // nichts. maktib traegt seit der TUNICO-Migration "verknuepft", und der Kommentar
+  // dazu sagt ausdruecklich "bewusst NICHT faellig gesetzt": die beiden Fragen sind
+  // getrennt. Solange die Entscheidungszeile alle Knoepfe ersetzte, waren 1.226 der
+  // 2.999 gefilterten vorhanden-Zeilen eine Sackgasse -- der Filter zeigte sie, aber
+  // es gab nichts zu druecken.
+  const offeneIds = _qaOhneFaelligkeit(r);
+  const faelligBtn = offeneIds.length
+    ? '<button class="qa-btn-faellig" title="Setzt nur die grün markierten Treffer fällig; laufende Fälligkeiten bleiben unangetastet." style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">▶ Fällig setzen'
+      + ((r.treffer||[]).length > 1 ? ' ('+offeneIds.length+' von '+r.treffer.length+')' : '') + '</button>'
+    : '';
+
   const aktionen = r.bucket==='variante'
     ? '<button class="qa-btn-beleg" style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">✓ Beleg auf bestehende Zeile</button>'
       + '<button class="qa-btn-neu" style="padding:.35rem .7rem;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--gold2);font-family:inherit;font-size:.75rem;cursor:pointer">➕ trotzdem neu anlegen</button>'
@@ -7683,14 +7698,11 @@ function _qaRowHtml(r){
       // Nur anbieten, was es auch zu tun gibt: Treffer, die noch KEINE Faelligkeit haben.
       // Haben alle schon eine, waere der Knopf eine leere Zusage — eine laufende
       // Faelligkeit wird naemlich nie ueberschrieben (das wuerde den Lernstand kippen).
-      ? (_qaOhneFaelligkeit(r).length
-          ? '<button class="qa-btn-faellig" title="Setzt nur die grün markierten Treffer fällig; laufende Fälligkeiten bleiben unangetastet." style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">▶ Fällig setzen'
-            + ((r.treffer||[]).length > 1 ? ' ('+_qaOhneFaelligkeit(r).length+' von '+r.treffer.length+')' : '') + '</button>'
-          : '<span style="font-size:.7rem;color:var(--muted);align-self:center">bereits fällig</span>')
+      ? (faelligBtn || '<span style="font-size:.7rem;color:var(--muted);align-self:center">bereits fällig</span>')
       : '<button class="qa-btn-neu" style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">➕ '+(r.bucket==='baustein'?'Als Einzelwort anlegen':'Neu anlegen')+'</button>';
 
   return `
-  <div class="qa-row" data-idx="${r._idx}" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.8rem .9rem${r.entscheidung?';opacity:.55':''}">
+  <div class="qa-row" data-idx="${r._idx}" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.8rem .9rem${(r.entscheidung && !faelligBtn)?';opacity:.55':''}">
     <div style="display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap">
       <span title="${escHtml(teile.join(' · '))}" style="font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--gold2);border:1px solid var(--gold);border-radius:4px;padding:.05rem .4rem;cursor:help">${r.score}</span>
       <span style="font-size:.68rem;color:var(--muted)">${meta.icon} ${meta.text}</span>
@@ -7704,11 +7716,12 @@ function _qaRowHtml(r){
     </div>
     <div style="font-size:.85rem;margin-top:.25rem">${escHtml(r.gloss_de || '—')}</div>
     ${r.gloss_en && !r.gloss_de ? '<div style="font-size:.78rem;color:var(--muted);margin-top:.1rem">'+escHtml(r.gloss_en)+'</div>' : ''}
-    ${_qaTrefferHtml('✓ im Bestand:', r.treffer, 'var(--green)', new Set(_qaOhneFaelligkeit(r)))}
+    ${_qaTrefferHtml('✓ im Bestand:', r.treffer, 'var(--green)', new Set(offeneIds))}
     ${_qaTrefferHtml('🧩 steckt in:', r.phrasen, 'var(--text)')}
     ${_qaTrefferHtml('≈ ähnlich:', r.aehnliche, 'var(--gold2)')}
     ${warnungen.length ? '<div style="font-size:.7rem;color:var(--gold2);margin-top:.3rem">⚠ '+warnungen.map(escHtml).join(' · ')+'</div>' : ''}
-    ${r.entscheidung ? '<div style="font-size:.72rem;color:var(--green);margin-top:.3rem">✓ bereits entschieden: '+escHtml(r.entscheidung)+(r.entscheidung_ids&&r.entscheidung_ids.length?' (#'+r.entscheidung_ids.join(', #')+')':'')+'</div>' : `
+    ${r.entscheidung ? '<div style="font-size:.72rem;color:var(--green);margin-top:.3rem">✓ bereits entschieden: '+escHtml(r.entscheidung)+(r.entscheidung_ids&&r.entscheidung_ids.length?' (#'+r.entscheidung_ids.join(', #')+')':'')+'</div>'
+      + (faelligBtn ? '<div class="qa-actions" style="display:flex;gap:.4rem;margin-top:.5rem;flex-wrap:wrap">'+faelligBtn+'</div>' : '') : `
     <div class="qa-actions" style="display:flex;gap:.4rem;margin-top:.6rem;flex-wrap:wrap">
       ${aktionen}
       <button class="qa-btn-skip" style="padding:.35rem .7rem;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--muted);font-family:inherit;font-size:.75rem;cursor:pointer">⏭ Überspringen</button>
