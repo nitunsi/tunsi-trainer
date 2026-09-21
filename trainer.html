@@ -319,6 +319,7 @@ body.hide-latin .chat-opt .latin {
     <button class="lesson-chip" onclick="setMode('partnerqueue',this);closeNav()">📬 Partner-Queue</button>
     <button class="lesson-chip" onclick="setMode('partnercheck',this);closeNav()">🙋 Partner-Check</button>
     <button class="lesson-chip" onclick="setMode('quellen',this);closeNav()">🧭 Quellenabgleich</button>
+    <button class="lesson-chip" onclick="setMode('translitregeln',this);closeNav()">🔤 Transliterationsregeln</button>
     <button class="lesson-chip" onclick="setMode('lessons',this);closeNav()">📖 Lektionen</button>
     <button class="lesson-chip" onclick="setMode('export',this);closeNav()">💾 Export</button>
   </div>
@@ -2322,7 +2323,7 @@ function setMode(m,el){
   hideAllStickyBars();
   clearTimeout(_modeDispatchTimer);
   _modeDispatchTimer=setTimeout(()=>{
-    if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='quellen'){showQuellenAbgleich();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}if(m==='coursesrs'){goCourseSrs();return;}if(m==='mix'){goMix();return;}go();
+    if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='quellen'){showQuellenAbgleich();return;}if(m==='translitregeln'){showTranslitRegeln();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}if(m==='coursesrs'){goCourseSrs();return;}if(m==='mix'){goMix();return;}go();
   },0);
 }
 function updScore(){/* Score-Anzeige in nav-strip entfernt — score.c/w/st werden weiterhin für Ergebnis-Screen und SRS-Streak gepflegt */}
@@ -4172,6 +4173,136 @@ function suggestTransliterationFromArabic(){
   if(!suggestion){ showToast('Kein Vorschlag möglich','warn'); return; }
   document.getElementById('ei-tr').value = suggestion;
   showToast('Vorschlag eingefügt — bitte prüfen','ok');
+}
+
+// ===== Transliterationsregeln: was der Trainer tatsaechlich anwendet ==========
+// Jede Angabe auf diesem Screen wird aus den Konstanten gelesen, mit denen der Trainer
+// selbst arbeitet -- AR_TRANSLIT_MAP, AR_DIACRITIC_VOWEL, AR_SUN_LETTERS und
+// TRANSLIT_RULES. Nichts davon ist abgetippt. Eine von Hand gepflegte Regeltabelle waere
+// ein Schnappschuss und liefe frueher oder spaeter gegen den Code -- genau das
+// Fehlerbild, das PRECEDENTS.md unter "der eingefrorene Kandidaten-Schnappschuss"
+// beschreibt. Aendert jemand das Mapping, aendert sich diese Seite mit.
+function showTranslitRegeln(){
+  document.getElementById('act-screen').style.display='none';
+  document.getElementById('act-screen').style.pointerEvents='none';
+  const _ab=document.getElementById('act-batch-bar'); if(_ab) _ab.style.display='none';
+  const area = document.getElementById('exercise-screen');
+  if(area) area.style.display='block';
+  const sticky = document.getElementById('sticky-next'); if(sticky) sticky.classList.remove('show');
+  document.getElementById('ex-type-label').textContent = '🔤 Transliterationsregeln';
+  document.getElementById('ex-progress').textContent = '';
+  const np = document.getElementById('nav-progress'); if(np) np.style.visibility='hidden';
+  const c = document.getElementById('exercise-content');
+  if(!c) return;
+
+  const kasten = (titel, inhalt, fuss) =>
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.8rem .9rem;margin-bottom:.9rem">'
+    + '<div style="color:var(--gold2);font-size:.85rem;font-weight:700;margin-bottom:.5rem">'+titel+'</div>'
+    + inhalt
+    + (fuss ? '<div style="font-size:.7rem;color:var(--muted);margin-top:.5rem;line-height:1.5">'+fuss+'</div>' : '')
+    + '</div>';
+
+  // --- Buchstaben, nach dem lateinischen Ergebnis gruppiert. Die Gruppierung ist die
+  //     eigentliche Aussage: sie macht sichtbar, wo mehrere arabische Buchstaben auf
+  //     dieselbe Schreibung fallen (ث/ذ/ظ alle "th") -- daher kommen die Faelle, in denen
+  //     die Rueckrechnung mehrdeutig ist.
+  const nachLatein = {};
+  Object.keys(AR_TRANSLIT_MAP).forEach(ar => {
+    const lat = AR_TRANSLIT_MAP[ar];
+    (nachLatein[lat] = nachLatein[lat] || []).push(ar);
+  });
+  const sonderzeichen = ['7','kh','3','gh','sh','dh','th','q'];
+  const buchstabenHtml = '<div style="display:flex;flex-wrap:wrap;gap:.3rem">'
+    + Object.keys(nachLatein).sort((a,b)=>a.localeCompare(b)).map(lat => {
+        const besonders = sonderzeichen.includes(lat);
+        return '<span style="display:inline-flex;align-items:baseline;gap:.35rem;padding:.2rem .5rem;border:1px solid '
+          + (besonders?'var(--gold)':'var(--border)')+';border-radius:5px;background:'
+          + (besonders?'rgba(201,168,76,.10)':'transparent')+'">'
+          + '<b style="font-family:\'IBM Plex Mono\',monospace;color:'+(besonders?'var(--gold2)':'var(--text)')+'">'+escHtml(lat)+'</b>'
+          + '<span style="font-size:1.05rem">'+nachLatein[lat].join(' ')+'</span></span>';
+      }).join('')
+    + '</div>';
+
+  // --- Vokalzeichen und die Sonderfaelle der Ableitung
+  const vokale = Object.keys(AR_DIACRITIC_VOWEL)
+    .map(d => '<span style="padding:.15rem .45rem;border:1px solid var(--border);border-radius:4px;margin:.1rem .2rem .1rem 0;display:inline-block">'
+              + '<span style="font-size:1.05rem">◌'+d+'</span> → <b style="font-family:\'IBM Plex Mono\',monospace">'
+              + AR_DIACRITIC_VOWEL[d]+'</b></span>').join('');
+
+  const sonne = AR_SUN_LETTERS.map(l =>
+      '<span style="display:inline-block;padding:.1rem .4rem;border:1px solid var(--border);border-radius:4px;margin:.1rem .2rem .1rem 0">'
+      + '<span style="font-size:1.05rem">'+l+'</span> <span style="opacity:.6;font-family:\'IBM Plex Mono\',monospace;font-size:.75rem">e'
+      + AR_TRANSLIT_MAP[l]+'-'+AR_TRANSLIT_MAP[l]+'…</span></span>').join('');
+
+  // --- Pruefregeln mit LEBENDER Trefferzahl. Eine Regelliste ohne Zahlen sagt nur, was
+  //     verboten ist; mit Zahlen sagt sie, wo der Bestand gerade steht.
+  const geprueft = ALL_VOCAB.filter(v => v.tr).length;
+  const regeln = TRANSLIT_RULES.map(r => {
+    let n = 0;
+    try{ n = ALL_VOCAB.filter(v => v.tr && r.test(v)).length; }catch(e){ n = -1; }
+    return {label: r.label, n};
+  });
+  const regelHtml = '<div style="display:flex;flex-direction:column;gap:.25rem">'
+    + regeln.map(r => {
+        const farbe = r.n < 0 ? 'var(--muted)' : r.n === 0 ? 'var(--green)' : 'var(--gold2)';
+        const zahl  = r.n < 0 ? '?' : r.n;
+        return '<div style="display:flex;gap:.5rem;align-items:baseline;font-size:.78rem">'
+          + '<span style="flex:0 0 2.6rem;text-align:right;font-family:\'IBM Plex Mono\',monospace;color:'+farbe+'">'+zahl+'</span>'
+          + '<span style="color:var(--text)">'+escHtml(r.label)+'</span></div>';
+      }).join('')
+    + '</div>';
+
+  c.innerHTML = '<div style="padding:.5rem 0 4rem">'
+    + '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.9rem;line-height:1.55">'
+    +   'Alles hier ist aus dem Code gelesen, mit dem der Trainer arbeitet — nicht abgetippt. '
+    +   'Ändert sich das Mapping, ändert sich diese Seite mit.'
+    + '</div>'
+
+    + kasten('Ausprobieren',
+        '<input id="tr-probe" type="text" placeholder="Arabisch eingeben, z. B. الكتاب" '
+        + 'style="width:100%;box-sizing:border-box;padding:.5rem .6rem;background:var(--bg);border:1px solid var(--border);'
+        + 'border-radius:6px;color:var(--text);font-size:1.1rem" autocomplete="off" autocorrect="off" spellcheck="false">'
+        + '<div id="tr-probe-out" style="margin-top:.5rem;font-family:\'IBM Plex Mono\',monospace;font-size:1rem;color:var(--gold2);min-height:1.3rem"></div>',
+        'Dieselbe Funktion, die im Vokabel-Formular den Vorschlag macht (<code>transliterateArabicWord</code>). '
+        + 'Sie liefert einen Vorschlag, kein Urteil — vokalisiertes Arabisch ergibt das beste Ergebnis.')
+
+    + kasten('Buchstaben (' + Object.keys(AR_TRANSLIT_MAP).length + ' arabische → ' + Object.keys(nachLatein).length + ' Schreibungen)',
+        buchstabenHtml,
+        'Gold markiert sind die Chat-Alphabet-Eigenheiten. Nach dem Ergebnis gruppiert, damit sichtbar ist, '
+        + 'wo mehrere arabische Buchstaben zusammenfallen — dort ist der Weg zurück mehrdeutig und das '
+        + '<b>arabic_script</b> entscheidet, nicht die Transliteration.')
+
+    + kasten('Vokalzeichen und Verdopplung',
+        '<div>'+vokale+'</div>'
+        + '<div style="font-size:.78rem;margin-top:.5rem;line-height:1.7">'
+        +   '<b style="color:var(--gold2)">Schadda ◌ّ</b> verdoppelt die volle Schreibung — bei einem Digraphen also beide Zeichen (<code>dhdh</code>, nicht <code>ddh</code>).<br>'
+        +   '<b style="color:var(--gold2)">Sukun ◌ْ</b> heißt: kein Vokal.<br>'
+        +   '<b style="color:var(--gold2)">ة</b> am Wortende wird <code>a</code> — und entfällt, wenn schon ein <code>a</code> davorsteht.<br>'
+        +   '<b style="color:var(--gold2)">و / ي</b> ohne eigenes Zeichen direkt nach <code>u</code> bzw. <code>i</code> sind Längung, kein eigener Konsonant.'
+        + '</div>')
+
+    + kasten('Artikel ال und Sonnenbuchstaben',
+        '<div style="font-size:.78rem;margin-bottom:.5rem">Vor einem Sonnenbuchstaben verschmilzt der Artikel: '
+        + '<code>el-</code> wird zu <code>e&lt;Buchstabe&gt;-</code>. Vor allen anderen bleibt <code>el-</code>.</div>'
+        + '<div>'+sonne+'</div>',
+        'ج steht mit in der Liste, obwohl es im Hocharabischen kein Sonnenbuchstabe ist — im Tunesischen '
+        + 'assimiliert es mit (<code>ej-jzayir</code>, <code>ej-jar</code>).')
+
+    + kasten('Prüfregeln (' + TRANSLIT_RULES.length + ') — und wo der Bestand gerade steht',
+        regelHtml,
+        geprueft + ' von ' + ALL_VOCAB.length + ' Vokabeln geprüft. Die Zahl links ist die aktuelle Trefferzahl: '
+        + '<span style="color:var(--green)">grün</span> heißt sauber. Die Fundstellen selbst stehen unter '
+        + '<b>🔍 Prüfungen → 🔤 Transliteration</b>.')
+    + '</div>';
+
+  const probe = document.getElementById('tr-probe');
+  const out   = document.getElementById('tr-probe-out');
+  if(probe && out){
+    probe.addEventListener('input', ()=>{
+      const wert = probe.value.trim();
+      out.textContent = wert ? wert.split(/\s+/).map(transliterateArabicWord).join(' ') : '';
+    });
+  }
 }
 
 // Cross-Source-Abgleich (Ninja/TUNICO/Peace Corps) direkt aus der View vocab_lookup,

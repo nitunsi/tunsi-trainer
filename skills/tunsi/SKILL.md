@@ -24,6 +24,7 @@ Fokus dieser Datei: bestehende Trainer-Vokabeln prüfen, neue Vokabeln nachschla
 | Was ist von früher noch unerledigt? | Offene Punkte (direkt unten) — **die Zahlen dort sind ein Schnappschuss, vor jeder Planung mit dem SQL daneben neu ziehen** |
 | Vokalisieren, Harakat setzen, Regeln gegen `trainer.html` laufen lassen | **`tools/`** — `extract.js` (TRANSLIT_RULES aus `trainer.html`), `chatalpha.js` (Port von `_arabic_to_chatalpha`), `vokalisierer.js` (Harakat-Solver). `tools/README.md` nennt die sieben Pflichtfilter — **vor dem ersten `UPDATE` lesen** |
 | Was kennen die Quellen, das der Trainer nicht hat? | **`quellen_abgleich`** — Live-View, vier Buckets (`fehlt`/`baustein`/`variante`/`vorhanden`) und Score. Im Trainer der Knopf „Quellenabgleich“. Methodik: IMPORTS.md → Quellenabgleich |
+| Wie transliteriert der Trainer selbst? | Im Trainer der Chip **„🔤 Transliterationsregeln“** — Buchstabentabelle, Vokalzeichen, Sonnenbuchstaben und die 23 Prüfregeln mit lebender Trefferzahl, alles aus `AR_TRANSLIT_MAP`/`TRANSLIT_RULES` gelesen statt abgetippt, dazu ein Probierfeld. Die **Ziel-Konvention** steht weiterhin hier unten (Transliteration — Ziel-Konvention); der Screen zeigt, was der Code daraus macht |
 | PDF/Foto-Quelle auswerten, neue Quelle importieren | IMPORTS.md |
 | Kurs-Modus (course_lessons/course_exercises) oder Code-Änderung an trainer.html | COURSE_MODE.md |
 
