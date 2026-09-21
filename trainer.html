@@ -3942,7 +3942,6 @@ function renderVocabTableRows(){
     const correct = p ? timeAgo(p.last_correct) : '—';
     const rowId = 'vrow-'+i;
     const editId = 'vedit-'+i;
-    const vIdx = ALL_VOCAB.indexOf(v);
 
     h += '<tr id="'+rowId+'" style="border-bottom:1px solid rgba(58,50,40,.4);content-visibility:auto;contain-intrinsic-size:auto 32px">';
     const flagMark = flaggedVocab.has(v.tr) ? ' 🚩' : '';
@@ -6757,8 +6756,33 @@ async function saveDupeEdit(id){
 async function deleteDupeVocab(vocabId, groupIdx){
   if(!confirm('Vokabel ID '+vocabId+' wirklich l\u00f6schen?\nDieser Schritt kann nicht r\u00fcckg\u00e4ngig gemacht werden.')) return;
   try {
-    if(currentUser && currentUser.id){
-      await sbApi('progress?user_id=eq.'+currentUser.id+'&vocabulary_id=eq.'+vocabId, 'DELETE');
+    // course_exercises.vocabulary_id steht auf ON DELETE NO ACTION. Haengt eine Kurs-Uebung
+    // an der Zeile, bricht das DELETE mit einer rohen Constraint-Meldung ab, aus der niemand
+    // ablesen kann, was im Weg steht. Deshalb vorher nachsehen und die Uebungen benennen.
+    // Betrifft heute 149 Vokabeln (197 Uebungen) -- seit die pronunciation-Uebungen
+    // verknuepft sind, ist das kein Randfall mehr.
+    //
+    // progress und review_log brauchen KEINE Vorarbeit: ihre Fremdschluessel stehen auf
+    // CASCADE bzw. SET NULL, Postgres raeumt selbst auf. Das fruehere manuelle Loeschen der
+    // progress-Zeile war doppelt gemoppelt und obendrein unvollstaendig -- es erwischte nur
+    // den eingeloggten Nutzer, nicht Semias Zeile.
+    const verknuepft = await sbApi('course_exercises?vocabulary_id=eq.'+vocabId
+                                   + '&select=id,exercise_type,prompt&order=id.asc') || [];
+    if(verknuepft.length){
+      const zeigen = verknuepft.slice(0,5)
+        .map(e => '  #'+e.id+' '+(e.exercise_type||'')+': '+String(e.prompt||'').slice(0,40)).join('\n');
+      const mehr = verknuepft.length > 5 ? '\n  … und '+(verknuepft.length-5)+' weitere' : '';
+      if(!confirm('An dieser Vokabel hängen '+verknuepft.length+' Kurs-Übung'+(verknuepft.length!==1?'en':'')+':\n'
+                  + zeigen + mehr
+                  + '\n\nDie Verknüpfung wird gelöst — die Übungen selbst bleiben erhalten,\n'
+                  + 'verlieren aber Audio und die Bearbeiten-/Flaggen-Knöpfe.\n\nFortfahren?')) return;
+      await sbApi('course_exercises?vocabulary_id=eq.'+vocabId, 'PATCH', {vocabulary_id: null});
+      // Auch im Speicher loesen, sonst zeigt eine offene Kurs-Karte weiter auf die
+      // geloeschte Zeile und der Bearbeiten-Knopf tut stillschweigend nichts.
+      verknuepft.forEach(e => {
+        const ex = COURSE_EX_BY_ID[e.id];
+        if(ex){ ex.vocabulary_id = null; ex.vocabulary = null; }
+      });
     }
     await sbApi('vocabulary?id=eq.'+vocabId, 'DELETE');
     const idx = ALL_VOCAB.findIndex(v => v.id === vocabId);
