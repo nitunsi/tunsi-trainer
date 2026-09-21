@@ -7639,10 +7639,23 @@ async function _qaLoadBatch(reset){
 // Treffer/Phrasen/Aehnliche kommen als jsonb-Array aus dem View — immer ALLE anzeigen,
 // nie nur den ersten. Der alte Screen hatte dafuer eine einzelne matched_vocab_id und
 // konnte Homonyme nicht abbilden (sabb passt auf #4508 "er beleidigte" UND #4506 "er goss").
-function _qaTrefferHtml(titel, arr, farbe){
+// offeneIds (optional): die Treffer ohne Faelligkeit werden gruen umrandet und mit ▶
+// markiert — demselben Zeichen wie der Knopf. Ohne das steht die Zeile da wie ein Fehler:
+// "maktib" hat vier Bestandstreffer, drei davon terminiert, und nur #2053 maktoub hat gar
+// keine progress-Zeile. Der Knopf sagte "(1)", aber nicht welche.
+function _qaTrefferHtml(titel, arr, farbe, offeneIds){
   if(!arr || !arr.length) return '';
   return '<div style="font-size:.75rem;color:var(--muted);margin-top:.35rem">'+titel+' '
-    + arr.map(t=>'<span style="display:inline-block;margin:.1rem .3rem .1rem 0;padding:.1rem .4rem;border:1px solid var(--border);border-radius:4px"><b style="color:'+farbe+'">'+escHtml(t.darija||'')+'</b> — '+escHtml(t.german||'')+' <span style="opacity:.6">#'+t.id+'</span></span>').join('')
+    + arr.map(t=>{
+        const offen = !!(offeneIds && offeneIds.has(t.id));
+        return '<span title="'+(offen?'noch keine Fälligkeit — genau diese Zeile setzt der Knopf':'hat schon eine Fälligkeit')
+          + '" style="display:inline-block;margin:.1rem .3rem .1rem 0;padding:.1rem .4rem;border:1px solid '
+          + (offen?'var(--green)':'var(--border)') + ';border-radius:4px">'
+          + '<b style="color:'+farbe+'">'+escHtml(t.darija||'')+'</b> — '+escHtml(t.german||'')
+          + ' <span style="opacity:.6">#'+t.id+'</span>'
+          + (offen ? ' <span style="color:var(--green);font-weight:700">▶</span>' : '')
+          + '</span>';
+      }).join('')
     + '</div>';
 }
 
@@ -7671,8 +7684,8 @@ function _qaRowHtml(r){
       // Haben alle schon eine, waere der Knopf eine leere Zusage — eine laufende
       // Faelligkeit wird naemlich nie ueberschrieben (das wuerde den Lernstand kippen).
       ? (_qaOhneFaelligkeit(r).length
-          ? '<button class="qa-btn-faellig" style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">▶ Fällig setzen'
-            + (_qaOhneFaelligkeit(r).length > 1 ? ' ('+_qaOhneFaelligkeit(r).length+')' : '') + '</button>'
+          ? '<button class="qa-btn-faellig" title="Setzt nur die grün markierten Treffer fällig; laufende Fälligkeiten bleiben unangetastet." style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">▶ Fällig setzen'
+            + ((r.treffer||[]).length > 1 ? ' ('+_qaOhneFaelligkeit(r).length+' von '+r.treffer.length+')' : '') + '</button>'
           : '<span style="font-size:.7rem;color:var(--muted);align-self:center">bereits fällig</span>')
       : '<button class="qa-btn-neu" style="padding:.35rem .7rem;border:1px solid var(--green);border-radius:5px;background:transparent;color:var(--green);font-family:inherit;font-size:.75rem;cursor:pointer">➕ '+(r.bucket==='baustein'?'Als Einzelwort anlegen':'Neu anlegen')+'</button>';
 
@@ -7691,7 +7704,7 @@ function _qaRowHtml(r){
     </div>
     <div style="font-size:.85rem;margin-top:.25rem">${escHtml(r.gloss_de || '—')}</div>
     ${r.gloss_en && !r.gloss_de ? '<div style="font-size:.78rem;color:var(--muted);margin-top:.1rem">'+escHtml(r.gloss_en)+'</div>' : ''}
-    ${_qaTrefferHtml('✓ im Bestand:', r.treffer, 'var(--green)')}
+    ${_qaTrefferHtml('✓ im Bestand:', r.treffer, 'var(--green)', new Set(_qaOhneFaelligkeit(r)))}
     ${_qaTrefferHtml('🧩 steckt in:', r.phrasen, 'var(--text)')}
     ${_qaTrefferHtml('≈ ähnlich:', r.aehnliche, 'var(--gold2)')}
     ${warnungen.length ? '<div style="font-size:.7rem;color:var(--gold2);margin-top:.3rem">⚠ '+warnungen.map(escHtml).join(' · ')+'</div>' : ''}
