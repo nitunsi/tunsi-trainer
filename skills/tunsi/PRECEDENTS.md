@@ -605,26 +605,43 @@ Beim Prüfen der ya-Gemination ergab `arabic_script ~ 'يّ'` nur 7 Treffer, obw
 
 **Ausgeführt:** 11 Zeilen — die هو-Familie auf `houwwa` (493, 1445, 1782, 3339, 3747), `ahuwa`→`ahouwwa` (3812), die هي-Familie auf `hiyya` (1887, 3711; drei Zeilen schrieben es schon so), `taw`→`tawwa` (1661, 3197) und `melwen`→`mlawwen` (3163, dessen Parallelzeile 3710 `mlawwen` bereits schrieb).
 
-## arabic_skeleton/translit_skeleton Herleitung — Rezept 4 (2026-09-05)
+## arabic_skeleton/translit_skeleton — die Formeln und warum sie generiert gehören (2026-09-05, gekürzt 2026-09-22)
 
-Für Rezept 4 (fertigen `INSERT INTO vocabulary` bauen) mussten `translit_skeleton`/`arabic_skeleton` mitberechnet werden, ohne die App-Logik zu kennen (kein JS-Code im Repo, der diese Spalten befüllt — vermutlich immer per Hand/Adhoc-Skript nachgezogen, siehe 3.688/3.698 Zeilen befüllt trotz keiner dokumentierten Formel). Wie beim Peace-Corps-Fall: Regel per Reverse-Engineering aus dem Bestand hergeleitet, nicht geraten.
+Beide Spalten wurden ursprünglich per Reverse-Engineering aus dem Bestand hergeleitet, weil es
+keine dokumentierte Formel gab. Der Herleitungsverlauf (Trefferquoten je Zwischenstand, Analyse der
+jeweils verbliebenen Abweichungen) ist Archiv: die Formeln liegen seit 2026-09-05 als
+`public._translit_skeleton()` / `public._arabic_skeleton()` vor und seit 2026-09-16 berechnen die
+Spalten sich selbst. **Was bleibt, sind die vier Stolpersteine** — sie gelten für jeden Port der
+Funktion in eine andere Sprache, so wie `tools/chatalpha.js` einer ist:
 
-**`translit_skeleton`** (aus `darija`): lowercase, alles außer `[a-zA-Z0-9]` entfernen, dann Vokale/Halbvokale `[aeiouwy]` entfernen. Erster Entwurf ohne `w`/`y` in der Stripliste traf nur 2.491/3.688 — Fehleranalyse zeigte, `w`/`y` werden ebenfalls konsequent gestrichen (`wsil`→`sl`, `yaqli`→`ql`, `tayyara`→`tr`). Nach Korrektur 3.686/3.688 exakter Match, die 2 Abweichungen (`bit q3ad`/id 4356, `s7aba`/id 4214) sind erkennbar veraltete/stehengebliebene Werte nach späterer `darija`-Korrektur, kein Formelfehler.
+**`translit_skeleton`** (aus `darija`): lowercase, alles außer `[a-zA-Z0-9]` entfernen, dann
+`[aeiouwy]` entfernen. **`w` und `y` gehören in die Stripliste** — ohne sie stimmt nur gut jede
+zweite Zeile (`wsil`→`sl`, `yaqli`→`ql`, `tayyara`→`tr`).
 
-**`arabic_skeleton`** (aus `arabic_script`) ist deutlich komplexer — kein bloßes Vokal-Stripping auf Arabisch, sondern dieselbe Konsonanten-Buchstabieralphabet-Abbildung wie bei TUNICOs `*_orig`→`*_chatalpha` (ḥ→7, ʕ→3, x→kh, ġ→gh, š→sh, ǧ→j, ḍ→dh, ṯ/ḏ/ẓ→th), nur direkt von arabischen Buchstaben statt von DMG-Transliteration ausgehend. Herleitungs-Stolpersteine (jeweils gegen den vollen Bestand von 3.688 Zeilen mit `arabic_skeleton` gegengetestet, nicht nur Stichproben):
-1. **Schadda verdoppelt den Konsonanten, wird aber nicht direkt hinter dem Konsonanten kodiert** — Unicode-Reihenfolge ist Konsonant+Harakat+Schadda (z.B. „صَحَّة" = ص-Fatha-ح-Schadda-Fatha-ة), nicht Konsonant+Schadda direkt. Ein naiver `(.)Schadda→\1\1`-Regex traf dadurch oft die Harakat statt des Konsonanten. Fix: erst alle Harakat/Tanwin/Sukun (außer Schadda selbst) entfernen, danach die Schadda-Verdopplung anwenden — erst dann stehen Konsonant und Schadda direkt nebeneinander.
-2. **Bestimmter Artikel „ال" wird nur beim ALLERERSTEN Wort der ganzen Zeichenkette komplett gestrichen** (Alif UND Lam) — bei jedem späteren Vorkommen im selben Satz (auch als Präfix wie „بال" = bi+al) wird nur das Alif entfernt, das Lam bleibt als Konsonant erhalten. Beleg: „الماكينة تِخدِم بالباهي" → `mkntkhdmblbh` (führendes „ال" komplett weg), aber „صلَّحت التليفون القديم" → `sll7tltlfnlqdmtkhdmblbh` (das „ال" von „التليفون"/„القديم", beide nicht am Satzanfang, behält sein Lam). Fix: `regexp_replace(trim(text), '^ال', '')` exakt einmal am Stringanfang, keine globale Ersetzung.
-3. Hamza-Trägerzeichen ئ/ؤ (nicht nur das nackte ء) fehlten anfangs in der Vokal-Trägerliste (`رئيس`→`rs`, `سؤال`→`sl`) — ergänzt.
-4. Ein finaler generischer Pass **lowercase + `[aeiouwy]` entfernen** über das Gesamtergebnis (nicht nur über die arabischen Buchstaben) erklärt Ausreißer wie eine versehentlich mit-abgetippte deutsche Klammer-Annotation `(Zukunftsmarker)` → `(zknftsmrkr)` im Feld — die App wendet offenbar dieselbe Vokal-Streich-Logik unabhängig vom Schriftsystem als letzten Schritt an.
-Nach allen vier Fixes: 3.679/3.688 exakter Match. Die 9 verbleibenden Abweichungen sind Tatweel-Platzhalter-Einträge (`بِـ`, `لْـ` — bewusst Lückentext, kein Vokabeleintrag), zwei Legacy-Werte ohne Schadda-Verdopplung (`وَرَّى`/`يْوَرِّي`, vermutlich vor Einführung der Schadda-Regel gespeichert) und ein offensichtlicher Test-/Datenmüll-Eintrag (`arabic_script = "aba babab"`) — keine Formelfehler, siehe Detail-Query bei Bedarf erneut ausführen statt diesen Zeilen zu vertrauen.
+**`arabic_skeleton`** (aus `arabic_script`) ist dieselbe Konsonanten-Abbildung wie TUNICOs
+`*_orig`→`*_chatalpha` (ḥ→7, ʕ→3, x→kh, ġ→gh, š→sh, ǧ→j, ḍ→dh, ṯ/ḏ/ẓ→th), nur direkt von den
+arabischen Buchstaben aus. Vier Fallen:
 
-Beide Regeln als SQL-Funktionen `public._translit_skeleton()`/`public._arabic_skeleton()` hinterlegt (siehe Abschnitt "vocab_lookup — Cross-Source-Abgleich", Rezept 4) statt die Herleitung bei jedem `INSERT` erneut von Hand nachzubauen.
+1. **Schadda steht nicht direkt hinter dem Konsonanten.** Unicode ordnet Konsonant + Harakat +
+   Schadda (صَحَّة = ص-Fatha-ح-Schadda-Fatha-ة). Ein naives `(.)Schadda→\1\1` verdoppelt deshalb die
+   Harakat. Erst alle Harakat/Tanwin/Sukun entfernen (die Schadda selbst nicht), dann verdoppeln.
+2. **Der Artikel ال fällt nur am ALLERERSTEN Wort ganz weg** (Alif und Lam). Spaeter im Satz —
+   auch als Präfix `بال` — bleibt das Lam als Konsonant stehen. Also `regexp_replace(trim(t),'^ال','')`
+   genau einmal am Stringanfang, nie global.
+3. **Die Hamza-Träger ئ/ؤ zählen als Vokaltraeger**, nicht nur das nackte ء (`رئيس`→`rs`).
+4. **Zum Schluss ein generischer Durchlauf** lowercase + `[aeiouwy]` streichen ueber das ganze
+   Ergebnis, unabhaengig vom Schriftsystem.
 
-**Nachtrag 2026-09-16 — die Spalten berechnen sich jetzt selbst.** Die hier hergeleiteten Formeln gelten unverändert, aber `vocabulary.translit_skeleton`/`arabic_skeleton` sind seither generierte Spalten (`GENERATED ALWAYS AS (public._translit_skeleton(darija)) STORED` bzw. aus `arabic_script`). Rezept 4 führt sie deshalb **nicht mehr in der `INSERT`-Spaltenliste** — stehen sie dort, bricht die Anweisung ab.
+**Die Lehre, und der Grund für die Generierung:** es gab weder Trigger noch generierte Spalten,
+also veralteten die Werte stillschweigend bei jeder späteren `darija`-Korrektur. Am Umstellungstag
+2026-09-16 waren **104 `translit_skeleton` falsch und 9 leer, dazu 100 falsche `arabic_skeleton`**
+bei 3.775 Zeilen — und gemerkt hätte es niemand, weil falsche Skelette für jeden Abgleich
+unsichtbar sind, der auf ihnen aufsetzt. Eine abgeleitete Spalte ohne Generierung ist ein
+eingefrorener Schnappschuss, genau wie `tunico_candidates.auto_verdict` (siehe nächster Eintrag).
+Liegt die Formel als `IMMUTABLE`-Funktion vor, gehoert die Spalte generiert.
 
-**Der eigentliche Befund dahinter:** der Satz oben — „vermutlich immer per Hand/Adhoc-Skript nachgezogen“ — war zutreffend und die Folge war teurer als gedacht. Es gab weder Trigger noch Generierung, also veralteten die Spalten stillschweigend bei jeder späteren `darija`-Korrektur. Am Umstellungstag: **104 falsche und 9 leere `translit_skeleton`, dazu 100 falsche `arabic_skeleton`** bei 3.775 Zeilen. Genau die zwei Abweichungen, die oben 2026-09-05 noch als harmlose Einzelfälle notiert sind (`bit q3ad`/4356, `s7aba`/4214), waren der Anfang davon — kein Ausreißer, sondern ein Leck, das mit jeder Korrekturrunde größer wurde.
-
-**Lehre, über diesen Fall hinaus:** eine abgeleitete Spalte ohne Generierung oder Trigger ist ein eingefrorener Schnappschuss, genau wie `tunico_candidates.auto_verdict`. Wo eine Spalte aus einer anderen berechnet wird und die Formel als `IMMUTABLE`-Funktion vorliegt, gehört sie generiert — sonst ist die Frage nicht *ob* sie auseinanderläuft, sondern wann es jemand merkt. Und gemerkt hätte es hier niemand: die falschen Skelette sind für jeden Abgleich unsichtbar, der auf ihnen aufsetzt.
+**Folge für Rezept 4:** die beiden Spalten dürfen **nicht** in der `INSERT`-Spaltenliste stehen —
+sonst bricht die Anweisung ab.
 
 ## Der eingefrorene Kandidaten-Schnappschuss (2026-09-16)
 
