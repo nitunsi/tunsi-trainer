@@ -343,7 +343,7 @@ Dabei gilt für alle drei dieselbe Wertigkeit:
 
 Damit wird aus einer Ermessensfrage ein Vergleich, und der läuft in SQL statt im Kopf — es kommen nur noch die Zeilen zurück, bei denen wirklich etwas nicht stimmt.
 
-**Konsequenz 3 — für eine Ninja-Suche muss die eigene Schreibung erst umgerechnet werden** (`script=transliterated` konvertiert die Eingabe intern zu Arabisch): `sh`→`ch`, `q`→`9`, `kh`→`5`, `u`/`o`→`ou`. Unser `yukhruj` wird zu `you5rouj`, `yaqli` zu `ya9li`. Bei `script=english` entfällt das. Volle Tabelle: IMPORTS.md → Ninjas eigener Transliterations-Schlüssel.
+**Konsequenz 3 — für eine Ninja-Suche muss die eigene Schreibung erst umgerechnet werden** (`script=transliterated` konvertiert die Eingabe intern zu Arabisch): `sh`→`ch`, `q`→`9`, `kh`→`5`, `u`/`o`→`ou`. Unser `yukhruj` wird zu `you5rouj`, `yaqli` zu `ya9li`. Bei `script=english` entfällt das. Volle Tabelle: IMPORTS.md → Abgleich mit Derja Ninja.
 
 ## Lautlehre — Zusatzregeln für Vokalisierung & Bestandsaudits
 
@@ -505,20 +505,34 @@ console.log("betroffen: "+ids.size+" von "+rows.length+" ("+L.TRANSLIT_RULES.len
 
 ### B · Verdachtslisten (mit Fehlalarmquote)
 
+**Den Stand dieser Listen nie aus dem Skill zitieren — mit einer Abfrage ziehen.** Genau wie
+bei Gruppe A: hier standen bis zum 2026-09-22 neun Zahlen im Text, und fünf davon waren
+überholt (`gemination` und `konsonanten` längst auf 0, der Bedeutungs-Screen von 76 auf 151
+gewachsen, die Vokalisierungs-Kampagne abgearbeitet). Was bleibt, ist die **Methodik** und die
+**gemessene Fehlalarmquote** — die ist eine Eigenschaft der Liste, keine Momentaufnahme.
+
+```sql
+SELECT 'chatalpha_konflikte · '||klasse AS liste, count(*) FROM chatalpha_konflikte GROUP BY klasse
+UNION ALL SELECT 'vokalisierung_kandidaten', count(*) FROM vokalisierung_kandidaten
+UNION ALL SELECT 'bedeutungs_screen',        count(*) FROM bedeutungs_screen
+UNION ALL SELECT 'Gruppe A/B (Sicht)',       count(*) FROM qualitaets_checks WHERE treffer > 0
+ORDER BY 1;
+```
+
 Ein Treffer ist ein **Kandidat, kein Fehler**. Jede Liste trägt ihre gemessene Fehlalarmquote — die steht dort nicht zur Zierde: bei der Gemination sind ~15 % Fehlalarme, beim arabischen Duplikat-Check ~80 %. **Nie im Block korrigieren**, immer einzeln gegen Ninja/TUNICO/Peace Corps prüfen. Präzedenzfälle, in denen ein Blockfix falsch gewesen wäre: `bnin`, `skhan` (dort war das `arabic_script` der Fehler), `metrobbi` (gegenteiliger Gloss statt Dublette), die 30 Ninja-Skelett-Kollisionen bei der Vokalisierung.
 
 **`chatalpha_konflikte` — die einzige Prüfung, die Vokale sieht (seit 2026-09-13).** Alle anderen Checks vergleichen Konsonantenskelette; `7araam` gegen حَرَام (= `7aram`) ist für sie identisch. `public._arabic_to_chatalpha(arabic_script)` leitet dagegen die **volle** Chat-Alphabet-Form aus dem vokalisierten Arabischen ab und stellt sie der gespeicherten `darija` gegenüber. Die Sicht filtert bereits heraus, was erlaubt abweichen darf: unvokalisiertes Arabisch, Mehrwortzeilen, markierte Lehnwörter (lateinische Schreibung ist dort frei) und die bekannte Funktionslücke `bi/li/ka/fa` + Artikel.
 
 Vier Klassen, und nur zwei davon sind Befunde:
 
-| `klasse` | Stand nach der Korrekturrunde | heißt |
+| `klasse` | Befund? | heißt |
 |---|---|---|
-| `gemination` | 20 (= Check 24) | die beiden Felder widersprechen sich bei der **Verdopplung** — meist fehlt die Schadda im Arabischen (`akhaff` gegen أَخَف). Objektiv entscheidbar, deshalb ein Befund |
-| `konsonanten` | 8 (= Check 25) | verschiedene Laute. Die Hälfte sind französisch geschriebene Lehnwörter ohne `(frz.)`-Marker — mit Marker fallen sie heraus |
-| `lehnwort_pv` | 12 | **kein Befund**, p/v gegen ب/ف per Entscheidung vom 2026-09-13 |
-| `vokale` | ~1.000 | **kein Befund und kein Check.** Kurzvokale sind im Bestand nicht normiert; die Klasse steht nur für den Einzelfall zur Verfügung |
+| `gemination` | **ja**, = Check 24 | die beiden Felder widersprechen sich bei der **Verdopplung** — meist fehlt die Schadda im Arabischen (`akhaff` gegen أَخَف). Objektiv entscheidbar |
+| `konsonanten` | **ja**, = Check 25 | verschiedene Laute. Etwa die Hälfte sind französisch geschriebene Lehnwörter ohne `(frz.)`-Marker — mit Marker fallen sie heraus |
+| `lehnwort_pv` | nein | p/v gegen ب/ف per Entscheidung vom 2026-09-13 |
+| `vokale` | nein, und kein Check | Kurzvokale sind im Bestand nicht normiert; die Klasse steht nur für den Einzelfall zur Verfügung. Mit Abstand die größte der vier |
 
-**`vokalisierung_kandidaten` — Fehlalarmquote ~48 % (gemessen 2026-09-15).** Die Sicht verlangt buchstabengleiches Ninja-Arabisch und **genau eine** distinkte Ninja-Vokalisierung. Das `eindeutig` im Namen bezieht sich auf die **Vokalisierung, nicht auf das Wort**: beim vollständigen Durchgang waren **10 von 21** Kandidaten Homograph-Zufälle — die Eigennamen نَجِيب (Najib) und سَمَر (Samar) für `njib`/`smar`, der osmanische Titel بَايْ (Bey) für das Lehnwort „bye", die Maß-II-Form تْكَوِّن („geformt werden") für تْكُون („sein"), der Diminutiv صْغَيَّر für صغير, ein Verbalnomen statt eines Verbs — und ein Ninja-Quellwert mit **Tanwin statt Fatha** (تْقًابِلْ, Ableitung ergibt `tqanabil`). Jeder Treffer braucht die Wortart- und Bedeutungsprüfung nach Lautlehre-Regel 5. Verworfene Kandidaten bekommen `internal_note ~ 'ninja-vokalisierung verworfen'` — die Sicht schließt sie dadurch dauerhaft aus, und die nächste Sitzung sucht nicht noch einmal.
+**`vokalisierung_kandidaten` — Fehlalarmquote ~48 %, Kampagne abgearbeitet.** Methodik, Pflichtfilter und die Fehlerbilder stehen gesammelt unter **vocab_lookup → Vokalisierung aus Ninja**; hier nur der Hinweis, dass die Liste zu den Verdachtslisten zählt und nie im Block korrigiert wird.
 
 Grundgesamtheit: 2.335 vokalisierte Einzelwörter. Die Klassen `vokale` und `lehnwort_pv` sind bewusst **nicht** in `qualitaets_checks`: eine Liste, die dauerhaft Bekanntes meldet, macht die scharfen Listen daneben unsichtbar.
 
@@ -676,7 +690,7 @@ SELECT id, darija, german, arabic_script, abgeleitet FROM s WHERE sd <> sa ORDER
 
 **Was die Treffer des ersten Laufs waren** (2026-09-13: 44 Treffer, ~35 echt, inzwischen auf 15 abgearbeitet — aktuelle Zahl: `qualitaets_checks`): fehlende oder überzählige Gemination in beide Richtungen (`nos` gegen نُصّ; umgekehrt fehlt bei `7orriyya` dem *Arabischen* die Schadda), falsche Konsonanten (`shadika` für شهادة, `odhkhol` mit `dh` gegen د), ق/ڨ-Uneinigkeit (`bagra`/`baqara`, `manga`/`manqa`), das `7h`-Muster (`msalh7a`). Fehlalarme: nicht als Lehnwort markierte Zeilen und Artikel, den die `darija` trägt und das `arabic_script` nicht.
 
-**Blinder Fleck: der auslautende Vokal.** Der Skelettvergleich streicht Vokale — ein Wort, das auf einen Vokal endet, und eines, das nicht, haben dasselbe Skelett. `385 brika` gegen بْرِيكْ lief deshalb jahrelang als „ok" durch, obwohl die `darija` ein `-a` trägt, das im Arabischen nicht steht. Eigener Check, **27 offene Treffer** (Stand 2026-09-13):
+**Blinder Fleck: der auslautende Vokal.** Der Skelettvergleich streicht Vokale — ein Wort, das auf einen Vokal endet, und eines, das nicht, haben dasselbe Skelett. `385 brika` gegen بْرِيكْ lief deshalb jahrelang als „ok" durch, obwohl die `darija` ein `-a` trägt, das im Arabischen nicht steht. Eigener Check ohne eigene Sicht — Stand über das SQL selbst ziehen:
 
 ```sql
 SELECT id, darija, german, arabic_script, public._arabic_to_chatalpha(arabic_script) AS abgeleitet
@@ -714,7 +728,7 @@ Die zweite Regel verwirft 40 Zeilen und nimmt damit bewusst Falsch-Negative in K
 | Synonymie | ~40 % | „Geldschein" ←→ „Banknote", „Krämer" ←→ „Lebensmittelhändler" |
 | echte Homonymie | ~43 % | `7ayya` „lebendig" ←→ „Schlange" — حية heißt beides |
 
-**Kein Stringverfahren löst Synonymie**, und die echten Funde sehen aus wie die Homonyme — es gibt kein trennendes Signal. Eine Liste mit 76 Einträgen, von denen 5 echt sind, verbrennt mehr Vertrauen, als sie bringt. Der Emphatika-Filter (ص/س unterscheiden über TUNICOs DMG-`lemma_orig`) entfernt nur 5 von 76 und rettet sie nicht.
+**Kein Stringverfahren löst Synonymie**, und die echten Funde sehen aus wie die Homonyme — es gibt kein trennendes Signal. Eine Liste, in der auf einen echten Fund rund vierzehn Fehlalarme kommen, verbrennt mehr Vertrauen, als sie bringt — und sie wächst mit dem Bestand mit. Der Emphatika-Filter (ص/س unterscheiden über TUNICOs DMG-`lemma_orig`) entfernte beim Bau nur 5 von 76 Zeilen und rettet sie nicht.
 
 **Richtiger Einsatz: Schritt 3 für die einzelne Vokabel.** Dort liest ein Mensch das Paar und entscheidet — da ist „TUNICO sagt etwas anderes" wertvoll, auch wenn es meistens Synonymie ist. Die Sicht liefert es fertig, statt dass man den Join jedes Mal neu baut. **Nie im Block korrigieren.**
 
@@ -803,7 +817,7 @@ Ebenso `course_lessons.vocab_lesson_refs` gegen die alte Schreibung prüfen (`da
 
 **`arabic_reconstructed` ist NIE eine unabhängige Bestätigung, nur eine Ableitung unserer eigenen Regel aus Peace Corps' eigener Lautschrift** — bei einem 3-Quellen-Vergleich zählt es nicht als zweite Quelle neben Ninja, sonst täuscht ein systematischer Regelfehler eine "doppelte Bestätigung" vor, die keine ist (siehe PRECEDENTS.md → Peace-Corps-Arabisch-Rekonstruktion). Rekonstruiert wird per `public._pc_reconstruct_arabic(forms_phonetic[1])` aus dem ORIGINAL `forms_phonetic` (nicht aus `forms_chatalpha`!), weil das Original über Groß-/Kleinschreibung Emphase-Laute unterscheidet (H/S/T = ح/ص/ط vs. h/s/t = ه/س/ت), die `forms_chatalpha` bereits verloren hat. Bekannte Restunsicherheit: ض/ظ/ذ fallen im Original alle auf `dh` zusammen (`arabic_reconstruction_note` zeigt das an), außerdem keine Unterscheidung ا/ى bei wortschlussendem Langvokal. 4.874/5.004 Peace-Corps-Zeilen rekonstruiert, 130 bewusst nicht (Fremdwörter/Platzhalter/Transkriptionsfehler statt Rateversuch).
 
-**Vokalisierung aus Ninja übernehmen — nur mit Buchstaben-Identitätsprüfung (seit 2026-09-13).** Ninja vokalisiert konsequent, der Bestand zu 20 % nicht. Die naheliegende Übernahme per `arabic_skeleton`-Match ist aber **viel schwächer, als die Trefferzahl aussieht**: von 50 Zeilen mit *eindeutigem* Ninja-Treffer (Skelett ≥ 4) waren nach Prüfung nur 20 brauchbar. Der Rest waren Skelett-Kollisionen quer über Lexeme hinweg — `nimshiw` „wir gehen" traf نْمَشْ „freckles", `nit3asha` „ich esse zu Abend" traf إنْتِعَاشَة „revitalization", `kibrit` „ich wurde alt" traf كِبْرِيتْ „Sulfur", `tnijjem` „du kannst" traf تَنْجِيمْ „occultism".
+**Vokalisierung aus Ninja übernehmen — nur mit Buchstaben-Identitätsprüfung (2026-09-13).** Ninja vokalisiert konsequent, der Bestand zu rund einem Fünftel nicht. Die naheliegende Übernahme per `arabic_skeleton`-Match ist **viel schwächer, als die Trefferzahl aussieht**: von 50 Zeilen mit *eindeutigem* Ninja-Treffer (Skelett ≥ 4) waren nach Prüfung nur 20 brauchbar. Der Rest waren Skelett-Kollisionen quer über Lexeme hinweg (`nimshiw` „wir gehen" traf نْمَشْ „freckles").
 
 **Pflichtfilter, mechanisch statt nach Augenmaß:** Ninjas Schreibung nur übernehmen, wenn sie nach Entfernen aller Harakat **buchstabenidentisch** mit der eigenen ist — es dürfen nur Vokalzeichen dazukommen, kein einziger Buchstabe sich ändern. Als `AND`-Bedingung direkt ins `UPDATE`, nicht als Vorabprüfung:
 ```sql
@@ -811,7 +825,11 @@ AND btrim(regexp_replace(<ninja_arabisch>,'[ًٌٍَُِّْٰٟ]','','g')) = bt
 ```
 Das erschlägt alle Kollisionen und zusätzlich die Numerus-/Genus-Fälle (Ninja gibt den Singular, die Zeile ist Plural: `fnejin`←فِنْجَانْ, `tlemtha`←تِلْمِيذْ, `trabesh`←طَرْبُوشَةْ).
 
-**Der schärfste Filter — und seine Grenze (gemessen 2026-09-13).** `ableitung_exakt` in der Sicht prüft, ob `_arabic_to_chatalpha(Ninjas Vokalisierung)` **exakt** die eigene `darija` ergibt. Von 46 Kandidaten bestanden das nur 8 — er sortiert also scharf. **Er prüft aber die Form, nicht die Bedeutung:** vier Zeilen bestanden ihn und waren trotzdem ein anderes Wort (`nshid`/to ask, `louza`/almond, `kasa`/cashier, `marka`/brand). Verworfene Vorschläge bekommen den Marker `[ninja-vokalisierung verworfen]` in `internal_note`; die Sicht blendet sie dauerhaft aus, damit sie nicht jeden Durchgang erneut kosten.
+**Der schärfste Filter — und seine Grenze (2026-09-13).** `ableitung_exakt` in der Sicht prüft, ob `_arabic_to_chatalpha(Ninjas Vokalisierung)` **exakt** die eigene `darija` ergibt. Von 46 Kandidaten bestanden das nur 8 — er sortiert scharf. **Er prüft aber die Form, nicht die Bedeutung:** vier Zeilen bestanden ihn und waren trotzdem ein anderes Wort (`louza` „Schwägerin" gegen „almond").
+
+**Buchstabengleich ist nicht bedeutungsgleich — vier Fehlerarten, die der Filter nicht sieht** (aus dem vollständigen Durchgang, 10 von 21 Kandidaten waren Zufälle): **Eigennamen** (نَجِيب Najib für `njib`), **Ableitungsstufen** (Maß-II تْكَوِّن „geformt werden" für تْكُون „sein"), **Wortart** (Verbalnomen statt Verb) — und einmal ein **Fehler in der Quelle selbst**: Ninja schrieb Tanwin statt Fatha (تْقًابِلْ, Ableitung ergibt `tqanabil`). Die letzte Art ist die unangenehmste, weil sie wie ein sauberer Treffer aussieht.
+
+Verworfene Vorschläge bekommen `[ninja-vokalisierung verworfen]` in die `internal_note`; die Sicht blendet sie dauerhaft aus, damit sie nicht jeden Durchgang erneut kosten.
 
 **Danach trotzdem drei Dinge von Hand prüfen**, die der Filter nicht sieht: (1) ob Ninjas Eintrag dieselbe **Wortart** ist (`tfahim` „er einigte sich" gegen Ninjas تَفَاهُمْ, das Nomen „understanding" — buchstabenidentisch, anderes Wort); (2) ob Ninjas Vokalisierung der eigenen `darija` widerspricht (`toshrob` gegen تِشْرَبْ = `tishrab`); (3) ob Ninjas Fassung überhaupt vokalisiert ist — bei `intikhabat` und `amriken` ist sie es nicht, da gibt es nichts zu übernehmen.
 
@@ -838,7 +856,12 @@ Der Buchstaben-Identitätsfilter, der die Ninja-Route rettet, **hilft hier nicht
 | davon buchstabenidentisch (Pflichtfilter) | 130 |
 | davon mit **genau einer** Ninja-Vokalisierung | **122** |
 
-**Das ist eine Kampagne.** Werkzeug: `public.vokalisierung_kandidaten` — wendet den Pflichtfilter mechanisch an und liefert zusätzlich zwei der drei Handprüfungen als Spalte: `vokale_unser`/`vokale_ninja` (widerspricht Ninjas Vokalisierung unserer `darija`? das ist der `toshrob`/`tishrab`-Fall) und `wortart_verdacht` (unser Gloss verbal, Ninjas Eintrag ein Nomen).
+**Das war eine Kampagne — sie ist abgearbeitet.** `vokalisierung_kandidaten` steht seit
+2026-09-19 auf 0 (= Check 23), der Ninja-Weg ist damit ausgeschöpft. Die verbleibenden
+unvokalisierten Einzelwörter (Check 22) brauchen TUNICO/Peace Corps als Vokalquelle und die
+sieben Pflichtfilter aus `tools/README.md` — Potenzial und Grenzen dazu:
+`exports/migration_kursverknuepfung_check21_2026-09-20.sql`, Abschnitt 3. Werkzeug für einen
+neuen Ninja-Durchgang, falls dort importiert wird: `public.vokalisierung_kandidaten` — wendet den Pflichtfilter mechanisch an und liefert zusätzlich zwei der drei Handprüfungen als Spalte: `vokale_unser`/`vokale_ninja` (widerspricht Ninjas Vokalisierung unserer `darija`? das ist der `toshrob`/`tishrab`-Fall) und `wortart_verdacht` (unser Gloss verbal, Ninjas Eintrag ein Nomen).
 
 **Erster Durchgang, 2026-09-13:** 64 in der sichersten Gruppe (Vokale identisch, Wortart unauffällig), davon **59 geschrieben**. Die fünf übrigen hat erst das Gegenlesen der Bedeutung gefunden — der Filter prüft Buchstaben, nicht Bedeutung: `4358 glass` „Kleiderschrank" gegen Ninjas كلاس „class(room)" (unser Wort ist ڨلاص), `4180 kasa` „Waschlappen" gegen „cash register", `1576 louza` „Schwägerin" gegen „almond", `735 maktou3` „gebrochen" gegen „not available", `648 nshid` „reservieren" gegen „to ask". **Die Bedeutungsprüfung bleibt Handarbeit, auch wenn beide Filter sauber sind.**
 
@@ -848,7 +871,7 @@ Die Regel „ohnehin fällige Bearbeitung" (beim Anfassen einer Zeile die Vokali
 
 **Nie blind über `translit_skeleton`/`arabic_skeleton` joinen — kurze Skelette (≤3 Konsonanten) kollidieren zufällig** (Präzedenzfall: PRECEDENTS.md → vocab_lookup). `english_key` ist die primäre, zuverlässige Achse; Skeleton-Treffer nur separat markiert und mit `length(...) >= 4` gefiltert.
 
-**`vocabulary.english` (seit 2026-09-05, 2.086/3.698 befüllt) ist nur ein Such-Schlüssel für den Quellenabgleich, keine geprüfte Übersetzung** — muss nicht nuanciert sein, nur treffend genug für den `english_key`-Join. Befüllt über vier Wege, absteigend nach Zuverlässigkeit: (1) exakter `ninja_audio_url`-Match — dieselbe Ninja-Zeile, die schon das Audio geliefert hat, `english` direkt übernommen (676 Zeilen); (2) exakter `arabic_script`-Match gegen Ninja (295 Zeilen); (3) exakter Deutsch-Text-Match gegen `tunico_import.senses[].de` — TUNICO liefert Deutsch UND Englisch im selben Sinne, ein Treffer auf `german` liefert das passende Englisch direkt mit, nur wenige deutsche Homonym-Kollisionen ausgenommen (`heller`/„Heller"-Münze, `zu`=nach/geschlossen) (219 Zeilen); (4) Skelett-Match gegen `vocab_lookup` mit manueller Deutsch/Englisch-Plausibilitätsprüfung, Skelett-Treffer allein reicht nicht (585 Zeilen). Details/Fehlerbilder: PRECEDENTS.md → vocabulary.english Backfill. Bei neuen Vokabeln `english` gleich mitpflegen, dann ist der Abgleich sofort ohne Nachbearbeitung nutzbar.
+**`vocabulary.english` (seit 2026-09-05, gut die Hälfte des Bestands befüllt) ist nur ein Such-Schlüssel für den Quellenabgleich, keine geprüfte Übersetzung** — muss nicht nuanciert sein, nur treffend genug für den `english_key`-Join. Befüllt über vier Wege, absteigend nach Zuverlässigkeit: (1) exakter `ninja_audio_url`-Match — dieselbe Ninja-Zeile, die schon das Audio geliefert hat, `english` direkt übernommen (676 Zeilen); (2) exakter `arabic_script`-Match gegen Ninja (295 Zeilen); (3) exakter Deutsch-Text-Match gegen `tunico_import.senses[].de` — TUNICO liefert Deutsch UND Englisch im selben Sinne, ein Treffer auf `german` liefert das passende Englisch direkt mit, nur wenige deutsche Homonym-Kollisionen ausgenommen (`heller`/„Heller"-Münze, `zu`=nach/geschlossen) (219 Zeilen); (4) Skelett-Match gegen `vocab_lookup` mit manueller Deutsch/Englisch-Plausibilitätsprüfung, Skelett-Treffer allein reicht nicht (585 Zeilen). Details/Fehlerbilder: PRECEDENTS.md → vocabulary.english Backfill. Bei neuen Vokabeln `english` gleich mitpflegen, dann ist der Abgleich sofort ohne Nachbearbeitung nutzbar.
 
 **Rezept 1 — Trainer-Vokabel verifizieren:**
 ```sql
@@ -902,7 +925,7 @@ ORDER BY n.english, l.source;
 
 **Bekannte Grenzen:** `english_key` ist ein einfacher `lower(trim(...))`-Vergleich, kein Fuzzy-Match — unterschiedliche Formulierungen derselben Bedeutung können Treffer verpassen (`to abolish` wird per `regexp_replace('^to\s+','')` normalisiert, deckt aber nicht jede Variante ab). Bei "kein Treffer" zusätzlich mit `english_key ILIKE '%<wort>%'` nachfassen, bevor man auf "existiert nirgends" schließt.
 
-**Helper-Funktionen `public._translit_skeleton(darija text)` / `public._arabic_skeleton(arabic_script text)`** (seit 2026-09-05): berechnen `vocabulary.translit_skeleton`/`arabic_skeleton` exakt nach dem Bestandsformat — per Reverse-Engineering aus dem Bestand hergeleitet und validiert (3.686/3.688 bzw. 3.679/3.688 exakter Match, Rest sind Legacy-/Platzhalter-Ausreißer, keine Formelfehler; Details: PRECEDENTS.md → arabic_skeleton/translit_skeleton Herleitung). Nie von Hand nachbauen — diese Funktionen benutzen, auch außerhalb von Rezept 4.
+**Helper-Funktionen `public._translit_skeleton(darija text)` / `public._arabic_skeleton(arabic_script text)`** (seit 2026-09-05): berechnen `vocabulary.translit_skeleton`/`arabic_skeleton` exakt nach dem Bestandsformat — per Reverse-Engineering aus dem Bestand hergeleitet und gegen den vollen Bestand validiert (Details und die vier Stolpersteine für einen Port: PRECEDENTS.md → arabic_skeleton/translit_skeleton). Nie von Hand nachbauen — diese Funktionen benutzen, auch außerhalb von Rezept 4.
 
 **Seit 2026-09-16 sind `vocabulary.translit_skeleton`/`arabic_skeleton` generierte Spalten** (`GENERATED ALWAYS AS (public._translit_skeleton(darija)) STORED` bzw. aus `arabic_script`). Postgres berechnet sie selbst und zieht sie bei jedem `UPDATE` der Quellspalte automatisch nach. Konsequenz: **beide Spalten dürfen in keinem `INSERT`/`UPDATE` mehr in der Spaltenliste stehen** — sonst bricht die Anweisung mit SQLSTATE `428C9` ab („cannot insert a non-DEFAULT value into column ... Column is a generated column“). In `RETURNING` und in jeder `SELECT`-Abfrage dagegen wie gewohnt benutzbar. **Warum umgestellt:** als gewöhnliche Spalten veralteten sie stillschweigend — am Umstellungstag 104 falsche und 9 leere `translit_skeleton` sowie 100 falsche `arabic_skeleton` bei 3.775 Zeilen, unsichtbar für jeden Skelett-Abgleich, der auf ihnen aufsetzt.
 
