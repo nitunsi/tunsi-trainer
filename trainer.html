@@ -442,6 +442,35 @@ function synonymNote(v){
   const list = sibs.map(s=>'<br>• <b>'+s.ar+'</b> ('+s.tr+') <span style="color:var(--muted)">('+s.tp+' · '+s.ls+')</span>').join('');
   return '<div style="margin-top:.5rem;padding:.35rem .6rem;background:rgba(90,150,201,.12);border:1px solid var(--blue);border-radius:4px;font-size:.72rem;color:var(--blue)">ℹ️ Für <b>'+v.en+'</b> gibt es noch eine andere Übersetzung:'+list+'</div>';
 }
+// Dritte Partnerart: GLEICHE SCHREIBUNG, anderes Wort. homonymNote() vergleicht das
+// Arabische, synonymNote() das Deutsche — fuer den Fall "zwei Woerter, die sich in unserer
+// Umschrift gleich schreiben" gab es bis 2026-09-22 gar keinen Hinweis. Dabei ist das mit
+// 28 Zeilen die GROESSTE der drei Gruppen (gleiches Arabisch 26, gleiches Deutsch 24), und
+// SKILL.md fuehrt alle drei seit je als die drei Partnerarten von homonym_ok auf.
+//
+// Beispiel khallas: خَلَّصْ "er zahlte" (Verb, L17) gegen خَلّاص "Ticketverkaeufer" (Nomen,
+// L21). Beim Lernen steht nur "khallas" da — ohne Hinweis kann man nicht wissen, welches
+// der beiden gemeint ist.
+//
+// Ueberschneidungsfrei zu den anderen beiden: homonymNote verlangt gleiches Arabisch, hier
+// ist es verschieden; synonymNote verlangt gleiches Deutsch, hier ist es verschieden.
+function schreibungNote(v){
+  if(!v || !v.hok || !v.tr) return '';
+  const key = v.tr.trim().toLowerCase();
+  const gleich = (a, b) => (a||'').trim().toLowerCase() === (b||'').trim().toLowerCase();
+  const sibs = ALL_VOCAB.filter(e => e.hok && e.id !== v.id
+    && gleich(e.tr, key) && e.ar !== v.ar && !gleich(e.en, v.en));
+  if(!sibs.length) return '';
+  const list = sibs.map(s => '<br>• <b>'+escHtml(s.ar)+'</b> — '+escHtml(s.en)
+    + ' <span style="color:var(--muted)">('+escHtml(s.tp)+' · '+escHtml(s.ls)+')</span>').join('');
+  return '<div style="margin-top:.5rem;padding:.35rem .6rem;background:rgba(232,201,106,.10);'
+    + 'border:1px solid var(--gold2);border-radius:4px;font-size:.72rem;color:var(--gold2)">'
+    + '🔤 <b>'+escHtml(v.tr)+'</b> gibt es mehrfach — gleiche Schreibung, verschiedene Wörter. '
+    + 'Diese Karte: <b>'+escHtml(v.ar)+'</b> — '+escHtml(v.en)
+    + ' <span style="color:var(--muted)">('+escHtml(v.tp)+' · '+escHtml(v.ls)+')</span>'
+    + list + '</div>';
+}
+
 function checkAnswer(input, answer){
   const rawInput = input.trim().toLowerCase();
   const n = normalize(input);
@@ -2467,7 +2496,7 @@ function aMC(btn,ok,ca,con,v){
   if(fbMC){
     fbMC.className='feedback show '+(ok?'correct':'wrong');
     const darija = v ? `<span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">${v.tr}</span>` : '';
-    const homNote = homonymNote(v)+synonymNote(v);
+    const homNote = homonymNote(v)+synonymNote(v)+schreibungNote(v);
     fbMC.innerHTML='<span style="font-size:1.2rem">'+(ok?'✓ ':'✗ ')+ca+'</span>'+darija+homNote;
   }
   ok?(score.c++,score.st++,score.t++):(score.w++,score.st=0,score.t++);
@@ -2602,7 +2631,7 @@ function chkFlash(){
   const solAr = '<span style="font-family:\'Playfair Display\',serif;font-size:2.2rem;color:var(--gold2);display:block">'+v.ar+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+v.tr+'</span>';
   const solDe = '<span style="font-family:\'Playfair Display\',serif;font-size:1.5rem;display:block">'+v.en+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+v.tr+'</span>';
   const sol = dir==='ar2de' ? solDe : solAr;
-  const homNote = homonymNote(v)+synonymNote(v);
+  const homNote = homonymNote(v)+synonymNote(v)+schreibungNote(v);
   if(ok){
     fb.className='feedback show correct';
     fb.innerHTML = (flashFuzzy ? '~ Fast! Richtige Schreibung: '+flashFuzzy+'<br>' : '✓ Richtig! ') + sol + homNote;
