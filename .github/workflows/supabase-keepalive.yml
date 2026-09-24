@@ -1,0 +1,32 @@
+name: Supabase Keep-alive
+
+# Alle 3 Tage um 06:17 UTC + manuell startbar (Actions-Tab -> "Run workflow")
+on:
+  schedule:
+    - cron: "17 6 */3 * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Trainingslog
+            url: https://dnziimlhlvpmizrqkxte.supabase.co
+            key: sb_publishable_hKj4_gZMy3i_gROsDXNRQw_QkqH-IVt
+            table: training_sessions
+          - name: Tunsi Trainer
+            url: https://lzecflvfalxkodytnwzf.supabase.co
+            key: sb_publishable_9Qk7F09V8050M2ZXHDi9mg_DVVJGGAY
+            table: lessons
+    steps:
+      - name: Ping ${{ matrix.name }}
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ matrix.url }}/rest/v1/${{ matrix.table }}?select=*&limit=1" \
+            -H "apikey: ${{ matrix.key }}" \
+            -H "Authorization: Bearer ${{ matrix.key }}")
+          echo "${{ matrix.name }}: HTTP $code"
+          if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then exit 1; fi
