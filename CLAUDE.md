@@ -8,6 +8,18 @@ Vokabeltrainer für Tunesisch-Arabisch (Nils + Semia). Vokabeln leben in Supabas
 
 Zwei stehende Lockerungen von Nils: **Korrekturen im Batch** dürfen ohne Einzelbestätigung laufen, wenn das Verfahren vorher gezeigt wurde. **Neue Vokabeln anlegen** ist in Ordnung, wenn Formen fehlen — aber vorher fragen, und dabei auch fragen, ob fällig gesetzt werden soll.
 
+## Neue Tabelle anlegen: Grants nicht vergessen (seit 30.10.2026)
+
+Supabase vergibt seit dem 30.10.2026 keine automatischen Data-API-Grants mehr für neue Tabellen im `public`-Schema (Projekt `lzecflvfalxkodytnwzf`). Jede `CREATE TABLE`-Migration braucht deshalb direkt diese drei Statements mit, sonst liefert die Data API `permission denied`:
+
+```sql
+grant select on public.<tabelle> to anon;
+grant select, insert, update, delete on public.<tabelle> to authenticated;
+grant select, insert, update, delete on public.<tabelle> to service_role;
+```
+
+Bestehende Tabellen sind nicht betroffen, behalten ihre Grants. Gilt nur für dieses Projekt — für andere Supabase-Projekte (z.B. Trainingslog) separat beachten, dort dokumentiert diese Datei nichts.
+
 ## Welche Arbeitsregeln du liest — und wann
 
 Die Regeln liegen **in diesem Repo**, nicht im gleichnamigen „tunsi"-Skill im Claude-Account: der ist ein manuell hochgeladener Snapshot und veraltet gegenüber diesem Stand. Änderungen an den Arbeitsregeln gehören hierher (committen + pushen).
