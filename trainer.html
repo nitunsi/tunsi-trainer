@@ -3515,7 +3515,7 @@ async function pullForwardVocab(){
   // (nur Tag relevant, Uhrzeit ignoriert), innerhalb desselben Tages nach Level (höhere zuerst)
   const now = new Date();
   const pfDayOf = d => { const t = new Date(d); t.setHours(0,0,0,0); return t.getTime(); };
-  const candidates = Object.entries(srsProgress)
+  const vocabCandidates = Object.entries(srsProgress)
     .filter(([vocabId, p]) => p && p.next_review && new Date(p.next_review).getTime() > now.getTime())
     .map(([vocabId, p]) => [vocabId, p, vById(vocabId)])
     .filter(([vocabId, p, v]) => {
@@ -3525,11 +3525,23 @@ async function pullForwardVocab(){
       }
       return v && v.ls === cLesson;
     })
+    .map(([vocabId, p]) => ({ type:'vocab', id: vocabId, p, day: pfDayOf(p.next_review), level: p.level||0 }));
+
+  // Kurs-Übungen laufen über eine eigene SRS-Tabelle (course_exercise_progress) und fließen
+  // in den Fällig-Forecast direkt oberhalb dieses Buttons ein (siehe showStats/courseDueDays),
+  // aber nur wenn cLesson==='all' (course_lessons bildet nicht 1:1 auf Vokabel-Lektionen ab) —
+  // dieselbe Bedingung gilt hier, damit "Vorziehen" den dort gezeigten Bestand auch trifft.
+  const courseCandidates = cLesson === 'all'
+    ? Object.entries(COURSE_EX_PROGRESS)
+        .filter(([exId, p]) => p && p.next_review && courseParseTs(p.next_review).getTime() > now.getTime())
+        .map(([exId, p]) => ({ type:'course', id: exId, p, day: pfDayOf(courseParseTs(p.next_review)), level: Math.min(p.correct_count||0, 6) }))
+    : [];
+
+  const candidates = vocabCandidates.concat(courseCandidates)
     .sort((a, b) => {
-      const dayDiff = pfDayOf(a[1].next_review) - pfDayOf(b[1].next_review);
-      return dayDiff !== 0 ? dayDiff : (b[1].level||0) - (a[1].level||0);
+      const dayDiff = a.day - b.day;
+      return dayDiff !== 0 ? dayDiff : b.level - a.level;
     })
-    .map(([vocabId, p]) => [vocabId, p])
     .slice(0, n);
 
   if(!candidates.length){
@@ -3538,17 +3550,26 @@ async function pullForwardVocab(){
   }
 
   const nowISO = now.toISOString();
-  let count = 0;
-  for(const [vocabId, p] of candidates){
+  let vocabCount = 0, courseCount = 0;
+  for(const cand of candidates){
     try{
-      await sbApi('progress?id=eq.'+p.id, 'PATCH', { next_review: nowISO });
-      srsProgress[vocabId].next_review = now;
-      count++;
+      if(cand.type === 'vocab'){
+        await sbApi('progress?id=eq.'+cand.p.id, 'PATCH', { next_review: nowISO });
+        srsProgress[cand.id].next_review = now;
+        vocabCount++;
+      } else {
+        await sbApi('course_exercise_progress?id=eq.'+cand.p.id, 'PATCH', { next_review: nowISO });
+        COURSE_EX_PROGRESS[cand.id].next_review = nowISO;
+        courseCount++;
+      }
     }catch(e){
       dbg('Fehler beim Vorziehen: '+e.message, 'warn');
     }
   }
-  resultEl.innerHTML = `<span style="color:var(--green)">✓ ${count} Vokabeln vorgezogen — jetzt fällig.</span>`;
+  const count = vocabCount + courseCount;
+  const countDetail = courseCount > 0 ? ` (${vocabCount} Vokabeln, ${courseCount} Kurs-Übungen)` : '';
+  const resultMsg = `<span style="color:var(--green)">✓ ${count} vorgezogen${countDetail} — jetzt fällig.</span>`;
+  resultEl.innerHTML = resultMsg;
   updateLessonChips();
   // Statistik neu rendern damit Forecast aktualisiert wird
   const savedCount = n;
@@ -3556,7 +3577,7 @@ async function pullForwardVocab(){
   const newInput = document.getElementById('pull-forward-count');
   if(newInput) newInput.value = savedCount;
   const newResult = document.getElementById('pull-forward-result');
-  if(newResult) newResult.innerHTML = `<span style="color:var(--green)">✓ ${count} Vokabeln vorgezogen — jetzt fällig.</span>`;
+  if(newResult) newResult.innerHTML = resultMsg;
 }
 
 // ── Nav Toggle ────────────────────────────────────────────────────────────
