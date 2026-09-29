@@ -1,13 +1,37 @@
 # Analyse Tounsi Trainer — Protokoll vom 2026-09-29
 
-Unbeaufsichtigter Durchlauf, rein lesend. **Supabase:** nur `SELECT` und `EXPLAIN`
-(EXPLAIN ohne ANALYZE führt nichts aus), kein einziger Schreibzugriff. **`trainer.html`:**
-unverändert. Die Korrekturen liegen als fertiger, getesteter Patch daneben
-(`trainer_fixes.patch`) und warten auf deine Bestätigung (COURSE_MODE.md: „Nicht einbauen
-ohne Bestätigung").
+Der Durchlauf selbst war unbeaufsichtigt und rein lesend (**Supabase:** nur `SELECT` und
+`EXPLAIN`, kein Schreibzugriff, `trainer.html` unverändert). Die Umsetzung danach lief mit
+deiner Freigabe Schritt für Schritt, ihr Stand steht direkt unten im **Nachtrag**. Der Rest
+des Dokuments ist der Befund von 06:30 UTC und wurde nicht umgeschrieben.
 
 Alle Zahlen sind live gezogen, Stand 2026-09-29 ~06:30 UTC. Sie veralten, deshalb gehören
 sie nicht in die Regeldateien.
+
+---
+
+## Nachtrag — Stand nach der Umsetzung (2026-09-29, abends)
+
+| Was | Stand |
+|---|---|
+| B1–B5 (Kurs-Prüfung, Freischaltung, Löschen, Backup, Flaggen) | **Eingebaut und gemergt:** PR #86, Commit `1c9c2a3` auf `main`. Der Patch `trainer_fixes.patch` ist damit umgesetzt und nur noch Beleg. |
+| `http`-Extension (C3) | **Entfernt** (`DROP EXTENSION http`, Migration `drop_unused_http_extension`). Es waren 19 Funktionen, nicht 14 (siehe C3). Der erste Versuch per `REVOKE` blieb wirkungslos, weil die Funktionen `supabase_admin` gehören (Migration `revoke_http_extension_from_api_roles`, ohne Wirkung). Kontrolle danach: `login_user` läuft, Gruppe A der Qualitäts-Checks bei 0, Zeilenzahlen unverändert. |
+| Offline-Warteschlange (B6), MC-/Sätze-Modus (B7), 6 verwaiste Grußformeln (C2) | Offen. |
+| Didaktik (B8) | **Entschieden:** falsch → Level 0 bleibt. |
+| Datenbank offen für jeden mit der URL (C3, Punkt 5) | Bewusst so gelassen (Zwei-Personen-App, privater Link). |
+
+**Nach dem Merge geprüft (Nils im Browser, Kontrolle per Lesezugriff auf die Datenbank):**
+- Flaggen: id 246 „3aslema“ ist geflaggt, es gibt nur diese eine Zeile mit der Schreibung ✓
+- Neu angelegte Vokabel wieder gelöscht: Gesamtzahl 3.784 wie vorher, keine verwaisten
+  `progress`-Zeilen ✓. Nicht getestet: Löschen einer Vokabel **mit** Kurs-Verknüpfung
+  (bei einer neu angelegten hängt nie eine Übung dran).
+- Kurs-Antwort: zwei `grammar_drill` (Selbstbewertung) richtig beantwortet, Level 1 gespeichert ✓.
+  Nicht getestet: die geänderte Textprüfung (` — `-Übungen sind noch nicht freigeschaltet).
+- Export: `tounsi_backup_2026-09-29.sql` geprüft. Zeilenzahlen stimmen mit der Datenbank
+  überein (u. a. 3.784 Vokabeln, 2.110 `progress`, 269 `course_exercise_progress`), kein
+  `TRUE` mehr in `progress`, keine Passwort-Hashes, Stichprobe von je zwei Zeilen pro
+  Tabelle besteht die Typprüfung per `EXPLAIN`. Nicht geprüft: jede einzelne Anweisung,
+  und ein echtes Einspielen in eine leere Datenbank.
 
 ---
 
@@ -172,10 +196,11 @@ einer Lektion/einem Chunk zuordnen oder löschen; die 3 Eigennamen bewusst ohne 
   `password_hash` ist für `anon` korrekt nicht lesbar ✓ (`login_user` als SECURITY DEFINER).
 - **Session-Restore** (Z. 1667) meldet an, wer in `localStorage` einen Nutzernamen stehen hat,
   ohne Passwort und ohne Token. Registrierung ist offen.
-- **`http`-Extension im Schema `public`, 14 Funktionen für `anon` ausführbar**: Damit kann
-  jeder über eure Datenbank beliebige HTTP-Requests absetzen. Das ist das Einzige hier, was
-  über „jemand verändert unsere Vokabeln" hinausgeht. Wenn sie nicht mehr gebraucht wird:
-  `REVOKE EXECUTE … FROM anon, authenticated` oder die Extension entfernen.
+- **`http`-Extension im Schema `public`, 19 Funktionen für `anon` ausführbar** (im ersten
+  Durchlauf stand hier 14, das waren nur die mit `http` im Namen; dazu kamen `urlencode` ×3,
+  `text_to_bytea`, `bytea_to_text`): Damit konnte jeder über eure Datenbank beliebige
+  HTTP-Requests absetzen. Das war das Einzige hier, was über „jemand verändert unsere
+  Vokabeln" hinausgeht. **Erledigt, siehe Nachtrag: Extension entfernt.**
 - Massenlösch-Schutz (`trg_prevent_mass_delete`, max. 10 Zeilen) fehlt auf
   `course_exercise_progress`, `import_entscheidungen`, `peacecorps_candidates`,
   `uniwien_source_pages`.
@@ -186,7 +211,11 @@ einer Lektion/einem Chunk zuordnen oder löschen; die 3 Eigennamen bewusst ohne 
 
 Einschätzung: Für eine private Zwei-Personen-App mit unbekannter URL ist das ein bewusst
 tragbares Risiko, und ein echter Umbau (Supabase Auth + Policies auf `auth.uid()`) wäre
-ein eigenes Projekt. Die `http`-Rechte würde ich unabhängig davon zurücknehmen.
+ein eigenes Projekt. Die `http`-Rechte sind inzwischen erledigt (siehe Nachtrag).
+
+Beobachtung aus dem Entzugsversuch: Funktionen, die Erweiterungen mitbringen, gehören
+`supabase_admin`, und `postgres` kann deren Rechte nicht entziehen. Der Befehl läuft dann
+ohne Fehlermeldung durch und tut nichts. Immer mit `has_function_privilege` gegenprüfen.
 
 ---
 
@@ -218,19 +247,19 @@ Geprüft:
 - B4: `EXPLAIN` gegen die Live-Tabellen: alt Fehler 42804, neu alle fünf INSERT-Arten ✓
 - B3, B5: nur gelesen, nicht im Browser geklickt
 
-Einbauen: `git apply exports/analyse_2026-09-29/trainer_fixes.patch`, dann wie gewohnt
-testen und pushen. Oder sag in der nächsten Sitzung „Patch einbauen".
+**Eingebaut:** PR #86 (Commit `1c9c2a3`). Der Patch ist nur noch Beleg, ein erneutes
+`git apply` würde fehlschlagen.
 
 ---
 
-## F · Was du entscheiden müsstest
+## F · Entscheidungen
 
-1. Patch einbauen (alle fünf oder einzeln)?
-2. `http`-Extension: Rechte für `anon` entziehen oder entfernen?
-3. Offline-Queue (B6): fehlerhafte Einträge beiseitelegen statt blockieren?
-4. MC-/Sätze-Modus: SRS nachrüsten oder aus dem Menü nehmen?
-5. Die 6 verwaisten Grußformel-Übungen (96–101): zuordnen oder löschen?
-6. Didaktik (B8): falsch → L0 behalten oder z. B. zwei Stufen zurück?
-7. Regel-Ergänzung für COURSE_MODE.md: „Kurslösungen: Übersetzung nie mit ` — ` an eine
+1. ~~Patch einbauen~~ — **erledigt** (PR #86).
+2. ~~`http`-Extension~~ — **erledigt**, entfernt.
+3. Offline-Queue (B6): fehlerhafte Einträge beiseitelegen statt blockieren? — **offen**
+4. MC-/Sätze-Modus: SRS nachrüsten oder aus dem Menü nehmen? — **offen**
+5. Die 6 verwaisten Grußformel-Übungen (96–101): zuordnen oder löschen? — **offen**
+6. ~~Didaktik (B8)~~ — **entschieden:** falsch → Level 0 bleibt.
+7. Regel-Ergänzung — **offen:** für COURSE_MODE.md: „Kurslösungen: Übersetzung nie mit ` — ` an eine
    textgeprüfte Lösung hängen" (bzw. mit Fix egal) und „Übungen zu freigeschalteten Chunks
    nachtragen erst nach Fix B2".
