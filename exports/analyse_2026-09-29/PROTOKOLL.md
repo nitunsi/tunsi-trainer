@@ -16,7 +16,9 @@ sie nicht in die Regeldateien.
 |---|---|
 | B1–B5 (Kurs-Prüfung, Freischaltung, Löschen, Backup, Flaggen) | **Eingebaut und gemergt:** PR #86, Commit `1c9c2a3` auf `main`. Der Patch `trainer_fixes.patch` ist damit umgesetzt und nur noch Beleg. |
 | `http`-Extension (C3) | **Entfernt** (`DROP EXTENSION http`, Migration `drop_unused_http_extension`). Es waren 19 Funktionen, nicht 14 (siehe C3). Der erste Versuch per `REVOKE` blieb wirkungslos, weil die Funktionen `supabase_admin` gehören (Migration `revoke_http_extension_from_api_roles`, ohne Wirkung). Kontrolle danach: `login_user` läuft, Gruppe A der Qualitäts-Checks bei 0, Zeilenzahlen unverändert. |
-| Offline-Warteschlange (B6), MC-/Sätze-Modus (B7), 6 verwaiste Grußformeln (C2) | Offen. |
+| Offline-Warteschlange (B6) | **Erledigt** (PR folgt): abgelehnte Einträge (400/404/409/410/422) werden beiseitegelegt, Icon zeigt `⚠ n`, Klick bietet Verwerfen an. |
+| MC-/Sätze-Modus (B7) | **Erledigt** (PR folgt): aus dem Menü genommen, Code bleibt liegen. |
+| 6 „verwaiste“ Grußformeln (C2) | **Korrektur:** Die Übungen 96–101 sind absichtlich lektionsübergreifend und laufen im Modus 🔗 Antwort-Paare (lädt alle `fixed_response`). „Im Trainer nicht erreichbar“ war falsch. **Übung 96 gelöscht** (exaktes Duplikat von 84, Wiederherstellung: `exports/loeschung_uebung96_2026-09-29.sql`). Offen: Übung 98 („sa77a“) trägt den deutschen Erklärtext von 97 (Gesundheit nach dem Essen) und passt nicht zu den Bedeutungen in der Vokabelliste (nach Dusche/Hammam/Schwimmen …). Was dort stehen soll, muss geklärt werden. |
 | Didaktik (B8) | **Entschieden:** falsch → Level 0 bleibt. |
 | Datenbank offen für jeden mit der URL (C3, Punkt 5) | Bewusst so gelassen (Zwei-Personen-App, privater Link). |
 
@@ -256,9 +258,9 @@ Geprüft:
 
 1. ~~Patch einbauen~~ — **erledigt** (PR #86).
 2. ~~`http`-Extension~~ — **erledigt**, entfernt.
-3. Offline-Queue (B6): fehlerhafte Einträge beiseitelegen statt blockieren? — **offen**
-4. MC-/Sätze-Modus: SRS nachrüsten oder aus dem Menü nehmen? — **offen**
-5. Die 6 verwaisten Grußformel-Übungen (96–101): zuordnen oder löschen? — **offen**
+3. ~~Offline-Queue (B6)~~ — **erledigt**, abgelehnte Einträge werden beiseitegelegt.
+4. ~~MC-/Sätze-Modus~~ — **erledigt**, aus dem Menü genommen.
+5. ~~Grußformel-Übungen 96–101~~ — **erledigt** bis auf den Text von Übung 98 (siehe Nachtrag).
 6. ~~Didaktik (B8)~~ — **entschieden:** falsch → Level 0 bleibt.
 7. Regel-Ergänzung — **offen:** für COURSE_MODE.md: „Kurslösungen: Übersetzung nie mit ` — ` an eine
    textgeprüfte Lösung hängen" (bzw. mit Fix egal) und „Übungen zu freigeschalteten Chunks
