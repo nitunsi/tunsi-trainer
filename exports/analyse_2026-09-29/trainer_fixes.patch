@@ -1,0 +1,210 @@
+diff --git a/trainer.html b/trainer.html
+index 014ad03..3d60a66 100644
+--- a/trainer.html
++++ b/trainer.html
+@@ -2477,7 +2477,7 @@ function rMC(ex,el){
+   </div>
+   <div class="choices" id="choices"></div>
+   <div class="feedback" id="feedback"></div>
+-  <div class="btn-row" id="btn-row"><button class="btn ghost" onclick="document.getElementById('hint-box').classList.toggle('visible')">Hinweis</button><button class="flag-btn ${flaggedVocab.has(v.tr)?'flagged':''}" title="Als fehlerhaft markieren" onclick="toggleFlag('${v.tr}',this)">${flaggedVocab.has(v.tr)?'🚩':'🏳️'}</button></div>
++  <div class="btn-row" id="btn-row"><button class="btn ghost" onclick="document.getElementById('hint-box').classList.toggle('visible')">Hinweis</button><button class="flag-btn ${flaggedVocab.has(v.tr)?'flagged':''}" title="Als fehlerhaft markieren" onclick="toggleFlagById(${v.id},this)">${flaggedVocab.has(v.tr)?'🚩':'🏳️'}</button></div>
+   <div class="q-hint" id="hint-box">${dir==='ar2en'?v.en+' — '+v.tr:v.ar+' ('+v.tr+')'}</div>`;
+   const L=['A','B','C','D'],ce=document.getElementById('choices');
+   ex.opts.forEach((opt,i)=>{
+@@ -2600,7 +2600,7 @@ function rFlash(ex,el){
+       '<button class="sticky-check-ghost" onclick="skipFlash()" title="Überspringen">⏭</button>' +
+       prevBtnHtml() +
+       '<button class="sticky-check-ghost" id="latin-toggle" onclick="toggleLatin()">' + latinLabel + '</button>' +
+-      '<button class="sticky-check-ghost flag-btn ' + (flagged ? 'flagged' : '') + '" onclick="toggleFlag(\'' + vtr + '\',this)">' + (flagged ? '🚩' : '🏳️') + '</button>';
++      '<button class="sticky-check-ghost flag-btn ' + (flagged ? 'flagged' : '') + '" onclick="toggleFlagById(' + v.id + ',this)">' + (flagged ? '🚩' : '🏳️') + '</button>';
+     document.getElementById('sticky-check').style.display = 'block';
+   })();
+   // Fokus ohne Scroll-Manipulation
+@@ -2671,7 +2671,7 @@ function showFlashNextBar(v, ok){
+     '<div style="display:flex;width:100%">' +
+     '<button onclick="hideFlashActionBar();stickyNext()" style="flex:1;padding:.9rem;border:none;background:var(--gold);color:#0e0c0a;font-weight:700;font-size:.9rem;text-transform:uppercase;letter-spacing:1px;cursor:pointer">Weiter &#8594;</button>' +
+     '<button onclick="openVocabEdit(' + vid + ')" style="' + S + '">&#9998;</button>' +
+-    '<button onclick="toggleFlag(\'' + vtrSafe + '\',this)" class="flag-btn' + (flagged?' flagged':'') + '" style="' + S + '">' + (flagged?'&#128681;':'&#127987;&#65039;') + '</button>' +
++    '<button onclick="toggleFlagById(' + vid + ',this)" class="flag-btn' + (flagged?' flagged':'') + '" style="' + S + '">' + (flagged?'&#128681;':'&#127987;&#65039;') + '</button>' +
+     '</div>';
+ }
+ 
+@@ -4613,7 +4613,27 @@ async function deleteVocabSheet(){
+   if(!vocabId) return;
+   if(!confirm('Vokabel wirklich löschen?')) return;
+   try {
+-    await sbApi('progress?vocabulary_id=eq.'+vocabId, 'DELETE');
++    // Gleicher Weg wie deleteDupeVocab(): progress und review_log raeumt Postgres per
++    // CASCADE/SET NULL selbst auf. Das fruehere Vorab-DELETE auf progress lief auch dann,
++    // wenn das Loeschen der Vokabel danach an einer Kurs-Verknuepfung scheiterte
++    // (course_exercises.vocabulary_id, ON DELETE NO ACTION) — der Lernstand war weg,
++    // die Vokabel blieb stehen.
++    const verknuepft = await sbApi('course_exercises?vocabulary_id=eq.'+vocabId
++                                   + '&select=id,exercise_type,prompt&order=id.asc') || [];
++    if(verknuepft.length){
++      const zeigen = verknuepft.slice(0,5)
++        .map(e => '  #'+e.id+' '+(e.exercise_type||'')+': '+String(e.prompt||'').slice(0,40)).join('\n');
++      const mehr = verknuepft.length > 5 ? '\n  … und '+(verknuepft.length-5)+' weitere' : '';
++      if(!confirm('An dieser Vokabel hängen '+verknuepft.length+' Kurs-Übung'+(verknuepft.length!==1?'en':'')+':\n'
++                  + zeigen + mehr
++                  + '\n\nDie Verknüpfung wird gelöst — die Übungen selbst bleiben erhalten,\n'
++                  + 'verlieren aber Audio und die Bearbeiten-/Flaggen-Knöpfe.\n\nFortfahren?')) return;
++      await sbApi('course_exercises?vocabulary_id=eq.'+vocabId, 'PATCH', {vocabulary_id: null});
++      verknuepft.forEach(e => {
++        const ex = COURSE_EX_BY_ID[e.id];
++        if(ex){ ex.vocabulary_id = null; ex.vocabulary = null; }
++      });
++    }
+     await sbApi('vocabulary?id=eq.'+vocabId, 'DELETE');
+     const idx = ALL_VOCAB.findIndex(v => v.id == vocabId);
+     if(idx >= 0){ delete vocabIdMap[ALL_VOCAB[idx].tr]; ALL_VOCAB.splice(idx, 1); }
+@@ -4950,6 +4970,12 @@ async function courseEnsureFrontierUnlocked(){
+   const chunks = courseFlattenChunks();
+   let prevMastered = true;
+   for(const ch of chunks){
++    // Teilweise freigeschaltet = der Chunk war schon erreicht, danach kam eine Uebung dazu.
++    // Die neue sofort nachziehen, sonst gilt er nie als freigeschaltet und blockiert alle
++    // folgenden Chunks (courseChunkMastered verlangt courseChunkUnlocked).
++    if(!courseChunkUnlocked(ch.srsItems) && ch.srsItems.some(e=>COURSE_EX_PROGRESS[e.id])){
++      await courseUnlockChunk(ch);
++    }
+     if(courseChunkUnlocked(ch.srsItems)){
+       prevMastered = courseChunkMastered(ch.srsItems);
+       continue;
+@@ -4961,9 +4987,15 @@ async function courseEnsureFrontierUnlocked(){
+ 
+ async function courseUnlockChunk(ch){
+   const now = new Date().toISOString();
+-  const rows = ch.srsItems.map(e=>({user_id:currentUser.id, exercise_id:e.id, correct_count:0, wrong_count:0, review_count:0, next_review: now}));
++  // Nur Uebungen OHNE Progress-Zeile anlegen, und bei einem Konflikt nichts ueberschreiben.
++  // Vorher gingen alle Uebungen des Chunks per merge-duplicates raus: kam zu einem schon
++  // freigeschalteten Chunk eine neue Uebung dazu, galt er als "nicht freigeschaltet", und
++  // das Freischalten setzte die bereits gelernten Uebungen auf Level 0 zurueck.
++  const offen = ch.srsItems.filter(e=>!COURSE_EX_PROGRESS[e.id]);
++  if(!offen.length) return;
++  const rows = offen.map(e=>({user_id:currentUser.id, exercise_id:e.id, correct_count:0, wrong_count:0, review_count:0, next_review: now}));
+   try{
+-    const res = await sbApi('course_exercise_progress?on_conflict=user_id,exercise_id', 'POST', rows, 'resolution=merge-duplicates,return=representation');
++    const res = await sbApi('course_exercise_progress?on_conflict=user_id,exercise_id', 'POST', rows, 'resolution=ignore-duplicates,return=representation');
+     (res||[]).forEach(r=>{ COURSE_EX_PROGRESS[r.exercise_id] = r; });
+     dbg('Kurs-Chunk freigeschaltet: '+ch.chunkKey+' ('+ch.srsItems.length+' Übungen)', 'ok');
+   }catch(e){
+@@ -5369,7 +5401,12 @@ function chkCourseEx(selfCorrect){
+   } else {
+     const inp = document.getElementById('course-input');
+     const val = inp ? inp.value.trim() : '';
+-    const r = checkAnswer(val, exercise.solution||'');
++    // Viele Loesungen tragen die deutsche Uebersetzung als Anhang " — ..." mit
++    // ("tishrub qahwa walla tay? — Trinkst du Kaffee oder Tee?"). Geprueft wird nur der
++    // Tounsi-Teil davor, sonst ist die richtige Antwort nie richtig. Angezeigt wird weiter
++    // die ganze Loesung. Nachgerechnet an allen 991 textgeprueften Uebungen: danach wird
++    // jede Tounsi-Loesung angenommen, keine deutsche Uebersetzung faelschlich akzeptiert.
++    const r = checkAnswer(val, (exercise.solution||'').split(' — ')[0]);
+     ok = r.ok;
+     if(inp){ inp.style.borderColor = ok?'var(--green)':'var(--red)'; inp.disabled = true; }
+     const fb = document.getElementById('feedback');
+@@ -6203,7 +6240,7 @@ function buildKnowledgeMD(data, today){
+ 
+ // Baut den restore-fähigen SQL-Vollbackup-Inhalt aus bereits geladenen Daten.
+ function buildBackupSQL(data, today){
+-  const { vocab, lessons, users, progress, reviewLog, courseLessons, courseExercises, courseProgress } = data;
++  const { vocab, lessons, users, progress, reviewLog, courseLessons, courseExercises, courseProgress, courseExProgress } = data;
+   const parts = [];
+   parts.push('-- Tounsi Trainer — Vollbackup (restore-fähig)');
+   parts.push('-- Stand: ' + today + ' (gehört zusammen mit tounsi_db_' + today + '.md)');
+@@ -6221,7 +6258,12 @@ function buildBackupSQL(data, today){
+   parts.push(buildUpsertSQL('vocabulary', [
+     {name:'id',type:'num'},{name:'lesson_id',type:'num'},{name:'arabic_script',type:'str'},{name:'darija',type:'str'},
+     {name:'german',type:'str'},{name:'topic',type:'str'},{name:'flagged',type:'bool'},{name:'partner_status',type:'str'},
+-    {name:'partner_comment',type:'str'},{name:'status_updated_at',type:'str'}
++    {name:'partner_comment',type:'str'},{name:'status_updated_at',type:'str'},
++    {name:'english',type:'str'},{name:'ninja_audio_url',type:'str'},
++    {name:'ninja_audio_start',type:'num'},{name:'ninja_audio_end',type:'num'},{name:'ninja_checked_at',type:'str'},
++    {name:'homonym_ok',type:'bool'},{name:'internal_note',type:'str'},{name:'external_confirmed',type:'bool'},
++    {name:'external_confirmed_source',type:'str'},{name:'conjugation',type:'json'},
++    {name:'conj_rotate',type:'bool'},{name:'created_at',type:'str'}
+   ], vocab));
+   parts.push('');
+   parts.push('-- users ('+users.length+' Zeilen, ohne password_hash)');
+@@ -6234,7 +6276,7 @@ function buildBackupSQL(data, today){
+   parts.push(buildUpsertSQL('progress', [
+     {name:'id',type:'num'},{name:'user_id',type:'str'},{name:'vocabulary_id',type:'num'},{name:'correct_count',type:'num'},
+     {name:'wrong_count',type:'num'},{name:'review_count',type:'num'},{name:'next_review',type:'str'},
+-    {name:'last_reviewed',type:'str'},{name:'last_correct',type:'bool'}
++    {name:'last_reviewed',type:'str'},{name:'last_correct',type:'str'}
+   ], progress));
+   parts.push('');
+   parts.push('-- review_log ('+reviewLog.length+' Zeilen)');
+@@ -6246,14 +6288,16 @@ function buildBackupSQL(data, today){
+   parts.push('-- course_lessons ('+courseLessons.length+' Zeilen)');
+   parts.push(buildUpsertSQL('course_lessons', [
+     {name:'id',type:'num'},{name:'course_number',type:'num'},{name:'skript',type:'num'},{name:'title',type:'str'},
+-    {name:'dialog_text',type:'str'},{name:'grammar_notes',type:'str'},{name:'vocab_lesson_refs',type:'str'}
++    {name:'dialog_text',type:'str'},{name:'grammar_notes',type:'str'},{name:'vocab_lesson_refs',type:'str'},
++    {name:'chunk_order',type:'json'}
+   ], courseLessons));
+   parts.push('');
+   parts.push('-- course_exercises ('+courseExercises.length+' Zeilen)');
+   parts.push(buildUpsertSQL('course_exercises', [
+     {name:'id',type:'num'},{name:'course_lesson_id',type:'num'},{name:'position',type:'num'},{name:'exercise_type',type:'str'},
+     {name:'instruction',type:'str'},{name:'prompt',type:'str'},{name:'solution',type:'str'},{name:'partner_status',type:'str'},
+-    {name:'partner_comment',type:'str'},{name:'source',type:'str'},{name:'meta',type:'json'}
++    {name:'partner_comment',type:'str'},{name:'source',type:'str'},{name:'meta',type:'json'},
++    {name:'chunk_key',type:'str'},{name:'vocabulary_id',type:'num'}
+   ], courseExercises));
+   parts.push('');
+   parts.push('-- course_progress ('+courseProgress.length+' Zeilen)');
+@@ -6261,6 +6305,14 @@ function buildBackupSQL(data, today){
+     {name:'id',type:'num'},{name:'user_id',type:'str'},{name:'course_lesson_id',type:'num'},{name:'status',type:'str'},
+     {name:'exercises_done',type:'json'},{name:'score_self',type:'num'},{name:'completed_at',type:'str'}
+   ], courseProgress));
++  parts.push('');
++  // Der Kurs-SRS-Stand (seit 2026-09) fehlte im Backup ganz.
++  parts.push('-- course_exercise_progress ('+courseExProgress.length+' Zeilen)');
++  parts.push(buildUpsertSQL('course_exercise_progress', [
++    {name:'id',type:'num'},{name:'user_id',type:'str'},{name:'exercise_id',type:'num'},{name:'correct_count',type:'num'},
++    {name:'wrong_count',type:'num'},{name:'review_count',type:'num'},{name:'next_review',type:'str'},
++    {name:'last_reviewed',type:'str'},{name:'last_correct',type:'str'}
++  ], courseExProgress));
+   return parts.join('\n');
+ }
+ 
+@@ -6283,7 +6335,7 @@ async function runCombinedExport(){
+     prog.textContent = 'Lade lessons…';
+     const lessons = await fetchAllPaged('lessons', 'id,lesson_number,title', 'lesson_number.asc');
+     prog.textContent = 'Lade vocabulary…';
+-    const vocab = await fetchAllPaged('vocabulary', 'id,lesson_id,arabic_script,darija,german,topic,flagged,partner_status,partner_comment,status_updated_at', 'id.asc');
++    const vocab = await fetchAllPaged('vocabulary', 'id,lesson_id,arabic_script,darija,german,topic,flagged,partner_status,partner_comment,status_updated_at,english,ninja_audio_url,ninja_audio_start,ninja_audio_end,ninja_checked_at,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,created_at', 'id.asc');
+     prog.textContent = 'Lade users…';
+     const users = await fetchAllPaged('users', 'id,username,is_admin,is_partner,created_at,last_active_at,last_reminder_sent_at', 'id.asc');
+     prog.textContent = 'Lade progress…';
+@@ -6291,15 +6343,17 @@ async function runCombinedExport(){
+     prog.textContent = 'Lade review_log…';
+     const reviewLog = await fetchAllPaged('review_log', 'id,user_id,vocabulary_id,correct,mode,created_at', 'id.asc');
+     prog.textContent = 'Lade course_lessons…';
+-    const courseLessons = await fetchAllPaged('course_lessons', 'id,course_number,skript,title,dialog_text,grammar_notes,vocab_lesson_refs', 'course_number.asc');
++    const courseLessons = await fetchAllPaged('course_lessons', 'id,course_number,skript,title,dialog_text,grammar_notes,vocab_lesson_refs,chunk_order', 'course_number.asc');
+     prog.textContent = 'Lade course_exercises…';
+-    const courseExercises = await fetchAllPaged('course_exercises', 'id,course_lesson_id,position,exercise_type,instruction,prompt,solution,partner_status,partner_comment,source,meta', 'course_lesson_id.asc,position.asc');
++    const courseExercises = await fetchAllPaged('course_exercises', 'id,course_lesson_id,position,exercise_type,instruction,prompt,solution,partner_status,partner_comment,source,meta,chunk_key,vocabulary_id', 'course_lesson_id.asc,position.asc');
+     prog.textContent = 'Lade course_progress…';
+     const courseProgress = await fetchAllPaged('course_progress', 'id,user_id,course_lesson_id,status,exercises_done,score_self,completed_at', 'id.asc');
++    prog.textContent = 'Lade course_exercise_progress…';
++    const courseExProgress = await fetchAllPaged('course_exercise_progress', 'id,user_id,exercise_id,correct_count,wrong_count,review_count,next_review,last_reviewed,last_correct', 'id.asc');
+ 
+     prog.textContent = 'Erstelle Dateien…';
+     const today = new Date().toISOString().slice(0,10);
+-    const data = { vocab, lessons, users, progress, reviewLog, courseLessons, courseExercises, courseProgress };
++    const data = { vocab, lessons, users, progress, reviewLog, courseLessons, courseExercises, courseProgress, courseExProgress };
+ 
+     const mdContent = buildKnowledgeMD(data, today);
+     const mdFilename = 'tounsi_db_' + today + '.md';
+@@ -6307,7 +6361,7 @@ async function runCombinedExport(){
+     const sqlContent = buildBackupSQL(data, today);
+     const sqlFilename = 'tounsi_backup_' + today + '.sql';
+ 
+-    const totalRows = lessons.length+vocab.length+users.length+progress.length+reviewLog.length+courseLessons.length+courseExercises.length+courseProgress.length;
++    const totalRows = lessons.length+vocab.length+users.length+progress.length+reviewLog.length+courseLessons.length+courseExercises.length+courseProgress.length+courseExProgress.length;
+ 
+     // Beide Downloads automatisch anstoßen (leicht versetzt, damit Mobile-Browser den zweiten nicht blocken)
+     triggerDownload(mdContent, mdFilename, 'text/markdown;charset=utf-8');

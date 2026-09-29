@@ -1,0 +1,236 @@
+# Analyse Tounsi Trainer — Protokoll vom 2026-09-29
+
+Unbeaufsichtigter Durchlauf, rein lesend. **Supabase:** nur `SELECT` und `EXPLAIN`
+(EXPLAIN ohne ANALYZE führt nichts aus), kein einziger Schreibzugriff. **`trainer.html`:**
+unverändert. Die Korrekturen liegen als fertiger, getesteter Patch daneben
+(`trainer_fixes.patch`) und warten auf deine Bestätigung (COURSE_MODE.md: „Nicht einbauen
+ohne Bestätigung").
+
+Alle Zahlen sind live gezogen, Stand 2026-09-29 ~06:30 UTC. Sie veralten, deshalb gehören
+sie nicht in die Regeldateien.
+
+---
+
+## Kurzfassung — die fünf Punkte, die zählen
+
+| # | Befund | Wirkung | Status |
+|---|---|---|---|
+| 1 | **200 Kurs-Übungen lassen sich nicht richtig beantworten.** Die Lösung trägt die deutsche Übersetzung als Anhang (`tishrub qahwa walla tay? — Trinkst du Kaffee oder Tee?`), `checkAnswer` vergleicht gegen den ganzen String. | Richtige Antwort wird als falsch gewertet → Level 0. Noch **keine** davon freigeschaltet, du läufst aber darauf zu (141 `fill_blank`, 59 `translate_de_tn`). | Fix im Patch, an allen 991 textgeprüften Übungen nachgerechnet |
+| 2 | **Kurs-Freischaltung setzt gelernte Übungen auf Level 0 zurück**, sobald zu einem schon freigeschalteten Abschnitt eine neue Übung dazukommt (Upsert mit `merge-duplicates` über den ganzen Chunk). | Latenter Datenverlust. Heute kein Abschnitt betroffen, aber der erste Nachtrag löst es aus. Beispiel aus der Simulation: 1 neue Übung in „begruessung" → 8 Übungen auf L3+ zurück auf L0. | Fix im Patch, simuliert |
+| 3 | **🗑 im Bearbeiten-Sheet löscht erst den Lernstand, dann die Vokabel**, und das zweite scheitert bei Kurs-Verknüpfung. PR #79 hat das nur im Duplikat-Manager repariert. | Lernstand (beider Nutzer) weg, Vokabel bleibt stehen, rohe Constraint-Meldung. | Fix im Patch (gleicher Weg wie `deleteDupeVocab`) |
+| 4 | **Das „Vollbackup (restore-fähig)" lässt sich nicht einspielen** und ist unvollständig: `progress.last_correct` wird als `TRUE` exportiert (Spalte ist `timestamptz`), und es fehlen `course_exercise_progress`, `chunk_order`, `chunk_key`, `vocabulary_id` (Kurs), außerdem Audio, Konjugation, `homonym_ok`, Belege und Notizen (Vokabeln). | Im Ernstfall kommt der Vokabel-Fortschritt nicht zurück, der Kurs-Fortschritt gar nicht. | Fix im Patch, per `EXPLAIN` belegt: alt scheitert, neu besteht die Typprüfung |
+| 5 | **Die Datenbank ist für jeden mit der URL offen.** RLS-Policies stehen durchgehend auf `true` für `anon`, der Login ist clientseitig. Session-Restore vertraut nur dem Nutzernamen aus `localStorage`. | Wer die Vercel-URL kennt, kann alles lesen, ändern und in 10er-Schritten löschen (der Massenlösch-Trigger bremst nur). Die Passwort-Hashes sind korrekt gesperrt. | **Entscheidung von dir nötig**, siehe unten |
+
+Dazu kommen kleinere Bugs (Flaggen trifft die falsche Zeile, 16 Wörter mit Apostroph
+brechen den Flaggen-Knopf, u. a.), siehe Abschnitt B.
+
+---
+
+## A · Was genau gelaufen ist
+
+- `trainer.html` (8.433 Zeilen, ein Skriptblock): Syntaxprüfung per `vm.Script` ✓.
+  Gründlich gelesen: Antwortprüfung, SRS-Kern, Laden/Paging, Offline-Queue/Sync, Login/Session,
+  Partner-Modus, Übungsmotor (Karten, MC, Korrektur-Knöpfe), Statistik, Kurs-SRS (Laden,
+  Freischalten, Prüfen, Korrektur), Bearbeiten/Löschen/Anlegen, Aktivierung, Quellenabgleich
+  (Fällig-Setzen, Anlegen), Export/Backup.
+  Nur überflogen: Vokabelliste/Bulk-Leiste, Transliterations-Helfer und -Screen,
+  Prüfungen-Screen, Kurs-Übersicht/Browse/Test-Tab, Lektionen-Admin, Paare-Modus.
+- Datenbank: `qualitaets_checks`, Security- und Policy-Lage, Fremdschlüssel, Trigger,
+  Konsistenz Kurs/Vokabeln/Progress, Nutzungsdaten.
+- Nachrechnungen außerhalb des Kontexts: Kursübungen per REST (GET, anon-Key) auf die Platte,
+  `checkAnswer` über `tools/extract.js` aus `trainer.html` gezogen (23 Regeln ✓) und gegen
+  alle Lösungen laufen lassen.
+
+---
+
+## B · Befunde im Code
+
+Zeilennummern beziehen sich auf den aktuellen `trainer.html` (Stand `a396200`).
+
+### B1 — Kurs: deutscher Anhang macht Übungen unlösbar · hoch · Fix im Patch
+`chkCourseEx` (Z. 5372) ruft `checkAnswer(val, exercise.solution)`. `normalize` entfernt
+Klammern (deshalb sind die 11 Lösungen mit `(deutscher Satz)` am Ende unproblematisch),
+aber nicht den Teil nach ` — `.
+
+Nachgerechnet an allen 991 `translate_de_tn`/`fill_blank`:
+- heute: **200** Lösungen lehnen ihre eigene Tounsi-Antwort ab (141 fill_blank, 59 translate).
+- mit Fix (`solution.split(' — ')[0]`): **0** Ablehnungen, **0** deutsche Übersetzungen
+  fälschlich akzeptiert. Angezeigt wird weiterhin die ganze Lösung mit Übersetzung.
+
+### B2 — Kurs: Freischalten überschreibt Fortschritt · hoch (latent) · Fix im Patch
+`courseEnsureFrontierUnlocked` (Z. 4949) hält einen Chunk nur dann für freigeschaltet,
+wenn **jede** SRS-Übung eine Progress-Zeile hat. Kommt eine Übung dazu, passiert eins von
+zwei Dingen:
+- vorheriger Chunk gemeistert → `courseUnlockChunk` schickt **alle** Übungen des Chunks
+  mit `correct_count:0` und `merge-duplicates` → gelernte Übungen fallen auf L0;
+- sonst → die neue Übung wird nie freigeschaltet, der Chunk gilt nie als gemeistert, und
+  **alle folgenden Chunks bleiben gesperrt**.
+
+Das gilt auch für den 🔓-Knopf (`courseManualUnlockChunk`). Der Fix schaltet nur fehlende
+Übungen frei (`ignore-duplicates`) und zieht teilweise freigeschaltete Chunks sofort nach.
+Stand heute: kein Chunk teilweise freigeschaltet, der Fehler hat also noch nicht zugeschlagen.
+
+### B3 — Löschen im Bearbeiten-Sheet · hoch · Fix im Patch
+`deleteVocabSheet` (Z. 4616) löscht `progress` aller Nutzer vorab, dann die Vokabel. Bei
+den heute 149 Vokabeln mit Kurs-Übung scheitert das zweite (`course_exercises.vocabulary_id`,
+ON DELETE NO ACTION). Das Vorab-Löschen ist überflüssig, denn `progress` hängt per CASCADE
+dran. Der Fix übernimmt 1:1 den Ablauf aus `deleteDupeVocab` (PR #79).
+
+### B4 — Backup nicht restore-fähig · hoch · Fix im Patch
+`buildBackupSQL`, Z. 6237: `last_correct` wird als `bool` geschrieben. Per `EXPLAIN` gegen
+die echte Tabelle geprüft:
+`ERROR 42804: column "last_correct" is of type timestamp with time zone but expression is of type boolean`,
+das heißt **jeder** progress-INSERT im Backup scheitert. Mit Fix besteht die Typprüfung.
+
+Fehlend und im Patch ergänzt: Tabelle `course_exercise_progress`; `course_lessons.chunk_order`;
+`course_exercises.chunk_key`/`vocabulary_id`; bei `vocabulary` die Spalten `english`,
+`ninja_audio_*`, `ninja_checked_at`, `homonym_ok`, `internal_note`, `external_confirmed(_source)`,
+`conjugation`, `conj_rotate`, `created_at`.
+Bewusst **nicht** aufgenommen: `ninja_id`, `tunico_verb_id`, weil deren Fremdschlüssel auf
+Quelltabellen zeigen, die nicht im Backup sind (Restore in eine leere DB bräche sonst ab).
+Die generierten Spalten (`translit_skeleton` …) rechnet Postgres selbst.
+Weiterhin nicht im Backup: `import_entscheidungen` (386 Zeilen) und die Quell-Importtabellen.
+Das wäre eine eigene Entscheidung.
+
+Hinweis: `fetchAllPaged` (Export) prüft nicht gegen `content-range`, anders als
+`sbApiPaged`. Das ist nicht im Patch, weil es nur beim Export greift.
+
+### B5 — Flaggen trifft bei gleicher Schreibung die falsche Zeile · mittel · Fix im Patch
+Die Flaggen-Knöpfe in MC (Z. 2480), Prüfen-Leiste (Z. 2603) und Weiter-Leiste (Z. 2674)
+gehen über `toggleFlag(tr)` → `vocabIdMap[tr]`. Das ist die **letzte** id mit dieser
+Schreibung. Heute gibt es **24 Schreibungen mit 48 Zeilen**, bei der Hälfte flaggt der Knopf also
+die andere Zeile. Bei `conj_rotate`-Karten steht dort die konjugierte Form, dann flaggt er
+gar nichts oder ein fremdes Wort, das zufällig so heißt.
+Zusätzlich brechen **16 Wörter mit Apostroph** (`sou'al`, `yis'al` …, 5 davon aktiv) in der
+Prüfen-Leiste das `onclick` (unescaptes `'`). Der Fix nimmt überall `toggleFlagById(v.id)`,
+das es für den Kurs schon gibt, und damit sind beide Probleme erledigt.
+Rest (nicht im Patch): Die Anzeige „geflaggt ja/nein" (`flaggedVocab`, Z. 662) ist weiter auf
+die Schreibung geschlüsselt und kann bei Homonymen falsch leuchten.
+
+### B6 — Offline-Queue kann sich festfressen · mittel · offen
+`syncFlush` (Z. 1565) bricht beim ersten Fehler ab, weil es „Netz weg" annimmt. Ein Eintrag,
+der aus inhaltlichen Gründen dauerhaft scheitert (HTTP 4xx, z. B. Vokabel inzwischen
+gelöscht → FK-Fehler beim POST), blockiert alle späteren Einträge für immer. Das ⏳-Icon
+zählt dann nur noch hoch. Vorschlag: bei 4xx den Eintrag in einen „Fehler"-Store
+verschieben statt `break`. Nicht im Patch, weil es eine Verhaltensentscheidung ist.
+
+### B7 — Kleinere Punkte
+- **Bearbeiten-Sheet legt Progress an** (Z. ~4567): Speichern einer nie gestarteten Vokabel
+  (z. B. nur Tippfehler im Deutsch) erzeugt eine `progress`-Zeile mit `next_review NULL`.
+  Die Vokabel fällt damit aus dem „neue Wörter"-Topf von `buildSrsQueue`. Heute 59 solche
+  Zeilen. Level-Feld `ei-lvl` hat `max="5"`, das SRS kennt 0–6 (Z. 8381).
+- **MC-Modus schreibt kein SRS**: `aMC` loggt nur `review_log`, ruft `srsAnswer` nicht.
+  `review_log` enthält keine einzige `mc`/`sentences`-Zeile, beide Modi werden also nicht
+  genutzt. Entweder SRS nachrüsten oder die Modi aus dem Menü nehmen.
+- **Partner-Check**: `partnerAct` (Z. 2071) ohne try/catch und ohne Sperre gegen
+  Doppeltippen (überspringt dann eine Karte). Ein leerer Kommentar beim Nachbearbeiten löscht
+  den alten nicht. Die Fälligkeits-Abfrage (Z. 1794) filtert `progress` nicht nach Nutzer
+  (Semia hat 10 Zeilen, praktisch folgenlos).
+- **Quellenabgleich „Anlegen"** (Z. 8237): Knopf wird während des Speicherns nicht
+  gesperrt, Doppeltippen legt die Vokabel doppelt an. Neu angelegte Zeilen landen nicht in
+  `ALL_VOCAB`, sind also bis zum Neuladen nicht bearbeitbar.
+- **Kursinhalte**: 14 `translate_de_tn` laufen in Gegenrichtung (Tounsi-Prompt, deutsche
+  Lösung, ids 873–884 …), was funktioniert, aber falsch typisiert ist. 77 von 87 Lückentexten
+  verlangen den **ganzen Satz**, nicht nur die Lücke. Beides ist Inhalt, nicht Code.
+- `homonymNote`/`synonymNote` escapen nicht (anders als `schreibungNote`), ebenso die
+  Partner-Karten. Das ist nur mit euren eigenen Daten ein Thema.
+- `smoothSchedule`: Zähler `skippedWindow` wird nie erhöht (kosmetisch).
+
+### B8 — Didaktische Beobachtung (keine Fehler)
+Falsch = sofort **Level 0**, egal von wo. Eine L6-Vokabel (90 Tage) fällt nach einem
+Vertipper auf „morgen". Übliche SRS-Varianten gehen 1–2 Stufen zurück. Mit 1.367 Vokabeln
+auf L6 lohnt die Überlegung. Die Korrektur-Knöpfe fangen Vertipper zwar ab, aber nur, wenn
+man sie drückt.
+
+---
+
+## C · Befunde in der Datenbank
+
+### C1 — Qualitäts-Checks
+`qualitaets_checks`: **Gruppe A komplett 0.** Gruppe B: Check 21 = 1 (id 4045),
+Check 22 = 64 unvokalisierte Einzelwörter. Rest 0.
+
+### C2 — Konsistenz (alles nur gezählt, nichts geändert)
+| Prüfung | Treffer |
+|---|---|
+| Kurs-Übungen ohne Lektion und ohne Chunk (ids 96–101, `fixed_response`, Grußformeln) | 6, im Trainer nie erreichbar |
+| `pronunciation` ohne `vocabulary_id` (481 mas3oud, 694 sami, 696 samir: Eigennamen) | 3 |
+| Kurs-Übung zeigt auf gelöschte Vokabel | 0 |
+| doppelte `position` je Lektion | 0 |
+| `progress` mit Level außerhalb 0–6 | 0 |
+| Vokabeln ohne Arabisch / Deutsch / mit Leerzeichen am Rand | 0 / 0 / 0 |
+| Lektion 25 „Kurze Phrasen", Lektion 90 „TUNICO-Import (unsortiert)" | je 0 Vokabeln |
+| Ids 26–33 (`___ tounsi.` usw.): Lösung `ena / enti / houa` akzeptiert jedes der drei Pronomen, auch wo nur eines passt | Inhalt prüfen |
+
+Vorschläge (nicht ausgeführt, bräuchten deine Freigabe): die 6 verwaisten Grußformel-Übungen
+einer Lektion/einem Chunk zuordnen oder löschen; die 3 Eigennamen bewusst ohne Vokabel lassen.
+
+### C3 — Sicherheit
+- **RLS ist wirkungslos**: Auf allen App-Tabellen erlauben die Policies `ALL` mit `true`
+  für `anon`, teils doppelt (`allow all` + `app_access`). `anon` darf `users` ändern (z. B.
+  `is_admin`, `password_hash` überschreiben) und `vocabulary` löschen.
+  `password_hash` ist für `anon` korrekt nicht lesbar ✓ (`login_user` als SECURITY DEFINER).
+- **Session-Restore** (Z. 1667) meldet an, wer in `localStorage` einen Nutzernamen stehen hat,
+  ohne Passwort und ohne Token. Registrierung ist offen.
+- **`http`-Extension im Schema `public`, 14 Funktionen für `anon` ausführbar**: Damit kann
+  jeder über eure Datenbank beliebige HTTP-Requests absetzen. Das ist das Einzige hier, was
+  über „jemand verändert unsere Vokabeln" hinausgeht. Wenn sie nicht mehr gebraucht wird:
+  `REVOKE EXECUTE … FROM anon, authenticated` oder die Extension entfernen.
+- Massenlösch-Schutz (`trg_prevent_mass_delete`, max. 10 Zeilen) fehlt auf
+  `course_exercise_progress`, `import_entscheidungen`, `peacecorps_candidates`,
+  `uniwien_source_pages`.
+- Supabase-Advisor zusätzlich: 10 SECURITY-DEFINER-Views, 16 Funktionen ohne festen
+  `search_path`, `pg_trgm`/`fuzzystrmatch` in `public`, Materialized View `quellen_lemmata`
+  per API lesbar, `vocabulary_backup_2026_07_25` mit RLS aber ohne Policy (gewollt gesperrt,
+  vermutlich löschbar), dazu die zweite Sicherung `vocabulary_backup_2026_08_02`, die offen ist.
+
+Einschätzung: Für eine private Zwei-Personen-App mit unbekannter URL ist das ein bewusst
+tragbares Risiko, und ein echter Umbau (Supabase Auth + Policies auf `auth.uid()`) wäre
+ein eigenes Projekt. Die `http`-Rechte würde ich unabhängig davon zurücknehmen.
+
+---
+
+## D · Nutzung (Nils)
+
+- Lerntage in den letzten 30 Tagen: **31 von 31** (jeden Tag).
+- Wochen seit 20.07.: 900–1.700 Antworten/Woche. Trefferquote stieg von ~70–77 % (Juli/Aug)
+  auf **82–84 %** seit Mitte September. Kursanteil seit 07.09.: 220–340/Woche.
+- Vokabel-Level (gestartet): L1 13 · L2 40 · L3 84 · L4 113 · L5 419 · **L6 1.367**.
+  Nie gestartet: 1.748 von 3.784.
+- Jetzt fällig: Vokabeln 0, Kurs 29.
+- Kurs: 23 Chunks freigeschaltet (Lektionen 1–3). Die 200 Übungen aus B1 liegen alle
+  **hinter** dieser Front.
+- `review_log`: nur `flash` (14.832) und `course` (926). 117 `flash`-Zeilen ohne Vokabel
+  stammen von gelöschten Wörtern (SET NULL), das ist in Ordnung.
+
+---
+
+## E · Der Patch
+
+`exports/analyse_2026-09-29/trainer_fixes.patch`, 5 Änderungen an `trainer.html`:
+B1, B2, B3, B4, B5. Keine Versionsnummer geändert.
+
+Geprüft:
+- `git apply --check` gegen `a396200` ✓, Syntax per `vm.Script` ✓
+- B1: 991 Lösungen nachgerechnet (siehe oben)
+- B2: Simulation mit echten Kursdaten + einer eingeschobenen Übung: alt 9 Zeilen
+  `merge-duplicates` (8 gelernte), neu 1 Zeile `ignore-duplicates`, neue Übung freigeschaltet
+- B4: `EXPLAIN` gegen die Live-Tabellen: alt Fehler 42804, neu alle fünf INSERT-Arten ✓
+- B3, B5: nur gelesen, nicht im Browser geklickt
+
+Einbauen: `git apply exports/analyse_2026-09-29/trainer_fixes.patch`, dann wie gewohnt
+testen und pushen. Oder sag in der nächsten Sitzung „Patch einbauen".
+
+---
+
+## F · Was du entscheiden müsstest
+
+1. Patch einbauen (alle fünf oder einzeln)?
+2. `http`-Extension: Rechte für `anon` entziehen oder entfernen?
+3. Offline-Queue (B6): fehlerhafte Einträge beiseitelegen statt blockieren?
+4. MC-/Sätze-Modus: SRS nachrüsten oder aus dem Menü nehmen?
+5. Die 6 verwaisten Grußformel-Übungen (96–101): zuordnen oder löschen?
+6. Didaktik (B8): falsch → L0 behalten oder z. B. zwei Stufen zurück?
+7. Regel-Ergänzung für COURSE_MODE.md: „Kurslösungen: Übersetzung nie mit ` — ` an eine
+   textgeprüfte Lösung hängen" (bzw. mit Fix egal) und „Übungen zu freigeschalteten Chunks
+   nachtragen erst nach Fix B2".
