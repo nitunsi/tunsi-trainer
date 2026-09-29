@@ -304,8 +304,9 @@ body.hide-latin .chat-opt .latin {
 <div class="nav-panel" id="nav-panel">
   <div class="nav-section-label">Übungsmodus</div>
   <div class="nav-chips">
-    <button class="lesson-chip" onclick="setMode('mc',this);closeNav()">🎯 Multiple Choice</button>
-    <button class="lesson-chip" onclick="setMode('sentences',this);closeNav()">💬 Sätze</button>
+    <!-- Multiple Choice und Sätze sind aus dem Menü genommen (2026-09-29): sie schreiben keinen
+         SRS-Stand (aMC ruft nur logReview), und review_log enthält keine einzige mc-/sentences-Zeile.
+         Der Code (bMC/rMC/aMC/bSentences) bleibt liegen, falls die Modi zurückkommen sollen. -->
     <button class="lesson-chip" onclick="setMode('flash',this);closeNav()">🃏 Vokabelkarten</button>
     <button class="lesson-chip" onclick="setMode('coursesrs',this);closeNav()">🔁 Kurs-Wdh.</button>
     <button class="lesson-chip" onclick="setMode('mix',this);closeNav()">🎲 Mix</button>
@@ -1345,7 +1346,9 @@ async function sbApi(path,method='GET',body=null,prefer=null){
       body:body?JSON.stringify(body):null,
       signal: ctrl.signal
     });
-    const t=await r.text();if(!r.ok)throw new Error(t);return t?JSON.parse(t):null;
+    const t=await r.text();
+    if(!r.ok){ const err=new Error(t); err.status=r.status; throw err; }  // status: siehe syncFlush()
+    return t?JSON.parse(t):null;
   }catch(e){
     if(e.name==='AbortError') throw new Error('Zeitüberschreitung (20s) — Netzwerk prüfen');
     throw e;
@@ -1508,15 +1511,45 @@ async function oqCount(){
     req.onerror   = e => rej(e.target.error);
   });
 }
+// Markiert einen Eintrag als dauerhaft fehlerhaft (Server lehnt ihn inhaltlich ab). Er bleibt
+// im Speicher, damit nichts stillschweigend verloren geht, blockiert aber die uebrigen nicht mehr.
+async function oqMarkFailed(qid, msg){
+  const db = await oqOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(OQ_STORE,'readwrite');
+    const store = tx.objectStore(OQ_STORE);
+    const getReq = store.get(qid);
+    getReq.onsuccess = () => {
+      const rec = getReq.result;
+      if(!rec){ res(false); return; }
+      rec.failed = true;
+      rec.error = String(msg||'').slice(0,300);
+      store.put(rec);
+    };
+    tx.oncomplete = () => res(true);
+    tx.onerror    = e => rej(e.target.error);
+  });
+}
+// HTTP-Statuscodes, bei denen ein Wiederholen nichts aendert (z.B. 409 = Vokabel inzwischen
+// geloescht, Fremdschluessel verletzt). Alles andere (Netz weg, Zeitueberschreitung, 5xx, 429)
+// gilt weiter als voruebergehend.
+const OQ_PERMANENT_STATUS = [400, 404, 409, 410, 422];
 
 // Sync-Status-Icon aktualisieren
 async function syncUpdateIcon(){
   const btn = document.getElementById('sync-btn');
   if(!btn) return;
   try{
-    const n = await oqCount();
+    const all = await oqGetAll();
+    const nFailed = all.filter(i => i.failed).length;
+    const n = all.length - nFailed;
     btn.style.display = '';
-    if(n === 0){
+    if(nFailed > 0){
+      btn.textContent = '⚠ ' + nFailed + (n ? ' · ⏳ ' + n : '');
+      btn.style.color = 'var(--red)';
+      btn.style.borderColor = 'var(--red)';
+      btn.title = nFailed + ' Eintrag/Einträge vom Server abgelehnt — antippen zum Ansehen';
+    } else if(n === 0){
       btn.textContent = '✅';
       btn.style.color = 'var(--green)';
       btn.style.borderColor = 'var(--green)';
@@ -1536,7 +1569,10 @@ async function syncFlush(manual=false){
   if(_syncRunning) return;
   _syncRunning = true;
   try{
-    const items = await oqGetAll();
+    const alle = await oqGetAll();
+    // Manueller Klick auf das Icon: erst die abgelehnten Eintraege zeigen, sie werden sonst nie wieder angefasst.
+    if(manual && alle.some(i => i.failed)){ _syncRunning=false; await syncReviewFailed(alle.filter(i => i.failed)); return; }
+    const items = alle.filter(i => !i.failed);
     if(items.length === 0){ _syncRunning=false; syncUpdateIcon(); return; }
     dbg('Sync: '+items.length+' ausstehend', 'info');
     let sent = 0;
@@ -1561,6 +1597,12 @@ async function syncFlush(manual=false){
         dbg('Sync OK: qid='+item.qid, 'ok');
       } catch(e){
         dbg('Sync FEHLER qid='+item.qid+': '+e.message, 'err');
+        if(OQ_PERMANENT_STATUS.includes(e.status)){
+          // Der Server lehnt genau diesen Eintrag ab — Wiederholen hilft nie. Beiseitelegen und
+          // mit dem naechsten weitermachen, statt alle folgenden Eintraege ewig aufzuhalten.
+          try{ await oqMarkFailed(item.qid, 'HTTP '+e.status+': '+e.message); }catch(me){ break; }
+          continue;
+        }
         // Netz noch weg — abbrechen, beim nächsten Loop weitermachen
         break;
       }
@@ -1570,6 +1612,19 @@ async function syncFlush(manual=false){
     dbg('Sync Fehler: '+e.message, 'err');
   }
   _syncRunning = false;
+  syncUpdateIcon();
+}
+
+// Zeigt die abgelehnten Eintraege und bietet an, sie zu verwerfen. Verwerfen loescht nur die
+// Warteschlangen-Eintraege, nie etwas in der Datenbank.
+async function syncReviewFailed(failed){
+  const art = i => i.type==='log_insert' ? 'Antwort-Protokoll' : i.type==='log_update' ? 'Protokoll-Korrektur' : 'Lernstand';
+  const zeilen = failed.slice(0,5).map(i => '  · '+art(i)+(i.vocabId?' (Vokabel '+i.vocabId+')':'')+': '+String(i.error||'').slice(0,90)).join('\n');
+  const mehr = failed.length > 5 ? '\n  … und '+(failed.length-5)+' weitere' : '';
+  const ok = confirm(failed.length+' Eintrag/Einträge konnten nicht gespeichert werden, weil der Server sie ablehnt '
+    + '(meist: Vokabel wurde inzwischen gelöscht):\n'+zeilen+mehr
+    + '\n\nVerwerfen? Sie werden dann nie mehr gesendet.');
+  if(ok){ for(const i of failed){ try{ await oqDelete(i.qid); }catch(e){} } showToast('✓ '+failed.length+' verworfen','ok'); }
   syncUpdateIcon();
 }
 
