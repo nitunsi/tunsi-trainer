@@ -5384,6 +5384,14 @@ function courseHintFirst(exercise){
     && exercise.prompt.indexOf(' – ') !== -1
     && !/[A-ZÄÖÜ]/.test(exercise.prompt);
 }
+// Der Teil einer Lösung, der wirklich getippt werden muss. Viele Lösungen hängen die deutsche
+// Übersetzung an: mit langem Strich ("… — Bist du Amerikaner?") oder mit kurzem, dann aber immer
+// gefolgt von einem Großbuchstaben ("… – Schreib den Brief!"). Tounsi-Paare mit kurzem Strich und
+// Kleinbuchstaben danach ("kteb – kteb wa7id") sind Teil der Antwort und bleiben ganz erhalten.
+// Angezeigt wird weiterhin die volle Lösung.
+function courseSolutionCore(solution){
+  return (solution||'').split(/ — | – (?=[A-ZÄÖÜ])/)[0];
+}
 function courseShowHint(){
   const b = document.getElementById('course-hint-btn'); if(b) b.style.display = 'none';
   const t = document.getElementById('course-hint'); if(t) t.style.display = 'block';
@@ -5484,7 +5492,7 @@ function chkCourseEx(selfCorrect){
     // Tounsi-Teil davor, sonst ist die richtige Antwort nie richtig. Angezeigt wird weiter
     // die ganze Loesung. Nachgerechnet an allen 991 textgeprueften Uebungen: danach wird
     // jede Tounsi-Loesung angenommen, keine deutsche Uebersetzung faelschlich akzeptiert.
-    const r = checkAnswer(val, (exercise.solution||'').split(' — ')[0]);
+    const r = checkAnswer(val, courseSolutionCore(exercise.solution));
     ok = r.ok;
     if(inp){ inp.style.borderColor = ok?'var(--green)':'var(--red)'; inp.disabled = true; }
     const fb = document.getElementById('feedback');
