@@ -5937,7 +5937,7 @@ function courseChunkLearnHtml(l, chunk){
     h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem">Grammatik</div>';
     h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7">'+mdLite(grammarMd)+'</div>';
   }
-  if(!h) h = '<div style="color:var(--muted);font-size:.85rem;text-align:center;padding:1rem 0">Kein Lernmaterial für diesen Abschnitt.</div>';
+  if(!h) h = '<div style="color:var(--muted);font-size:.85rem;text-align:center;padding:1rem 0">Kein Erklärtext für diesen Abschnitt.</div>';
   return h;
 }
 
@@ -5962,6 +5962,47 @@ function courseExLevelBadge(exerciseId){
   return '<span style="font-size:.65rem;color:'+color+'" title="Level '+lvl+(due?' · fällig':'')+'">L'+lvl+(due?' ⏰':'')+'</span>';
 }
 
+// Uebungen, die nicht im Kurs-Wiederholen landen (COURSE_SRS_TYPES), aber zum Kurs gehoeren:
+// Dialogbau (keine feste Loesung), Aussprache (laeuft ueber das Vokabel-Lernen) und reine
+// Merkkarten. Die Ansicht zeigte sie bisher gar nicht — sechs Abschnitte in Kurs 3 wirkten leer,
+// obwohl 85 Uebungen daran hingen. Nur zum Lesen, hier wird nichts abgefragt oder gespeichert.
+function courseNonSrsHtml(items){
+  if(!items.length) return '';
+  const byType = {};
+  items.forEach(e=>{ (byType[e.exercise_type]=byType[e.exercise_type]||[]).push(e); });
+  let h = '';
+  const kopf = (titel, hinweis)=>
+    '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin:.8rem 0 .2rem">'+titel+'</div>'
+    + (hinweis ? '<div style="font-size:.72rem;color:var(--muted);margin-bottom:.4rem">'+hinweis+'</div>' : '');
+  const box = inner => '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.3rem .7rem">'+inner+'</div>';
+  const zeile = inner => '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:.6rem;padding:.35rem 0;border-top:1px solid rgba(255,255,255,.06);font-size:.85rem">'+inner+'</div>';
+  if(byType.build_dialog){
+    const l = byType.build_dialog;
+    const anw = l.find(e=>e.instruction);
+    h += kopf('Dialogbau ('+l.length+')', 'Wörter zum freien Dialogbau, ohne feste Lösung — kommt nicht im Kurs-Wiederholen dran.'
+      + (anw ? '<br><span style="color:var(--text)">'+escHtml(anw.instruction)+'</span>' : ''));
+    h += box(l.map(e=>zeile('<span style="font-family:\'IBM Plex Mono\',monospace">'+escHtml(e.prompt||'')+'</span>')).join(''));
+  }
+  if(byType.pronunciation){
+    const l = byType.pronunciation;
+    h += kopf('Aussprache ('+l.length+')', 'Laufen über das Vokabel-Lernen, nicht über den Kurs.');
+    h += box(l.map(e=>{
+      const v = e.vocabulary;
+      const audio = v && v.ninja_audio_url
+        ? ' <button onclick="playVocabAudio(\''+v.ninja_audio_url.replace(/'/g,"\\'")+'\',event,'+(v.ninja_audio_start||0)+','+(v.ninja_audio_end||0)+')" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.05rem .4rem;border-radius:3px;cursor:pointer">🔊</button>'
+        : '';
+      return zeile('<span><span style="font-family:\'IBM Plex Mono\',monospace">'+escHtml(e.prompt||'')+'</span>'+audio+'</span>'
+        + '<span style="color:var(--muted);font-size:.78rem;text-align:right">'+escHtml(e.solution||'')+'</span>');
+    }).join(''));
+  }
+  if(byType.grammar_card){
+    const l = byType.grammar_card;
+    h += kopf('Merkkarten ('+l.length+')', 'Reine Erklärkarten, nicht abgefragt.');
+    h += box(l.map(e=>zeile('<span>'+escHtml(e.prompt||'')+'</span><span style="color:var(--muted);font-size:.78rem;text-align:right">'+escHtml(e.solution||'')+'</span>')).join(''));
+  }
+  return h;
+}
+
 function renderCourseBrowseTab(tc, l){
   if(!courseHasChunks(l)){ renderCourseLearnTab(tc, l); return; }
   const byKey = {};
@@ -5970,6 +6011,7 @@ function renderCourseBrowseTab(tc, l){
   (l.chunk_order||[]).forEach(c=>{
     const all = byKey[c.key]||[];
     const srsItems = all.filter(e=>COURSE_SRS_TYPES.includes(e.exercise_type));
+    const nonSrsItems = all.filter(e=>!COURSE_SRS_TYPES.includes(e.exercise_type));
     const unlocked = courseChunkUnlocked(srsItems);
     const mastered = courseChunkMastered(srsItems);
     const icon = !srsItems.length ? '📄' : mastered ? '✅' : unlocked ? '🟡' : '🔒';
@@ -5977,7 +6019,7 @@ function renderCourseBrowseTab(tc, l){
     h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden">';
     h += '<button onclick="courseBrowseToggle(\''+eq(c.key)+'\')" style="width:100%;display:flex;justify-content:space-between;align-items:center;padding:.65rem .8rem;background:none;border:none;cursor:pointer;text-align:left;font-family:inherit;font-size:.85rem;color:var(--text)">';
     h += '<span>'+icon+' '+escHtml(c.label)+'</span>';
-    h += '<span style="font-size:.68rem;color:var(--muted);white-space:nowrap;margin-left:.6rem">'+(srsItems.length?srsItems.length+' Übungen · ':'')+(open?'▲':'▼')+'</span>';
+    h += '<span style="font-size:.68rem;color:var(--muted);white-space:nowrap;margin-left:.6rem">'+(srsItems.length?srsItems.length+' Übungen · ':(nonSrsItems.length?nonSrsItems.length+' zum Lesen · ':''))+(open?'▲':'▼')+'</span>';
     h += '</button>';
     if(open){
       h += '<div style="padding:0 .8rem .8rem">';
@@ -5991,6 +6033,7 @@ function renderCourseBrowseTab(tc, l){
         srsItems.forEach(e=>{ h += '<span style="border:1px solid var(--border);border-radius:3px;padding:.15rem .45rem">'+courseExLevelBadge(e.id)+'</span>'; });
         h += '</div>';
       }
+      h += courseNonSrsHtml(nonSrsItems);
       h += '</div>';
     }
     h += '</div>';
