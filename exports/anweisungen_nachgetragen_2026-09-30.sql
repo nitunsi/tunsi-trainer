@@ -26,3 +26,12 @@ WHERE id IN (532,533,534,535,536,537,538,539,540,
              559,560,561,562,563,564,565,566,567,568,569,570,571,
              747,748,749,755, 865,866,867,868,869,870,871,872,
              1533,1534,1535,1536, 1701,1702);
+
+-- Dritter Durchgang (16 Zeilen), 2026-09-30, mit Freigabe von Nils:
+-- K5 passives_partizip, ids 873-888. Anweisung gesetzt UND Typ translate_de_tn -> answer_pattern
+-- (Selbstbewertung statt wortgenauem Tippen des deutschen Satzes). Die Loesung bleibt unveraendert.
+--   "Übersetze ins Deutsche und nenne das Verb im Präsens (3. Pers. Sg. m.), von dem das Partizip kommt."
+--   Quelle: Lektion 5, Übung XVII (PDF-Seite 84)
+-- Zurücksetzen:
+UPDATE course_exercises SET instruction = NULL, exercise_type = 'translate_de_tn'
+WHERE id BETWEEN 873 AND 888 AND chunk_key = 'passives_partizip';
