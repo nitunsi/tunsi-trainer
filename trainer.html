@@ -5372,6 +5372,23 @@ function courseExSolutionHtml(exercise){
   return solHtml;
 }
 
+// Karten, deren Prompt schon die Tounsi-Wörter der Antwort enthält ("amriki – almani"), während die
+// deutsche Frage nur klein in der Anweisung steht ("Bist du Amerikaner oder Deutscher?"). Die Wörter
+// sind dann die Hälfte der Lösung, man tippt sie nur noch ab. Deshalb: die deutsche Frage ist die
+// Aufgabe, die Wörter gibt es erst auf Tippen ("Hinweis"). Betrifft heute genau 18 Karten (walla-
+// Fragen in Kurs 4). Die Regel ist bewusst eng: " – " im Prompt allein reicht nicht, es gibt auch
+// "ein Buch – EIN Buch" und Frage–Antwort-Paare auf Deutsch; die haben Großbuchstaben im Prompt.
+function courseHintFirst(exercise){
+  return exercise.exercise_type === 'translate_de_tn'
+    && !!exercise.instruction && !!exercise.prompt
+    && exercise.prompt.indexOf(' – ') !== -1
+    && !/[A-ZÄÖÜ]/.test(exercise.prompt);
+}
+function courseShowHint(){
+  const b = document.getElementById('course-hint-btn'); if(b) b.style.display = 'none';
+  const t = document.getElementById('course-hint'); if(t) t.style.display = 'block';
+}
+
 function rCourseEx(ex, el){
   answered = false;
   const exercise = ex.exercise;
@@ -5393,8 +5410,14 @@ function rCourseEx(ex, el){
   h += courseGrammarButtonHtml(exercise);
   h += '<span style="flex-shrink:0;font-size:.7rem;color:var(--muted)">'+prog+'</span>';
   h += '</div>';
-  if(exercise.instruction) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(exercise.instruction)+'</div>';
-  if(exercise.prompt){
+  const hintFirst = courseHintFirst(exercise);
+  if(hintFirst){
+    h += '<div style="min-height:60px;margin-bottom:.6rem;font-size:1.15rem;line-height:1.5">'+escHtml(exercise.instruction)+'</div>';
+    h += '<button id="course-hint-btn" onclick="courseShowHint()" style="margin-bottom:.8rem;padding:.4rem .8rem;background:none;border:1px solid var(--blue);color:var(--blue);font-family:\'IBM Plex Mono\',monospace;font-size:.78rem;border-radius:4px;cursor:pointer">💡 Hinweis zeigen</button>';
+    h += '<div id="course-hint" style="display:none;margin-bottom:.8rem;padding:.5rem .7rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-family:\'IBM Plex Mono\',monospace;font-size:.95rem">'+escHtml(exercise.prompt)+'</div>';
+  }
+  if(exercise.instruction && !hintFirst) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(exercise.instruction)+'</div>';
+  if(exercise.prompt && !hintFirst){
     const vocabAudio = exercise.vocabulary && exercise.vocabulary.ninja_audio_url
       ? ' <button onclick="playVocabAudio(\''+exercise.vocabulary.ninja_audio_url.replace(/'/g,"\\'")+'\',event,'+(exercise.vocabulary.ninja_audio_start||0)+','+(exercise.vocabulary.ninja_audio_end||0)+')" title="Aussprache abspielen" style="background:none;border:1px solid var(--blue);color:var(--blue);font-size:.85rem;padding:.1rem .5rem;cursor:pointer;border-radius:3px;vertical-align:middle">🔊</button>'
       : '';
