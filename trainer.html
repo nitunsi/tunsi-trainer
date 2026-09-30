@@ -5350,9 +5350,19 @@ async function goMix(){
 
 const COURSE_TYPE_LABELS = {translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',grammar_drill:'Grammatik-Übung',fixed_response:'Feste Antwort'};
 
+// Fragen zu einem Dialog: fixed_response-Karten in Abschnitten namens "dialoge…" (Kurs 4-13,
+// 238 Karten). Sie heißen im Typ "feste Antwort", sind aber Fragen zum Dialogtext, und ohne den
+// Dialog ist die Frage nicht zu beantworten. Bewusst am Abschnittsnamen festgemacht, nicht am
+// dialog-Flag des Abschnitts: "begruessung" (Kurs 1) hat den Flag auch, enthält aber echte feste
+// Grußformeln, die "Feste Antwort" heißen sollen.
+function courseIsDialogQuestion(exercise){
+  return !!exercise && exercise.exercise_type === 'fixed_response' && /^dialoge/.test(exercise.chunk_key || '');
+}
+
 function courseGrammarButtonHtml(exercise){
   if(!exercise.chunk_key) return '';
-  return '<button onclick="showGrammarModal('+exercise.id+')" title="Grammatik zu diesem Abschnitt anzeigen" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.15rem .5rem;border-radius:3px;cursor:pointer">🧠 Grammatik</button>';
+  const dialog = courseIsDialogQuestion(exercise);
+  return '<button onclick="showGrammarModal('+exercise.id+')" title="'+(dialog?'Dialog zu dieser Frage anzeigen':'Grammatik zu diesem Abschnitt anzeigen')+'" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.15rem .5rem;border-radius:3px;cursor:pointer">'+(dialog?'📖 Dialog':'🧠 Grammatik')+'</button>';
 }
 
 function courseExSolutionHtml(exercise){
@@ -5401,7 +5411,7 @@ function rCourseEx(ex, el){
   answered = false;
   const exercise = ex.exercise;
   const lesson = COURSE_LESSONS.find(l=>l.id===exercise.course_lesson_id);
-  const label = COURSE_TYPE_LABELS[exercise.exercise_type] || exercise.exercise_type;
+  const label = courseIsDialogQuestion(exercise) ? 'Frage zum Dialog' : (COURSE_TYPE_LABELS[exercise.exercise_type] || exercise.exercise_type);
   const p = COURSE_EX_PROGRESS[exercise.id];
   const isNew = !p || !p.review_count;
   const prog = (document.getElementById('ex-progress')||{}).textContent||'';
@@ -5425,6 +5435,7 @@ function rCourseEx(ex, el){
     h += '<div id="course-hint" style="display:none;margin-bottom:.8rem;padding:.5rem .7rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-family:\'IBM Plex Mono\',monospace;font-size:.95rem">'+escHtml(exercise.prompt)+'</div>';
   }
   if(exercise.instruction && !hintFirst) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(exercise.instruction)+'</div>';
+  else if(courseIsDialogQuestion(exercise)) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">Beantworte die Frage anhand des Dialogs (Knopf „📖 Dialog“).</div>';
   if(exercise.prompt && !hintFirst){
     const vocabAudio = exercise.vocabulary && exercise.vocabulary.ninja_audio_url
       ? ' <button onclick="playVocabAudio(\''+exercise.vocabulary.ninja_audio_url.replace(/'/g,"\\'")+'\',event,'+(exercise.vocabulary.ninja_audio_start||0)+','+(exercise.vocabulary.ninja_audio_end||0)+')" title="Aussprache abspielen" style="background:none;border:1px solid var(--blue);color:var(--blue);font-size:.85rem;padding:.1rem .5rem;cursor:pointer;border-radius:3px;vertical-align:middle">🔊</button>'
@@ -6097,7 +6108,9 @@ async function showPairsMode(){
   if(!c) return;
   c.innerHTML = '<div style="padding:1.5rem 1rem;color:var(--muted);font-size:.85rem">Lade…</div>';
   try{
-    const rows = await sbApi('course_exercises?exercise_type=eq.fixed_response&select=id,prompt,solution,instruction,meta&order=id.asc');
+    // Ohne die Fragen zu Dialogen (Abschnitte "dialoge…"): dort fehlt hier der Dialogtext, die
+    // Frage wäre nicht zu beantworten. chunk_key NULL (die lektionsübergreifenden Formeln) bleibt.
+    const rows = await sbApi('course_exercises?exercise_type=eq.fixed_response&or=(chunk_key.is.null,chunk_key.not.like.dialoge*)&select=id,prompt,solution,instruction,meta&order=id.asc');
     _pairsItems = sh(rows||[]);
   }catch(e){
     c.innerHTML = '<div style="padding:1.5rem 1rem;color:var(--red)">Fehler: '+e.message+'</div>';
