@@ -123,6 +123,7 @@ main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem 5rem;overflow-anchor:no
 .answer-slot{padding:.5rem 1rem;background:var(--surface);border:1px solid var(--gold);font-size:1.4rem;font-family:'Playfair Display',serif;direction:rtl;color:var(--gold2);}
 .feedback{will-change:opacity,transform;padding:.7rem .9rem;margin-top:.7rem;font-size:.85rem;line-height:1.6;display:none;}
 .feedback.show{display:block;}
+mark.blank-fill{background:rgba(201,168,76,.28);color:var(--text);font-weight:700;border-radius:3px;padding:0 .2em;}
 .feedback.correct{background:rgba(76,172,110,.1);border-left:3px solid var(--green);color:var(--green);}
 .feedback.wrong{background:rgba(201,76,76,.1);border-left:3px solid var(--red);color:var(--red);}
 .flag-btn{background:none;border:none;font-size:1.1rem;cursor:pointer;padding:.2rem .4rem;opacity:.4;transition:opacity .2s,transform .2s;}
@@ -5489,6 +5490,60 @@ function courseSrsReveal(){
   hideStickyCheck();
 }
 
+// Lückentext: die ergänzten Wörter in der Lösung hervorheben. Aus dem Prompt ("ba3d il-7anut ___ (ydur)
+// 3a-l-imin w ___ (yimshi) toul toul") werden die festen Textstücke zwischen den Lücken gezogen und
+// gegen die Lösung gelegt; was dazwischen steht, sind die ergänzten Wörter. Der Anfang der Lösung darf
+// vom Prompt abweichen (oft fehlt der Satzanfang). Passt nichts sicher, bleibt die Lösung unmarkiert.
+function courseSolutionHtml(exercise){
+  const plain = escHtml(exercise.solution||'');
+  if(exercise.exercise_type!=='fill_blank') return plain;
+  const prompt = exercise.prompt||'';
+  if(!/_{2,}/.test(prompt)) return plain;
+  const sol = exercise.solution||'';
+  let core = courseSolutionCore(sol);
+  const q = core.search(/\s+["„“]/);          // deutsche Übersetzung in Anführungszeichen abtrennen
+  if(q>0) core = core.slice(0,q);
+  const tail = sol.slice(core.length);
+  const esc = t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  // Hinweise in Klammern direkt an der Lücke ("___ (ydur)", "__(ybat)") gehören nicht zum festen Text
+  const parts = prompt.replace(/(?:_{2,}\([^)]*\)){2,}/g,'__').replace(/_{2,}\s*\([^)]*\)/g,'\u0000').replace(/\([^)]*\)\s*_{2,}/g,'\u0000').replace(/_{2,}/g,'\u0000').split('\u0000');
+  const n = parts.length-1;
+  if(n<1) return plain;
+  const lit = t=>esc(t.trim()).replace(/\s+/g,'\\s+');
+  const build = (anchorLast)=>{
+    let re = '';
+    const first = parts[0].trim().split(/\s+/).filter(Boolean);
+    if(anchorLast && first.length) re += esc(first[first.length-1])+'\\s*'; else re += '^';
+    for(let i=0;i<n;i++){
+      re += '(.+?)';
+      const l = parts[i+1];
+      if(i<n-1){ re += l.trim() ? '\\s*'+lit(l)+'\\s*' : '\\s+'; }
+      else if(l.trim()) re += '(?:\\s*'+lit(l)+')?\\s*$'; else re += '\\s*$';
+    }
+    return re;
+  };
+  let m = null, re = null;
+  for(const a of [true,false]){
+    const src = build(a); if(!src) continue;
+    try{ re = new RegExp(src,'i'); m = re.exec(core); }catch(e){ m = null; }
+    if(m && m.slice(1).every(g=>g && g.trim())) break; else m = null;
+  }
+  if(!m) return plain;
+  // Positionen der Gruppen bestimmen: Treffer erneut mit Indizes ('d'-Flag)
+  let mi; try{ mi = new RegExp(re.source,'id').exec(core); }catch(e){ return plain; }
+  if(!mi || !mi.indices) return plain;
+  let out = '', pos = 0;
+  for(let g=1; g<mi.length; g++){
+    const [a,b] = mi.indices[g];
+    const seg = core.slice(a,b), trimmed = seg.replace(/[\s.!?,;:]+$/,'');
+    const e2 = a + trimmed.length;
+    out += escHtml(core.slice(pos,a)) + '<mark class="blank-fill">'+escHtml(core.slice(a,e2))+'</mark>';
+    pos = e2;
+  }
+  out += escHtml(core.slice(pos)) + escHtml(tail);
+  return out;
+}
+
 function chkCourseEx(selfCorrect){
   if(answered) return; answered = true;
   hideStickyCheck();
@@ -5512,7 +5567,7 @@ function chkCourseEx(selfCorrect){
     const fb = document.getElementById('feedback');
     if(fb){
       fb.className = 'feedback show '+(ok?'correct':'wrong');
-      fb.innerHTML = (ok?'✓ Richtig! ':'✗ ') + '<span style="color:var(--gold2)">'+escHtml(exercise.solution||'')+'</span>';
+      fb.innerHTML = (ok?'✓ Richtig! ':'✗ ') + '<span style="color:var(--gold2)">'+courseSolutionHtml(exercise)+'</span>';
     }
   }
   window._lastCourseOrigProgress = COURSE_EX_PROGRESS[exercise.id] ? JSON.parse(JSON.stringify(COURSE_EX_PROGRESS[exercise.id])) : null;
