@@ -3694,17 +3694,24 @@ function showNothingDue(){
   const c = document.getElementById('exercise-content');
   if(!c) return;
   // Wann ist die nächste Vokabel fällig?
-  const vocab = cLesson==='all' ? ALL_VOCAB : gv();
+  // Nur Vokabeln, die auch in die Queue kämen (Partner-Queue ausgeblendet, siehe buildSrsQueue), und
+  // nur künftige Termine: eine überfällige, aber ausgeblendete Vokabel ergab sonst „heute noch“.
+  const vocab = (cLesson==='all' ? ALL_VOCAB : gv())
+    .filter(v => !(v.ps === 'rejected' || v.ps === 'suggested' || v.ps === 'unknown' || v.pc));
+  const nowD = new Date();
   let nextDate = null;
   vocab.forEach(v => {
     const p = srsProgress[v.id] || null;
     if(p && p.next_review){
       const d = new Date(p.next_review);
-      if(!nextDate || d < nextDate) nextDate = d;
+      if(d > nowD && (!nextDate || d < nextDate)) nextDate = d;
     }
   });
+  // Nach Kalendertagen, nicht nach 24-Stunden-Abstand: 01:00 Uhr nachts ist „morgen“, auch wenn es
+  // nur noch 3 Stunden sind (Math.round auf Tage ergab dort „heute noch“).
   const nextStr = nextDate ? (() => {
-    const diff = Math.round((nextDate - new Date()) / 86400000);
+    const day0 = d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const diff = Math.round((day0(nextDate) - day0(nowD)) / 86400000);
     if(diff <= 0) return 'heute noch';
     if(diff === 1) return 'morgen';
     return 'in ' + diff + ' Tagen';
