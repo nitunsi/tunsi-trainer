@@ -1289,27 +1289,11 @@ function buildSrsQueue(vocab){
     );
   });
 
-  if(due.length > 0){
+  // Nie gestartete Vokabeln (ohne Progress) kommen NICHT automatisch dran, auch nicht, wenn
+  // nichts fällig ist: sie werden nur gelernt, wenn die Fälligkeit manuell gesetzt wurde.
+  dbg('Due Karten: ' + due.length, due.length > 0 ? 'ok' : 'info');
 
-    dbg(
-      'Due Karten: ' + due.length,
-      'ok'
-    );
-
-    return due;
-  }
-
-  const fresh = vocab.filter(v => {
-
-    return !srsProgress[v.id];
-  });
-
-  dbg(
-    'Neue Wörter: ' + fresh.length,
-    'info'
-  );
-
-  return sh(fresh);
+  return due;
 }
 
 function countDueToday(lessonVocab){
