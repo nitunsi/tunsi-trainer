@@ -52,6 +52,16 @@ Die Wortliste unten (141 Formen) wurde als Probelauf an allen Feldern gerechnet:
 
 Die Änderung ginge als einzelne `UPDATE`-Befehle pro Feld, in einer Transaktion je Tabelle.
 
+## Nachtrag: was das Wörterbuch nicht findet
+
+Beim Durchgehen der Dialog-Fragen sind weitere Fehler aufgefallen, die das Wörterbuch übersieht:
+
+1. **ع als `s` bei Formen, die es nicht gibt oder die zufällig echte Wörter sind** (`sand`, `sabsa`, `sthah`, `sijbittu`, `samsit`, `simara`, `sastin`, `sarfit`). Sie kommen nur in 12 Karten der Dialog-Fragen vor und sind dort **Karte für Karte** korrigiert (`dialogfragen_korrekturen.json`), nicht über die Wortliste.
+2. **Demonstrativa mit `d`/`dh` statt `th`** (ذ = `th`, Regel seit 2026-08-07). Der Trainer schreibt `hetha`/`hethi`/`hethaka`:
+   - Übungen: `hadi` 5×, `haza` 3×, `hathaka` 1×.
+   - Dialoge (aus dem Skript umgewandelt): `hadi` 5×, `hadhi` 4×, `hadha` 3×, `haza` 1×, `hathaka` 1×.
+   - Nicht automatisch ersetzbar: `hadi` ist in Kurs 5 ein **Name** (Sprecher Hadi) und in Kurs 6 teils für Männer und Frauen verwendet. Vorschlag: diese ca. 22 Stellen einzeln durchgehen (`hadha`/`haza` → `hetha`, `hadhi`/`hadi` → `hethi` bzw. `hetha`, `hathaka` → `hethaka`).
+
 ## Wortliste
 
 ### ح: h → 7 (87 Wortformen)

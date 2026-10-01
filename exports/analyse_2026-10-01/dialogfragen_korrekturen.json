@@ -1,0 +1,307 @@
+{
+ "erstellt": "2026-10-01",
+ "hinweis": "Vorschlaege, nicht angewendet. alt = Ist-Wert in course_exercises, neu = Vorschlag.",
+ "eintraege": [
+  {
+   "id": 684,
+   "feld": "prompt",
+   "art": "H",
+   "alt": "l-dar shkun yimshiu?",
+   "neu": "l-id-dar shkun yimshiu?"
+  },
+  {
+   "id": 719,
+   "feld": "prompt",
+   "art": "F",
+   "alt": "kamal w-hethi winhum?",
+   "neu": "kamal w-hadi winhum?"
+  },
+  {
+   "id": 720,
+   "feld": "prompt",
+   "art": "F",
+   "alt": "kamal yushrub-shi qahwa m3a hethi?",
+   "neu": "kamal yushrub-shi qahwa m3a hadi?"
+  },
+  {
+   "id": 720,
+   "feld": "solution",
+   "art": "F",
+   "alt": "la, hethi mazrub, ma-yushrub-sh m3ah.",
+   "neu": "la, hadi mazrub, ma-yushrub-sh m3ah."
+  },
+  {
+   "id": 721,
+   "feld": "prompt",
+   "art": "F",
+   "alt": "win mashi hethi tawwa?",
+   "neu": "win mashi hadi tawwa?"
+  },
+  {
+   "id": 904,
+   "feld": "prompt",
+   "art": "H",
+   "alt": "hethi y7ibb yuq3ud fi-tunis?",
+   "neu": "muhammid y7ibb yuq3ud fi-tunis?"
+  },
+  {
+   "id": 1164,
+   "feld": "prompt",
+   "art": "F",
+   "alt": "ana jwab 3andu?",
+   "neu": "ayy rajil 3andu jwab?"
+  },
+  {
+   "id": 1176,
+   "feld": "solution",
+   "art": "F",
+   "alt": "qa3da naqra fi-ktab, ba3d qa3da tiktib fi-jwab.",
+   "neu": "qa3da naqra fi-ktab. hetha (illi m3aha) qa3id yiktib fi-jwab."
+  },
+  {
+   "id": 1178,
+   "feld": "solution",
+   "art": "F",
+   "alt": "bash yimshiu ba7dahum (Muhammid w-Fatma) m3a s-sab3a w-nuss bash yitfarrjau.",
+   "neu": "ba7da Muhammid, m3a s-sab3a w-nuss, bash yitfarrjau."
+  },
+  {
+   "id": 1181,
+   "feld": "solution",
+   "art": "F",
+   "alt": "yqum qbal it-tmanya gir rbu3.",
+   "neu": "ma-yqum-sh qbal it-tmanya gir rbu3."
+  },
+  {
+   "id": 1189,
+   "feld": "solution",
+   "art": "F",
+   "alt": "tuq3ud f-id-dar tiktib imaylat w-messajat l-as7abha.",
+   "neu": "nuq3ud f-id-dar niktib imaylat w-messajat l-as7abi."
+  },
+  {
+   "id": 1191,
+   "feld": "solution",
+   "art": "F",
+   "alt": "bash timshi ntull 3la sa7biha salah illi yuskun fi-jirba.",
+   "neu": "bash nimshi ntull 3la sa7bi salah illi yuskun fi-jirba."
+  },
+  {
+   "id": 1357,
+   "feld": "solution",
+   "art": "H",
+   "alt": "ma-yhibb-sh yishri sfinnarya, hiya qdima.",
+   "neu": "kilu, ama ma-yhibb-sh yishriha, hiya qdima."
+  },
+  {
+   "id": 1370,
+   "feld": "solution",
+   "art": "F",
+   "alt": "ma-3andha-sh, karhbatha mkassra.",
+   "neu": "ih, 3andha karhba, ama mkassra."
+  },
+  {
+   "id": 1371,
+   "feld": "solution",
+   "art": "H",
+   "alt": "bash yakhthu l-kar.",
+   "neu": "la, bash yakhthu l-kar."
+  },
+  {
+   "id": 1422,
+   "feld": "solution",
+   "art": "F",
+   "alt": "thibb tishri kilu sukkur.",
+   "neu": "thibb tishri rtal sukkur."
+  },
+  {
+   "id": 1428,
+   "feld": "solution",
+   "art": "F",
+   "alt": "ji3an.",
+   "neu": "3utshan."
+  },
+  {
+   "id": 1437,
+   "feld": "solution",
+   "art": "F",
+   "alt": "tunesische Speise aus Tomaten, Harissa, Knoblauch und Eiern.",
+   "neu": "hiya makla tunsiya: tmatim w-hrisa w-tum w-3dam."
+  },
+  {
+   "id": 1486,
+   "feld": "solution",
+   "art": "T",
+   "alt": "matalan fi-sin, drahim, janduba w-baza w-il-kaf.",
+   "neu": "matalan fi-3in drahim, janduba w-baza w-il-kaf."
+  },
+  {
+   "id": 1501,
+   "feld": "prompt",
+   "art": "T",
+   "alt": "ash sthatu?",
+   "neu": "ash 7addrit-lu?"
+  },
+  {
+   "id": 1540,
+   "feld": "prompt",
+   "art": "F",
+   "alt": "il-kar msahhba walla fargha?",
+   "neu": "il-kar mzahhma walla fargha?"
+  },
+  {
+   "id": 1553,
+   "feld": "prompt",
+   "art": "T",
+   "alt": "it-tbib ash sthah?",
+   "neu": "it-tbib ash 3tah?"
+  },
+  {
+   "id": 1553,
+   "feld": "solution",
+   "art": "T",
+   "alt": "sthah harabish.",
+   "neu": "3tah harabish."
+  },
+  {
+   "id": 1555,
+   "feld": "prompt",
+   "art": "T",
+   "alt": "ash shra min sand il-khaddar?",
+   "neu": "ash shra min 3and il-khaddar?"
+  },
+  {
+   "id": 1556,
+   "feld": "solution",
+   "art": "T",
+   "alt": "b-sabsa mya w-khamsin il-kilu.",
+   "neu": "b-sab3a mya w-khamsin il-kilu."
+  },
+  {
+   "id": 1557,
+   "feld": "prompt",
+   "art": "T",
+   "alt": "is-sfinnarya illi sand il-khaddar bahya walla la?",
+   "neu": "is-sfinnarya illi 3and il-khaddar bahya walla la?"
+  },
+  {
+   "id": 1559,
+   "feld": "prompt",
+   "art": "T",
+   "alt": "mmala shnuwwa shra bash martu tnazzzim ttayyib il-kuksi?",
+   "neu": "mmala shnuwwa shra bash martu tnazzim ttayyib il-kuksi?"
+  },
+  {
+   "id": 1560,
+   "feld": "prompt",
+   "art": "T",
+   "alt": "Thomas l-skun ktib jwab?",
+   "neu": "Thomas l-shkun ktib jwab?"
+  },
+  {
+   "id": 1575,
+   "feld": "prompt",
+   "art": "T",
+   "alt": "Thomas sijbittu-shi tunis?",
+   "neu": "Thomas 3ajbittu-shi tunis?"
+  },
+  {
+   "id": 1575,
+   "feld": "solution",
+   "art": "T",
+   "alt": "ih, sijbittu barsha.",
+   "neu": "ih, 3ajbittu barsha."
+  },
+  {
+   "id": 1607,
+   "feld": "solution",
+   "art": "T",
+   "alt": "f-is-simara lli wra qahwit l-aqwas.",
+   "neu": "f-il-3imara lli wra qahwit l-aqwas."
+  },
+  {
+   "id": 1609,
+   "feld": "solution",
+   "art": "T",
+   "alt": "talib mitin w-sabsin dinar.",
+   "neu": "talib mitin w-sab3in dinar."
+  },
+  {
+   "id": 1614,
+   "feld": "prompt",
+   "art": "T",
+   "alt": "fatma samsit b-dar 3la min?",
+   "neu": "fatma sam3it b-dar 3la min?"
+  },
+  {
+   "id": 1617,
+   "feld": "solution",
+   "art": "T",
+   "alt": "ih, il-burtman mtasi hunak.",
+   "neu": "ih, il-burtman mta3i hunak."
+  },
+  {
+   "id": 1618,
+   "feld": "solution",
+   "art": "T",
+   "alt": "fih arbsa byut: zuz kbar w-zuz zghar.",
+   "neu": "fih arb3a byut: zuz kbar w-zuz zghar."
+  },
+  {
+   "id": 1639,
+   "feld": "prompt",
+   "art": "T",
+   "alt": "salim il-makla sijbittu?",
+   "neu": "salim il-makla 3ajbittu?"
+  },
+  {
+   "id": 1640,
+   "feld": "solution",
+   "art": "T",
+   "alt": "tnash-in alf w-sabsa mya.",
+   "neu": "tnash-in alf w-sab3a mya."
+  },
+  {
+   "id": 1643,
+   "feld": "prompt",
+   "art": "F",
+   "alt": "ash talab mula l-mat3am f-dialog 3?",
+   "neu": "ash talab ir-rajil (A) f-dialog 3?"
+  },
+  {
+   "id": 1643,
+   "feld": "solution",
+   "art": "F",
+   "alt": "dabbuza ma safya w-wahda boga.",
+   "neu": "sahn hut, dabbuza ma safya w-wahda boga."
+  },
+  {
+   "id": 1644,
+   "feld": "solution",
+   "art": "T",
+   "alt": "madhi sastin.",
+   "neu": "madhi sa3tin."
+  },
+  {
+   "id": 1645,
+   "feld": "solution",
+   "art": "T",
+   "alt": "3la khatir ma-sarfit-sh win ja l-mat3am.",
+   "neu": "3la khatir ma-3arfit-sh win ja l-mat3am."
+  },
+  {
+   "id": 1654,
+   "feld": "prompt",
+   "art": "T",
+   "alt": "ash yilzim yikun kull yum sa-t-tawla f-rumdhan?",
+   "neu": "ash yilzim yikun kull yum 3a-t-tawla f-rumdhan?"
+  },
+  {
+   "id": 1655,
+   "feld": "solution",
+   "art": "T",
+   "alt": "yhaddru l-sid iz-zghir, yasmlu l-baqlawa w-il-maqrudh w-la-grayyba.",
+   "neu": "yhaddru l-3id iz-zghir, yasmlu l-baqlawa w-il-maqrudh w-la-grayyba."
+  }
+ ]
+}
