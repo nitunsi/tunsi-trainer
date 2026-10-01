@@ -5007,26 +5007,12 @@ function courseChunkMastered(srsItems){
   return mastered / srsItems.length >= 0.9;
 }
 
-// Schaltet höchstens EINEN weiteren Chunk frei (der nächste nach dem letzten gemeisterten) —
-// nie mehrere auf einmal. Bootstrap (noch nichts freigeschaltet) unlockt automatisch Chunk 1.
-async function courseEnsureFrontierUnlocked(){
-  const chunks = courseFlattenChunks();
-  let prevMastered = true;
-  for(const ch of chunks){
-    // Teilweise freigeschaltet = der Chunk war schon erreicht, danach kam eine Uebung dazu.
-    // Die neue sofort nachziehen, sonst gilt er nie als freigeschaltet und blockiert alle
-    // folgenden Chunks (courseChunkMastered verlangt courseChunkUnlocked).
-    if(!courseChunkUnlocked(ch.srsItems) && ch.srsItems.some(e=>COURSE_EX_PROGRESS[e.id])){
-      await courseUnlockChunk(ch);
-    }
-    if(courseChunkUnlocked(ch.srsItems)){
-      prevMastered = courseChunkMastered(ch.srsItems);
-      continue;
-    }
-    if(prevMastered && ch.srsItems.length) await courseUnlockChunk(ch);
-    break;
-  }
-}
+// Früher: schaltete automatisch den nächsten Chunk frei, sobald der vorige zu 90 % gemeistert war
+// (und beim allerersten Start Chunk 1). Das ist abgeschaltet: wie bei den Vokabeln kommen neue
+// Übungen nur dran, wenn sie manuell freigeschaltet wurden (Kurs-Ansicht → Abschnitt öffnen →
+// „Diesen Abschnitt jetzt freischalten“, siehe courseManualUnlockChunk). Die Funktion bleibt als
+// leere Hülle, weil sie an mehreren Stellen nach einer Antwort aufgerufen wird.
+async function courseEnsureFrontierUnlocked(){ return; }
 
 async function courseUnlockChunk(ch){
   const now = new Date().toISOString();
@@ -5046,9 +5032,8 @@ async function courseUnlockChunk(ch){
   }
 }
 
-// Manuelles Freischalten eines beliebigen (noch gesperrten) Chunks aus der Lese-Ansicht,
-// unabhängig von courseEnsureFrontierUnlocked()/der automatischen Ein-Chunk-Reihenfolge —
-// z.B. um vorzuspringen, statt auf die reguläre Freischaltung zu warten.
+// Manuelles Freischalten eines beliebigen (noch gesperrten) Chunks aus der Lese-Ansicht.
+// Einziger Weg, neue Kurs-Übungen in die Wiederholung zu bringen (keine automatische Freischaltung).
 async function courseManualUnlockChunk(lessonId, chunkKey){
   const l = COURSE_LESSONS.find(x=>x.id===lessonId);
   if(!l) return;
@@ -5105,7 +5090,7 @@ async function courseExAnswer(exercise, correct){
   }catch(e){
     dbg('FEHLER beim Speichern von course_exercise_progress ('+exId+'): '+e.message, 'err');
   }
-  // Nach jeder Antwort prüfen, ob der aktuelle Chunk jetzt gemeistert ist → nächsten freischalten.
+  // (Keine automatische Freischaltung des nächsten Chunks mehr, siehe courseEnsureFrontierUnlocked.)
   courseEnsureFrontierUnlocked().catch(()=>{});
   return await logCourseReview(correct);
 }
@@ -5299,7 +5284,7 @@ function showCourseNothingDue(){
   if(c) c.innerHTML = '<div style="text-align:center;padding:3rem 1rem">'
     + '<div style="font-size:3rem;margin-bottom:1rem">🎓</div>'
     + '<div style="color:var(--gold2);font-size:1.2rem;font-weight:700;margin-bottom:.5rem">Nichts fällig</div>'
-    + '<div style="color:var(--muted);font-size:.85rem;line-height:1.6">Aktuell keine Kurs-Übungen zur Wiederholung fällig.</div>'
+    + '<div style="color:var(--muted);font-size:.85rem;line-height:1.6">Aktuell keine Kurs-Übungen zur Wiederholung fällig.<br>Neue Abschnitte schaltest du in der Kurs-Ansicht manuell frei.</div>'
     + '</div>';
   document.getElementById('ex-type-label').textContent = '✓ Fertig';
   document.getElementById('ex-progress').textContent = '';
