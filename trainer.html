@@ -481,6 +481,9 @@ function checkAnswer(input, answer){
   const variants = rawVariants.map(v => normalize(v)).filter(v=>v!=='');
   // Exakter Match nach Normierung
   if(variants.some(v => n === v)) return {ok:true, exact:true, correct:answer};
+  // Mehrteilige Loesungen ("zuz krasi / tnashin kursi"): " / " trennt dort Teile, die beide
+  // verlangt sind. Wer die ganze Loesung tippt, muss richtig liegen, nicht nur einzelne Teile.
+  if(rawVariants.length>1 && n === normalize(answer)) return {ok:true, exact:true, correct:answer};
   // Fuzzy: 1 Buchstabe Toleranz ab 5 Zeichen
   const best = variants.filter(v=>v!=='').reduce((b,v)=>{
     const d=levenshtein(n,v);
