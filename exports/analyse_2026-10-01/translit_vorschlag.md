@@ -224,3 +224,9 @@ Beim Durchgehen der Dialog-Fragen sind weitere Fehler aufgefallen, die das Wört
 | 1 | `mxallin` | `mkhallin` | 0/1 | mxalli, mxallya (auch mxalliya), mxallin. |
 | 1 | `xzana` | `khzana` | 1/4 | bit in-num fiha xzana. |
 | 1 | `rxis` | `rkhis` | 3/4 | la-hsab tla3 rxis. |
+
+## Umsetzung (2026-10-01)
+
+Ausgeführt nach „Ja, beide umsetzen“: 410 Felder in 334 Übungen (`course_exercises.prompt`/`solution`) und 23 Felder in `course_lessons` (`dialog_text`/`grammar_notes`) auf die Trainer-Schreibweise umgestellt (139 Wortpaare; Namen und Satzanfänge klein im Tounsi-Kern). Jeder Schreibvorgang mit Guard `feld = alt`: 433 von 433 getroffen, 0 Fehlschläge. Kontrolle per frischem Abruf: 0 Abweichungen vom Soll. Vorher/Nachher je Feld: `translit_aenderungen.json` (Undo = `neu` → `alt`).
+
+Offen: Demonstrativa (hadi/hadhi/hada/hadha/haza/hathaka → hethi/hetha/hethaka) einzeln durchgehen; nicht automatisch angefasst.
