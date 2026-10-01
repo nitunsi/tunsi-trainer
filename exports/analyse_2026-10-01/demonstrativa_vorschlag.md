@@ -51,3 +51,6 @@ Das Verb „brauchen“ steht in der Vokabel-/Kursform `7ashti`/`7ashtik`. Abwei
 | 1722 | hashti b-zuz kilo batata. | 7ashti b-zuz kilo batata. |
 | 1403 | ih, haštu bi-hara 3dam. | ih, 7ashtu b-… (⚠ „bi-hara“ unklar, Inhalt prüfen) |
 | 1535 | maniš bash nhaddar … | mani-sh bash nhaddar … (Sonderzeichen š) |
+
+## Umsetzung (2026-10-01)
+Gruppen A–C und E geschrieben, 13 Felder, alle mit Guard `feld = alt` getroffen (Beleg/Undo: `demonstrativa_aenderungen.json`). 1412 und 1722 standen schon auf `7ashti` (von der Wortliste-Umstellung), dort nichts zu tun. In 1403 nur `haštu` → `7ashtu`; `bi-hara` bleibt offen. Lektion 8 Z. 24/25 als `hetha` geschrieben.
