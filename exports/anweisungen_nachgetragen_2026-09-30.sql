@@ -35,3 +35,12 @@ WHERE id IN (532,533,534,535,536,537,538,539,540,
 -- Zurücksetzen:
 UPDATE course_exercises SET instruction = NULL, exercise_type = 'translate_de_tn'
 WHERE id BETWEEN 873 AND 888 AND chunk_key = 'passives_partizip';
+
+-- Vierter Durchgang (2 Zeilen), 2026-09-30, mit Freigabe von Nils: Tippfehler im Prompt,
+-- K4 dialoge, fixed_response. Quelle: Lektion 4, Übung XVIII (PDF-Seite 67): "āš taʕmil maryam
+-- fi-tūnis?" und "maryam mutaržma?".
+--   689: 'ash tasmil maryam fi-tunis?' -> 'ash ta3mil maryam fi-tunis?'  (3 war zu s geworden)
+--   690: 'maryam mutarzma?'            -> 'maryam mutarjma?'            (ج = j in Trainer-Schreibung)
+-- Zurücksetzen:
+UPDATE course_exercises SET prompt = 'ash tasmil maryam fi-tunis?' WHERE id = 689;
+UPDATE course_exercises SET prompt = 'maryam mutarzma?' WHERE id = 690;
