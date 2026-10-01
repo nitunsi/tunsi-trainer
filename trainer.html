@@ -5527,12 +5527,63 @@ function chkCourseEx(selfCorrect){
 }
 
 // ── Grammatik-Modal: on-demand Nachschlagen zum aktuellen Chunk einer Kurs-Übung ──
+// Fragen zum Dialog: im Fenster nur den Dialog (bzw. Text) zeigen, zu dem die Frage gehört, nicht
+// alle 1–4 der Lektion. Die Karte kennt ihren Dialog nicht, also wird er aus dem Text abgeleitet:
+// Wörter von Frage+Antwort gegen jeden Block, seltene Wörter zählen mehr. Eindeutig → ein Block.
+// Unentschieden oder ohne Treffer → die Fragen davor/danach (Reihenfolge = Dialogreihenfolge)
+// grenzen den Bereich ein, im Zweifel werden mehrere Blöcke gezeigt, nie ein falscher allein.
+function courseDialogBlocks(dialogText){
+  const blocks = []; let cur = null;
+  (dialogText||'').split('\n').forEach(line=>{
+    if(/^(Dialog|Text)\s*\d*\b/i.test(line.trim())){ cur = {head:line.trim(), lines:[line]}; blocks.push(cur); }
+    else if(cur) cur.lines.push(line);
+  });
+  return blocks;
+}
+function courseDialogToks(s){
+  return (s||'').toLowerCase().replace(/[^a-z0-9'’ ]/g,' ').split(/[\s-]+/)
+    .map(t=>t.replace(/^(il|el|l|is|it|id|ij|ish|iz|ir|in)$/,'')).filter(t=>t.length>=3);
+}
+function courseDialogCandidates(blocks, ex){
+  const sets = blocks.map(b=>new Set(courseDialogToks(b.lines.join(' '))));
+  const q = [...new Set(courseDialogToks((ex.prompt||'')+' '+(ex.solution||'')))];
+  const sc = sets.map(set=>q.reduce((a,t)=>a+(set.has(t)?1/sets.filter(x=>x.has(t)).length:0),0));
+  const mx = Math.max(...sc);
+  return mx>0 ? sc.map((v,i)=>v===mx?i:-1).filter(i=>i>=0) : [];
+}
+function courseDialogFor(exercise, lesson){
+  const blocks = courseDialogBlocks(lesson.dialog_text);
+  if(blocks.length<2) return null;
+  const sibs = (COURSE_EXERCISES_BY_LESSON[lesson.id]||[]).filter(e=>e.chunk_key===exercise.chunk_key && courseIsDialogQuestion(e))
+    .slice().sort((a,b)=>(a.position||0)-(b.position||0));
+  const cand = sibs.map(e=>courseDialogCandidates(blocks,e));
+  const me = sibs.findIndex(e=>e.id===exercise.id);
+  if(me<0) return null;
+  if(cand[me].length===1) return [cand[me][0]];
+  const sure = i=>cand[i].length===1 ? cand[i][0] : null;
+  let lo = 0, hi = blocks.length-1;
+  for(let i=me-1;i>=0;i--){ if(sure(i)!==null){ lo = sure(i); break; } }
+  for(let i=me+1;i<sibs.length;i++){ if(sure(i)!==null){ hi = sure(i); break; } }
+  if(lo>hi){ const t=lo; lo=hi; hi=t; }
+  let res = []; for(let i=lo;i<=hi;i++) res.push(i);
+  const both = cand[me].filter(i=>i>=lo&&i<=hi);
+  if(both.length) res = both;
+  return res.length===blocks.length ? null : res;
+}
 function courseGrammarModalContent(exercise){
   const lesson = COURSE_LESSONS.find(l=>l.id===exercise.course_lesson_id);
   if(!lesson) return {title:'', html:'<div style="color:var(--muted);font-size:.85rem">Keine Lektion gefunden.</div>'};
   const chunk = (lesson.chunk_order||[]).find(c=>c.key===exercise.chunk_key);
   if(!chunk) return {title:'L'+lesson.course_number, html:'<div style="color:var(--muted);font-size:.85rem">Kein Abschnitt zugeordnet.</div>'};
-  return {title:'L'+lesson.course_number+' · '+chunk.label, html: courseChunkLearnHtml(lesson, chunk)};
+  let view = lesson;
+  if(courseIsDialogQuestion(exercise) && chunk.dialog){
+    const pick = courseDialogFor(exercise, lesson);
+    if(pick){
+      const blocks = courseDialogBlocks(lesson.dialog_text);
+      view = Object.assign({}, lesson, {dialog_text: pick.map(i=>blocks[i].lines.join('\n').trim()).join('\n\n')});
+    }
+  }
+  return {title:'L'+lesson.course_number+' · '+chunk.label, html: courseChunkLearnHtml(view, chunk)};
 }
 function showGrammarModal(exerciseId){
   const exercise = COURSE_EX_BY_ID[exerciseId];
