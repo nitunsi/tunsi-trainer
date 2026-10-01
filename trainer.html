@@ -5269,8 +5269,12 @@ function courseDueExercises(){
   return due;
 }
 
+// Wie bei den Vokabeln (bFlash): Blöcke zu 10. Die am längsten überfälligen zuerst, innerhalb des
+// Blocks gemischt; „Nochmal“ im Ergebnis holt den nächsten Block.
 function bCourseSrs(){
-  return sh(courseDueExercises()).map(e=>({type:'course', exercise:e}));
+  const ts = e=>{ const p = COURSE_EX_PROGRESS[e.id]; return p && p.next_review ? courseParseTs(p.next_review).getTime() : 0; };
+  const due = courseDueExercises().sort((a,b)=>ts(a)-ts(b));
+  return sh(due.slice(0,10)).map(e=>({type:'course', exercise:e}));
 }
 
 // Fest 8 Vokabeln : 2 Kurs-Übungen; sind weniger als 2 Kurs-Übungen fällig, wird mit
@@ -7564,7 +7568,12 @@ function continueRound(){
   window.scrollTo({top:0,behavior:'instant'});
 }
 
-function restartExercise(){document.getElementById('result-screen').classList.remove('show');go();}
+function restartExercise(){
+  document.getElementById('result-screen').classList.remove('show');
+  if(cMode==='coursesrs'){ goCourseSrs(); return; }
+  if(cMode==='mix'){ goMix(); return; }
+  go();
+}
 function closeResult(){document.getElementById('result-screen').classList.remove('show');}
 
 // ── AKTIVIERUNG ──────────────────────────────────────────────────────────────
