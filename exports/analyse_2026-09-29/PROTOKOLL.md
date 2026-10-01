@@ -37,6 +37,31 @@ sie nicht in die Regeldateien.
 
 ---
 
+## Nachtrag 2 — Stand 2026-10-01
+
+Alles danach lief mit deiner Freigabe pro Schritt; jede Datenbankänderung mit Guard `feld = alt`, danach per frischem Abruf geprüft. Belege und Undo (alt → neu je Feld) liegen in `exports/analyse_2026-10-01/` und `exports/anweisungen_nachgetragen_2026-09-30.sql`.
+
+| Was | Stand |
+|---|---|
+| Kurs-Ansicht, Hinweis-Karten, Dialog-Label „Frage zum Dialog“, Knopf „📖 Dialog“, langer Strich in Lösungen (`courseSolutionCore`) | **Gemergt**, PR #87–#92. Beim kurzen Strich war mein erster Test (#86) wirkungslos; erst #91 hat 224–228 lösbar gemacht. |
+| Korrekturen Durchgänge 1–4 (9, 55, 16 `passives_partizip`, 689/690) | **Geschrieben**, Beleg `anweisungen_nachgetragen_2026-09-30.sql` |
+| 238 Dialog-Fragen Karte für Karte geprüft | 183 ✓ · 15 ✗ · 20 ✎ · 20 ⚠. **43 Felder in 39 Karten korrigiert**, `dialogfragen_pruefung.md`. Alle 238 Antworten sind `source = constructed`. |
+| Transliteration im Kurs gegen die Trainer-Regeln | **410 Übungsfelder (334 Übungen) + 23 Lektionsfelder umgestellt**, 139 Wortpaare, 433/433 getroffen. `translit_vorschlag.md`, `translit_aenderungen.json`. |
+| Demonstrativa, `7aja`, `7ashti` | **13 Felder:** `hethi`/`hetha` nach Genus, `haza` → `7aja` (Tippfehler), Name Hadi und `hathaka` bleiben. `demonstrativa_*`. Offen: `bi-hara` in Übung 1403. |
+| `nazzim` → `najjim` („können“) | **19 Felder** (16 Übungen, 3 Lektionen); `nazzim` = „organisieren“ bleibt (1524, 1759, Kurs 9). `najjim_*`. |
+| Stichprobe Karten im Trainer (92 Kurskarten, alle 975 textgeprüften, 3.784 Vokabeln) | Anzeige ohne Befund. **Befund:** 43 Karten mit zweiteiliger Lösung (`A / B`) wurden bei vollständiger Eingabe als falsch gewertet. |
+| Fix `checkAnswer` | **Gemergt**, PR #94: ganze Lösung wird zusätzlich akzeptiert; alle 975 nehmen die eigene Lösung an (vorher 58 Ablehnungen). |
+| 15 Karten `kongruenz_gegenteil` (1066–1080) | `fill_blank` → `answer_pattern` (Selbstbewertung), `gegenteil_typwechsel.sql`. |
+| Dialog-Fenster bei Fragen zum Dialog | **Gemergt**, PR #95: nur der passende Dialog/Text statt aller. Zuordnung aus dem Text abgeleitet: 235 von 238 eindeutig, 3 zeigen zwei Blöcke. |
+| Lückentext: ergänzte Wörter in der Lösung hervorgehoben | **Gemergt**, PR #96. 97/97 Lückenkarten markieren genau so viele Stellen wie Lücken. |
+| Sicherheit: `http`-Extension | Entfernt (siehe Nachtrag 1). |
+
+**Noch nicht im Browser getestet** (Nils testet, sobald die Karten fällig sind): Eingabe der ganzen Lösung bei Zahlen-Paaren, Selbstbewertung bei Gegenteil + Plural, Dialog-Fenster-Filter, Markierung der Lückenwörter.
+
+**Offen:** `bi-hara` (Übung 1403); Regel-Ergänzung für `COURSE_MODE.md` (siehe F7), dazu neu: „Kurs-Transliteration nach Trainer-Regeln, `najjim` = können“; `yhibb` → `y7ibb` (Karte 215), Vokale nicht angefasst.
+
+---
+
 ## Kurzfassung — die fünf Punkte, die zählen
 
 | # | Befund | Wirkung | Status |
