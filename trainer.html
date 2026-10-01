@@ -1045,7 +1045,7 @@ async function srsAnswer(vocab, correct){
 
   if(correct){
     // Level steigt nur wenn fällig (Pause eingehalten)
-    const wasDue = !existing || !existing.next_review || new Date() >= new Date(existing.next_review);
+    const wasDue = !existing || !existing.next_review || isDueByDay(existing.next_review);
     if(wasDue) level = Math.min(level + 1, 6);
   } else {
     // Falsch: direkt auf Level 0 zurücksetzen
@@ -1056,7 +1056,7 @@ async function srsAnswer(vocab, correct){
   //  - falsch                      → sofort fällig (jetzt)
   //  - richtig & fällig            → jetzt + SRS_DAYS[level] Tage → 03:00 Uhr (Europe/Berlin)
   //  - richtig & noch nicht fällig → bisheriges Datum beibehalten
-  const wasDueForNext = !existing || !existing.next_review || new Date() >= new Date(existing.next_review);
+  const wasDueForNext = !existing || !existing.next_review || isDueByDay(existing.next_review);
   let nextReview = existing && existing.next_review ? new Date(existing.next_review) : new Date();
   if(!correct){
     nextReview = new Date(); // sofort fällig
@@ -1083,7 +1083,7 @@ async function srsAnswer(vocab, correct){
     levelBefore,
     levelAfter: level,
     ptsDelta: ptsAfter - ptsBefore,
-    wasDue: !existing || !existing.next_review || new Date() >= new Date(existing.next_review)
+    wasDue: !existing || !existing.next_review || isDueByDay(existing.next_review)
   });
   if(_sessionLog.length % 10 === 0) _printSessionLog();
   // Zähler EINMAL berechnen, BEVOR der lokale State mutiert wird.
@@ -1242,12 +1242,18 @@ async function correctLastFlashLog(newCorrectValue){
   }
 }
 
+// Fälligkeit zählt nach TAG (Berliner Kalendertag), nicht nach Uhrzeit: wer für heute 03:00 Uhr
+// angesetzt ist, ist ab 00:00 Uhr fällig, nicht erst ab 03:00. Die Uhrzeit bleibt gespeichert
+// (nextReviewDE setzt weiter 03:00 Berliner Zeit), sie entscheidet nur nichts mehr.
+function berlinDayKey(d){ return new Date(d).toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'}); }
+function isDueByDay(ts){ return berlinDayKey(ts) <= berlinDayKey(new Date()); }
+
 function srsIsDue(vocab){
   const p = srsProgress[vocab.id];
   // Kein Progress = noch nie gesehen → nicht fällig (muss erst freigeschaltet werden)
   if(!p) return false;
   if(!p.next_review) return false;
-  return new Date() >= new Date(p.next_review);
+  return isDueByDay(p.next_review);
 }
 
 function srsDaysUntil(vocab){
@@ -1275,7 +1281,7 @@ function buildSrsQueue(vocab){
     if(!p) return false;
     if(!p.next_review) return false;
 
-    return new Date(p.next_review) <= now;
+    return isDueByDay(p.next_review);
   });
 
   due.sort((a,b)=>{
@@ -3559,7 +3565,7 @@ async function pullForwardVocab(){
   const now = new Date();
   const pfDayOf = d => { const t = new Date(d); t.setHours(0,0,0,0); return t.getTime(); };
   const vocabCandidates = Object.entries(srsProgress)
-    .filter(([vocabId, p]) => p && p.next_review && new Date(p.next_review).getTime() > now.getTime())
+    .filter(([vocabId, p]) => p && p.next_review && !isDueByDay(p.next_review))
     .map(([vocabId, p]) => [vocabId, p, vById(vocabId)])
     .filter(([vocabId, p, v]) => {
       if(cLesson === 'all') return true;
@@ -3576,7 +3582,7 @@ async function pullForwardVocab(){
   // dieselbe Bedingung gilt hier, damit "Vorziehen" den dort gezeigten Bestand auch trifft.
   const courseCandidates = cLesson === 'all'
     ? Object.entries(COURSE_EX_PROGRESS)
-        .filter(([exId, p]) => p && p.next_review && courseParseTs(p.next_review).getTime() > now.getTime())
+        .filter(([exId, p]) => p && p.next_review && !isDueByDay(courseParseTs(p.next_review)))
         .map(([exId, p]) => ({ type:'course', id: exId, p, day: pfDayOf(courseParseTs(p.next_review)), level: Math.min(p.correct_count||0, 6) }))
     : [];
 
@@ -3694,17 +3700,24 @@ function showNothingDue(){
   const c = document.getElementById('exercise-content');
   if(!c) return;
   // Wann ist die nächste Vokabel fällig?
-  const vocab = cLesson==='all' ? ALL_VOCAB : gv();
+  // Nur Vokabeln, die auch in die Queue kämen (Partner-Queue ausgeblendet, siehe buildSrsQueue), und
+  // nur künftige Termine: eine überfällige, aber ausgeblendete Vokabel ergab sonst „heute noch“.
+  const vocab = (cLesson==='all' ? ALL_VOCAB : gv())
+    .filter(v => !(v.ps === 'rejected' || v.ps === 'suggested' || v.ps === 'unknown' || v.pc));
+  const nowD = new Date();
   let nextDate = null;
   vocab.forEach(v => {
     const p = srsProgress[v.id] || null;
     if(p && p.next_review){
       const d = new Date(p.next_review);
-      if(!nextDate || d < nextDate) nextDate = d;
+      if(!isDueByDay(d) && (!nextDate || d < nextDate)) nextDate = d;
     }
   });
+  // Nach Kalendertagen, nicht nach 24-Stunden-Abstand: 01:00 Uhr nachts ist „morgen“, auch wenn es
+  // nur noch 3 Stunden sind (Math.round auf Tage ergab dort „heute noch“).
   const nextStr = nextDate ? (() => {
-    const diff = Math.round((nextDate - new Date()) / 86400000);
+    const day0 = d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const diff = Math.round((day0(nextDate) - day0(nowD)) / 86400000);
     if(diff <= 0) return 'heute noch';
     if(diff === 1) return 'morgen';
     return 'in ' + diff + ' Tagen';
@@ -4976,7 +4989,7 @@ function courseExIsDue(exerciseId){
   const p = COURSE_EX_PROGRESS[exerciseId];
   if(!p) return false; // ohne Progress-Zeile = noch nicht freigeschaltet
   if(!p.next_review) return true;
-  return new Date() >= courseParseTs(p.next_review);
+  return isDueByDay(courseParseTs(p.next_review));
 }
 
 // Zerlegt alle Lektionen anhand ihrer chunk_order in eine global geordnete Chunk-Liste
@@ -5051,7 +5064,7 @@ async function courseExAnswer(exercise, correct){
   const levelBefore = existing ? (existing.correct_count||0) : 0;
   let level = levelBefore;
   if(correct){
-    const wasDue = !existing || !existing.next_review || new Date() >= courseParseTs(existing.next_review);
+    const wasDue = !existing || !existing.next_review || isDueByDay(courseParseTs(existing.next_review));
     if(wasDue) level = Math.min(level + 1, 6);
   } else {
     level = 0;
@@ -5060,7 +5073,7 @@ async function courseExAnswer(exercise, correct){
   if(!correct){
     nextReview = new Date();
   } else {
-    const wasDueForNext = !existing || !existing.next_review || new Date() >= courseParseTs(existing.next_review);
+    const wasDueForNext = !existing || !existing.next_review || isDueByDay(courseParseTs(existing.next_review));
     nextReview = wasDueForNext ? nextReviewDE(SRS_DAYS[level], level>=3?srsJitter(level):0) : courseParseTs(existing.next_review);
   }
   const newReviewCount = (existing ? (existing.review_count||0) : 0) + 1;
