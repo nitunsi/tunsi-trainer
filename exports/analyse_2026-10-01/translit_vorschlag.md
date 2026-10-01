@@ -11,10 +11,10 @@ Geprüft: `prompt` und `solution` aller 2.093 Übungen (nur der Tounsi-Teil, ohn
 | Befund | Wortformen | Stellen | Beispiel |
 |---|---:|---:|---|
 | ح als `h` statt `7` | 87 | ca. 280 | `sbah` → `sba7`, `hatta` → `7atta`, `wahid` → `wa7id` |
-| ج als `z` statt `j` | 16 | ca. 40 | `zwab` → `jwab`, `znab` → `jnab`, `sazra` → `sajra` |
-| ع als `s` statt `3` | 32 | ca. 45 | `bsid` → `b3id`, `ysayyshik` → `y3ayyshik`, `arbsa` → `arb3a` |
+| ج als `z` statt `j` | 15 | ca. 40 | `zwab` → `jwab`, `znab` → `jnab`, `sazra` → `sajra` |
+| ع als `s` statt `3` | 30 | ca. 45 | `bsid` → `b3id`, `ysayyshik` → `y3ayyshik`, `arbsa` → `arb3a` |
 | خ als `x` statt `kh` | 9 | 14 | `xrif` → `khrif`, `nixdim` → `nikhdim` |
-| Artikel vor ج nicht angeglichen (Regel 4, Folge von `z`→`j`) | – | 17 | `iz-zwab` → `ij-jwab` |
+| Artikel vor ج nicht angeglichen (Regel 4, Folge von `z`→`j`) | – | 16 | `iz-zwab` → `ij-jwab` |
 | Namen großgeschrieben (Regel 3) | 13 | 58 | `Fatma`, `Klaus`, `Muhsin` → `fatma`, `klaus`, `muhsin` |
 | Satzanfang großgeschrieben in Tounsi-Antworten (Regel 3) | – | 88 | `Ih, …` / `La, …` → `ih, …` / `la, …` |
 
