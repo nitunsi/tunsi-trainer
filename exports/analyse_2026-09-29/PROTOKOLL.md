@@ -62,6 +62,28 @@ Alles danach lief mit deiner Freigabe pro Schritt; jede Datenbankänderung mit G
 
 ---
 
+## Nachtrag 3 — Stand 2026-10-02
+
+Wie Nachtrag 2: jede Datenbankänderung mit Freigabe, Guard `feld = alt`, Neuabruf zur Kontrolle. Belege/Undo in `exports/analyse_2026-10-01/`.
+
+| Was | Stand |
+|---|---|
+| Vokabel-Lernen: nie gestartete Vokabeln nicht mehr automatisch vorschlagen | **Gemergt**, PR #98. Neue Vokabeln kommen nur dran, wenn die Fälligkeit manuell gesetzt wurde; sonst „Alles erledigt“. |
+| Kurs-Wiederholung in 10er-Blöcken, „Nochmal“ im Kurs-/Mix-Modus, **keine automatische Freischaltung** neuer Abschnitte | **Gemergt**, PR #99. Freischalten nur über „Diesen Abschnitt jetzt freischalten“ in der Kurs-Ansicht. Vorher lief „Nochmal“ im Kurs-Modus über die Vokabel-Logik („Keine Vokabeln fällig“). |
+| Fälligkeit zählt nach **Berliner Kalendertag**, nicht nach Uhrzeit | **Gemergt**, PR #100. Termin heute 03:00 ist ab 00:00 lernbar; die gespeicherte Uhrzeit (03:00) bleibt. Gilt für Vokabeln und Kurs (Queue, Statistik, Level-Aufstieg, Vorziehen). „Nächste Wiederholung: heute noch“ bei einem Termin um 01:00 des Folgetags war ein Rundungsfehler und ist behoben. |
+| Prüfung der heute im Quellenabgleich angelegten/fällig gesetzten Vokabeln (12 + 4606) | 4606 `malik` war Mischeintrag „Engel; König“, jetzt nur **König** (Ninja-Audio, Quelle ninja). Fünf weitere Korrekturen: 3147 `khsara`, 2327 `7ajjem` (english), 4157 `fannan` („/“ in der Klammer), 1523 `sghar` (english), 4539 `zad`. Sieben waren in Ordnung. |
+| Partner-Queue: 3749 `a7na mananesh` von Semia abgelehnt („ein na zu viel“) | **`manash`** (TUNICO `mānāš`): Vokabel 3749 (arabic `احنا ماناش`, Status zurück auf `pending`), Übungen 171/124/169, Lektion 2. Die Rückmeldungen 3748 (Kommentar `mahiash`) und 2658 `we7a` („unbekannt“, Ninja/TUNICO/Peace Corps belegen `wa7a`) brauchten keine Änderung außer unten. |
+| `e7na` → `a7na` im Kurs | 29 Felder. `e7na` kommt nirgends mehr vor. |
+| Pronomen im Kurs an die Vokabeln angeglichen | 180 Felder: `houa`/`huwwa`/`huwa` → `houwwa`, `heya`/`hiya` → `hiyya`, `huma` → `houma`, `intuma` → `entouma`, `inti` → `enti`. `pronomen_angleichung.json`. |
+| `ana` → `ena` im Kurs | 63 Felder. **Nicht ersetzt:** `ana` als Fragewort „welche(r)“ (`fi-ana waqt`, `ana bit zghir? illi …`, 41 Stellen). Vokabeln 494 `heya` → `hiyya` (هِيَّ), 3338 `inti bidek` → `enti bidek`. |
+| 3748 „sie ist nicht“ | Variante ergänzt: `hiyya mahish / hiyya mahiyash`, arabic `هِيَّ مَهِيشْ / هِيَّ مَاهِيَاشْ`. **Nur `mahish` ist in Ninja/TUNICO belegt**, `mahiyash` beruht auf Semias Kommentar und der Aussprache (Semia schreibt `mahiash`, das Quiz akzeptiert es per Tippfehler-Toleranz). |
+
+**Beim Schreiben aufgefallen:** `execute_sql` lief bei längeren `internal_note`-Texten wiederholt in Zeitüberschreitungen oder wurde abgebrochen (3748); kurze Einzelanweisungen gingen durch. `vocabulary.ninja_id` hat einen Fremdschlüssel auf `derja_ninja_import`, nicht auf `derja_ninja_entries` — für das Ninja-Audio genügen `ninja_audio_url/start/end`.
+
+**Offen:** Vokabel `khsir` („er verlor“) fehlt im Verbmodell (nur `khsart`, `yikhsar`); die sieben Ninja-Sätze mit `ana` als „ich“ (Vokabeln) tragen noch `ana`, die Pronomen-Vokabel heißt `ena`; `bi-hara` in Übung 1403; Regel-Ergänzung für `COURSE_MODE.md` (siehe Nachtrag 2, dazu: Kurs-Pronomen nach den Vokabeln, `ana` = Fragewort nicht ersetzen); `yhibb` → `y7ibb` (Karte 215).
+
+---
+
 ## Kurzfassung — die fünf Punkte, die zählen
 
 | # | Befund | Wirkung | Status |
