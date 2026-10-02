@@ -3499,8 +3499,9 @@ async function loadPartnerStats(){
     const commentedN = await sbApiCount('vocabulary?partner_comment=not.is.null&select=id');
     const qualityN = countDupeIssues() + countTranslitIssues();
 
-    // Block nur zeigen, wenn mind. einer der Werte (außer "Offen") > 0 ist ODER die Prüfung überfällig ist
-    const anyOtherNonzero = [approvedRecentN, suggestedN, rejectedN, unknownN, commentedN, qualityN].some(n => n > 0);
+    // Block nur zeigen, wenn mind. einer der Werte (außer "Offen" und "Letzte 7 Tage") > 0 ist ODER die
+    // Prüfung überfällig ist. "Letzte 7 Tage" (bestätigt) allein ist nichts, worauf man reagieren müsste.
+    const anyOtherNonzero = [suggestedN, rejectedN, unknownN, commentedN, qualityN].some(n => n > 0);
     const block = document.getElementById('partner-stats-block');
     if(!anyOtherNonzero && !isOverdue){
       if(block) block.style.display = 'none';
