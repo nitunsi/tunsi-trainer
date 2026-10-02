@@ -3499,25 +3499,24 @@ async function loadPartnerStats(){
     const commentedN = await sbApiCount('vocabulary?partner_comment=not.is.null&select=id');
     const qualityN = countDupeIssues() + countTranslitIssues();
 
-    // Block nur zeigen, wenn mind. einer der Werte (außer "Offen" und "Letzte 7 Tage") > 0 ist ODER die
-    // Prüfung überfällig ist. "Letzte 7 Tage" (bestätigt) allein ist nichts, worauf man reagieren müsste.
+    // Kacheln nur zeigen, wenn mind. einer der Werte (außer "Offen" und "Letzte 7 Tage") > 0 ist.
+    // "Letzte 7 Tage" (bestätigt) allein ist nichts, worauf man reagieren müsste.
     const anyOtherNonzero = [suggestedN, rejectedN, unknownN, commentedN, qualityN].some(n => n > 0);
     const block = document.getElementById('partner-stats-block');
-    if(!anyOtherNonzero && !isOverdue){
-      if(block) block.style.display = 'none';
-      return;
-    }
     if(block) block.style.display = '';
 
-    // Letzte Aktivität kompakt in die Kopfzeile neben dem Abschnittstitel (färbt sich bei Überfälligkeit rot)
+    // Überschrift mit „Vor x …“ (letzte Aktivität des Partners) wird immer gezeigt, auch wenn sonst
+    // nichts zu sehen ist (färbt sich bei Überfälligkeit rot).
     const lastActiveEl = document.getElementById('partner-last-active');
     if(lastActiveEl){ lastActiveEl.style.color = activityColor; lastActiveEl.textContent = activityText; }
 
-    // Kein Zähler > 0, nur überfällig → Kachel-Raster (nur Nullen) unterdrücken, Kopfzeile reicht als Hinweis
+    // Kein Zähler > 0 (z.B. nur „Letzte 7 Tage“): Kachel-Raster ausblenden, die Kopfzeile reicht.
     if(!anyOtherNonzero){
       el.innerHTML = '';
+      el.style.display = 'none';
       return;
     }
+    el.style.display = '';
 
     el.innerHTML =
       '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.4rem;text-align:center">' +
