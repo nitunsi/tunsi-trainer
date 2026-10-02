@@ -1,0 +1,205 @@
+[
+ {
+  "t": "course_exercises",
+  "id": 124,
+  "feld": "solution",
+  "alt": "ih, e7na fi-dar. / la, manash fi-dar. (Seid ihr zu Hause?)",
+  "neu": "ih, a7na fi-dar. / la, manash fi-dar. (Seid ihr zu Hause?)"
+ },
+ {
+  "t": "course_exercises",
+  "id": 147,
+  "feld": "solution",
+  "alt": "e7na naklou w nashrbou fi-dar.",
+  "neu": "a7na naklou w nashrbou fi-dar."
+ },
+ {
+  "t": "course_exercises",
+  "id": 150,
+  "feld": "solution",
+  "alt": "e7na min-nimsa. w-entouma?",
+  "neu": "a7na min-nimsa. w-entouma?"
+ },
+ {
+  "t": "course_exercises",
+  "id": 166,
+  "feld": "prompt",
+  "alt": "e7na naklou w nashrbou fi-dar.",
+  "neu": "a7na naklou w nashrbou fi-dar."
+ },
+ {
+  "t": "course_exercises",
+  "id": 166,
+  "feld": "solution",
+  "alt": "e7na ma nakloush w ma nashrboush fi-dar.",
+  "neu": "a7na ma nakloush w ma nashrboush fi-dar."
+ },
+ {
+  "t": "course_exercises",
+  "id": 169,
+  "feld": "prompt",
+  "alt": "e7na min-nimsa. w-entouma?",
+  "neu": "a7na min-nimsa. w-entouma?"
+ },
+ {
+  "t": "course_exercises",
+  "id": 169,
+  "feld": "solution",
+  "alt": "e7na manash min-nimsa. w-entouma?",
+  "neu": "a7na manash min-nimsa. w-entouma?"
+ },
+ {
+  "t": "course_exercises",
+  "id": 171,
+  "feld": "solution",
+  "alt": "ena manish, enti makesh, houa mahoush, heya mahish, e7na manash, entouma makumsh, houma mahumsh. Kurzform \"moush\" nur in der 3. Person.",
+  "neu": "ena manish, enti makesh, houa mahoush, heya mahish, a7na manash, entouma makumsh, houma mahumsh. Kurzform \"moush\" nur in der 3. Person."
+ },
+ {
+  "t": "course_exercises",
+  "id": 280,
+  "feld": "solution",
+  "alt": "ana ndur, enti tdur, houa ydur, heya tdur, e7na ndourou, entouma tdourou, houma ydourou",
+  "neu": "ana ndur, enti tdur, houa ydur, heya tdur, a7na ndourou, entouma tdourou, houma ydourou"
+ },
+ {
+  "t": "course_exercises",
+  "id": 281,
+  "feld": "solution",
+  "alt": "ana nsama7, enti tsama7, houa ysama7, heya tsama7, e7na nsam7ou, entouma tsam7ou, houma ysam7ou",
+  "neu": "ana nsama7, enti tsama7, houa ysama7, heya tsama7, a7na nsam7ou, entouma tsam7ou, houma ysam7ou"
+ },
+ {
+  "t": "course_exercises",
+  "id": 282,
+  "feld": "solution",
+  "alt": "ana nisma3, enti tisma3, houa yisma3, heya tisma3, e7na nism3ou, entouma tism3ou, houma yism3ou",
+  "neu": "ana nisma3, enti tisma3, houa yisma3, heya tisma3, a7na nism3ou, entouma tism3ou, houma yism3ou"
+ },
+ {
+  "t": "course_exercises",
+  "id": 283,
+  "feld": "solution",
+  "alt": "ana na3rif, enti ta3rif, houa ya3rif, heya ta3rif, e7na na3rfou, entouma ta3rfou, houma ya3rfou",
+  "neu": "ana na3rif, enti ta3rif, houa ya3rif, heya ta3rif, a7na na3rfou, entouma ta3rfou, houma ya3rfou"
+ },
+ {
+  "t": "course_exercises",
+  "id": 284,
+  "feld": "solution",
+  "alt": "ana na3ti, enti ta3ti, houa ya3ti, heya ta3ti, e7na na3tiw, entouma ta3tiw, houma ya3tiw",
+  "neu": "ana na3ti, enti ta3ti, houa ya3ti, heya ta3ti, a7na na3tiw, entouma ta3tiw, houma ya3tiw"
+ },
+ {
+  "t": "course_exercises",
+  "id": 285,
+  "feld": "solution",
+  "alt": "ana nifhim, enti tifhim, houa yifhim, heya tifhim, e7na nifhmou, entouma tifhmou, houma yifhmou",
+  "neu": "ana nifhim, enti tifhim, houa yifhim, heya tifhim, a7na nifhmou, entouma tifhmou, houma yifhmou"
+ },
+ {
+  "t": "course_exercises",
+  "id": 286,
+  "feld": "solution",
+  "alt": "ana nimshi, enti timshi, houa yimshi, heya timshi, e7na nimshiw, entouma timshiw, houma yimshiw",
+  "neu": "ana nimshi, enti timshi, houa yimshi, heya timshi, a7na nimshiw, entouma timshiw, houma yimshiw"
+ },
+ {
+  "t": "course_exercises",
+  "id": 378,
+  "feld": "solution",
+  "alt": "ana nakol, enti takol, houa yakol, heya takol, e7na naklou, entouma taklou, houma yaklou",
+  "neu": "ana nakol, enti takol, houa yakol, heya takol, a7na naklou, entouma taklou, houma yaklou"
+ },
+ {
+  "t": "course_exercises",
+  "id": 379,
+  "feld": "solution",
+  "alt": "ana n7ib, enti t7ib, houa y7ib, heya t7ib, e7na n7ibbou, entouma t7ibbou, houma y7ibbou",
+  "neu": "ana n7ib, enti t7ib, houa y7ib, heya t7ib, a7na n7ibbou, entouma t7ibbou, houma y7ibbou"
+ },
+ {
+  "t": "course_exercises",
+  "id": 380,
+  "feld": "solution",
+  "alt": "ana nikhdim, enti tikhdim, houa yikhdim, heya tikhdim, e7na nikhdmou, entouma tikhdmou, houma yikhdmou",
+  "neu": "ana nikhdim, enti tikhdim, houa yikhdim, heya tikhdim, a7na nikhdmou, entouma tikhdmou, houma yikhdmou"
+ },
+ {
+  "t": "course_exercises",
+  "id": 381,
+  "feld": "solution",
+  "alt": "ana noskon, enti toskon, houa yoskon, heya toskon, e7na nosknou, entouma tosknou, houma yosknou",
+  "neu": "ana noskon, enti toskon, houa yoskon, heya toskon, a7na nosknou, entouma tosknou, houma yosknou"
+ },
+ {
+  "t": "course_exercises",
+  "id": 382,
+  "feld": "solution",
+  "alt": "ana noshrob, enti toshrob, houa yoshrob, heya toshrob, e7na noshrbou, entouma toshrbou, houma yoshrbou",
+  "neu": "ana noshrob, enti toshrob, houa yoshrob, heya toshrob, a7na noshrbou, entouma toshrbou, houma yoshrbou"
+ },
+ {
+  "t": "course_exercises",
+  "id": 383,
+  "feld": "solution",
+  "alt": "ana na3mel, enti ta3mel, houa ya3mel, heya ta3mel, e7na na3mlou, entouma ta3mlou, houma ya3mlou",
+  "neu": "ana na3mel, enti ta3mel, houa ya3mel, heya ta3mel, a7na na3mlou, entouma ta3mlou, houma ya3mlou"
+ },
+ {
+  "t": "course_exercises",
+  "id": 384,
+  "feld": "solution",
+  "alt": "ana n3arref, enti t3arref, houa y3arref, heya t3arref, e7na n3arrfou, entouma t3arrfou, houma y3arrfou",
+  "neu": "ana n3arref, enti t3arref, houa y3arref, heya t3arref, a7na n3arrfou, entouma t3arrfou, houma y3arrfou"
+ },
+ {
+  "t": "course_exercises",
+  "id": 385,
+  "feld": "solution",
+  "alt": "ana naqra, enti taqra, houa yaqra, heya taqra, e7na naqrau, entouma taqrau, houma yaqrau",
+  "neu": "ana naqra, enti taqra, houa yaqra, heya taqra, a7na naqrau, entouma taqrau, houma yaqrau"
+ },
+ {
+  "t": "course_exercises",
+  "id": 386,
+  "feld": "solution",
+  "alt": "ana nqarri, enti tqarri, houa yqarri, heya tqarri, e7na nqarriu, entouma tqarriu, houma yqarriu",
+  "neu": "ana nqarri, enti tqarri, houa yqarri, heya tqarri, a7na nqarriu, entouma tqarriu, houma yqarriu"
+ },
+ {
+  "t": "course_exercises",
+  "id": 387,
+  "feld": "solution",
+  "alt": "ana niktib, enti tiktib, houa yiktib, heya tiktib, e7na niktbou, entouma tiktbou, houma yiktbou",
+  "neu": "ana niktib, enti tiktib, houa yiktib, heya tiktib, a7na niktbou, entouma tiktbou, houma yiktbou"
+ },
+ {
+  "t": "course_exercises",
+  "id": 388,
+  "feld": "solution",
+  "alt": "ana nitkallem, enti titkallem, houa yitkallem, heya titkallem, e7na nitkallmou, entouma titkallmou, houma yitkallmou",
+  "neu": "ana nitkallem, enti titkallem, houa yitkallem, heya titkallem, a7na nitkallmou, entouma titkallmou, houma yitkallmou"
+ },
+ {
+  "t": "course_exercises",
+  "id": 389,
+  "feld": "solution",
+  "alt": "ana nal3ab, enti tal3ab, houa yal3ab, heya tal3ab, e7na nal3bou, entouma tal3bou, houma yal3bou",
+  "neu": "ana nal3ab, enti tal3ab, houa yal3ab, heya tal3ab, a7na nal3bou, entouma tal3bou, houma yal3bou"
+ },
+ {
+  "t": "course_exercises",
+  "id": 390,
+  "feld": "solution",
+  "alt": "ana nitsharraf, enti titsharraf, houa yitsharraf, heya titsharraf, e7na nitsharrfou, entouma titsharrfou, houma yitsharrfou",
+  "neu": "ana nitsharraf, enti titsharraf, houa yitsharraf, heya titsharraf, a7na nitsharrfou, entouma titsharrfou, houma yitsharrfou"
+ },
+ {
+  "t": "course_lessons",
+  "id": 2,
+  "feld": "grammar_notes",
+  "alt": "### Präsens der Verben\n- Verbformen bekommen eine Vorsilbe: y- (er), t- (sie/du), n- (ich)\n- Im Plural kommt bei allen Formen zusätzlich ein -u ans Ende\n- Manche Verben verlieren dabei einen Vokal in der Mitte, das erleichtert die Aussprache: yikhdim (er arbeitet) → yikhdmu (sie arbeiten)\n- yakol und yitkallem verlieren ihren mittleren Vokal im Plural sogar ganz\n- yqarri und yaqra enden schon auf einen Vokal – da kommt das -u einfach direkt dran: yqarriw, yaqraw\n\n### Verneinung im Präsens (\"nicht\")\n- Man packt das Verb in eine Klammer: davor kommt ma-, danach -sh\n- Beispiel: yikhdim (er arbeitet) → ma yikhdimsh (er arbeitet nicht)\n- Durch das -sh am Ende verschiebt sich manchmal die Betonung im Wort\n\n### Personalpronomen (\"ich, du, er...\")\n- Einzahl: ena (ich), enti (du), houa (er), heya (sie)\n- Mehrzahl: e7na (wir), entouma (ihr), houma (sie)\n\n### \"Ich bin nicht\" / \"Du bist nicht\" usw.\n- ena manish, enti makesh, houa mahoush, heya mahish, e7na manash, entouma makumsh, houma mahumsh\n- Für die 3. Person (er/sie/sie-Pl.) gibt es oft auch die kurze Form \"moush\"\n\n### Zwei Wörter zusammenziehen (z.B. \"Fatmas Mutter\")\n- Man hängt die zwei Wörter einfach aneinander, das erste bekommt dabei keinen Artikel: oumm Fatma = wörtlich \"Mutter Fatma\" = Fatmas Mutter\n\n### \"Mein/dein/sein...\" als Endung ans Wort hängen\n- Nach Konsonant: -i (mein), -ik (dein), -u (sein/m.), -ha (ihr)\n- Nach langem Vokal: -ya (mein), -k (dein), -h (sein/m.), -ha (ihr)\n- Mehrzahl: -na (unser), -kum (euer), -hum (ihr, Pl.)\n- Sonderfall: \"mra\" (Frau) wird vor der Endung zu \"mart-\": marti = meine Frau\n- Sonderfall: für \"mein Vater\" sagt man nicht \"bouya\", sondern \"baba\"",
+  "neu": "### Präsens der Verben\n- Verbformen bekommen eine Vorsilbe: y- (er), t- (sie/du), n- (ich)\n- Im Plural kommt bei allen Formen zusätzlich ein -u ans Ende\n- Manche Verben verlieren dabei einen Vokal in der Mitte, das erleichtert die Aussprache: yikhdim (er arbeitet) → yikhdmu (sie arbeiten)\n- yakol und yitkallem verlieren ihren mittleren Vokal im Plural sogar ganz\n- yqarri und yaqra enden schon auf einen Vokal – da kommt das -u einfach direkt dran: yqarriw, yaqraw\n\n### Verneinung im Präsens (\"nicht\")\n- Man packt das Verb in eine Klammer: davor kommt ma-, danach -sh\n- Beispiel: yikhdim (er arbeitet) → ma yikhdimsh (er arbeitet nicht)\n- Durch das -sh am Ende verschiebt sich manchmal die Betonung im Wort\n\n### Personalpronomen (\"ich, du, er...\")\n- Einzahl: ena (ich), enti (du), houa (er), heya (sie)\n- Mehrzahl: a7na (wir), entouma (ihr), houma (sie)\n\n### \"Ich bin nicht\" / \"Du bist nicht\" usw.\n- ena manish, enti makesh, houa mahoush, heya mahish, a7na manash, entouma makumsh, houma mahumsh\n- Für die 3. Person (er/sie/sie-Pl.) gibt es oft auch die kurze Form \"moush\"\n\n### Zwei Wörter zusammenziehen (z.B. \"Fatmas Mutter\")\n- Man hängt die zwei Wörter einfach aneinander, das erste bekommt dabei keinen Artikel: oumm Fatma = wörtlich \"Mutter Fatma\" = Fatmas Mutter\n\n### \"Mein/dein/sein...\" als Endung ans Wort hängen\n- Nach Konsonant: -i (mein), -ik (dein), -u (sein/m.), -ha (ihr)\n- Nach langem Vokal: -ya (mein), -k (dein), -h (sein/m.), -ha (ihr)\n- Mehrzahl: -na (unser), -kum (euer), -hum (ihr, Pl.)\n- Sonderfall: \"mra\" (Frau) wird vor der Endung zu \"mart-\": marti = meine Frau\n- Sonderfall: für \"mein Vater\" sagt man nicht \"bouya\", sondern \"baba\""
+ }
+]
