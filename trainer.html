@@ -5424,9 +5424,10 @@ function rCourseEx(ex, el){
   h += '</div>';
   const hintFirst = courseHintFirst(exercise);
   if(hintFirst){
-    // Die Tounsi-Wörter aus dem Prompt (die halbe Lösung) werden bewusst nicht gezeigt, auch nicht als
-    // Hinweis-Knopf: die deutsche Frage ist die Aufgabe.
-    h += '<div style="margin-bottom:.8rem;font-size:1.15rem;line-height:1.5">'+escHtml(exercise.instruction)+'</div>';
+    // Die deutsche Frage ist die Aufgabe; die Tounsi-Wörter aus dem Prompt (Ausgangsform) stehen direkt
+    // darunter, ohne „Hinweis“-Knopf (Nils: der Knopf wird nicht benötigt).
+    h += '<div style="margin-bottom:.6rem;font-size:1.15rem;line-height:1.5">'+escHtml(exercise.instruction)+'</div>';
+    h += '<div style="margin-bottom:.8rem;padding:.5rem .7rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-family:\'IBM Plex Mono\',monospace;font-size:.95rem">'+escHtml(exercise.prompt)+'</div>';
   }
   if(exercise.instruction && !hintFirst) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(exercise.instruction)+'</div>';
   else if(courseIsDialogQuestion(exercise)) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">Beantworte die Frage anhand des Dialogs (Knopf „📖 Dialog“).</div>';
