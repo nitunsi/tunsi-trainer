@@ -84,6 +84,23 @@ Wie Nachtrag 2: jede Datenbankänderung mit Freigabe, Guard `feld = alt`, Neuabr
 
 ---
 
+## Nachtrag 4 — Stand 2026-10-03
+
+Nur Trainer-Code, alles gemergt.
+
+| Was | Stand |
+|---|---|
+| Statistik → Prüf-Aktivität: Block nicht anzeigen, wenn nur „✅ Letzte 7 Tage“ zutrifft | **Gemergt**, PR #103. Der Block erscheint bei Vorschlag, Falsch, Unklar, Kommentar, Prüfungen oder überfälliger Prüfung. |
+| Prüf-Aktivität: Überschrift mit „Vor x …“ immer anzeigen | **Gemergt**, PR #104. Die Kopfzeile steht immer, das Kachel-Raster nur, wenn etwas zu tun ist. |
+| **Folgefehler der Pronomen-Angleichung (Nachtrag 3):** Raster der Konjugationsübungen zeigte `ana` | `ena n7ib` | **Behoben**, PR #105. Der Code kannte die Pronomen fest (`GRAMMAR_DRILL_PERSONS`, `parseGrammarDrillSolution`: `ana, houa, heya, e7na`), erkannte die neuen Schreibungen nicht und setzte sein altes Label vor die ganze Lösung. Jetzt `ena, enti, houwwa, hiyya, a7na, entouma, houma`, alte Formen bleiben als Fallback. Geprüft an allen 381 Konjugationsübungen (72 als Raster, alle stimmig). Nils hat es am Handy auf der Produktivseite bemerkt. |
+| Konjugationsübung: beim Aufdecken die Fragetabelle ausblenden | **Gemergt**, PR #106. Es bleibt eine Tabelle (die Lösung) statt zwei. |
+
+**Lehre für `COURSE_MODE.md`:** Eine Schreibänderung an Kursdaten (hier die Pronomen) kann an fest im Code stehenden Listen scheitern. Vor dem Schreiben im `trainer.html` nach der alten Schreibung suchen (`grep`), nicht nur in der Datenbank. In dem Fall stand sie an genau einer Stelle (`GRAMMAR_DRILL_PERSONS`).
+
+**Offen:** unverändert wie in Nachtrag 3.
+
+---
+
 ## Kurzfassung — die fünf Punkte, die zählen
 
 | # | Befund | Wirkung | Status |
