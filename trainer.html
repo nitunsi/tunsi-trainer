@@ -5435,7 +5435,7 @@ function rCourseEx(ex, el){
   const drillRows = exercise.exercise_type==='grammar_drill' ? parseGrammarDrillSolution(exercise.solution) : null;
 
   if(COURSE_SELF_GRADE_TYPES.includes(exercise.exercise_type)){
-    if(drillRows) h += '<div style="border:1px solid var(--blue);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem">'+renderGrammarDrillGrid(drillRows,false)+'</div>';
+    if(drillRows) h += '<div id="course-drill-question" style="border:1px solid var(--blue);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem">'+renderGrammarDrillGrid(drillRows,false)+'</div>';
     h += '<div id="course-solution-box"></div><div id="course-grade-box" style="margin-top:.6rem"></div>';
     h += '</div>'; // Ende Karten-Wrapper
     el.innerHTML = h;
@@ -5467,6 +5467,10 @@ function courseSrsReveal(){
   const exercise = exList[cIdx].exercise;
   const box = document.getElementById('course-solution-box');
   if(!box) return;
+  // Beim Aufdecken die Fragetabelle (Pronomen mit „…“) ausblenden: die Lösungstabelle zeigt dieselben
+  // Pronomen schon mit den Formen, zwei Tabellen untereinander sind überflüssig.
+  const q = document.getElementById('course-drill-question');
+  if(q) q.style.display = 'none';
   box.innerHTML = '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2)">'+courseExSolutionHtml(exercise)+'</div>';
   const gb = document.getElementById('course-grade-box');
   if(gb) gb.innerHTML = '<div style="display:flex;gap:.5rem">'
