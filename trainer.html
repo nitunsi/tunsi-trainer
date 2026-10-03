@@ -1821,6 +1821,9 @@ function belegStufe(v){
   return 0;
 }
 
+// Nils' Nutzer: nach seinem Lernstand (progress) richtet sich, was in der Partner-Queue als fällig gilt.
+const PARTNER_QUEUE_DUE_USER_ID = '6c6eff77-6b56-4ba9-b445-b1cd47773b41';
+
 async function partnerInit(containerId){
   _pContainerId = containerId || 'partner-main';
   const main=_pMain();
@@ -1831,13 +1834,11 @@ async function partnerInit(containerId){
   //   2. Partner-Status: übersprungen vor „ohne Status“ (pending wird nicht mehr vergeben)
   //   3. Quellenlage: unbestätigte zuerst (belegStufe 0 vor 1 vor 2)
   //   4. Fälligkeitsdatum: älteste zuerst; ohne Datum zuletzt, dort zufällig
-  // Fälligkeit = der Lernstand von Nils (der Nutzer ohne is_partner), nicht der des angemeldeten Nutzers:
-  // Semia prüft, was bei Nils bald dran ist. Nach Kalendertag wie beim Lernen.
+  // Fälligkeit = fest der Lernstand von Nils (PARTNER_QUEUE_DUE_USER_ID), unabhängig davon, wer angemeldet
+  // ist: Semia prüft, was bei Nils bald dran ist. Nach Kalendertag wie beim Lernen.
   let batch = [];
   const cols = 'id,darija,german,partner_status,external_confirmed,external_confirmed_source,ninja_audio_url,ninja_audio_start,ninja_audio_end';
-  let uid = null;
-  try{ const lerner = await sbApi('users?is_partner=eq.false&select=id&limit=1'); uid = lerner && lerner[0] ? lerner[0].id : null; }catch(e){ uid = null; }
-  if(!uid && currentUser && !currentUser.is_partner) uid = currentUser.id;
+  const uid = PARTNER_QUEUE_DUE_USER_ID;
   const progRows = uid
     ? await sbApiPaged('progress?user_id=eq.'+uid+'&next_review=not.is.null&select=vocabulary_id,next_review&order=id.asc', 1000)
     : [];
