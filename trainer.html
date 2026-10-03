@@ -1831,10 +1831,13 @@ async function partnerInit(containerId){
   //   2. Partner-Status: übersprungen vor „ohne Status“ (pending wird nicht mehr vergeben)
   //   3. Quellenlage: unbestätigte zuerst (belegStufe 0 vor 1 vor 2)
   //   4. Fälligkeitsdatum: älteste zuerst; ohne Datum zuletzt, dort zufällig
-  // Fälligkeit = der Lernstand des angemeldeten Nutzers (progress), nach Kalendertag wie beim Lernen.
+  // Fälligkeit = der Lernstand von Nils (der Nutzer ohne is_partner), nicht der des angemeldeten Nutzers:
+  // Semia prüft, was bei Nils bald dran ist. Nach Kalendertag wie beim Lernen.
   let batch = [];
   const cols = 'id,darija,german,partner_status,external_confirmed,external_confirmed_source,ninja_audio_url,ninja_audio_start,ninja_audio_end';
-  const uid = currentUser ? currentUser.id : null;
+  let uid = null;
+  try{ const lerner = await sbApi('users?is_partner=eq.false&select=id&limit=1'); uid = lerner && lerner[0] ? lerner[0].id : null; }catch(e){ uid = null; }
+  if(!uid && currentUser && !currentUser.is_partner) uid = currentUser.id;
   const progRows = uid
     ? await sbApiPaged('progress?user_id=eq.'+uid+'&next_review=not.is.null&select=vocabulary_id,next_review&order=id.asc', 1000)
     : [];
