@@ -1826,84 +1826,51 @@ async function partnerInit(containerId){
   const main=_pMain();
   main.innerHTML=partnerTabBar('review')+'<div style="text-align:center;padding:2rem;color:var(--muted)">Lade…</div>';
   try{
-  // 1. pending + skipped mit Fälligkeit (next_review <= now), nach next_review
-  // 2. pending + skipped ohne Fälligkeit, zufällig
-  // 3. Fallback: null-Status, zufällig
-  const now = new Date().toISOString();
+  // Reihenfolge (Nils, 2026-10-03), in dieser Priorität:
+  //   1. fällig vor nicht fällig (nur ja/nein, das Datum zählt hier noch nicht)
+  //   2. Partner-Status: übersprungen vor „ohne Status“ (pending wird nicht mehr vergeben)
+  //   3. Quellenlage: unbestätigte zuerst (belegStufe 0 vor 1 vor 2)
+  //   4. Fälligkeitsdatum: älteste zuerst; ohne Datum zuletzt, dort zufällig
+  // Fälligkeit = der Lernstand des angemeldeten Nutzers (progress), nach Kalendertag wie beim Lernen.
   let batch = [];
-
-  // Lade alle pending+skipped
-  const pendingSkipped = await sbApi(
-    'vocabulary?partner_status=in.(pending,skipped)&select=id,darija,german,partner_status,external_confirmed,external_confirmed_source,ninja_audio_url,ninja_audio_start,ninja_audio_end&limit=200'
-  );
-  // Lade progress für diese IDs um next_review zu kennen
-  const ids = pendingSkipped.map(v=>v.id);
-  let progressMap = {};
-  if(ids.length > 0){
-    const prog = await sbApi('progress?vocabulary_id=in.('+ids.join(',')+')&select=vocabulary_id,next_review');
-    prog.forEach(p=>{ progressMap[p.vocabulary_id]=p.next_review; });
+  const cols = 'id,darija,german,partner_status,external_confirmed,external_confirmed_source,ninja_audio_url,ninja_audio_start,ninja_audio_end';
+  const uid = currentUser ? currentUser.id : null;
+  const progRows = uid
+    ? await sbApiPaged('progress?user_id=eq.'+uid+'&next_review=not.is.null&select=vocabulary_id,next_review&order=id.asc', 1000)
+    : [];
+  const progMap = new Map();   // vocabulary_id -> Date
+  progRows.forEach(r=>{ progMap.set(r.vocabulary_id, courseParseTs(r.next_review)); });
+  const dueIds = [...progMap.entries()].filter(([id,d])=>isDueByDay(d)).map(([id])=>id);
+  const open = 'or=(partner_status.is.null,partner_status.in.(skipped,pending))';
+  const pool = new Map();
+  // a) alle fälligen, die noch nicht beantwortet sind
+  for(let k=0;k<dueIds.length;k+=100){
+    const rows = await sbApi('vocabulary?id=in.('+dueIds.slice(k,k+100).join(',')+')&'+open+'&select='+cols);
+    (rows||[]).forEach(v=>pool.set(v.id,v));
   }
-  // Annotate mit next_review
-  pendingSkipped.forEach(v=>{ v._nextReview = progressMap[v.id] || null; });
-
-  // Sortierung: Status hat absolute Priorität, Fälligkeit nur innerhalb desselben Status
-  // Gruppe 0: pending mit Fälligkeit (nach next_review)
-  // Gruppe 1: pending ohne Fälligkeit (zufällig)
-  // Gruppe 2: skipped mit Fälligkeit (nach next_review)
-  // Gruppe 3: skipped ohne Fälligkeit (zufällig)
-  const now2 = new Date();
-  const grp = v => {
-    const fällig = v._nextReview && new Date(v._nextReview) <= now2;
-    if(v.partner_status==='pending' && fällig) return 0;
-    if(v.partner_status==='pending') return 1;
-    if(v.partner_status==='skipped' && fällig) return 2;
-    return 3;
-  };
-  pendingSkipped.sort((a,b)=>{
-    const ga=grp(a), gb=grp(b);
-    if(ga!==gb) return ga-gb;
-    // Innerhalb fälliger Gruppen: nach next_review aufsteigend
-    if(ga===0||ga===2) return new Date(a._nextReview)-new Date(b._nextReview);
-    // Innerhalb der unfaelligen Gruppen nach Belegstufe: gar kein Beleg zuerst, dann abgeleitet,
-    // dann direkt belegt - dort ist Semias Urteil die einzige Bestaetigung, die es je geben wird.
-    const ra=belegStufe(a), rb=belegStufe(b);
-    if(ra!==rb) return ra-rb;
-    return Math.random()-.5;
+  // b) übersprungene (wenige) und ohne Status, unbestätigte zuerst (die ersten 300 genügen für einen Block)
+  const skippedRows = await sbApi('vocabulary?partner_status=in.(skipped,pending)&select='+cols+'&limit=200');
+  (skippedRows||[]).forEach(v=>pool.set(v.id,v));
+  const nullRows = await sbApi('vocabulary?partner_status=is.null&select='+cols+'&order=external_confirmed.asc.nullsfirst&limit=300');
+  (nullRows||[]).forEach(v=>{ if(!pool.has(v.id)) pool.set(v.id,v); });
+  const cand = [...pool.values()];
+  cand.forEach(v=>{
+    const d = progMap.get(v.id) || null;
+    v._nextReview = d; v._due = !!d && isDueByDay(d); v._rnd = Math.random();
   });
-  batch = pendingSkipped.slice(0,10);
-
-  // Fallback: wenn weniger als 10, mit null-Status auffüllen
-  if(batch.length < 10){
-    const need = 10 - batch.length;
-    const existingIds = batch.map(v=>v.id);
-    const fallback = await sbApi(
-      'vocabulary?partner_status=is.null&select=id,darija,german,partner_status,external_confirmed,external_confirmed_source,ninja_audio_url,ninja_audio_start,ninja_audio_end&order=external_confirmed.asc.nullsfirst&limit=300'
-    );
-    // Annotate fallback mit next_review
-    const fbIds = fallback.map(v=>v.id);
-    let fbProgressMap = {};
-    if(fbIds.length > 0){
-      const fbProg = await sbApi('progress?vocabulary_id=in.('+fbIds.slice(0,200).join(',')+')'+'&select=vocabulary_id,next_review');
-      fbProg.forEach(p=>{ fbProgressMap[p.vocabulary_id]=p.next_review; });
-    }
-    fallback.forEach(v=>{ v._nextReview = fbProgressMap[v.id]||null; });
-    // Sortierung: quellenunbestaetigte zuerst, dann faellige (nach next_review), dann zufaellig.
-    // Begruendung: bei external_confirmed=false hat keine der drei Quellen (TUNICO, Peace Corps,
-    // Derja Ninja) die Zeile bestaetigt - Semias Urteil ist dort die einzige Bestaetigung, die es
-    // je geben wird. Bei bestaetigten Zeilen ist es eine Zweitmeinung.
-    const fbNow = new Date();
-    fallback.sort((a,b)=>{
-      const ra = belegStufe(a), rb = belegStufe(b);
-      if(ra !== rb) return ra - rb;
-      const aFäl = a._nextReview && new Date(a._nextReview) <= fbNow;
-      const bFäl = b._nextReview && new Date(b._nextReview) <= fbNow;
-      if(aFäl && !bFäl) return -1;
-      if(!aFäl && bFäl) return 1;
-      if(aFäl && bFäl) return new Date(a._nextReview)-new Date(b._nextReview);
-      return Math.random()-.5;
-    });
-    batch = batch.concat(fallback.filter(v=>!existingIds.includes(v.id)).slice(0,need));
-  }
+  cand.sort((a,b)=>{
+    if(a._due!==b._due) return a._due ? -1 : 1;
+    const sa = a.partner_status==='skipped' || a.partner_status==='pending' ? 0 : 1;
+    const sb = b.partner_status==='skipped' || b.partner_status==='pending' ? 0 : 1;
+    if(sa!==sb) return sa-sb;
+    const ra = belegStufe(a), rb = belegStufe(b);
+    if(ra!==rb) return ra-rb;
+    if(a._nextReview && b._nextReview) return a._nextReview - b._nextReview;
+    if(a._nextReview) return -1;
+    if(b._nextReview) return 1;
+    return a._rnd - b._rnd;
+  });
+  batch = cand.slice(0,10);
 
   _pBatch = batch;
   _pIdx = 0;
@@ -7511,8 +7478,6 @@ async function saveCsvVocab(){
         darija: tr,
         german: en,
         topic: tp || 'Allgemein',
-        partner_status: 'pending',
-        status_updated_at: new Date().toISOString(),
       });
       if(res && res.length){
         const newId = res[0].id;
