@@ -1831,7 +1831,7 @@ async function partnerInit(containerId){
   try{
   // Reihenfolge (Nils, 2026-10-03), in dieser Priorität:
   //   1. fällig vor nicht fällig (nur ja/nein, das Datum zählt hier noch nicht)
-  //   2. Partner-Status: übersprungen vor „ohne Status“ (pending wird nicht mehr vergeben)
+  //   2. Partner-Status: pending vor übersprungen vor „ohne Status“ (pending setzt Nils nur noch von Hand)
   //   3. Quellenlage: unbestätigte zuerst (belegStufe 0 vor 1 vor 2)
   //   4. Fälligkeitsdatum: älteste zuerst; ohne Datum zuletzt, dort zufällig
   // Fälligkeit = fest der Lernstand von Nils (PARTNER_QUEUE_DUE_USER_ID), unabhängig davon, wer angemeldet
@@ -1862,10 +1862,10 @@ async function partnerInit(containerId){
     const d = progMap.get(v.id) || null;
     v._nextReview = d; v._due = !!d && isDueByDay(d); v._rnd = Math.random();
   });
+  const stat = v => v.partner_status==='pending' ? 0 : v.partner_status==='skipped' ? 1 : 2;
   cand.sort((a,b)=>{
     if(a._due!==b._due) return a._due ? -1 : 1;
-    const sa = a.partner_status==='skipped' || a.partner_status==='pending' ? 0 : 1;
-    const sb = b.partner_status==='skipped' || b.partner_status==='pending' ? 0 : 1;
+    const sa = stat(a), sb = stat(b);
     if(sa!==sb) return sa-sb;
     const ra = belegStufe(a), rb = belegStufe(b);
     if(ra!==rb) return ra-rb;
