@@ -5339,6 +5339,15 @@ async function goMix(){
 }
 
 const COURSE_TYPE_LABELS = {translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',grammar_drill:'Grammatik-Übung',fixed_response:'Feste Antwort'};
+// „Lücke füllen“ stimmt nur, wenn der Prompt wirklich eine Lücke hat (___). Ohne Lücke ist es eine
+// Umformaufgabe („Ersetze das Nomen durch …“, „Setze in den Plural“) oder eine Übersetzung.
+function courseTypeLabel(exercise){
+  const t = exercise.exercise_type;
+  if(t==='fill_blank' && !/_{2,}/.test(exercise.prompt||'')){
+    return /^übersetz/i.test(exercise.instruction||'') ? 'Übersetzen' : 'Umformen';
+  }
+  return COURSE_TYPE_LABELS[t] || t;
+}
 
 // Fragen zu einem Dialog: fixed_response-Karten in Abschnitten namens "dialoge…" (Kurs 4-13,
 // 238 Karten). Sie heißen im Typ "feste Antwort", sind aber Fragen zum Dialogtext, und ohne den
@@ -5396,7 +5405,7 @@ function rCourseEx(ex, el){
   answered = false;
   const exercise = ex.exercise;
   const lesson = COURSE_LESSONS.find(l=>l.id===exercise.course_lesson_id);
-  const label = courseIsDialogQuestion(exercise) ? 'Frage zum Dialog' : (COURSE_TYPE_LABELS[exercise.exercise_type] || exercise.exercise_type);
+  const label = courseIsDialogQuestion(exercise) ? 'Frage zum Dialog' : courseTypeLabel(exercise);
   const p = COURSE_EX_PROGRESS[exercise.id];
   const isNew = !p || !p.review_count;
   const prog = (document.getElementById('ex-progress')||{}).textContent||'';
@@ -5910,7 +5919,7 @@ function renderCourseTestTab(tc, l){
 
   const isGrammar = t.phase==='grammar';
   const gradable = COURSE_GRADABLE_TYPES.includes(ex.exercise_type);
-  const label = isGrammar ? '🧠 Grammatik-Check' : ({translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',build_dialog:'Dialog bilden',grammar_drill:'Grammatik-Übung',fixed_response:'Feste Antwort'})[ex.exercise_type] || ex.exercise_type;
+  const label = isGrammar ? '🧠 Grammatik-Check' : ex.exercise_type==='fill_blank' ? courseTypeLabel(ex) : ({translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',build_dialog:'Dialog bilden',grammar_drill:'Grammatik-Übung',fixed_response:'Feste Antwort'})[ex.exercise_type] || ex.exercise_type;
 
   let h = '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.3rem">'+label+' · '+cur+' / '+total+'</div>';
   if(ex.exercise_type==='answer_pattern'){
