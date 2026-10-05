@@ -335,3 +335,14 @@ Geprüft:
 7. Regel-Ergänzung — **offen:** für COURSE_MODE.md: „Kurslösungen: Übersetzung nie mit ` — ` an eine
    textgeprüfte Lösung hängen" (bzw. mit Fix egal) und „Übungen zu freigeschalteten Chunks
    nachtragen erst nach Fix B2".
+
+---
+
+## Nachtrag 5 (2026-10-05) · Restpunkte
+
+- **1403:** `bi-hara` → `b-hara` (Konstruktion `7ashti b-…`, Vokabel 4322 `hara`; kein Quellenbeleg).
+- **Ninja-Sätze:** `ana` → `ena` in den Vokabeln 2628, 2647, 2982, 2983, 2990; 3337 `ana bidi` bleibt.
+- **Karte 215:** `yhibb` → `y7ibb` (nur diese Karte, die übrigen `yhibb`-Stellen bleiben).
+- **`khsir`:** gestrichen (keine Karte verlangt es).
+- **Regeln** in `COURSE_MODE.md` ergänzt (Pronomen, Transliteration, Übersetzungs-Anhang).
+- Undo: `exports/analyse_2026-10-01/restpunkte_undo.sql`.

@@ -92,6 +92,12 @@ Liste nicht abschließend — bei jedem neuen kurzen/häufigen Treffer denselben
 
 **Präzedenzfall 2026-09-02: L1–L13 systematisch geprüft**, ~132 echte Verknüpfungen ergänzt, ~15 Fehlalarme aussortiert. Bei L11/L13 auf Nutzerwunsch ohne `progress.next_review`-Fälligsetzung (nur Verknüpfung, kein SRS-Eingriff) — bei künftigen Lektionen im Zweifel nachfragen. Nicht erneut von null anfangen, sondern bei neuen/geänderten Lektionen gezielt ergänzen.
 
+### Kurs-Texte: Pronomen, Transliteration, Übersetzungs-Anhang
+
+- **Pronomen** in Kursübungen richten sich nach den Vokabeln (`ena`, nicht `ana`). `ana` als **Fragewort** („welche/wo“) nicht ersetzen. Beim Angleichen die Raster der Konjugationsübungen mitprüfen (`GRAMMAR_DRILL_PERSONS` im Trainer).
+- **Transliteration** der Kurs-Übungen nach den Trainer-Regeln (ح = `7`, ع = `3`, `najjim` = können); Uni-Wien-Umschrift (ḥ, ʕ, š …) nicht übernehmen.
+- **Übersetzung anhängen:** nie mit ` — ` an eine textgeprüfte Lösung (`translate_de_tn`, `fill_blank`) hängen, sofern `courseSolutionCore` nicht greift. `answer_pattern` nutzt `Tounsi (Frage — Antwort)`, `fixed_response` bekommt die Übersetzung in `meta.prompt_de`/`meta.solution_de`.
+
 ### Wortvarianten nicht vorschnell auf Bestandswort normalisieren
 
 Vor dem Zusammenlegen zweier ähnlicher Wörter prüfen, ob eine Übung selbst eine phonetische Eigenheit der exakten Schreibweise demonstriert (Artikel-Assimilation, Reim, Wortspiel) — wenn ja, nicht mergen, beide Formen behalten, im Zweifel Nutzer fragen (Präzedenzfall `dziri`/`jzayri`).
