@@ -3197,6 +3197,9 @@ function showStats(){
   // Heute fällig (abfragbar): Vokabeln ohne die in der Partner-Queue gesperrten, Kurs = fällige Übungen inkl. überfälliger
   const vocDueToday = Math.max(0, dueNowTotal - dueBlockedTotal);
   const courseDueToday = courseDueDays[0].reduce((a,x)=>a+x, 0);
+  // Vorschau für die zwei Schnellaktionen ganz unten
+  const nextChunk = (cLesson === 'all' && _courseLoaded) ? statsNextLockedChunk() : null;
+  const courseVocabLeft = statsCourseVocabQueue().length;
   // Obergrenzen für die Vorschau bei Glätten / Neu berechnen
   const smoothMax = ALL_VOCAB.filter(v => { const p = srsProgress[v.id]; return p && p.next_review && p.level >= 3; }).length;
   const recalcMax = ALL_VOCAB.filter(v => { const p = srsProgress[v.id]; return p && p.next_review && p.last_reviewed; }).length;
@@ -3285,6 +3288,11 @@ function showStats(){
       <div id="smooth-result" style="font-size:.8rem;color:var(--muted);margin-top:.5rem;"></div>
     </details>
 
+    ${cLesson === 'all' ? `<div style="display:flex;gap:.6rem;margin-bottom:1.2rem;">
+      <button onclick="statsUnlockNextChunk()" ${nextChunk ? '' : 'disabled'} style="flex:1;padding:.8rem .5rem;background:var(--blue);border:none;color:#fff;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.9rem;border-radius:4px;cursor:pointer;line-height:1.3;${nextChunk ? '' : 'opacity:.4;cursor:default;'}">Nächsten Kurs-Abschnitt freischalten<br><span style="font-weight:400;font-size:.8rem">${nextChunk ? 'K'+nextChunk.lesson.course_number+' · '+escHtml(nextChunk.chunkLabel||nextChunk.chunkKey)+' · '+fmtN(nextChunk.srsItems.length)+' Übungen' : 'alle freigeschaltet'}</span></button>
+      <button onclick="statsActivateVocab(10)" style="flex:1;padding:.8rem .5rem;background:var(--gold);border:none;color:#0e0c0a;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.9rem;border-radius:4px;cursor:pointer;line-height:1.3">10 Vokabeln fällig setzen<br><span style="font-weight:400;font-size:.8rem">${courseVocabLeft ? fmtN(courseVocabLeft)+' mit Kursbezug offen' : 'danach aus dem Quellenabgleich'}</span></button>
+    </div>` : ''}
+
   `;
   if(cLesson === 'all') loadPartnerStats();
   if(cLesson === 'all') loadActivityStats();
@@ -3293,6 +3301,81 @@ function showStats(){
   document.getElementById('progress-fill').style.width = '0%';
 }
 
+
+// ── Statistik-Schnellaktionen: nächsten Kurs-Abschnitt freischalten / 10 Vokabeln fällig setzen ──
+function statsNextLockedChunk(){
+  return courseFlattenChunks().find(ch => ch.srsItems.length && !courseChunkUnlocked(ch.srsItems)) || null;
+}
+// Vokabeln mit Kursbezug, die noch keine Fälligkeit haben: Kurs-Lektion 1, 2, 3 …, innerhalb in der Reihenfolge der Lektion
+function statsCourseVocabQueue(){
+  const have = id => { const p = srsProgress[id]; return p && p.next_review; };
+  const out = [], seen = new Set();
+  [...COURSE_LESSONS].sort((a,b)=>a.course_number-b.course_number).forEach(l=>{
+    const f = parseCourseVocabRefs(l.vocab_lesson_refs);
+    const ids = [...f.ids];
+    f.tr.forEach(t => ALL_VOCAB.forEach(v => { if(v.tr === t) ids.push(v.id); }));
+    ids.forEach(id => { if(!seen.has(id) && VOCAB_BY_ID[id] && !have(id)){ seen.add(id); out.push({id, src:'Kurs L'+l.course_number}); } });
+  });
+  return out;
+}
+// Danach Vokabeln aus dem Quellenabgleich (Bucket „vorhanden“, nach Score absteigend = Rang berücksichtigt)
+async function statsPickVocab(n){
+  const picked = statsCourseVocabQueue().slice(0, n);
+  const seen = new Set(picked.map(x=>x.id));
+  const have = id => { const p = srsProgress[id]; return p && p.next_review; };
+  for(let off = 0; picked.length < n && off < 6000; off += 200){
+    const rows = await sbApi('quellen_abgleich?select=lemma,score,treffer&bucket=eq.vorhanden&order=score.desc&limit=200&offset='+off);
+    if(!rows || !rows.length) break;
+    for(const r of rows){
+      for(const t of (r.treffer||[])){
+        if(picked.length >= n) break;
+        if(t && VOCAB_BY_ID[t.id] && !seen.has(t.id) && !have(t.id)){ seen.add(t.id); picked.push({id:t.id, src:'Quellen'}); }
+      }
+      if(picked.length >= n) break;
+    }
+  }
+  return picked;
+}
+async function statsUnlockNextChunk(){
+  const ch = statsNextLockedChunk();
+  if(!ch){ showToast('Kein gesperrter Abschnitt mehr','ok'); return; }
+  const txt = 'K'+ch.lesson.course_number+' · '+(ch.chunkLabel||ch.chunkKey)+' ('+ch.srsItems.length+' Übungen)';
+  if(!confirm('Abschnitt freischalten?\n'+txt)) return;
+  await courseUnlockChunk(ch);
+  showToast('✓ Freigeschaltet: '+txt,'ok');
+  showStats();
+}
+async function statsActivateVocab(n){
+  if(!currentUser){ showToast('Fehler: nicht eingeloggt','err'); return; }
+  let picked;
+  try{ picked = await statsPickVocab(n); }catch(e){ showToast('Fehler: '+e.message,'err'); return; }
+  if(!picked.length){ showToast('Keine passenden Vokabeln ohne Fälligkeit gefunden','warn'); return; }
+  const list = picked.map(x => VOCAB_BY_ID[x.id].tr+' ('+x.src+')').join('\n');
+  if(!confirm(picked.length+' Vokabeln fällig setzen?\n\n'+list)) return;
+  const now = new Date().toISOString();
+  try{
+    const fresh = [], existing = [];
+    picked.forEach(x => { const p = srsProgress[x.id]; if(p && p.id) existing.push(x.id); else fresh.push(x.id); });
+    for(const id of existing) await sbApi('progress?id=eq.'+srsProgress[id].id, 'PATCH', { next_review: now });
+    if(fresh.length){
+      const rows = fresh.map(id => ({user_id:currentUser.id, vocabulary_id:id, correct_count:0, wrong_count:0, review_count:0, next_review: now}));
+      const res = await sbApi('progress?on_conflict=user_id,vocabulary_id', 'POST', rows, 'resolution=ignore-duplicates,return=representation');
+      const got = new Map((res||[]).map(r => [r.vocabulary_id, r.id]));
+      for(const id of fresh){
+        if(got.has(id)){ srsProgress[id] = Object.assign(srsProgress[id]||{level:0,correct_count:0,review_count:0}, {id:got.get(id)}); continue; }
+        // Zeile existierte schon (Konflikt ignoriert): Id holen, dann Fälligkeit setzen
+        const f = await sbApi('progress?user_id=eq.'+currentUser.id+'&vocabulary_id=eq.'+id+'&select=id');
+        if(f && f[0]){ await sbApi('progress?id=eq.'+f[0].id, 'PATCH', { next_review: now }); srsProgress[id] = Object.assign(srsProgress[id]||{level:0,correct_count:0,review_count:0}, {id:f[0].id}); }
+      }
+    }
+    const nowDate = new Date(now);
+    picked.forEach(x => { if(!srsProgress[x.id]) srsProgress[x.id] = {level:0,correct_count:0,review_count:0}; srsProgress[x.id].next_review = nowDate; });
+    showToast('✓ '+picked.length+' Vokabeln fällig gesetzt','ok');
+  }catch(e){
+    showToast('Fehler: '+e.message,'err');
+  }
+  showStats();
+}
 
 // Aus der Statistik direkt in einen Lernmodus springen (wie ein Klick im Menü)
 function statsStartMode(m){
