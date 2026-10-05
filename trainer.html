@@ -3151,13 +3151,13 @@ function showStats(){
       const sh = Math.round(cnt / maxDay * 100);
       return `<div style="width:100%;height:${sh}%;min-height:3px;background:${levelColors[li]};"></div>`;
     }).reverse().join('');
-    return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.2rem">
+    return `<div ${i === 0 ? 'onclick="openPullForward()" title="Tippen: Einträge auf heute vorziehen" ' : ''}style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.2rem${i === 0 ? ';cursor:pointer' : ''}">
       <span style="font-size:.75rem;font-weight:700;color:${labelColor};line-height:1.1">${total ? fmtN(total) : ''}</span>
       <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden">
         ${total ? segments : ''}
       </div>
       ${hasCourseInForecast ? courseShareGauge(courseTotal, total) : ''}
-      <span style="font-size:.72rem;color:var(--muted);text-align:center">${name}</span>
+      <span style="font-size:.72rem;color:${i === 0 ? 'var(--gold)' : 'var(--muted)'};text-align:center${i === 0 ? ';text-decoration:underline dotted' : ''}">${name}</span>
     </div>`;
   }).join('');
 
@@ -3237,12 +3237,6 @@ function showStats(){
       <div style="background:var(--surface);border:1px solid var(--border);padding:.7rem .7rem .5rem;">
         <div style="display:flex;gap:.4rem;align-items:flex-end;height:96px;margin-bottom:.5rem">${forecastBars}</div>
         ${forecastBlockedCount > 0 ? `<div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem;" title="In deiner Partner-Review-Queue — aktuell nicht in der Karten-Abfrage">📬 ${forecastBlockedCount} gesperrt</div>` : ''}
-        <div style="border-top:1px solid var(--border);margin-top:.4rem;padding-top:.6rem;display:flex;gap:.5rem;align-items:center;justify-content:flex-end;">
-          <span style="font-size:.8rem;color:var(--muted)">Vorziehen</span>
-          <input id="pull-forward-count" type="number" min="1" max="200" value="20" style="width:3.2rem;padding:.3rem;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:.9rem;text-align:center;border-radius:4px;">
-          <button onclick="pullForwardVocab()" style="padding:.35rem .8rem;background:transparent;border:1px solid var(--gold);color:var(--gold);font-weight:700;font-size:.8rem;font-family:'IBM Plex Mono',monospace;border-radius:4px;cursor:pointer;">OK</button>
-        </div>
-        <div id="pull-forward-result" style="font-size:.8rem;color:var(--muted);margin-top:.3rem;text-align:right;"></div>
       </div>
     </div>
 
@@ -3557,14 +3551,10 @@ async function loadPartnerStats(){
   }
 }
 
-async function pullForwardVocab(){
-  const n = parseInt(document.getElementById('pull-forward-count').value) || 20;
-  const resultEl = document.getElementById('pull-forward-result');
-  resultEl.textContent = 'Lädt…';
-
+// Alle vorziehbaren Einträge (noch nicht fällig), frühestes Datum zuerst, bei gleichem Tag höheres Level zuerst
+function pullForwardCandidates(){
   // Alle noch nicht fälligen Vokabeln der aktuellen Lektion, sortiert nach next_review
   // (nur Tag relevant, Uhrzeit ignoriert), innerhalb desselben Tages nach Level (höhere zuerst)
-  const now = new Date();
   const pfDayOf = d => { const t = new Date(d); t.setHours(0,0,0,0); return t.getTime(); };
   const vocabCandidates = Object.entries(srsProgress)
     .filter(([vocabId, p]) => p && p.next_review && !isDueByDay(p.next_review))
@@ -3588,15 +3578,19 @@ async function pullForwardVocab(){
         .map(([exId, p]) => ({ type:'course', id: exId, p, day: pfDayOf(courseParseTs(p.next_review)), level: Math.min(p.correct_count||0, 6) }))
     : [];
 
-  const candidates = vocabCandidates.concat(courseCandidates)
+  return vocabCandidates.concat(courseCandidates)
     .sort((a, b) => {
       const dayDiff = a.day - b.day;
       return dayDiff !== 0 ? dayDiff : b.level - a.level;
-    })
-    .slice(0, n);
+    });
+}
+
+async function pullForwardVocab(n){
+  const now = new Date();
+  const candidates = pullForwardCandidates().slice(0, n);
 
   if(!candidates.length){
-    resultEl.textContent = 'Keine vorziehbaren Vokabeln gefunden.';
+    showToast('Keine vorziehbaren Einträge gefunden','warn');
     return;
   }
 
@@ -3619,16 +3613,43 @@ async function pullForwardVocab(){
   }
   const count = vocabCount + courseCount;
   const countDetail = courseCount > 0 ? ` (${vocabCount} Vokabeln, ${courseCount} Kurs-Übungen)` : '';
-  const resultMsg = `<span style="color:var(--green)">✓ ${count} vorgezogen${countDetail} — jetzt fällig.</span>`;
-  resultEl.innerHTML = resultMsg;
+  showToast('✓ '+count+' vorgezogen'+countDetail+' — jetzt fällig','ok');
   updateLessonChips();
   // Statistik neu rendern damit Forecast aktualisiert wird
-  const savedCount = n;
   showStats();
-  const newInput = document.getElementById('pull-forward-count');
-  if(newInput) newInput.value = savedCount;
-  const newResult = document.getElementById('pull-forward-result');
-  if(newResult) newResult.innerHTML = resultMsg;
+}
+
+// Dialog: Klick auf „Heute“ im Fällig-Balken. Zahl änderbar, zuletzt benutzte Zahl wird gemerkt.
+function openPullForward(){
+  const avail = pullForwardCandidates().length;
+  if(!avail){ showToast('Nichts zum Vorziehen: alles ist schon fällig','warn'); return; }
+  let last = 20;
+  try{ last = parseInt(localStorage.getItem('pull-forward-n'),10) || 20; }catch(e){}
+  const old = document.getElementById('pf-overlay'); if(old) old.remove();
+  const o = document.createElement('div');
+  o.id = 'pf-overlay';
+  o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem';
+  o.innerHTML = '<div style="background:var(--surface);border:1px solid var(--gold);border-radius:8px;padding:1.1rem;width:100%;max-width:340px">'
+    + '<div style="font-size:1rem;font-weight:700;color:var(--gold);margin-bottom:.4rem">Vorziehen</div>'
+    + '<div style="font-size:.85rem;color:var(--muted);line-height:1.5;margin-bottom:.8rem">Wie viele Einträge sollen jetzt fällig werden? Es kommen die nächsten dran (frühestes Datum zuerst), Vokabeln und Kurs-Übungen zusammen. Vorziehbar: '+fmtN(avail)+'.</div>'
+    + '<input id="pf-n" type="number" inputmode="numeric" min="1" max="'+Math.min(avail,500)+'" value="'+Math.min(last,avail)+'" style="width:100%;padding:.7rem;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:1.2rem;text-align:center;border-radius:4px;margin-bottom:.8rem">'
+    + '<div style="display:flex;gap:.6rem">'
+    + '<button id="pf-cancel" style="flex:1;padding:.7rem;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:\'IBM Plex Mono\',monospace;font-size:.9rem;border-radius:4px;cursor:pointer">Abbrechen</button>'
+    + '<button id="pf-go" style="flex:1;padding:.7rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:.9rem;border-radius:4px;cursor:pointer">Vorziehen</button>'
+    + '</div></div>';
+  document.body.appendChild(o);
+  const close = () => o.remove();
+  const go = async () => {
+    const n = Math.max(1, Math.min(parseInt(document.getElementById('pf-n').value,10) || 20, 500));
+    try{ localStorage.setItem('pull-forward-n', String(n)); }catch(e){}
+    close();
+    await pullForwardVocab(n);
+  };
+  document.getElementById('pf-cancel').onclick = close;
+  document.getElementById('pf-go').onclick = go;
+  o.addEventListener('click', e => { if(e.target === o) close(); });
+  document.getElementById('pf-n').addEventListener('keydown', e => { if(e.key === 'Enter') go(); if(e.key === 'Escape') close(); });
+  const inp = document.getElementById('pf-n'); inp.focus(); inp.select();
 }
 
 // ── Nav Toggle ────────────────────────────────────────────────────────────
