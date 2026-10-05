@@ -5786,7 +5786,7 @@ function renderCourseOverview(){
     const unlockedItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]).length,0);
     const masteredItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]&&(COURSE_EX_PROGRESS[e.id].correct_count||0)>=4).length,0);
     const lessonItems = lessonChunks.reduce((s,ch)=>s.concat(ch.srsItems),[]);
-    const statLines = (totalItems ? statRow('Übungen', exStat(lessonItems)) : '') + (lessonVocab(l).length ? statRow('Vokabeln', vocStat(lessonVocab(l))) : '');
+    const statLines = (lessonVocab(l).length ? statRow('Vokabeln', vocStat(lessonVocab(l))) : '') + (totalItems ? statRow('Übungen', exStat(lessonItems)) : '');
     const icon = totalItems===0 ? '📄' : masteredItems>=totalItems ? '✅' : unlockedItems>0 ? '🟡' : '🔒';
     const statusTxt = totalItems===0 ? 'nur Lesen' : masteredItems>=totalItems ? 'abgeschlossen' : unlockedItems>0 ? masteredItems+'/'+totalItems+' Übungen gemeistert' : 'noch nicht erreicht';
     h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem .9rem">';
