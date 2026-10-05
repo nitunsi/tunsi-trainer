@@ -5759,16 +5759,22 @@ function renderCourseOverview(){
   const chunks = courseFlattenChunks();
   let h = '<div style="padding:1rem;max-width:600px;margin:0 auto">';
   h += '<div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:1rem">Uni-Wien-Kurs</div>';
-  // Fälligkeit gesetzt = next_review vorhanden (Anzahl und Anteil), für Kurs-Übungen und Vokabeln
-  const dueStat = (n, total) => n+' von '+total+' ('+(total ? Math.round(100*n/total) : 0)+' %)';
-  const courseTotal = chunks.reduce((s,ch)=>s+ch.srsItems.length,0);
-  const courseWithDue = chunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]&&COURSE_EX_PROGRESS[e.id].next_review).length,0);
-  const vocTotal = (typeof ALL_VOCAB!=='undefined' ? ALL_VOCAB.length : 0);
-  const vocWithDue = (typeof ALL_VOCAB!=='undefined' ? ALL_VOCAB.filter(v=>srsProgress[v.id]&&srsProgress[v.id].next_review).length : 0);
-  h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem;font-size:.8rem">';
-  h += '<div style="font-size:.6rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:.35rem">Fälligkeit gesetzt</div>';
-  h += '<div style="display:flex;justify-content:space-between;gap:.6rem"><span>Kurs-Übungen</span><span style="color:var(--gold2)">'+dueStat(courseWithDue, courseTotal)+'</span></div>';
-  h += '<div style="display:flex;justify-content:space-between;gap:.6rem;margin-top:.2rem"><span>Vokabeln</span><span style="color:var(--gold2)">'+dueStat(vocWithDue, vocTotal)+'</span></div>';
+  // Dieselben vier Prozentwerte wie in der Statistik (Gesamtfortschritt), getrennt nach Vokabeln
+  // (nur mit Kurs-Bezug) und Kurs-Übungen: 📅 = Anteil mit Fälligkeit, ⭐ = Punkte/Maximum der gestarteten.
+  const vocStat = list => { let n=0, pts=0; list.forEach(v=>{ const p=srsProgress[v.id]; if(p && p.next_review){ n++; pts += Math.min(p.level||0,6); } });
+    return {n, total:list.length, pts, max:n*6}; };
+  const exStat = list => { let n=0, pts=0; list.forEach(e=>{ const p=COURSE_EX_PROGRESS[e.id]; if(p){ n++; pts += Math.min(p.correct_count||0,6); } });
+    return {n, total:list.length, pts, max:n*6}; };
+  const pc = (a,b) => b ? Math.round(100*a/b) : 0;
+  const statTxt = st => '📅 '+st.n+'/'+st.total+' ('+pc(st.n,st.total)+' %) · ⭐ '+st.pts+'/'+st.max+' ('+pc(st.pts,st.max)+' %)';
+  const lessonVocab = l => { const f = parseCourseVocabRefs(l.vocab_lesson_refs); return ALL_VOCAB.filter(v=>f.ids.has(v.id)||f.tr.has(v.tr)); };
+  const allVocabSet = new Map();
+  COURSE_LESSONS.forEach(l=>lessonVocab(l).forEach(v=>allVocabSet.set(v.id,v)));
+  const allItems = chunks.reduce((s,ch)=>s.concat(ch.srsItems),[]);
+  h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem;font-size:.78rem">';
+  h += '<div style="font-size:.6rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:.35rem">Gesamt</div>';
+  h += '<div style="display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap"><span>Vokabeln (Kurs)</span><span style="color:var(--gold2)">'+statTxt(vocStat([...allVocabSet.values()]))+'</span></div>';
+  h += '<div style="display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-top:.2rem"><span>Kurs-Übungen</span><span style="color:var(--gold2)">'+statTxt(exStat(allItems))+'</span></div>';
   h += '</div>';
   h += '<div style="display:flex;flex-direction:column;gap:.5rem">';
   COURSE_LESSONS.forEach(l=>{
@@ -5776,14 +5782,15 @@ function renderCourseOverview(){
     const totalItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.length,0);
     const unlockedItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]).length,0);
     const masteredItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]&&(COURSE_EX_PROGRESS[e.id].correct_count||0)>=4).length,0);
-    const dueItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]&&COURSE_EX_PROGRESS[e.id].next_review).length,0);
-    const dueTxt = totalItems ? ' · Fälligkeit '+dueItems+'/'+totalItems+' ('+Math.round(100*dueItems/totalItems)+' %)' : '';
+    const lessonItems = lessonChunks.reduce((s,ch)=>s.concat(ch.srsItems),[]);
+    const statLines = (totalItems ? '<div style="margin-top:.15rem">Übungen '+statTxt(exStat(lessonItems))+'</div>' : '')
+      + (lessonVocab(l).length ? '<div>Vokabeln '+statTxt(vocStat(lessonVocab(l)))+'</div>' : '');
     const icon = totalItems===0 ? '📄' : masteredItems>=totalItems ? '✅' : unlockedItems>0 ? '🟡' : '🔒';
     const statusTxt = totalItems===0 ? 'nur Lesen' : masteredItems>=totalItems ? 'abgeschlossen' : unlockedItems>0 ? masteredItems+'/'+totalItems+' Übungen gemeistert' : 'noch nicht erreicht';
     h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;display:flex;justify-content:space-between;align-items:center;gap:.6rem">';
     h += '<div style="flex:1;min-width:0">';
     h += '<div style="font-size:.9rem;color:var(--text)">'+icon+' L'+l.course_number+' <span style="color:var(--gold2)">'+escHtml(l.title||'')+'</span></div>';
-    h += '<div style="font-size:.68rem;color:var(--muted);margin-top:.15rem">'+statusTxt+dueTxt+'</div>';
+    h += '<div style="font-size:.68rem;color:var(--muted);margin-top:.15rem">'+statusTxt+statLines+'</div>';
     h += '</div>';
     h += '<button onclick="showCourseLesson('+l.id+')" style="padding:.35rem .7rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.75rem;font-weight:700;cursor:pointer;border-radius:4px;white-space:nowrap">Öffnen</button>';
     h += '</div>';
