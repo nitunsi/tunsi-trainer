@@ -3152,7 +3152,7 @@ function showStats(){
       return `<div style="width:100%;height:${sh}%;min-height:3px;background:${levelColors[li]};"></div>`;
     }).reverse().join('');
     return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.2rem">
-      <span style="font-size:.75rem;font-weight:700;color:${labelColor};line-height:1.1">${total||''}</span>
+      <span style="font-size:.75rem;font-weight:700;color:${labelColor};line-height:1.1">${total ? fmtN(total) : ''}</span>
       <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden">
         ${total ? segments : ''}
       </div>
@@ -3187,9 +3187,9 @@ function showStats(){
         <div style="flex:1;height:8px;background:var(--border);border-radius:4px;">
           <div style="height:100%;width:${pctL}%;background:${b.color};border-radius:4px;"></div>
         </div>
-        <span style="min-width:28px;text-align:right;color:var(--muted)">${cnt}</span>
+        <span style="min-width:40px;text-align:right;color:var(--muted)">${fmtN(cnt)}</span>
         <span style="width:68px;flex-shrink:0;white-space:nowrap;overflow:visible;color:var(--muted);font-size:.62rem">${b.hint}</span>
-        <span style="min-width:24px;text-align:right;font-size:.72rem;${dueToday > 0 ? 'color:var(--red)' : 'color:var(--muted)'}">${dueToday || ''}</span>
+        <span style="min-width:24px;text-align:right;font-size:.72rem;${dueToday > 0 ? 'color:var(--red)' : 'color:var(--muted)'}">${dueToday ? fmtN(dueToday) : ''}</span>
       </div>`;
     }).join('');
   })();
@@ -3201,16 +3201,16 @@ function showStats(){
   const smoothMax = ALL_VOCAB.filter(v => { const p = srsProgress[v.id]; return p && p.next_review && p.level >= 3; }).length;
   const recalcMax = ALL_VOCAB.filter(v => { const p = srsProgress[v.id]; return p && p.next_review && p.last_reviewed; }).length;
   const stPct = (a,b) => b ? Math.round(100*a/b) : 0;
-  const stCell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+';line-height:1.2">'+icon+' '+stPct(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+a+' / '+b+'</div></div>';
-  const stNum = n => Number(n).toLocaleString('de-DE');
+  const stCell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+';line-height:1.2">'+icon+' '+stPct(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+fmtN(a)+' / '+fmtN(b)+'</div></div>';
+  const stNum = fmtN;
   const stTile = (n, label, color) => '<div style="display:flex;align-items:baseline;gap:.5rem;padding:.4rem .6rem;background:var(--surface2);border:1px solid var(--border);border-radius:4px"><span style="font-size:1.1rem;font-weight:700;color:'+color+'">'+stNum(n)+'</span><span style="font-size:.85rem;color:var(--text)">'+label+'</span></div>';
   const stRow = (label, a1, b1, a2, b2, ph) => '<div style="margin-top:.9rem"><div style="font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:.5rem">'+label+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">'+stCell('📅',a1,b1)+stCell('⭐',a2,b2)+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.6rem">'+stTile(ph[0],'Neu','var(--muted)')+stTile(ph[1],'Anfänger','#e05555')+stTile(ph[2],'Fortgeschritten','var(--gold)')+stTile(ph[3],'Profi','var(--green)')+'</div></div>';
   c.innerHTML = `
     ${cLesson === 'all' ? `<div style="margin-bottom:1rem;">
       <div style="font-size:.85rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);font-weight:700;margin-bottom:.5rem;">Heute fällig</div>
       <div style="display:flex;gap:.6rem;">
-        <button onclick="statsStartMode('flash')" style="flex:1;padding:.8rem .5rem;background:var(--gold);border:none;color:#0e0c0a;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.95rem;border-radius:4px;cursor:pointer;line-height:1.3">Vokabeln lernen<br><span style="font-weight:400;font-size:.85rem">${vocDueToday} fällig${dueBlockedTotal ? ' · '+dueBlockedTotal+' gesperrt' : ''}</span></button>
-        <button onclick="statsStartMode('coursesrs')" style="flex:1;padding:.8rem .5rem;background:var(--blue);border:none;color:#fff;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.95rem;border-radius:4px;cursor:pointer;line-height:1.3">Kurs lernen<br><span style="font-weight:400;font-size:.85rem">${courseDueToday} fällig</span></button>
+        <button onclick="statsStartMode('flash')" style="flex:1;padding:.8rem .5rem;background:var(--gold);border:none;color:#0e0c0a;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.95rem;border-radius:4px;cursor:pointer;line-height:1.3">Vokabeln lernen<br><span style="font-weight:400;font-size:.85rem">${fmtN(vocDueToday)} fällig${dueBlockedTotal ? ' · '+fmtN(dueBlockedTotal)+' gesperrt' : ''}</span></button>
+        <button onclick="statsStartMode('coursesrs')" style="flex:1;padding:.8rem .5rem;background:var(--blue);border:none;color:#fff;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.95rem;border-radius:4px;cursor:pointer;line-height:1.3">Kurs lernen<br><span style="font-weight:400;font-size:.85rem">${fmtN(courseDueToday)} fällig</span></button>
       </div>
     </div>` : ''}
 
@@ -3356,7 +3356,7 @@ async function loadActivityStats(){
       const pctDay = x.attempts ? Math.round(x.correct / x.attempts * 100) : null;
       const pctColor = pctDay === null ? 'var(--border)' : pctDay >= 80 ? 'var(--green)' : pctDay >= 50 ? 'var(--gold)' : 'var(--red)';
       return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.2rem">
-        <span style="font-size:.75rem;font-weight:700;color:${labelColor};line-height:1.1">${x.attempts||''}</span>
+        <span style="font-size:.75rem;font-weight:700;color:${labelColor};line-height:1.1">${x.attempts ? fmtN(x.attempts) : ''}</span>
         <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;position:relative">
           ${avgAttempts > 0 ? `<div style="position:absolute;left:0;right:0;bottom:${avgLinePct}%;border-top:1px dashed var(--gold);opacity:.7;z-index:2;"></div>` : ''}
           ${x.attempts ? `<div style="width:100%;height:${Math.round(h*hWrong/100)}%;min-height:${wrong?'3px':'0'};background:var(--red);"></div><div style="width:100%;height:${Math.round(h*hCorrect/100)}%;min-height:${x.correct?'3px':'0'};background:var(--green);"></div>` : ''}
@@ -3371,8 +3371,8 @@ async function loadActivityStats(){
       ? `<div style="color:var(--muted)">Noch keine Daten in diesem Zeitraum.</div>`
       : `<div style="display:flex;gap:.4rem;align-items:flex-end;height:113px;margin-bottom:.5rem">${bars}</div>
          <div style="border-top:1px solid var(--border);padding-top:.4rem;font-size:.8rem;color:var(--muted);line-height:1.6">
-           <div>${totalAttempts} Versuche · <span style="color:var(--green)">${pctCorrectAll}% richtig</span></div>
-           <div>${totalCourseAttempts ? `davon ${totalCourseAttempts} 🎓 Kurs · ` : ''}${totalVocabSet.size} Vokabeln geübt</div>
+           <div>${fmtN(totalAttempts)} Versuche · <span style="color:var(--green)">${pctCorrectAll}% richtig</span></div>
+           <div>${totalCourseAttempts ? `davon ${fmtN(totalCourseAttempts)} 🎓 Kurs · ` : ''}${fmtN(totalVocabSet.size)} Vokabeln geübt</div>
          </div>`;
   } catch(e){
     el.innerHTML = `<span style="color:var(--red);font-size:.75rem">Fehler: ${e.message}</span>`;
@@ -3943,8 +3943,8 @@ function renderVocabTableRows(){
   vocabTableRenderedIds = vocab.map(v => v.id);
 
   const countLabel = vocab.length < vocabFull.length
-    ? ('Zeige '+vocab.length+' von '+vocabFull.length+' Vokabeln')
-    : (vocabFull.length+' Vokabeln');
+    ? ('Zeige '+fmtN(vocab.length)+' von '+fmtN(vocabFull.length)+' Vokabeln')
+    : (fmtN(vocabFull.length)+' Vokabeln');
   let h = '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem">'+countLabel+'</div>';
   h += '<table style="width:100%;border-collapse:collapse;font-size:.75rem">';
   h += '<thead><tr style="color:var(--muted);font-size:.62rem;text-transform:uppercase;letter-spacing:.05em">';
@@ -4751,6 +4751,8 @@ function renderLessonsAdmin(){
 }
 
 function escHtml(s){ const d=document.createElement('div');d.textContent=s||'';return d.innerHTML; }
+// Zahlen mit Tausenderpunkt (1.725)
+function fmtN(n){ return Number(n).toLocaleString('de-DE'); }
 
 // Fortschritt einer Vokabel-Liste wie in Statistik/Kurs-Übersicht: 📅 Anteil mit Fälligkeit, ⭐ Punkte vom Maximum,
 // dazu Anzahl und heute fällig. 100 % grün.
@@ -4762,8 +4764,8 @@ function lessonStatHtml(list){
   });
   const total = list.length, max = n * 6;
   const pc = (a,b) => b ? Math.round(100*a/b) : 0;
-  const cell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+';line-height:1.2">'+icon+' '+pc(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+a+' / '+b+'</div></div>';
-  return '<div style="font-size:.85rem;color:var(--muted);margin-top:.3rem">'+total+' Vokabeln'+(due ? ' · <span style="color:var(--red)">'+due+' heute fällig</span>' : '')+'</div>'
+  const cell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+';line-height:1.2">'+icon+' '+pc(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+fmtN(a)+' / '+fmtN(b)+'</div></div>';
+  return '<div style="font-size:.85rem;color:var(--muted);margin-top:.3rem">'+fmtN(total)+' Vokabeln'+(due ? ' · <span style="color:var(--red)">'+fmtN(due)+' heute fällig</span>' : '')+'</div>'
        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.5rem">'+cell('📅',n,total)+cell('⭐',pts,max)+'</div>';
 }
 
@@ -5681,7 +5683,7 @@ function renderCourseOverview(){
     return {n, total:list.length, pts, max:n*6}; };
   const pc = (a,b) => b ? Math.round(100*a/b) : 0;
   // Eine Zeile: Label | 📅 Anteil mit Fälligkeit | ⭐ Punkte-Anteil (Prozent groß, Zähler klein darunter)
-  const statCell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+';line-height:1.2">'+icon+' '+pc(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+a+' / '+b+'</div></div>';
+  const statCell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+';line-height:1.2">'+icon+' '+pc(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+fmtN(a)+' / '+fmtN(b)+'</div></div>';
   const statRow = (label, st) => '<div style="display:grid;grid-template-columns:5.2rem 1fr 1fr;gap:.5rem;align-items:center;margin-top:.5rem"><div style="font-size:.85rem;color:var(--text)">'+label+'</div>'+statCell('📅',st.n,st.total)+statCell('⭐',st.pts,st.max)+'</div>';
   const lessonVocab = l => { const f = parseCourseVocabRefs(l.vocab_lesson_refs); return ALL_VOCAB.filter(v=>f.ids.has(v.id)||f.tr.has(v.tr)); };
   const allVocabSet = new Map();
@@ -5689,7 +5691,6 @@ function renderCourseOverview(){
   const allItems = chunks.reduce((s,ch)=>s.concat(ch.srsItems),[]);
   h += '<div style="background:var(--surface);border:1px solid var(--gold);border-radius:6px;padding:.8rem .9rem;margin-bottom:1rem">';
   h += '<div style="font-size:.8rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);font-weight:700">Gesamt</div>';
-  h += '<div style="display:grid;grid-template-columns:5.2rem 1fr 1fr;gap:.5rem;margin-top:.3rem;font-size:.75rem;color:var(--muted)"><div></div><div>📅 Fälligkeit</div><div>⭐ Punkte</div></div>';
   h += statRow('Vokabeln', vocStat([...allVocabSet.values()]));
   h += statRow('Übungen', exStat(allItems));
   h += '</div>';
@@ -5702,7 +5703,7 @@ function renderCourseOverview(){
     const lessonItems = lessonChunks.reduce((s,ch)=>s.concat(ch.srsItems),[]);
     const statLines = (lessonVocab(l).length ? statRow('Vokabeln', vocStat(lessonVocab(l))) : '') + (totalItems ? statRow('Übungen', exStat(lessonItems)) : '');
     const icon = totalItems===0 ? '📄' : masteredItems>=totalItems ? '✅' : unlockedItems>0 ? '🟡' : '🔒';
-    const statusTxt = totalItems===0 ? 'nur Lesen' : masteredItems>=totalItems ? 'abgeschlossen' : unlockedItems>0 ? masteredItems+'/'+totalItems+' Übungen gemeistert' : 'noch nicht erreicht';
+    const statusTxt = totalItems===0 ? 'nur Lesen' : masteredItems>=totalItems ? 'abgeschlossen' : unlockedItems>0 ? fmtN(masteredItems)+'/'+fmtN(totalItems)+' Übungen gemeistert' : 'noch nicht erreicht';
     h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem .9rem">';
     h += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem">';
     h += '<div style="flex:1;min-width:0">';
