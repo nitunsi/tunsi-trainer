@@ -5335,6 +5335,14 @@ function courseGrammarButtonHtml(exercise){
   return '<button onclick="showGrammarModal('+exercise.id+')" title="'+(dialog?'Dialog zu dieser Frage anzeigen':'Grammatik zu diesem Abschnitt anzeigen')+'" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.15rem .5rem;border-radius:3px;cursor:pointer">'+(dialog?'📖 Dialog':'🧠 Grammatik')+'</button>';
 }
 
+// Deutsche Übersetzung zu Karten mit meta.prompt_de / meta.solution_de (feste Antworten, Fragen zum
+// Dialog): beim Aufdecken unter der Lösung, klein und gedämpft.
+function courseMetaGermanHtml(exercise){
+  const md = exercise && exercise.meta;
+  if(!md || (!md.prompt_de && !md.solution_de)) return '';
+  const line = (label, val) => val ? '<div style="margin-top:.35rem"><span style="font-size:.62rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">'+label+'</span><div style="font-size:.85rem;color:var(--text)">'+escHtml(val)+'</div></div>' : '';
+  return '<div style="margin-top:.6rem;padding-top:.5rem;border-top:1px solid var(--border)">'+line('Frage auf Deutsch', md.prompt_de)+line('Antwort auf Deutsch', md.solution_de)+'</div>';
+}
 function courseExSolutionHtml(exercise){
   let solHtml = null;
   if(exercise.exercise_type==='answer_pattern'){
@@ -5349,7 +5357,7 @@ function courseExSolutionHtml(exercise){
     const drillRows = exercise.exercise_type==='grammar_drill' ? parseGrammarDrillSolution(exercise.solution) : null;
     solHtml = drillRows ? renderGrammarDrillGrid(drillRows,true) : escHtml(exercise.solution||'—');
   }
-  return solHtml;
+  return solHtml + courseMetaGermanHtml(exercise);
 }
 
 // Karten, deren Prompt schon die Tounsi-Wörter der Antwort enthält ("amriki – almani"), während die
@@ -5939,6 +5947,7 @@ function renderCourseTestTab(tc, l){
     }
     if(!solHtml && drillRows) solHtml = renderGrammarDrillGrid(drillRows, true);
     if(!solHtml) solHtml = escHtml(ex.solution||'—');
+    solHtml += courseMetaGermanHtml(ex);
     h += '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2);margin-bottom:.8rem">'+solHtml+'</div>';
     if(ex.partner_status===null || ex.partner_status===undefined){
       h += '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.6rem">⚠️ ungeprüft — wartet auf Semias Prüfung</div>';

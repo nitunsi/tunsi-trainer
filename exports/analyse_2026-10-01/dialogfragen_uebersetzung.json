@@ -1,0 +1,1906 @@
+[
+ {
+  "id": 683,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie geht es Nabil und Muhsin?",
+   "solution_de": "Gut, danke."
+  }
+ },
+ {
+  "id": 684,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wer geht ins Haus?",
+   "solution_de": "Karim, Nabil und Muhsin."
+  }
+ },
+ {
+  "id": 685,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was trinken sie?",
+   "solution_de": "Muhsin trinkt Tee, Nabil trinkt Kaffee."
+  }
+ },
+ {
+  "id": 686,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Trinkt Nabil Tee?",
+   "solution_de": "Nein, Nabil mag Kaffee, er trinkt keinen Tee."
+  }
+ },
+ {
+  "id": 687,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Ist Maryam Tunesierin?",
+   "solution_de": "Nein, sie kommt aus Frankreich."
+  }
+ },
+ {
+  "id": 688,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Ist Maryam Karims Freundin?",
+   "solution_de": "Nein, sie ist Muhsins Freundin."
+  }
+ },
+ {
+  "id": 689,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was macht Maryam in Tunis?",
+   "solution_de": "Sie arbeitet, sie unterrichtet Französisch am Lycée in La Marsa."
+  }
+ },
+ {
+  "id": 690,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Ist Maryam Übersetzerin?",
+   "solution_de": "Nein, sie ist Lehrerin."
+  }
+ },
+ {
+  "id": 691,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Hat Maryam Wechselgeld?",
+   "solution_de": "Nein, hat sie nicht."
+  }
+ },
+ {
+  "id": 692,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viel Geld hat sie?",
+   "solution_de": "Sie hat nur einen Dinar."
+  }
+ },
+ {
+  "id": 693,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Kann Maryam Fatma Geld leihen?",
+   "solution_de": "Ja, sie kann ihr fünfhundert leihen."
+  }
+ },
+ {
+  "id": 719,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wo sind Kamal und Hadi?",
+   "solution_de": "Vor dem Café."
+  }
+ },
+ {
+  "id": 720,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Trinkt Kamal Kaffee mit Hadi?",
+   "solution_de": "Nein, Hadi ist in Eile, er trinkt nicht mit ihm."
+  }
+ },
+ {
+  "id": 721,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wohin geht Hadi jetzt?",
+   "solution_de": "Er geht zur Bank, um Geld abzuheben."
+  }
+ },
+ {
+  "id": 722,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wohin gehen die Männer?",
+   "solution_de": "Sie gehen ins Café, um Karten zu spielen."
+  }
+ },
+ {
+  "id": 723,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was machen sie im Café?",
+   "solution_de": "Sie trinken Kaffee und Tee und spielen Karten."
+  }
+ },
+ {
+  "id": 724,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Geht Karim jetzt mit ihnen ins Café oder nicht?",
+   "solution_de": "Ja, er geht mit ihnen."
+  }
+ },
+ {
+  "id": 725,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wohin gehen Hsan und Bashir jetzt?",
+   "solution_de": "Sie gehen ins Café."
+  }
+ },
+ {
+  "id": 726,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Hat Bashir Geld?",
+   "solution_de": "Ja, er holt sein Geld, aber Hsan kann für ihn bezahlen."
+  }
+ },
+ {
+  "id": 727,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was trinkt Hsan?",
+   "solution_de": "Kaffee mit Milch."
+  }
+ },
+ {
+  "id": 728,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was trinkt Bashir?",
+   "solution_de": "Ein Glas Tee mit Minze und ein Glas Wasser."
+  }
+ },
+ {
+  "id": 729,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Ist Hsan durstig?",
+   "solution_de": "Ja, Hsan ist durstig."
+  }
+ },
+ {
+  "id": 890,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Mit wem spricht Nabil?",
+   "solution_de": "Mit seiner Mutter."
+  }
+ },
+ {
+  "id": 891,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wer ist Marya?",
+   "solution_de": "Nabils Frau."
+  }
+ },
+ {
+  "id": 892,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wo arbeiten Nabil und Marya?",
+   "solution_de": "In Italien."
+  }
+ },
+ {
+  "id": 893,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wo sind sie jetzt?",
+   "solution_de": "Sie sind jetzt in Tunis."
+  }
+ },
+ {
+  "id": 894,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Woher kommt Marya?",
+   "solution_de": "Sie ist Italienerin."
+  }
+ },
+ {
+  "id": 895,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was trinken Nabil und seine Frau?",
+   "solution_de": "Sie trinken Kaffee."
+  }
+ },
+ {
+  "id": 896,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wer ist Nadya?",
+   "solution_de": "Muhammids Frau."
+  }
+ },
+ {
+  "id": 897,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Ist Muhsin verheiratet?",
+   "solution_de": "Nein, er ist ledig."
+  }
+ },
+ {
+  "id": 898,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Ist Muhammid ledig?",
+   "solution_de": "Nein, er ist verheiratet."
+  }
+ },
+ {
+  "id": 899,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Will Muhsin nicht heiraten?",
+   "solution_de": "Nein, er will nicht heiraten."
+  }
+ },
+ {
+  "id": 900,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie alt ist dieser Mann?",
+   "solution_de": "Er ist 25 Jahre alt."
+  }
+ },
+ {
+  "id": 901,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was macht er gerade in Sousse?",
+   "solution_de": "Er lernt gerade Deutsch."
+  }
+ },
+ {
+  "id": 902,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Lernt Muhammid auch Deutsch?",
+   "solution_de": "Nein, er lernt gerade Französisch."
+  }
+ },
+ {
+  "id": 903,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum will er nach Frankreich gehen?",
+   "solution_de": "Um dort zu arbeiten."
+  }
+ },
+ {
+  "id": 904,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Will Muhammid in Tunis bleiben?",
+   "solution_de": "Ja, er will drei Jahre in Tunis bleiben."
+  }
+ },
+ {
+  "id": 905,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum will dieser Mann nicht ins Ausland gehen?",
+   "solution_de": "Weil er verheiratet ist und eine kleine Tochter hat."
+  }
+ },
+ {
+  "id": 906,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Trinken die Tunesier keinen kalten Tee mit Eis?",
+   "solution_de": "Nein, die Europäer trinken kalten Tee mit Eis, nicht die Tunesier."
+  }
+ },
+ {
+  "id": 907,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Trinken die Europäer keinen Tee mit Minze?",
+   "solution_de": "Nein, in England tun sie Milch in den Tee; die Minze kommt in den tunesischen Tee."
+  }
+ },
+ {
+  "id": 908,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was trinkt man in Tunis?",
+   "solution_de": "Man trinkt viel Tee und Kaffee, und der Tee ist sehr stark."
+  }
+ },
+ {
+  "id": 909,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wo trinkt man Tee mit Milch?",
+   "solution_de": "In England."
+  }
+ },
+ {
+  "id": 910,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie magst du deinen Tee, mit Milch oder mit Minze?",
+   "solution_de": "(freie Antwort) Ich mag meinen Tee mit Minze."
+  }
+ },
+ {
+  "id": 911,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Trinkst du morgens Kaffee oder Tee?",
+   "solution_de": "(freie Antwort) Ich trinke morgens Kaffee."
+  }
+ },
+ {
+  "id": 912,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Magst du deinen Kaffee mit Zucker oder ohne?",
+   "solution_de": "(freie Antwort) Ich mag ihn mit etwas Zucker."
+  }
+ },
+ {
+  "id": 913,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Trinkst du deinen Kaffee normalerweise mit viel Milch, mit etwas Milch oder ohne?",
+   "solution_de": "(freie Antwort) Ich trinke ihn mit etwas Milch."
+  }
+ },
+ {
+  "id": 914,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie mögen die Tunesier ihren Kaffee?",
+   "solution_de": "Sie mögen ihren Kaffee sehr süß."
+  }
+ },
+ {
+  "id": 1163,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wo ist der Mann?",
+   "solution_de": "Er ist auf der Post."
+  }
+ },
+ {
+  "id": 1164,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Welcher Mann hat einen Brief?",
+   "solution_de": "Mann 2, der einen Einschreibebrief hat."
+  }
+ },
+ {
+  "id": 1165,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was will er bezahlen?",
+   "solution_de": "Er will die Wasserrechnung bezahlen."
+  }
+ },
+ {
+  "id": 1166,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Ist die Adresse auf den Brief geschrieben oder nicht?",
+   "solution_de": "Ja, die Adresse ist geschrieben und vollständig."
+  }
+ },
+ {
+  "id": 1167,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was kostet der Brief?",
+   "solution_de": "Einen Dinar zweihundert."
+  }
+ },
+ {
+  "id": 1168,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Von wann bis wann ist die Post geöffnet?",
+   "solution_de": "Von drei bis fünf."
+  }
+ },
+ {
+  "id": 1169,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann will er zur Post zurückkehren?",
+   "solution_de": "Er will abends zurückkommen."
+  }
+ },
+ {
+  "id": 1170,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wohin geht Walid?",
+   "solution_de": "Er geht zur Post."
+  }
+ },
+ {
+  "id": 1171,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was will er auf der Post machen?",
+   "solution_de": "Er will eine Briefmarke kaufen und einen Brief schicken."
+  }
+ },
+ {
+  "id": 1172,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Mit wem will er gehen?",
+   "solution_de": "Mit Slim."
+  }
+ },
+ {
+  "id": 1173,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was will Slim auf der Post kaufen?",
+   "solution_de": "Er will eine Postkarte kaufen."
+  }
+ },
+ {
+  "id": 1174,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Gibt es keine Postkarten auf der Post?",
+   "solution_de": "Nein, es gibt keine Postkarten auf der Post."
+  }
+ },
+ {
+  "id": 1175,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was macht dieser Mann gerade? (Muhammid)",
+   "solution_de": "Er telefoniert gerade mit Fatma."
+  }
+ },
+ {
+  "id": 1176,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was macht Fatma gerade?",
+   "solution_de": "Sie liest gerade in einem Buch. Der bei ihr schreibt gerade einen Brief."
+  }
+ },
+ {
+  "id": 1177,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Mit wem spricht Fatma?",
+   "solution_de": "Mit Muhammid."
+  }
+ },
+ {
+  "id": 1178,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Bei wem werden sie abends zusammensein und wann?",
+   "solution_de": "Bei Muhammid, um halb acht, sie schauen sich etwas an."
+  }
+ },
+ {
+  "id": 1179,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wo wohnen Muhammid und Muhsin?",
+   "solution_de": "Sie wohnen zusammen in einem Haus in der Nähe des Büros."
+  }
+ },
+ {
+  "id": 1180,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann steht Muhammid auf?",
+   "solution_de": "Er steht früh um halb sieben auf."
+  }
+ },
+ {
+  "id": 1181,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Und Muhsin, wann steht er auf?",
+   "solution_de": "Er steht nicht vor Viertel vor acht auf."
+  }
+ },
+ {
+  "id": 1182,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wer steht früher auf, Muhammid oder Muhsin?",
+   "solution_de": "Muhammid steht früher auf."
+  }
+ },
+ {
+  "id": 1183,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was macht Muhammid, wenn er aufsteht?",
+   "solution_de": "Er trinkt seinen Kaffee, liest seine Lektionen und geht dann ins Büro."
+  }
+ },
+ {
+  "id": 1184,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum kommt Muhsin zu spät ins Büro?",
+   "solution_de": "Weil er spät aufsteht."
+  }
+ },
+ {
+  "id": 1185,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was machen sie normalerweise abends?",
+   "solution_de": "Sie gehen in der Stadtmitte zu Abend essen oder laden ihre Freunde ein."
+  }
+ },
+ {
+  "id": 1186,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wen laden sie zum Abendessen ein?",
+   "solution_de": "Sie laden ihre Freunde ein."
+  }
+ },
+ {
+  "id": 1187,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was machen sie jeden Tag nach dem Abendessen?",
+   "solution_de": "Sie gehen ins Café oder bleiben zu Hause und sehen fern."
+  }
+ },
+ {
+  "id": 1188,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann arbeitest du nicht und lernst nicht?",
+   "solution_de": "Am Samstagabend und am Sonntag."
+  }
+ },
+ {
+  "id": 1189,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was machst du normalerweise?",
+   "solution_de": "Ich bleibe zu Hause und schreibe E-Mails und Nachrichten an meine Freunde."
+  }
+ },
+ {
+  "id": 1190,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wo wohnen deine Mutter und dein Vater?",
+   "solution_de": "Sie wohnen in Deutschland."
+  }
+ },
+ {
+  "id": 1191,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was wirst du diesen Samstag machen?",
+   "solution_de": "Ich besuche meinen Freund Salah, der in Djerba wohnt."
+  }
+ },
+ {
+  "id": 1192,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie fährst du nach Djerba?",
+   "solution_de": "Ich nehme das Flugzeug."
+  }
+ },
+ {
+  "id": 1193,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie heißt dein Freund?",
+   "solution_de": "Salah."
+  }
+ },
+ {
+  "id": 1194,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum nimmst du nicht das Auto?",
+   "solution_de": "Weil das Auto zehn Stunden für die Strecke braucht."
+  }
+ },
+ {
+  "id": 1195,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie lange braucht das Auto für die Strecke?",
+   "solution_de": "Zehn Stunden."
+  }
+ },
+ {
+  "id": 1196,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie lange bleibst du im Flugzeug?",
+   "solution_de": "Weniger als im Auto (nicht genau angegeben, wie lange)."
+  }
+ },
+ {
+  "id": 1197,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann musst du nach Tunis zurückkehren?",
+   "solution_de": "Montagmorgen."
+  }
+ },
+ {
+  "id": 1353,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Kostet der Mann die Oliven nicht?",
+   "solution_de": "Nein, er kostet die Oliven nicht."
+  }
+ },
+ {
+  "id": 1354,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Kauft er keine Äpfel?",
+   "solution_de": "Nein, er kauft keine; er hat zu Hause alle Sorten Getreide."
+  }
+ },
+ {
+  "id": 1355,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was ist sein Einkauf?",
+   "solution_de": "Sein Einkauf ist ein bisschen Kartoffeln."
+  }
+ },
+ {
+  "id": 1356,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Ist der Zwieback frisch?",
+   "solution_de": "Nein, der Zwieback ist alt."
+  }
+ },
+ {
+  "id": 1357,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viel möchte er von einem Kilo Zwieback?",
+   "solution_de": "Ein Kilo, aber er will ihn nicht kaufen, er ist alt."
+  }
+ },
+ {
+  "id": 1358,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Sind die Kartoffeln auch alt?",
+   "solution_de": "Nein, die Kartoffeln sind schön."
+  }
+ },
+ {
+  "id": 1359,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viel wiegt man ihm das Gemüse ab?",
+   "solution_de": "Man wiegt ihm zwei Kilo Kartoffeln ab."
+  }
+ },
+ {
+  "id": 1360,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Arbeitet Nabil nicht im August?",
+   "solution_de": "Doch, er arbeitet sogar im August."
+  }
+ },
+ {
+  "id": 1361,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was macht Nabil gerade?",
+   "solution_de": "Er hat viel Arbeit mit dem Chef."
+  }
+ },
+ {
+  "id": 1362,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie lange nimmt er Urlaub?",
+   "solution_de": "Er nimmt einen Monat."
+  }
+ },
+ {
+  "id": 1363,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Mit wem verbringt er den Urlaub und wohin fährt er?",
+   "solution_de": "Er bleibt mit der Familie auf Djerba."
+  }
+ },
+ {
+  "id": 1364,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wer verbringt den Sommer mit Muhsin?",
+   "solution_de": "Sein Bruder Jamal."
+  }
+ },
+ {
+  "id": 1365,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wer ist Jamal?",
+   "solution_de": "Der Bruder von Muhsin."
+  }
+ },
+ {
+  "id": 1366,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Kommt Nabil mit ihnen?",
+   "solution_de": "Ja, er kommt mit ihnen."
+  }
+ },
+ {
+  "id": 1367,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie lange bleibt er bei ihnen?",
+   "solution_de": "Einen Monat und einen halben."
+  }
+ },
+ {
+  "id": 1368,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wohin möchte Fatma gehen?",
+   "solution_de": "Sie möchte ins Café gehen."
+  }
+ },
+ {
+  "id": 1369,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was werden sie im Café machen?",
+   "solution_de": "Wir schauen uns meine Fotos an."
+  }
+ },
+ {
+  "id": 1370,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Hat Fatma kein Auto?",
+   "solution_de": "Doch, sie hat ein Auto, aber es ist kaputt."
+  }
+ },
+ {
+  "id": 1371,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Fahren sie damit ins Café?",
+   "solution_de": "Nein, sie nehmen den Bus."
+  }
+ },
+ {
+  "id": 1372,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum nicht?",
+   "solution_de": "Weil Fatmas Auto kaputt ist."
+  }
+ },
+ {
+  "id": 1373,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was müssen sie dann tun?",
+   "solution_de": "Sie müssen den Bus nehmen."
+  }
+ },
+ {
+  "id": 1374,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann fährt Fatma bei Maryam vorbei?",
+   "solution_de": "Morgen gegen acht Uhr."
+  }
+ },
+ {
+  "id": 1414,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viele Leute sind im Laden des Gewürzhändlers?",
+   "solution_de": "Es sind zwei Kunden (Mann 1 und Mann 2)."
+  }
+ },
+ {
+  "id": 1415,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Will der Mann kein Pfund Käse kaufen?",
+   "solution_de": "Doch, er will ein halbes Pfund Käse kaufen."
+  }
+ },
+ {
+  "id": 1416,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viel möchte er von den Knochen kaufen?",
+   "solution_de": "Er möchte drei Stück Knochen kaufen."
+  }
+ },
+ {
+  "id": 1417,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Und wie viele Baguettes möchte er kaufen?",
+   "solution_de": "Er möchte zwei Baguettes kaufen."
+  }
+ },
+ {
+  "id": 1418,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viel macht das?",
+   "solution_de": "Zweitausendeinhundert."
+  }
+ },
+ {
+  "id": 1419,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viel gibt er dem Händler?",
+   "solution_de": "Er gibt fünftausend."
+  }
+ },
+ {
+  "id": 1420,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Verkauft der Händler keinen Joghurt?",
+   "solution_de": "Nein, er verkauft keinen Joghurt."
+  }
+ },
+ {
+  "id": 1421,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viele Packungen Kekse wirst du für die Frau kaufen?",
+   "solution_de": "Du kaufst zwei Packungen Kekse."
+  }
+ },
+ {
+  "id": 1422,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viel Kilo Zucker möchtest du kaufen?",
+   "solution_de": "Ich möchte ein Pfund Zucker kaufen."
+  }
+ },
+ {
+  "id": 1423,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viel zahlst du?",
+   "solution_de": "Du zahlst dreitausendzweihundert."
+  }
+ },
+ {
+  "id": 1424,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was sagst du dem Händler, wenn du gehst?",
+   "solution_de": "Du sagst ihm „auf Wiedersehen“ (b-is-slama)."
+  }
+ },
+ {
+  "id": 1425,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viele Knochen möchtest du kaufen?",
+   "solution_de": "Ich möchte zwei Stück Knochen kaufen."
+  }
+ },
+ {
+  "id": 1426,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viele Brote wirst du kaufen?",
+   "solution_de": "Du kaufst zwei warme Brote."
+  }
+ },
+ {
+  "id": 1427,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wo wirst du den Joghurt kaufen?",
+   "solution_de": "Im Laden, der neben ihnen liegt."
+  }
+ },
+ {
+  "id": 1428,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Ist der Junge satt oder hungrig?",
+   "solution_de": "Hungrig."
+  }
+ },
+ {
+  "id": 1429,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was trinkt er gern?",
+   "solution_de": "Er trinkt gern Kaffee mit Milch."
+  }
+ },
+ {
+  "id": 1430,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Mag er keinen Tee?",
+   "solution_de": "Nein, er mag keinen Tee."
+  }
+ },
+ {
+  "id": 1431,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was hat der Vater?",
+   "solution_de": "Er hat Kaffee, Milch und Orangensaft."
+  }
+ },
+ {
+  "id": 1432,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Hat er kein Brot?",
+   "solution_de": "Doch, er hat warmes Brot, Butter und Marmelade."
+  }
+ },
+ {
+  "id": 1433,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Ist das Brot kalt oder warm?",
+   "solution_de": "Warm."
+  }
+ },
+ {
+  "id": 1434,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Trinkt der Junge den Kaffee süß oder mit wenig Zucker?",
+   "solution_de": "Er tut den Zucker allein hinein."
+  }
+ },
+ {
+  "id": 1435,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wer tut den Zucker in den Kaffee?",
+   "solution_de": "Er (der Junge) tut ihn selbst hinein."
+  }
+ },
+ {
+  "id": 1436,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum mag der Junge nichts essen?",
+   "solution_de": "Er ist nicht hungrig, Gott sei Dank."
+  }
+ },
+ {
+  "id": 1437,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was ist 'ajja?",
+   "solution_de": "Es ist ein tunesisches Gericht: Tomaten, Harissa, Knoblauch und Eier."
+  }
+ },
+ {
+  "id": 1438,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was musst du kaufen?",
+   "solution_de": "Ich muss Tomatenmark, Harissa, Knoblauch, Kümmel, Öl und Eier kaufen."
+  }
+ },
+ {
+  "id": 1439,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Musst du frische Tomaten oder Tomatenmark kaufen?",
+   "solution_de": "Ich muss Tomatenmark kaufen."
+  }
+ },
+ {
+  "id": 1440,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viel brauchst du von den Eiern?",
+   "solution_de": "Man braucht sechs Eier."
+  }
+ },
+ {
+  "id": 1441,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Worin musst du die Tomaten und die Harissa braten?",
+   "solution_de": "In ein wenig Öl."
+  }
+ },
+ {
+  "id": 1442,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was gibst du danach dazu?",
+   "solution_de": "Ich gebe ein wenig Wasser dazu."
+  }
+ },
+ {
+  "id": 1443,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was machst du mit den Eiern?",
+   "solution_de": "Man schlägt die Eier auf."
+  }
+ },
+ {
+  "id": 1476,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum schwimmen die Leute im Meer?",
+   "solution_de": "Weil es heiß ist."
+  }
+ },
+ {
+  "id": 1477,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann beginnt Karims Urlaub?",
+   "solution_de": "Er beginnt am 15. Juli."
+  }
+ },
+ {
+  "id": 1478,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wohin fährt Karim in den Urlaub und wie lange bleibt er?",
+   "solution_de": "Er verbringt ihn in Sousse, ungefähr einen Monat."
+  }
+ },
+ {
+  "id": 1479,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Verbringt er seinen Urlaub allein?",
+   "solution_de": "Nein, er nimmt die ganze Familie mit."
+  }
+ },
+ {
+  "id": 1480,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Fährt Karim mit Muhsin nach La Marsa?",
+   "solution_de": "Nein, weil sein Urlaub nicht vor dem 15. Juli beginnt."
+  }
+ },
+ {
+  "id": 1481,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Gibt es nachts ein bisschen Wind?",
+   "solution_de": "Nein, es gibt überhaupt keinen Wind."
+  }
+ },
+ {
+  "id": 1482,
+  "alt": null,
+  "neu": {
+   "prompt_de": "In welcher Jahreszeit sind wir jetzt?",
+   "solution_de": "Im Sommer."
+  }
+ },
+ {
+  "id": 1483,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Welche Jahreszeit magst du?",
+   "solution_de": "(Individuelle Antwort, z. B.) Ich mag den Frühling."
+  }
+ },
+ {
+  "id": 1484,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Magst du den Winter nicht?",
+   "solution_de": "(Individuelle Antwort)"
+  }
+ },
+ {
+  "id": 1485,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann wird es kalt?",
+   "solution_de": "Im Winter wird es kalt."
+  }
+ },
+ {
+  "id": 1486,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wo wird es in Tunesien sehr kalt?",
+   "solution_de": "Zum Beispiel in Aïn Draham, Jendouba, Béja und Le Kef."
+  }
+ },
+ {
+  "id": 1487,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann wird es heiß?",
+   "solution_de": "Im Sommer wird es heiß."
+  }
+ },
+ {
+  "id": 1488,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wo wird es in Tunesien sehr heiß?",
+   "solution_de": "Im Süden."
+  }
+ },
+ {
+  "id": 1489,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann werden die Tage kurz?",
+   "solution_de": "Im Winter."
+  }
+ },
+ {
+  "id": 1490,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann werden die Tage lang?",
+   "solution_de": "Im Sommer."
+  }
+ },
+ {
+  "id": 1491,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann regnet es am meisten?",
+   "solution_de": "Im Winter."
+  }
+ },
+ {
+  "id": 1492,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Schneit es in Tunis nicht?",
+   "solution_de": "Nein, es schneit nicht, weil es keinen Schnee gibt."
+  }
+ },
+ {
+  "id": 1493,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie ist das Wetter in der Gegend, in der du wohnst, im Herbst?",
+   "solution_de": "(Individuelle Antwort)"
+  }
+ },
+ {
+  "id": 1494,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann gehen die Schüler im Herbst wieder zur Schule?",
+   "solution_de": "(Individuelle Antwort, meist im September)"
+  }
+ },
+ {
+  "id": 1495,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie lange ist Thomas schon da, seit er aus Deutschland gekommen ist?",
+   "solution_de": "Ungefähr eineinhalb Monate."
+  }
+ },
+ {
+  "id": 1496,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie lange lernt er schon Arabisch, seit er damit angefangen hat?",
+   "solution_de": "Ebenfalls ungefähr eineinhalb Monate."
+  }
+ },
+ {
+  "id": 1497,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum spricht er gern mit den Tunesiern?",
+   "solution_de": "Um schnell zu lernen."
+  }
+ },
+ {
+  "id": 1498,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wohin ist er letzten Freitag gegangen?",
+   "solution_de": "Er hat den Bus genommen und ist zu Nabil gegangen."
+  }
+ },
+ {
+  "id": 1499,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wer war zu Hause, als er ankam?",
+   "solution_de": "Er traf nur seine Mutter an."
+  }
+ },
+ {
+  "id": 1500,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Hat sich Nabils Mutter nicht über ihn gefreut?",
+   "solution_de": "Doch, sie hat sich über Yasir gefreut."
+  }
+ },
+ {
+  "id": 1501,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was hast du ihm zubereitet?",
+   "solution_de": "Ich habe ihm Kaffee zubereitet."
+  }
+ },
+ {
+  "id": 1502,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Versteht Thomas Nabils Mutter, als er mit ihr spricht?",
+   "solution_de": "Nein, er versteht sie nicht."
+  }
+ },
+ {
+  "id": 1503,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum versteht er sie nicht?",
+   "solution_de": "Weil er noch nicht gut Arabisch sprechen kann."
+  }
+ },
+ {
+  "id": 1540,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Ist der Bus voll oder leer?",
+   "solution_de": "Leer, er ist vorne noch leer."
+  }
+ },
+ {
+  "id": 1541,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Sitzen die Leute bequem im Bus?",
+   "solution_de": "Nein, sie sitzen nicht bequem, der Bus ist voll."
+  }
+ },
+ {
+  "id": 1542,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wohin gehen die Leute?",
+   "solution_de": "Sie gehen nach Le Kef."
+  }
+ },
+ {
+  "id": 1543,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum hat die Frau nicht geschlafen?",
+   "solution_de": "Weil sie das Fenster geschlossen vorfand."
+  }
+ },
+ {
+  "id": 1544,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Ist das Fenster offen?",
+   "solution_de": "Nein, das Fenster ist geschlossen."
+  }
+ },
+ {
+  "id": 1545,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann fährt der Bus ab?",
+   "solution_de": "Um fünf."
+  }
+ },
+ {
+  "id": 1546,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann müssen sie in Le Kef anfangen?",
+   "solution_de": "Sie müssen vor acht Uhr dort sein."
+  }
+ },
+ {
+  "id": 1547,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Fahren sie mit dem Bus nach Le Kef?",
+   "solution_de": "Nein, sie fahren mit dem Louage (Sammeltaxi), es ist besser."
+  }
+ },
+ {
+  "id": 1548,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was hat Ali?",
+   "solution_de": "Ali ist krank."
+  }
+ },
+ {
+  "id": 1549,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wo hat er Schmerzen?",
+   "solution_de": "Er hat Kopfschmerzen, und sein Bauch läuft (Durchfall)."
+  }
+ },
+ {
+  "id": 1550,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Hat er noch Fieber?",
+   "solution_de": "Nein, er hat kein Fieber mehr."
+  }
+ },
+ {
+  "id": 1551,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wohin geht Ali?",
+   "solution_de": "Er geht ins Krankenhaus, um den Arzt zu sehen."
+  }
+ },
+ {
+  "id": 1552,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum läuft sein Bauch?",
+   "solution_de": "Weil er krank ist."
+  }
+ },
+ {
+  "id": 1553,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was hat der Arzt ihm gegeben?",
+   "solution_de": "Er hat ihm Medikamente gegeben."
+  }
+ },
+ {
+  "id": 1554,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wohin ist der Mann gegangen?",
+   "solution_de": "Er ist zum Gemüsehändler gegangen."
+  }
+ },
+ {
+  "id": 1555,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was hat er beim Gemüsehändler gekauft?",
+   "solution_de": "Er hat ein bisschen Gemüse gekauft."
+  }
+ },
+ {
+  "id": 1556,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viel kostet das Kilo Zwieback?",
+   "solution_de": "750 das Kilo."
+  }
+ },
+ {
+  "id": 1557,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Ist der Zwieback beim Gemüsehändler gut oder nicht?",
+   "solution_de": "Gut, er ist neu (frisch) und süß."
+  }
+ },
+ {
+  "id": 1558,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Hat er beim Gemüsehändler Kohl gefunden oder nicht?",
+   "solution_de": "Nein, er hat keinen Kohl."
+  }
+ },
+ {
+  "id": 1559,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was hat er dann gekauft, damit seine Frau Couscous kochen kann?",
+   "solution_de": "Er hat Kartoffeln, Kürbis und ein bisschen Kichererbsen gekauft."
+  }
+ },
+ {
+  "id": 1560,
+  "alt": null,
+  "neu": {
+   "prompt_de": "An wen hat Thomas den Brief geschrieben?",
+   "solution_de": "An seine liebe Schwester."
+  }
+ },
+ {
+  "id": 1561,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wo wohnt Thomas?",
+   "solution_de": "Er wohnt in Sousse."
+  }
+ },
+ {
+  "id": 1562,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Mit wem ist er nach Tunis gefahren?",
+   "solution_de": "Er ist mit seinem Freund Ali nach Tunis gefahren."
+  }
+ },
+ {
+  "id": 1563,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum ist er nach Tunis gefahren?",
+   "solution_de": "Um einen schönen Tag zu verbringen."
+  }
+ },
+ {
+  "id": 1564,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Womit sind sie nach Tunis gefahren?",
+   "solution_de": "Mit dem Bus."
+  }
+ },
+ {
+  "id": 1565,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann ist der Bus in Sousse abgefahren?",
+   "solution_de": "Um fünf Uhr morgens."
+  }
+ },
+ {
+  "id": 1566,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was haben sie zum Frühstück gegessen?",
+   "solution_de": "Sie haben Flayr gegessen."
+  }
+ },
+ {
+  "id": 1567,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wo haben sie den Vormittag verbracht?",
+   "solution_de": "Auf den Märkten der Altstadt (Medina)."
+  }
+ },
+ {
+  "id": 1568,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was haben sie auf den Märkten gesehen?",
+   "solution_de": "Sie haben Teppiche aus Kairouan, Käfige aus Sidi Bou Said und arabische Gewänder gesehen."
+  }
+ },
+ {
+  "id": 1569,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum hat Thomas keinen Teppich gekauft?",
+   "solution_de": "Weil er nicht viel Geld dabei hatte."
+  }
+ },
+ {
+  "id": 1570,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wo haben sie zu Mittag gegessen?",
+   "solution_de": "In einem tunesischen Restaurant neben der Zitouna-Moschee."
+  }
+ },
+ {
+  "id": 1571,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was haben sie nach dem Essen gegessen?",
+   "solution_de": "Ali nahm gebratenen Fisch, und Thomas aß Couscous mit Salluš."
+  }
+ },
+ {
+  "id": 1572,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wohin sind sie nach dem Essen gegangen?",
+   "solution_de": "Ins Café Mribat."
+  }
+ },
+ {
+  "id": 1573,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was haben sie getrunken?",
+   "solution_de": "Grünen Tee und arabischen Kaffee mit Orangenblütenwasser."
+  }
+ },
+ {
+  "id": 1574,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann sind sie nach Sousse zurückgekehrt?",
+   "solution_de": "Am Abend, spät."
+  }
+ },
+ {
+  "id": 1575,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Hat Thomas Tunis nicht gefallen?",
+   "solution_de": "Doch, es hat ihm sehr gefallen."
+  }
+ },
+ {
+  "id": 1601,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Mann (B): Wo möchtest du das Haus?",
+   "solution_de": "Ich möchte es nahe am Strand."
+  }
+ },
+ {
+  "id": 1602,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viele Zimmer hat das Haus in La Marsa?",
+   "solution_de": "Es hat zwei Schlafzimmer, ein Esszimmer, ein Wohnzimmer, eine Küche, ein Gästezimmer und Toiletten."
+  }
+ },
+ {
+  "id": 1603,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viel kostet es im Monat?",
+   "solution_de": "Fünfhundert Dinar."
+  }
+ },
+ {
+  "id": 1604,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Hat es kein Telefon?",
+   "solution_de": "Nein, es hat keins."
+  }
+ },
+ {
+  "id": 1605,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann können wir es ansehen?",
+   "solution_de": "Wann immer du willst."
+  }
+ },
+ {
+  "id": 1606,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wo ist die Wohnung, die Mann (A) mieten möchte?",
+   "solution_de": "In El Manar."
+  }
+ },
+ {
+  "id": 1607,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wo genau ist die Wohnung?",
+   "solution_de": "In dem Gebäude hinter dem Café Al-Aqwas."
+  }
+ },
+ {
+  "id": 1608,
+  "alt": null,
+  "neu": {
+   "prompt_de": "In welchem Stock ist die Wohnung?",
+   "solution_de": "Im zweiten Stock, Nummer 6."
+  }
+ },
+ {
+  "id": 1609,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viel verlangt der Vermieter dafür?",
+   "solution_de": "Er verlangt 270 Dinar."
+  }
+ },
+ {
+  "id": 1610,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Sieht sich Mann (A) die Wohnung nicht an, bevor er sie mietet?",
+   "solution_de": "Doch, er sieht sie sich vorher an, und danach einigen sie sich über den Preis."
+  }
+ },
+ {
+  "id": 1611,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Haben Fatma und Maryam kein Haus gefunden?",
+   "solution_de": "Nein, sie haben noch kein Haus gefunden."
+  }
+ },
+ {
+  "id": 1612,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum suchen sie eine Wohnung?",
+   "solution_de": "Weil sie nächsten Herbst anfangen zu arbeiten."
+  }
+ },
+ {
+  "id": 1613,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum können sie nicht jede für sich allein wohnen?",
+   "solution_de": "Weil sie nicht viel bezahlen."
+  }
+ },
+ {
+  "id": 1614,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Fatma hat von wem von einem Haus gehört?",
+   "solution_de": "Von ihrer Freundin Layla."
+  }
+ },
+ {
+  "id": 1615,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viel verlangt der Hausbesitzer dafür?",
+   "solution_de": "Zweihundertsechzig Dinar im Monat."
+  }
+ },
+ {
+  "id": 1616,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wollte Fatma jetzt zum Vermieter gehen?",
+   "solution_de": "Nein, sie hat vergessen, dass sie zuerst hingehen und es ansehen wollen."
+  }
+ },
+ {
+  "id": 1617,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wohnen die Leute in der Nähe des Krankenhauses?",
+   "solution_de": "Ja, meine Wohnung ist dort."
+  }
+ },
+ {
+  "id": 1618,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viele Zimmer hat ihre Wohnung?",
+   "solution_de": "Vier Zimmer: zwei große und zwei kleine."
+  }
+ },
+ {
+  "id": 1619,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Hat sie keinen Garten?",
+   "solution_de": "Nein, sie hat keinen Garten, aber sie hat einen großen Balkon."
+  }
+ },
+ {
+  "id": 1635,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was hat Muhsin bestellt, einen Teller Salat?",
+   "solution_de": "Er hat einen Teller gegrillten Salat bestellt."
+  }
+ },
+ {
+  "id": 1636,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Ist der Tajine da?",
+   "solution_de": "Nein, der Tajine ist aus."
+  }
+ },
+ {
+  "id": 1637,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was hat Nabil bestellt?",
+   "solution_de": "Er hat eine Brik und einen Teller Kaftaji bestellt."
+  }
+ },
+ {
+  "id": 1638,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viele Cola haben sie bestellt?",
+   "solution_de": "Sie haben zwei Cola bestellt."
+  }
+ },
+ {
+  "id": 1639,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Hat Salim das Essen gefallen?",
+   "solution_de": "Ja, das ganze Essen war lecker."
+  }
+ },
+ {
+  "id": 1640,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wie viel muss Salim bezahlen?",
+   "solution_de": "Zwölftausendsiebenhundert."
+  }
+ },
+ {
+  "id": 1641,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wer hat in Dialog 2 das Frühstück bezahlt?",
+   "solution_de": "Hammadi."
+  }
+ },
+ {
+  "id": 1642,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was gibt es in Dialog 3 im Restaurant?",
+   "solution_de": "Alles."
+  }
+ },
+ {
+  "id": 1643,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was hat Mann (A) in Dialog 3 bestellt?",
+   "solution_de": "Einen Teller Fisch, eine Flasche stilles Wasser und eine Boga."
+  }
+ },
+ {
+  "id": 1644,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann ist Layla im Restaurant angekommen?",
+   "solution_de": "Vor zwei Stunden."
+  }
+ },
+ {
+  "id": 1645,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum kam Layla zu spät?",
+   "solution_de": "Weil sie nicht wusste, wo das Restaurant ist."
+  }
+ },
+ {
+  "id": 1646,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was hat Fatma bestellt?",
+   "solution_de": "Eine Brik mit Thunfisch, gekochtes Hähnchen und einen Teller Getreide."
+  }
+ },
+ {
+  "id": 1647,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was hat Layla zum Essen genommen?",
+   "solution_de": "Sie hat gegrillten Salat und Couscous gegessen."
+  }
+ },
+ {
+  "id": 1648,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Hat Fatma kein Dessert genommen?",
+   "solution_de": "Nein, weil sie satt war."
+  }
+ },
+ {
+  "id": 1649,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Für wen ist der Ramadan Pflicht?",
+   "solution_de": "Für alle Muslime."
+  }
+ },
+ {
+  "id": 1650,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Müssen Kranke und Reisende fasten?",
+   "solution_de": "Nein, sie müssen nicht."
+  }
+ },
+ {
+  "id": 1651,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Warum kommt der Ramadan jedes Jahr früher?",
+   "solution_de": "Weil das Hidschri-Jahr kürzer ist als das gregorianische Jahr."
+  }
+ },
+ {
+  "id": 1652,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Essen und trinken die Leute im Ramadan tagsüber?",
+   "solution_de": "Nein, sie essen und trinken nicht."
+  }
+ },
+ {
+  "id": 1653,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Wann essen die Leute das Suhur (Mahlzeit vor Sonnenaufgang)?",
+   "solution_de": "Bevor die Sonne aufgeht."
+  }
+ },
+ {
+  "id": 1654,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was muss im Ramadan jeden Tag auf dem Tisch stehen?",
+   "solution_de": "Die Brik und die Suppe."
+  }
+ },
+ {
+  "id": 1655,
+  "alt": null,
+  "neu": {
+   "prompt_de": "Was machen die Leute am Ende des Ramadan-Monats?",
+   "solution_de": "Sie bereiten das kleine Fest vor und machen Baklava, Maqrudh und Grayyba."
+  }
+ }
+]
