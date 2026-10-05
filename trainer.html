@@ -3026,7 +3026,6 @@ function showStats(){
   // levelCount[0] = nicht gestartet (kein progress ODER progress ohne next_review)
   // levelCount[1..5] = SRS Level 1..5
   const levelCount = [0,0,0,0,0,0,0,0]; // [0]=nie gestartet, [1]=L0 aktiv, [2-7]=L1..6
-  const lessonLevelCount = {}; // {ls: [0,0,0,0,0,0,0]}
   const lessonStats = {};
   // Fälligkeiten nächste N Tage
   const today = new Date(); today.setHours(0,0,0,0);
@@ -3043,9 +3042,6 @@ function showStats(){
     const isStarted = p && p.next_review;
     const bucketIdx = !isStarted ? 0 : p.level === 0 ? 1 : Math.min(p.level + 1, 7);
     levelCount[bucketIdx]++;
-
-    if(!lessonLevelCount[v.ls]) lessonLevelCount[v.ls] = [0,0,0,0,0,0,0,0];
-    lessonLevelCount[v.ls][bucketIdx]++;
 
     if(!lessonStats[v.ls]) lessonStats[v.ls] = {total:0, learned:0, due:0, dueBlocked:0};
     lessonStats[v.ls].total++;
@@ -3198,61 +3194,6 @@ function showStats(){
     }).join('');
   })();
 
-  // Level-Verteilung pro Lektion: gestapelter Balken
-  const lessonLevelRows = Object.entries(lessonLevelCount)
-    .sort((a,b) => a[0].localeCompare(b[0], undefined, {numeric:true}))
-    .map(([ls, counts]) => {
-      const tot = counts.reduce((s,x) => s+x, 0);
-      if(!tot) return '';
-      const colors = ['#555555','#9b6fd4','#e05555','#e07832','#c9a84c','#2a9d8f','#4cac6e','#1a7a3a'];
-      const segments = counts.map((cnt, i) => {
-        const w = Math.round(cnt / tot * 100);
-        return w > 0 ? `<div style="height:100%;width:${w}%;background:${colors[i]};"></div>` : '';
-      }).join('');
-      const started = tot - counts[0];
-      const due = lessonStats[ls] ? lessonStats[ls].due : 0;
-      const dueBlocked = lessonStats[ls] ? (lessonStats[ls].dueBlocked||0) : 0;
-      return `<div style="margin-bottom:.6rem;">
-        <div style="display:flex;justify-content:space-between;font-size:.68rem;margin-bottom:.25rem;">
-          <span style="color:var(--gold)">${ls}${LESSON_TITLES[ls] ? '<span style="color:var(--muted);font-weight:400"> · '+LESSON_TITLES[ls]+'</span>' : ''}</span>
-          <span style="color:var(--muted)">${started}/${tot} aktiv${due > 0 ? ` · <span style="color:var(--red)">${due} fällig</span>` : ''}${dueBlocked > 0 ? ` <span style="color:var(--muted)" title="In deiner Partner-Review-Queue — aktuell nicht in der Karten-Abfrage">📬${dueBlocked}</span>` : ''}</span>
-        </div>
-        <div style="height:10px;background:var(--border);border-radius:4px;overflow:hidden;display:flex;">${segments}</div>
-      </div>`;
-    }).join('');
-
-  // Dieselbe Darstellung auch für Kurs-Lektionen — anders als beim globalen Level-Verteilung-
-  // Block zählt "Neu" hier bewusst gesperrte (noch nicht freigeschaltete) Übungen mit, damit
-  // der volle Lektionsumfang sichtbar ist (nicht nur der bereits erreichte Teil).
-  const courseLessonLevelRows = cLesson === 'all' ? courseFlattenChunks().reduce((acc, ch) => {
-    if(!acc[ch.lessonId]) acc[ch.lessonId] = {lesson: ch.lesson, counts: [0,0,0,0,0,0,0,0]};
-    ch.srsItems.forEach(e => {
-      const p = COURSE_EX_PROGRESS[e.id];
-      const bucketIdx = !p ? 0 : (p.correct_count||0)===0 ? 1 : Math.min((p.correct_count||0)+1, 7);
-      acc[ch.lessonId].counts[bucketIdx]++;
-    });
-    return acc;
-  }, {}) : {};
-  const courseLessonRows = Object.values(courseLessonLevelRows)
-    .sort((a,b) => a.lesson.course_number - b.lesson.course_number)
-    .map(({lesson, counts}) => {
-      const tot = counts.reduce((s,x) => s+x, 0);
-      if(!tot) return '';
-      const colors = ['#555555','#9b6fd4','#e05555','#e07832','#c9a84c','#2a9d8f','#4cac6e','#1a7a3a'];
-      const segments = counts.map((cnt, i) => {
-        const w = Math.round(cnt / tot * 100);
-        return w > 0 ? `<div style="height:100%;width:${w}%;background:${colors[i]};"></div>` : '';
-      }).join('');
-      const started = tot - counts[0];
-      return `<div style="margin-bottom:.6rem;">
-        <div style="display:flex;justify-content:space-between;font-size:.68rem;margin-bottom:.25rem;">
-          <span style="color:var(--blue)">K${lesson.course_number}${lesson.title ? '<span style="color:var(--muted);font-weight:400"> · '+escHtml(lesson.title)+'</span>' : ''}</span>
-          <span style="color:var(--muted)">${started}/${tot} aktiv</span>
-        </div>
-        <div style="height:10px;background:var(--border);border-radius:4px;overflow:hidden;display:flex;">${segments}</div>
-      </div>`;
-    }).join('');
-
   // Heute fällig (abfragbar): Vokabeln ohne die in der Partner-Queue gesperrten, Kurs = fällige Übungen inkl. überfälliger
   const vocDueToday = Math.max(0, dueNowTotal - dueBlockedTotal);
   const courseDueToday = courseDueDays[0].reduce((a,x)=>a+x, 0);
@@ -3302,7 +3243,7 @@ function showStats(){
 
     ${cLesson === 'all' ? `<div style="margin-bottom:.6rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;">
-        <div style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);">Lernaktivität · ${activityWindow} Tage</div>
+        <div style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);">Aktivität · ${activityWindow} Tage</div>
         <div style="display:flex;gap:.25rem;">
           ${[7,14,30,90].map(n => `<button onclick="activityWindow=${n};showStats();" style="padding:.3rem .55rem;font-size:.8rem;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;cursor:pointer;border-radius:2px;${activityWindow===n ? 'background:var(--gold);border:1px solid var(--gold);color:var(--bg);font-weight:700;' : 'background:transparent;border:1px solid var(--border);color:var(--muted);'}">${n}d</button>`).join('')}
         </div>
@@ -3329,18 +3270,9 @@ function showStats(){
       </div>
     </div>
 
-    <div style="margin-bottom:.6rem;">
-      <div style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem;">Level-Verteilung pro Lektion</div>
-      <div style="background:var(--surface);border:1px solid var(--border);padding:.7rem;">
-        <div style="display:flex;gap:.5rem;font-size:.58rem;color:var(--muted);margin-bottom:.6rem;flex-wrap:wrap;">
-          ${['Neu','L0','L1','L2','L3','L4','L5','L6'].map((lbl,i) => {
-            const col = ['#555555','#9b6fd4','#e05555','#e07832','#c9a84c','#2a9d8f','#4cac6e','#1a7a3a'][i];
-            return `<span style="display:flex;align-items:center;gap:.3rem;"><span style="display:inline-block;width:8px;height:8px;background:${col};"></span>${lbl}</span>`;
-          }).join('')}
-        </div>
-        ${lessonLevelRows}
-        ${courseLessonRows ? '<div style="border-top:1px solid var(--border);margin:.6rem 0 .7rem"></div>' + courseLessonRows : ''}
-      </div>
+    <div style="display:flex;gap:.6rem;margin-bottom:.8rem;">
+      <button onclick="statsStartMode('course')" style="flex:1;padding:.7rem .5rem;background:transparent;border:1px solid var(--blue);color:var(--blue);font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.9rem;border-radius:4px;cursor:pointer;">🎓 Kurs-Übersicht</button>
+      <button onclick="statsStartMode('lessons')" style="flex:1;padding:.7rem .5rem;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.9rem;border-radius:4px;cursor:pointer;">📖 Lektions-Übersicht</button>
     </div>
 
     <details style="margin-bottom:.6rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .9rem;">
@@ -3434,19 +3366,12 @@ async function loadActivityStats(){
       </div>`;
     }).join('');
 
-    const tdy = dayList[dayList.length - 1];
-    const tdyPct = tdy.attempts ? Math.round(tdy.correct / tdy.attempts * 100) : null;
-    const todaySummary = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-bottom:.8rem">
-        <div><div style="font-size:.78rem;color:var(--muted)">Heute</div><div style="font-size:1.3rem;font-weight:700;color:var(--gold2);line-height:1.2">${tdy.attempts}</div><div style="font-size:.78rem;color:var(--text);opacity:.8">${tdy.courseAttempts ? 'davon '+tdy.courseAttempts+' Kurs' : 'Antworten'}</div></div>
-        <div><div style="font-size:.78rem;color:var(--muted)">richtig heute</div><div style="font-size:1.3rem;font-weight:700;color:${tdyPct===null?'var(--muted)':tdyPct>=80?'var(--green)':tdyPct>=50?'var(--gold2)':'var(--red)'};line-height:1.2">${tdyPct===null?'–':tdyPct+' %'}</div></div>
-        <div><div style="font-size:.78rem;color:var(--muted)">Ø pro Tag</div><div style="font-size:1.3rem;font-weight:700;color:var(--gold2);line-height:1.2">${Math.round(avgAttempts)}</div></div>
-      </div>`;
     el.innerHTML = totalAttempts === 0
-      ? todaySummary + `<div style="color:var(--muted)">Noch keine Daten in diesem Zeitraum.</div>`
-      : todaySummary + `<div style="display:flex;gap:.4rem;align-items:flex-end;height:113px;margin-bottom:.5rem">${bars}</div>
-         <div style="border-top:1px solid var(--border);padding-top:.4rem;font-size:.8rem;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:.3rem">
-           <span>${totalAttempts} Versuche · <span style="color:var(--green)">${pctCorrectAll}% richtig</span>${totalCourseAttempts ? ` · davon ${totalCourseAttempts} 🎓 Kurs` : ''}</span>
-           <span>${totalVocabSet.size} Vokabeln geübt</span>
+      ? `<div style="color:var(--muted)">Noch keine Daten in diesem Zeitraum.</div>`
+      : `<div style="display:flex;gap:.4rem;align-items:flex-end;height:113px;margin-bottom:.5rem">${bars}</div>
+         <div style="border-top:1px solid var(--border);padding-top:.4rem;font-size:.8rem;color:var(--muted);line-height:1.6">
+           <div>${totalAttempts} Versuche · <span style="color:var(--green)">${pctCorrectAll}% richtig</span></div>
+           <div>${totalCourseAttempts ? `davon ${totalCourseAttempts} 🎓 Kurs · ` : ''}${totalVocabSet.size} Vokabeln geübt</div>
          </div>`;
   } catch(e){
     el.innerHTML = `<span style="color:var(--red);font-size:.75rem">Fehler: ${e.message}</span>`;
@@ -4766,9 +4691,10 @@ function renderLessonsAdmin(){
   if(!c) return;
   let html = '<div style="padding:1rem;max-width:600px;margin:0 auto">';
   html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">'
-        + '<span style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold)">Lektionen</span>'
+        + '<span style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold)">Lektionen</span>'
         + '<button onclick="openNewLesson()" style="padding:.4rem .8rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.75rem;font-weight:700;cursor:pointer;border-radius:4px">+ Neue Lektion</button>'
         + '</div>';
+  html += '<button onclick="statsStartMode(\'course\')" style="width:100%;padding:.6rem;margin-bottom:1rem;background:transparent;border:1px solid var(--blue);color:var(--blue);font-family:\'IBM Plex Mono\',monospace;font-size:.85rem;font-weight:700;cursor:pointer;border-radius:4px">🎓 Kurs-Übersicht</button>';
 
   // Neue-Lektion-Formular (anfangs versteckt)
   html += '<div id="new-lesson-form" style="display:none;background:var(--surface2);border:1px solid var(--gold);border-radius:6px;padding:.85rem;margin-bottom:1rem">'
@@ -4790,14 +4716,14 @@ function renderLessonsAdmin(){
     html += '<div style="color:var(--muted);font-size:.85rem;padding:.5rem 0">Keine Lektionen gefunden.</div>';
   } else {
     _allLessons.forEach(l => {
-      const vCount = ALL_VOCAB.filter(v => v.ls === 'L'+l.lesson_number).length;
       html += '<div id="lcard-'+l.id+'" style="border-bottom:1px solid rgba(58,50,40,.5);padding:.65rem 0">'
             // View
             + '<div id="lview-'+l.id+'" style="display:flex;align-items:flex-start;gap:.6rem;justify-content:space-between">'
             + '<div style="flex:1;min-width:0">'
             + '<div style="font-size:.95rem;color:var(--text);font-weight:500">L'+l.lesson_number+' <span style="color:var(--gold2)">'+(l.title||'<span style="color:var(--muted);font-style:italic">kein Titel</span>')+'</span></div>'
 
-            + '<div style="font-size:.65rem;color:var(--muted);opacity:.7;margin-top:.25rem">'+vCount+' Vokabeln · ID '+l.id+'</div>'
+            + lessonStatHtml(ALL_VOCAB.filter(v => v.ls === 'L'+l.lesson_number))
+            + '<div style="font-size:.72rem;color:var(--muted);opacity:.7;margin-top:.3rem">ID '+l.id+'</div>'
             + '</div>'
             + '<button onclick="openLessonEdit('+l.id+')" style="padding:.25rem .55rem;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:\'IBM Plex Mono\',monospace;font-size:.7rem;cursor:pointer;border-radius:3px;white-space:nowrap;flex-shrink:0">✏ Bearbeiten</button>'
             + '</div>'
@@ -4824,6 +4750,21 @@ function renderLessonsAdmin(){
 }
 
 function escHtml(s){ const d=document.createElement('div');d.textContent=s||'';return d.innerHTML; }
+
+// Fortschritt einer Vokabel-Liste wie in Statistik/Kurs-Übersicht: 📅 Anteil mit Fälligkeit, ⭐ Punkte vom Maximum,
+// dazu Anzahl und heute fällig. 100 % grün.
+function lessonStatHtml(list){
+  let n = 0, pts = 0, due = 0;
+  list.forEach(v => {
+    const p = srsProgress[v.id];
+    if(p && p.next_review){ n++; pts += Math.min(p.level||0, 6); if(isDueByDay(p.next_review)) due++; }
+  });
+  const total = list.length, max = n * 6;
+  const pc = (a,b) => b ? Math.round(100*a/b) : 0;
+  const cell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+';line-height:1.2">'+icon+' '+pc(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+a+' / '+b+'</div></div>';
+  return '<div style="font-size:.85rem;color:var(--muted);margin-top:.3rem">'+total+' Vokabeln'+(due ? ' · <span style="color:var(--red)">'+due+' heute fällig</span>' : '')+'</div>'
+       + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.5rem">'+cell('📅',n,total)+cell('⭐',pts,max)+'</div>';
+}
 
 function openNewLesson(){
   const f = document.getElementById('new-lesson-form');
