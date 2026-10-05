@@ -5766,15 +5766,18 @@ function renderCourseOverview(){
   const exStat = list => { let n=0, pts=0; list.forEach(e=>{ const p=COURSE_EX_PROGRESS[e.id]; if(p){ n++; pts += Math.min(p.correct_count||0,6); } });
     return {n, total:list.length, pts, max:n*6}; };
   const pc = (a,b) => b ? Math.round(100*a/b) : 0;
-  const statTxt = st => '📅 '+st.n+'/'+st.total+' ('+pc(st.n,st.total)+' %) · ⭐ '+st.pts+'/'+st.max+' ('+pc(st.pts,st.max)+' %)';
+  // Eine Zeile: Label | 📅 Anteil mit Fälligkeit | ⭐ Punkte-Anteil (Prozent groß, Zähler klein darunter)
+  const statCell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:var(--gold2);line-height:1.2">'+icon+' '+pc(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+a+' / '+b+'</div></div>';
+  const statRow = (label, st) => '<div style="display:grid;grid-template-columns:5.2rem 1fr 1fr;gap:.5rem;align-items:center;margin-top:.5rem"><div style="font-size:.85rem;color:var(--text)">'+label+'</div>'+statCell('📅',st.n,st.total)+statCell('⭐',st.pts,st.max)+'</div>';
   const lessonVocab = l => { const f = parseCourseVocabRefs(l.vocab_lesson_refs); return ALL_VOCAB.filter(v=>f.ids.has(v.id)||f.tr.has(v.tr)); };
   const allVocabSet = new Map();
   COURSE_LESSONS.forEach(l=>lessonVocab(l).forEach(v=>allVocabSet.set(v.id,v)));
   const allItems = chunks.reduce((s,ch)=>s.concat(ch.srsItems),[]);
-  h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem;font-size:.78rem">';
-  h += '<div style="font-size:.6rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:.35rem">Gesamt</div>';
-  h += '<div style="display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap"><span>Vokabeln (Kurs)</span><span style="color:var(--gold2)">'+statTxt(vocStat([...allVocabSet.values()]))+'</span></div>';
-  h += '<div style="display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-top:.2rem"><span>Kurs-Übungen</span><span style="color:var(--gold2)">'+statTxt(exStat(allItems))+'</span></div>';
+  h += '<div style="background:var(--surface);border:1px solid var(--gold);border-radius:6px;padding:.8rem .9rem;margin-bottom:1rem">';
+  h += '<div style="font-size:.8rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);font-weight:700">Gesamt</div>';
+  h += '<div style="display:grid;grid-template-columns:5.2rem 1fr 1fr;gap:.5rem;margin-top:.3rem;font-size:.75rem;color:var(--muted)"><div></div><div>📅 Fälligkeit</div><div>⭐ Punkte</div></div>';
+  h += statRow('Vokabeln', vocStat([...allVocabSet.values()]));
+  h += statRow('Übungen', exStat(allItems));
   h += '</div>';
   h += '<div style="display:flex;flex-direction:column;gap:.5rem">';
   COURSE_LESSONS.forEach(l=>{
@@ -5783,16 +5786,18 @@ function renderCourseOverview(){
     const unlockedItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]).length,0);
     const masteredItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]&&(COURSE_EX_PROGRESS[e.id].correct_count||0)>=4).length,0);
     const lessonItems = lessonChunks.reduce((s,ch)=>s.concat(ch.srsItems),[]);
-    const statLines = (totalItems ? '<div style="margin-top:.15rem">Übungen '+statTxt(exStat(lessonItems))+'</div>' : '')
-      + (lessonVocab(l).length ? '<div>Vokabeln '+statTxt(vocStat(lessonVocab(l)))+'</div>' : '');
+    const statLines = (totalItems ? statRow('Übungen', exStat(lessonItems)) : '') + (lessonVocab(l).length ? statRow('Vokabeln', vocStat(lessonVocab(l))) : '');
     const icon = totalItems===0 ? '📄' : masteredItems>=totalItems ? '✅' : unlockedItems>0 ? '🟡' : '🔒';
     const statusTxt = totalItems===0 ? 'nur Lesen' : masteredItems>=totalItems ? 'abgeschlossen' : unlockedItems>0 ? masteredItems+'/'+totalItems+' Übungen gemeistert' : 'noch nicht erreicht';
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;display:flex;justify-content:space-between;align-items:center;gap:.6rem">';
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem .9rem">';
+    h += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem">';
     h += '<div style="flex:1;min-width:0">';
-    h += '<div style="font-size:.9rem;color:var(--text)">'+icon+' L'+l.course_number+' <span style="color:var(--gold2)">'+escHtml(l.title||'')+'</span></div>';
-    h += '<div style="font-size:.68rem;color:var(--muted);margin-top:.15rem">'+statusTxt+statLines+'</div>';
+    h += '<div style="font-size:1rem;color:var(--text)">'+icon+' L'+l.course_number+' <span style="color:var(--gold2)">'+escHtml(l.title||'')+'</span></div>';
+    h += '<div style="font-size:.85rem;color:var(--muted);margin-top:.2rem">'+statusTxt+'</div>';
     h += '</div>';
-    h += '<button onclick="showCourseLesson('+l.id+')" style="padding:.35rem .7rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.75rem;font-weight:700;cursor:pointer;border-radius:4px;white-space:nowrap">Öffnen</button>';
+    h += '<button onclick="showCourseLesson('+l.id+')" style="padding:.5rem .9rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.85rem;font-weight:700;cursor:pointer;border-radius:4px;white-space:nowrap">Öffnen</button>';
+    h += '</div>';
+    h += statLines;
     h += '</div>';
   });
   h += '</div></div>';
