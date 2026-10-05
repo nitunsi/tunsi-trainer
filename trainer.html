@@ -3452,11 +3452,7 @@ async function loadActivityStats(){
 
     el.innerHTML = totalAttempts === 0
       ? `<div style="color:var(--muted)">Noch keine Daten in diesem Zeitraum.</div>`
-      : `<div style="display:flex;gap:.4rem;align-items:flex-end;height:113px;margin-bottom:.5rem">${bars}</div>
-         <div style="border-top:1px solid var(--border);padding-top:.4rem;font-size:.8rem;color:var(--muted);line-height:1.6">
-           <div>${fmtN(totalAttempts)} Versuche · <span style="color:var(--green)">${pctCorrectAll}% richtig</span></div>
-           <div>${totalCourseAttempts ? `davon ${fmtN(totalCourseAttempts)} 🎓 Kurs · ` : ''}${fmtN(totalVocabSet.size)} Vokabeln geübt</div>
-         </div>`;
+      : `<div style="display:flex;gap:.4rem;align-items:flex-end;height:113px;margin-bottom:.5rem">${bars}</div>`;
   } catch(e){
     el.innerHTML = `<span style="color:var(--red);font-size:.75rem">Fehler: ${e.message}</span>`;
   }
