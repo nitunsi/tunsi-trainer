@@ -3161,7 +3161,7 @@ function showStats(){
         ${total ? segments : ''}
       </div>
       ${hasCourseInForecast ? courseShareGauge(courseTotal, total) : ''}
-      <span style="font-size:.6rem;color:var(--muted);text-align:center">${name}</span>
+      <span style="font-size:.72rem;color:var(--muted);text-align:center">${name}</span>
     </div>`;
   }).join('');
 
@@ -3253,10 +3253,27 @@ function showStats(){
       </div>`;
     }).join('');
 
+  // Heute fällig (abfragbar): Vokabeln ohne die in der Partner-Queue gesperrten, Kurs = fällige Übungen inkl. überfälliger
+  const vocDueToday = Math.max(0, dueNowTotal - dueBlockedTotal);
+  const courseDueToday = courseDueDays[0].reduce((a,x)=>a+x, 0);
+  // Obergrenzen für die Vorschau bei Glätten / Neu berechnen
+  const smoothMax = ALL_VOCAB.filter(v => { const p = srsProgress[v.id]; return p && p.next_review && p.level >= 3; }).length;
+  const recalcMax = ALL_VOCAB.filter(v => { const p = srsProgress[v.id]; return p && p.next_review && p.last_reviewed; }).length;
+  const stPct = (a,b) => b ? Math.round(100*a/b) : 0;
+  const stCell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+';line-height:1.2">'+icon+' '+stPct(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+a+' / '+b+'</div></div>';
+  const stRow = (label, a1, b1, a2, b2, phases) => '<div style="margin-top:.7rem"><div style="display:grid;grid-template-columns:5.2rem 1fr 1fr;gap:.5rem;align-items:center"><div style="font-size:.85rem;color:var(--text)">'+label+'</div>'+stCell('📅',a1,b1)+stCell('⭐',a2,b2)+'</div><div style="font-size:.75rem;color:var(--muted);margin-top:.3rem">'+phases+'</div></div>';
   c.innerHTML = `
+    ${cLesson === 'all' ? `<div style="margin-bottom:1rem;">
+      <div style="font-size:.85rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);font-weight:700;margin-bottom:.5rem;">Heute fällig</div>
+      <div style="display:flex;gap:.6rem;">
+        <button onclick="statsStartMode('flash')" style="flex:1;padding:.8rem .5rem;background:var(--gold);border:none;color:#0e0c0a;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.95rem;border-radius:4px;cursor:pointer;line-height:1.3">Vokabeln lernen<br><span style="font-weight:400;font-size:.85rem">${vocDueToday} fällig${dueBlockedTotal ? ' · '+dueBlockedTotal+' gesperrt' : ''}</span></button>
+        <button onclick="statsStartMode('coursesrs')" style="flex:1;padding:.8rem .5rem;background:var(--blue);border:none;color:#fff;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.95rem;border-radius:4px;cursor:pointer;line-height:1.3">Kurs lernen<br><span style="font-weight:400;font-size:.85rem">${courseDueToday} fällig</span></button>
+      </div>
+    </div>` : ''}
+
     ${cLesson === 'all' ? `<div id="partner-stats-block" style="margin-bottom:.6rem;">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.4rem;">
-        <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);">Prüf-Aktivität</div>
+        <div style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);">Prüf-Aktivität</div>
         <span id="partner-last-active" style="font-size:.62rem;color:var(--muted);"></span>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);padding:.7rem;font-size:.78rem;">
@@ -3266,30 +3283,28 @@ function showStats(){
 
     <div style="margin-bottom:.6rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;">
-        <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);">Fällig – nächste ${forecastWindow} Tage</div>
+        <div style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);">Fällig · ${forecastWindow} Tage</div>
         <div style="display:flex;gap:.25rem;">
-          ${[7,14,30,90].map(n => `<button onclick="forecastWindow=${n};showStats();" style="padding:.15rem .4rem;font-size:.6rem;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;cursor:pointer;border-radius:2px;${forecastWindow===n ? 'background:var(--gold);border:1px solid var(--gold);color:var(--bg);font-weight:700;' : 'background:transparent;border:1px solid var(--border);color:var(--muted);'}">${n}d</button>`).join('')}
+          ${[7,14,30,90].map(n => `<button onclick="forecastWindow=${n};showStats();" style="padding:.3rem .55rem;font-size:.8rem;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;cursor:pointer;border-radius:2px;${forecastWindow===n ? 'background:var(--gold);border:1px solid var(--gold);color:var(--bg);font-weight:700;' : 'background:transparent;border:1px solid var(--border);color:var(--muted);'}">${n}d</button>`).join('')}
         </div>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);padding:.7rem .7rem .5rem;">
         <div style="display:flex;gap:.4rem;align-items:flex-end;height:96px;margin-bottom:.5rem">${forecastBars}</div>
         ${forecastBlockedCount > 0 ? `<div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem;" title="In deiner Partner-Review-Queue — aktuell nicht in der Karten-Abfrage">📬 ${forecastBlockedCount} gesperrt</div>` : ''}
-        <div style="border-top:1px solid var(--border);padding-top:.5rem;display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;">
-          <input id="pull-forward-count" type="number" min="1" max="200" value="20" style="width:3.5rem;padding:.3rem;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:.85rem;text-align:center;">
-          <button onclick="pullForwardVocab()" style="flex:1;background:var(--gold);border:none;color:#0e0c0a;padding:.35rem .5rem;cursor:pointer;font-weight:700;font-size:.72rem;font-family:'IBM Plex Mono',monospace;white-space:nowrap;">Vorziehen</button>
-          <button onclick="if(confirm('Fälligkeiten glätten?'))smoothSchedule();" style="flex:1;background:transparent;border:1px solid var(--blue);color:var(--blue);padding:.35rem .5rem;cursor:pointer;font-weight:700;font-size:.72rem;font-family:'IBM Plex Mono',monospace;white-space:nowrap;">Glätten</button>
-          <button onclick="if(confirm('Alle Fälligkeiten neu berechnen?'))recalcAllNextReview();" style="flex:1;background:transparent;border:1px solid var(--muted);color:var(--muted);padding:.35rem .5rem;cursor:pointer;font-size:.72rem;font-family:'IBM Plex Mono',monospace;white-space:nowrap;">Neu berechnen</button>
+        <div style="border-top:1px solid var(--border);margin-top:.4rem;padding-top:.6rem;display:flex;gap:.5rem;align-items:center;justify-content:flex-end;">
+          <span style="font-size:.8rem;color:var(--muted)">Vorziehen</span>
+          <input id="pull-forward-count" type="number" min="1" max="200" value="20" style="width:3.2rem;padding:.3rem;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:.9rem;text-align:center;border-radius:4px;">
+          <button onclick="pullForwardVocab()" style="padding:.35rem .8rem;background:transparent;border:1px solid var(--gold);color:var(--gold);font-weight:700;font-size:.8rem;font-family:'IBM Plex Mono',monospace;border-radius:4px;cursor:pointer;">OK</button>
         </div>
-        <div id="pull-forward-result" style="font-size:.72rem;color:var(--muted);margin-top:.3rem;"></div>
-        <div id="smooth-result" style="font-size:.72rem;color:var(--muted);"></div>
+        <div id="pull-forward-result" style="font-size:.8rem;color:var(--muted);margin-top:.3rem;text-align:right;"></div>
       </div>
     </div>
 
     ${cLesson === 'all' ? `<div style="margin-bottom:.6rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;">
-        <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);">Lernaktivität – letzte ${activityWindow} Tage</div>
+        <div style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);">Lernaktivität · ${activityWindow} Tage</div>
         <div style="display:flex;gap:.25rem;">
-          ${[7,14,30,90].map(n => `<button onclick="activityWindow=${n};showStats();" style="padding:.15rem .4rem;font-size:.6rem;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;cursor:pointer;border-radius:2px;${activityWindow===n ? 'background:var(--gold);border:1px solid var(--gold);color:var(--bg);font-weight:700;' : 'background:transparent;border:1px solid var(--border);color:var(--muted);'}">${n}d</button>`).join('')}
+          ${[7,14,30,90].map(n => `<button onclick="activityWindow=${n};showStats();" style="padding:.3rem .55rem;font-size:.8rem;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;cursor:pointer;border-radius:2px;${activityWindow===n ? 'background:var(--gold);border:1px solid var(--gold);color:var(--bg);font-weight:700;' : 'background:transparent;border:1px solid var(--border);color:var(--muted);'}">${n}d</button>`).join('')}
         </div>
       </div>
       <div id="activity-stats-block" style="background:var(--surface);border:1px solid var(--border);padding:.7rem .7rem .5rem;font-size:.78rem;">
@@ -3298,89 +3313,24 @@ function showStats(){
     </div>` : ''}
 
     <div style="margin-bottom:.6rem;">
-      <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:.4rem;">Gesamtfortschritt</div>
+      <div style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem;">Gesamtfortschritt</div>
       ${(cLesson === 'all' && phaseAnfaengerWeighted < 25) ? '<div style="margin-bottom:.6rem;padding:.4rem .6rem;background:rgba(201,76,76,.1);border:1px solid var(--red);font-size:.75rem;color:var(--red)">⚠️ Anfänger-Puffer wird knapp (noch ' + anfaengerGesamt + ' in L0-L2: ' + phaseAnfaenger + ' Vokabeln + ' + coursePhaseAnfaenger + ' Kurs-Übungen) — neuen Stoff hinzufügen</div>' : ''}
-      <div style="background:var(--surface);border:1px solid var(--border);padding:.7rem;${cLesson==='all'?'margin-bottom:.5rem;':''}">
-        ${cLesson==='all' ? '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:.5rem;">Vokabeln</div>' : ''}
-        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.3rem;">
-          <span style="font-size:1.3rem;font-weight:700;font-family:'Playfair Display',serif;color:var(--gold);min-width:3rem">${pct}%</span>
-          <div style="flex:1;height:4px;background:var(--border);">
-            <div style="height:100%;width:${pct}%;background:var(--gold);transition:width .5s;"></div>
-          </div>
-          <span style="font-size:.65rem;color:var(--muted);min-width:5rem;text-align:right">📅 ${activeSRS}/${totalVocab}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;">
-          <span style="font-size:1.3rem;font-weight:700;font-family:'Playfair Display',serif;color:var(--blue);min-width:3rem">${pctActive}%</span>
-          <div style="flex:1;height:4px;background:var(--border);">
-            <div style="height:100%;width:${pctActive}%;background:var(--blue);transition:width .5s;"></div>
-          </div>
-          <span style="font-size:.65rem;color:var(--muted);min-width:5rem;text-align:right">⭐ ${totalPoints}/${maxPointsActive}</span>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.4rem;font-size:.7rem;text-align:center;">
-          <div style="padding:.4rem;background:var(--surface2);border:1px solid var(--border);">
-            <div style="font-size:1rem;font-weight:700;color:var(--muted)">${notStarted}</div>
-            <div style="color:var(--muted);font-size:.6rem">Neu</div>
-          </div>
-          <div style="padding:.4rem;background:var(--surface2);border:1px solid var(--border);">
-            <div style="font-size:1rem;font-weight:700;color:#e05555">${phaseAnfaenger}</div>
-            <div style="color:var(--muted);font-size:.6rem">Anfänger</div>
-          </div>
-          <div style="padding:.4rem;background:var(--surface2);border:1px solid var(--border);">
-            <div style="font-size:1rem;font-weight:700;color:var(--gold)">${phaseEditable}</div>
-            <div style="color:var(--muted);font-size:.6rem">Fortgeschritten</div>
-          </div>
-          <div style="padding:.4rem;background:var(--surface2);border:1px solid var(--border);">
-            <div style="font-size:1rem;font-weight:700;color:var(--green)">${phaseMeistert}</div>
-            <div style="color:var(--muted);font-size:.6rem">Profi</div>
-          </div>
-        </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem .9rem;">
+        <div style="display:grid;grid-template-columns:5.2rem 1fr 1fr;gap:.5rem;font-size:.75rem;color:var(--muted)"><div></div><div>📅 Fälligkeit</div><div>⭐ Punkte</div></div>
+        ${stRow('Vokabeln', activeSRS, totalVocab, totalPoints, maxPointsActive, 'Neu '+notStarted+' · Anfänger '+phaseAnfaenger+' · Fortgeschr. '+phaseEditable+' · Profi '+phaseMeistert)}
+        ${cLesson==='all' ? stRow('Übungen', courseActiveCount, courseTotalItems, courseTotalPoints, courseMaxPointsActive, 'Neu '+courseNotStarted+' · Anfänger '+coursePhaseAnfaenger+' · Fortgeschr. '+coursePhaseEditable+' · Profi '+coursePhaseMeistert) : ''}
       </div>
-      ${cLesson==='all' ? `<div style="background:var(--surface);border:1px solid var(--border);padding:.7rem;">
-        <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:.5rem;">Kurs</div>
-        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.3rem;">
-          <span style="font-size:1.3rem;font-weight:700;font-family:'Playfair Display',serif;color:var(--gold);min-width:3rem">${coursePct}%</span>
-          <div style="flex:1;height:4px;background:var(--border);">
-            <div style="height:100%;width:${coursePct}%;background:var(--gold);transition:width .5s;"></div>
-          </div>
-          <span style="font-size:.65rem;color:var(--muted);min-width:5rem;text-align:right">📅 ${courseActiveCount}/${courseTotalItems}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;">
-          <span style="font-size:1.3rem;font-weight:700;font-family:'Playfair Display',serif;color:var(--blue);min-width:3rem">${coursePctActive}%</span>
-          <div style="flex:1;height:4px;background:var(--border);">
-            <div style="height:100%;width:${coursePctActive}%;background:var(--blue);transition:width .5s;"></div>
-          </div>
-          <span style="font-size:.65rem;color:var(--muted);min-width:5rem;text-align:right">⭐ ${courseTotalPoints}/${courseMaxPointsActive}</span>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.4rem;font-size:.7rem;text-align:center;">
-          <div style="padding:.4rem;background:var(--surface2);border:1px solid var(--border);">
-            <div style="font-size:1rem;font-weight:700;color:var(--muted)">${courseNotStarted}</div>
-            <div style="color:var(--muted);font-size:.6rem">Neu</div>
-          </div>
-          <div style="padding:.4rem;background:var(--surface2);border:1px solid var(--border);">
-            <div style="font-size:1rem;font-weight:700;color:#e05555">${coursePhaseAnfaenger}</div>
-            <div style="color:var(--muted);font-size:.6rem">Anfänger</div>
-          </div>
-          <div style="padding:.4rem;background:var(--surface2);border:1px solid var(--border);">
-            <div style="font-size:1rem;font-weight:700;color:var(--gold)">${coursePhaseEditable}</div>
-            <div style="color:var(--muted);font-size:.6rem">Fortgeschritten</div>
-          </div>
-          <div style="padding:.4rem;background:var(--surface2);border:1px solid var(--border);">
-            <div style="font-size:1rem;font-weight:700;color:var(--green)">${coursePhaseMeistert}</div>
-            <div style="color:var(--muted);font-size:.6rem">Profi</div>
-          </div>
-        </div>
-      </div>` : ''}
     </div>
 
     <div style="margin-bottom:.6rem;">
-      <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:.4rem;">Level-Verteilung</div>
+      <div style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem;">Level-Verteilung</div>
       <div style="background:var(--surface);border:1px solid var(--border);padding:.7rem;">
         ${levelRows}
       </div>
     </div>
 
     <div style="margin-bottom:.6rem;">
-      <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:.4rem;">Level-Verteilung pro Lektion</div>
+      <div style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem;">Level-Verteilung pro Lektion</div>
       <div style="background:var(--surface);border:1px solid var(--border);padding:.7rem;">
         <div style="display:flex;gap:.5rem;font-size:.58rem;color:var(--muted);margin-bottom:.6rem;flex-wrap:wrap;">
           ${['Neu','L0','L1','L2','L3','L4','L5','L6'].map((lbl,i) => {
@@ -3393,6 +3343,15 @@ function showStats(){
       </div>
     </div>
 
+    <details style="margin-bottom:.6rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .9rem;">
+      <summary style="cursor:pointer;font-size:.85rem;color:var(--muted)">Weitere Werkzeuge</summary>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.7rem;">
+        <button onclick="if(confirm('Fälligkeiten glätten? (betrifft bis zu ${smoothMax} Vokabeln)'))smoothSchedule();" style="flex:1;min-width:10rem;background:transparent;border:1px solid var(--blue);color:var(--blue);padding:.5rem;cursor:pointer;font-weight:700;font-size:.8rem;font-family:'IBM Plex Mono',monospace;border-radius:4px;">Glätten<br><span style="font-weight:400;font-size:.72rem">bis zu ${smoothMax} Einträge</span></button>
+        <button onclick="if(confirm('Alle Fälligkeiten neu berechnen? (betrifft bis zu ${recalcMax} Vokabeln)'))recalcAllNextReview();" style="flex:1;min-width:10rem;background:transparent;border:1px solid var(--red);color:var(--red);padding:.5rem;cursor:pointer;font-size:.8rem;font-family:'IBM Plex Mono',monospace;border-radius:4px;">Alle neu berechnen<br><span style="font-size:.72rem">bis zu ${recalcMax} Einträge</span></button>
+      </div>
+      <div id="smooth-result" style="font-size:.8rem;color:var(--muted);margin-top:.5rem;"></div>
+    </details>
+
   `;
   if(cLesson === 'all') loadPartnerStats();
   if(cLesson === 'all') loadActivityStats();
@@ -3401,6 +3360,12 @@ function showStats(){
   document.getElementById('progress-fill').style.width = '0%';
 }
 
+
+// Aus der Statistik direkt in einen Lernmodus springen (wie ein Klick im Menü)
+function statsStartMode(m){
+  const el = document.querySelector('.lesson-chip[onclick*="setMode(\''+m+'\'"]');
+  if(el) setMode(m, el);
+}
 
 async function loadActivityStats(){
   const el = document.getElementById('activity-stats-block');
@@ -3464,15 +3429,22 @@ async function loadActivityStats(){
           ${x.attempts ? `<div style="width:100%;height:${Math.round(h*hWrong/100)}%;min-height:${wrong?'3px':'0'};background:var(--red);"></div><div style="width:100%;height:${Math.round(h*hCorrect/100)}%;min-height:${x.correct?'3px':'0'};background:var(--green);"></div>` : ''}
         </div>
         ${totalCourseAttempts ? courseShareGauge(x.courseAttempts, x.attempts) : ''}
-        <span style="font-size:.6rem;color:var(--muted);text-align:center">${name}</span>
-        <span style="font-size:.58rem;color:${pctColor};text-align:center;min-height:.75rem;display:block">${pctDay !== null ? pctDay+'%' : '&nbsp;'}</span>
+        <span style="font-size:.72rem;color:var(--muted);text-align:center">${name}</span>
+        <span style="font-size:.7rem;color:${pctColor};text-align:center;min-height:.75rem;display:block">${pctDay !== null ? pctDay+'%' : '&nbsp;'}</span>
       </div>`;
     }).join('');
 
+    const tdy = dayList[dayList.length - 1];
+    const tdyPct = tdy.attempts ? Math.round(tdy.correct / tdy.attempts * 100) : null;
+    const todaySummary = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-bottom:.8rem">
+        <div><div style="font-size:.78rem;color:var(--muted)">Heute</div><div style="font-size:1.3rem;font-weight:700;color:var(--gold2);line-height:1.2">${tdy.attempts}</div><div style="font-size:.78rem;color:var(--text);opacity:.8">${tdy.courseAttempts ? 'davon '+tdy.courseAttempts+' Kurs' : 'Antworten'}</div></div>
+        <div><div style="font-size:.78rem;color:var(--muted)">richtig heute</div><div style="font-size:1.3rem;font-weight:700;color:${tdyPct===null?'var(--muted)':tdyPct>=80?'var(--green)':tdyPct>=50?'var(--gold2)':'var(--red)'};line-height:1.2">${tdyPct===null?'–':tdyPct+' %'}</div></div>
+        <div><div style="font-size:.78rem;color:var(--muted)">Ø pro Tag</div><div style="font-size:1.3rem;font-weight:700;color:var(--gold2);line-height:1.2">${Math.round(avgAttempts)}</div></div>
+      </div>`;
     el.innerHTML = totalAttempts === 0
-      ? `<div style="color:var(--muted)">Noch keine Daten in diesem Zeitraum.</div>`
-      : `<div style="display:flex;gap:.4rem;align-items:flex-end;height:113px;margin-bottom:.5rem">${bars}</div>
-         <div style="border-top:1px solid var(--border);padding-top:.4rem;font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:.3rem">
+      ? todaySummary + `<div style="color:var(--muted)">Noch keine Daten in diesem Zeitraum.</div>`
+      : todaySummary + `<div style="display:flex;gap:.4rem;align-items:flex-end;height:113px;margin-bottom:.5rem">${bars}</div>
+         <div style="border-top:1px solid var(--border);padding-top:.4rem;font-size:.8rem;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:.3rem">
            <span>${totalAttempts} Versuche · <span style="color:var(--green)">${pctCorrectAll}% richtig</span>${totalCourseAttempts ? ` · davon ${totalCourseAttempts} 🎓 Kurs` : ''}</span>
            <span>${totalVocabSet.size} Vokabeln geübt</span>
          </div>`;
