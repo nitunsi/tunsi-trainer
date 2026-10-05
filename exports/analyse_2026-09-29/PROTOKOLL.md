@@ -353,3 +353,4 @@ Geprüft:
 - **Kurs-Übersicht (Änderung):** statt „Fälligkeit gesetzt“ jetzt dieselben vier Prozentwerte wie in der Statistik (📅 Anteil mit Fälligkeit, ⭐ Punkte/Maximum) für Vokabeln (nur mit Kurs-Bezug über `vocab_lesson_refs`) und Kurs-Übungen, gesamt und pro Lektion. Kurs: „gestartet“ = Fortschrittszeile (wie in der Statistik), Vokabeln: `next_review` gesetzt.
 - **Kurs-Übersicht (Layout):** größere Schrift (Prozent fett 1,05 rem, Zähler 0,78 rem), Spalten 📅/⭐ mit Kopfzeile im Gesamt-Kasten, Statistik pro Lektion über die volle Kartenbreite, größerer „Öffnen“-Knopf. Per Screenshot bei 390 px geprüft.
 - **Kurs-Übersicht (Reihenfolge):** überall Vokabeln zuerst, dann Übungen (Gesamt und pro Lektion).
+- **Kurs-Übersicht (Farbe):** Prozentwerte mit 100 % erscheinen grün, sonst gold.

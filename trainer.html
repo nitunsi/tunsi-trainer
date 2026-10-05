@@ -5767,7 +5767,7 @@ function renderCourseOverview(){
     return {n, total:list.length, pts, max:n*6}; };
   const pc = (a,b) => b ? Math.round(100*a/b) : 0;
   // Eine Zeile: Label | 📅 Anteil mit Fälligkeit | ⭐ Punkte-Anteil (Prozent groß, Zähler klein darunter)
-  const statCell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:var(--gold2);line-height:1.2">'+icon+' '+pc(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+a+' / '+b+'</div></div>';
+  const statCell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+';line-height:1.2">'+icon+' '+pc(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+a+' / '+b+'</div></div>';
   const statRow = (label, st) => '<div style="display:grid;grid-template-columns:5.2rem 1fr 1fr;gap:.5rem;align-items:center;margin-top:.5rem"><div style="font-size:.85rem;color:var(--text)">'+label+'</div>'+statCell('📅',st.n,st.total)+statCell('⭐',st.pts,st.max)+'</div>';
   const lessonVocab = l => { const f = parseCourseVocabRefs(l.vocab_lesson_refs); return ALL_VOCAB.filter(v=>f.ids.has(v.id)||f.tr.has(v.tr)); };
   const allVocabSet = new Map();
