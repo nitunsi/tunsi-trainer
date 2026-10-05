@@ -1,0 +1,37 @@
+[
+ {
+  "id": 996,
+  "altP": "houwwa qa3id ya7fadh f-il-kilmat is-sibba tawwa?",
+  "altS": "ih, houwwa qa3id ya7fadh f-il-kilmat is-sibba tawwa. / la, houwwa mahush qa3id ya7fadh f-il-kilmat is-sibba tawwa.",
+  "p": "houwwa qa3id ya7fadh f-il-kilmat is-s3iba tawwa?",
+  "s": "ih, houwwa qa3id ya7fadh f-il-kilmat is-s3iba tawwa. / la, houwwa mahush qa3id ya7fadh f-il-kilmat is-s3iba tawwa. (Lernt er gerade die schwierigen Wörter auswendig? — Ja, er lernt gerade die schwierigen Wörter auswendig. / Nein, er lernt gerade die schwierigen Wörter nicht auswendig.)"
+ },
+ {
+  "id": 998,
+  "altP": "houwwa qa3id yjib m-il-khidma?",
+  "altS": "ih, houwwa qa3id yjib m-il-khidma. / la, houwwa mahush qa3id yjib m-il-khidma. (Bringt er gerade etwas von der Arbeit mit? — Ja, er bringt gerade etwas von der Arbeit mit. / Nein, er bringt gerade nichts von der Arbeit mit.)",
+  "p": "houwwa qa3id yghib m-il-khidma?",
+  "s": "ih, houwwa qa3id yghib m-il-khidma. / la, houwwa mahush qa3id yghib m-il-khidma. (Fehlt er gerade bei der Arbeit? — Ja, er fehlt gerade bei der Arbeit. / Nein, er fehlt gerade nicht bei der Arbeit.)"
+ },
+ {
+  "id": 999,
+  "altP": "li-ftur qa3id ysib?",
+  "altS": "ih, li-ftur qa3id ysib. / la, li-ftur mahush qa3id ysib.",
+  "p": "li-ftur qa3id ytib?",
+  "s": "ih, li-ftur qa3id ytib. / la, li-ftur mahush qa3id ytib. (Wird das Frühstück gerade gar? — Ja, das Frühstück wird gerade gar. / Nein, das Frühstück wird gerade nicht gar.)"
+ },
+ {
+  "id": 1126,
+  "altP": "li-ftur bnin walla masit?",
+  "altS": "houwwa bnin barsha.",
+  "p": "li-ftur bnin walla masit?",
+  "s": "houwwa bnin barsha. (Ist das Frühstück lecker oder fad? — Es ist sehr lecker.)"
+ },
+ {
+  "id": 1312,
+  "altP": "ash bash yishri khuk m-il-marshi?",
+  "altS": "bash yishri khudra w-ghlla. (Was kauft dein Bruder auf dem Markt? — Er kauft Gemüse und Getreide.)",
+  "p": "ash bash yishri khuk m-il-marshi?",
+  "s": "bash yishri khudra w-ghlla. (Was kauft dein Bruder auf dem Markt? — Er kauft Gemüse und Obst.)"
+ }
+]
