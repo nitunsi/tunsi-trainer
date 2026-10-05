@@ -347,3 +347,4 @@ Geprüft:
 - **Regeln** in `COURSE_MODE.md` ergänzt (Pronomen, Transliteration, Übersetzungs-Anhang).
 - Undo: `exports/analyse_2026-10-01/restpunkte_undo.sql`.
 - **Karte 895:** `meta.solution_de` „Sie trinken Kaffee.“ → „Sie trinken Kaffee, bitte.“ (`b-rabbi` = Vokabel 1393 `brabbi`, „Bitte“, extern bestätigt). Damit entfällt die Unsicherheit bei 895.
+- **Audio (Code):** Audio der aktuellen und der nächsten drei Karten wird vorgeladen (`audioPreloadAhead`, Cache pro URL); neuer Schalter „🔊 AN/🔇 AUS“ neben „TR AN/AUS“ (Vokabel-Lernen und Kurs, `localStorage` `audio-autoplay`, Standard aus) spielt das Wort beim Aufdecken/Prüfen ab. Getestet mit gestubbtem `Audio` im Browser (Reihenfolge, Start/Ende, Schalter); Wiedergabe mit echten Ninja-Dateien und iOS-Safari nicht getestet.
