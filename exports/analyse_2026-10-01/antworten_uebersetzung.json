@@ -1,0 +1,727 @@
+[
+ {
+  "id": 34,
+  "alt": "la, ena almani.",
+  "neu": "la, ena almani. (Bist du Franzose? — Nein, ich bin Deutscher.)"
+ },
+ {
+  "id": 35,
+  "alt": "la, ena tounsi.",
+  "neu": "la, ena tounsi. (Bist du Algerier? — Nein, ich bin Tunesier.)"
+ },
+ {
+  "id": 36,
+  "alt": "la, ena fransawi.",
+  "neu": "la, ena fransawi. (Bist du Tunesier? — Nein, ich bin Franzose.)"
+ },
+ {
+  "id": 37,
+  "alt": "la, hiyya tounsiya.",
+  "neu": "la, hiyya tounsiya. (Ist sie Französin? — Nein, sie ist Tunesierin.)"
+ },
+ {
+  "id": 38,
+  "alt": "la, ena maghribiya.",
+  "neu": "la, ena maghribiya. (Bist du Algerierin? — Nein, ich bin Marokkanerin.)"
+ },
+ {
+  "id": 39,
+  "alt": "la, houwwa libi.",
+  "neu": "la, houwwa libi. (Ist er Mauretanier? — Nein, er ist Libyer.)"
+ },
+ {
+  "id": 40,
+  "alt": "la, ena jzayriya.",
+  "neu": "la, ena jzayriya. (Bist du Libyerin? — Nein, ich bin Algerierin.)"
+ },
+ {
+  "id": 672,
+  "alt": "ih, 3andna. / la, ma-3andna-sh.",
+  "neu": "ih, 3andna. / la, ma-3andna-sh. (Habt ihr einen Kugelschreiber? — Ja, haben wir. / Nein, haben wir nicht.)"
+ },
+ {
+  "id": 673,
+  "alt": "ih, 3andu. / la, ma-3andu-sh.",
+  "neu": "ih, 3andu. / la, ma-3andu-sh. (Hat er Geld? — Ja, hat er. / Nein, hat er nicht.)"
+ },
+ {
+  "id": 674,
+  "alt": "ih, 3andi. / la, ma-3andi-sh.",
+  "neu": "ih, 3andi. / la, ma-3andi-sh. (Hast du ein Buch auf Arabisch? — Ja, habe ich. / Nein, habe ich nicht.)"
+ },
+ {
+  "id": 675,
+  "alt": "ih, 3andha. / la, ma-3andha-sh.",
+  "neu": "ih, 3andha. / la, ma-3andha-sh. (Hat sie Papier? — Ja, hat sie. / Nein, hat sie nicht.)"
+ },
+ {
+  "id": 676,
+  "alt": "ih, 3andu. / la, ma-3andu-sh.",
+  "neu": "ih, 3andu. / la, ma-3andu-sh. (Hat er ein Büro? — Ja, hat er. / Nein, hat er nicht.)"
+ },
+ {
+  "id": 677,
+  "alt": "ih, 3andi. / la, ma-3andi-sh.",
+  "neu": "ih, 3andi. / la, ma-3andi-sh. (Hast du Wechselgeld für 5000? — Ja, habe ich. / Nein, habe ich nicht.)"
+ },
+ {
+  "id": 678,
+  "alt": "ih, 3andna. / la, ma-3andna-sh.",
+  "neu": "ih, 3andna. / la, ma-3andna-sh. (Habt ihr Wechselgeld für einen Dinar? — Ja, haben wir. / Nein, haben wir nicht.)"
+ },
+ {
+  "id": 679,
+  "alt": "ih, 3andha. / la, ma-3andha-sh.",
+  "neu": "ih, 3andha. / la, ma-3andha-sh. (Hat sie ein Heft? — Ja, hat sie. / Nein, hat sie nicht.)"
+ },
+ {
+  "id": 680,
+  "alt": "ih, 3andhum. / la, ma-3andhum-sh.",
+  "neu": "ih, 3andhum. / la, ma-3andhum-sh. (Haben sie ein Haus? — Ja, haben sie. / Nein, haben sie nicht.)"
+ },
+ {
+  "id": 681,
+  "alt": "ih, 3andi. / la, ma-3andi-sh.",
+  "neu": "ih, 3andi. / la, ma-3andi-sh. (Hast du Zeit? — Ja, habe ich. / Nein, habe ich nicht.)"
+ },
+ {
+  "id": 963,
+  "alt": "qa3da t7ill il-bab.",
+  "neu": "qa3da t7ill il-bab. (Was macht sie gerade? — Sie öffnet gerade die Tür.)"
+ },
+ {
+  "id": 964,
+  "alt": "qa3din y7illu ish-shbabik.",
+  "neu": "qa3din y7illu ish-shbabik. (Was machen sie gerade? — Sie öffnen gerade die Fenster.)"
+ },
+ {
+  "id": 965,
+  "alt": "qa3din ybi3u ktub qdima.",
+  "neu": "qa3din ybi3u ktub qdima. (Was machen sie gerade? — Sie verkaufen gerade alte Bücher.)"
+ },
+ {
+  "id": 966,
+  "alt": "qa3id yisma3 b-il-gda.",
+  "neu": "qa3id yisma3 b-il-gda. (Was macht er gerade? — Er hört gerade aufmerksam zu.)"
+ },
+ {
+  "id": 967,
+  "alt": "qa3id / qa3da nuftur m3a sa7bi.",
+  "neu": "qa3id / qa3da nuftur m3a sa7bi. (Was machst du gerade? — Ich frühstücke gerade mit meinem Freund.)"
+ },
+ {
+  "id": 968,
+  "alt": "qa3id / qa3da naqra l-kilmat ij-jdida.",
+  "neu": "qa3id / qa3da naqra l-kilmat ij-jdida. (Was machst du gerade? — Ich lese gerade die neuen Wörter.)"
+ },
+ {
+  "id": 969,
+  "alt": "qa3din yiktbu messaj.",
+  "neu": "qa3din yiktbu messaj. (Was machen sie gerade? — Sie schreiben gerade eine Nachricht.)"
+ },
+ {
+  "id": 970,
+  "alt": "qa3id / qa3da niktib jwab.",
+  "neu": "qa3id / qa3da niktib jwab. (Was machst du gerade jetzt? — Ich schreibe gerade eine Antwort.)"
+ },
+ {
+  "id": 971,
+  "alt": "qa3id yushrub qahwa.",
+  "neu": "qa3id yushrub qahwa. (Was macht er gerade? — Er trinkt gerade Kaffee.)"
+ },
+ {
+  "id": 972,
+  "alt": "qa3din nushrbu tay.",
+  "neu": "qa3din nushrbu tay. (Was trinkt ihr gerade? — Wir trinken gerade Tee.)"
+ },
+ {
+  "id": 973,
+  "alt": "qa3din yistannau 3la 3li.",
+  "neu": "qa3din yistannau 3la 3li. (Auf wen warten sie gerade? — Sie warten gerade auf Ali.)"
+ },
+ {
+  "id": 974,
+  "alt": "qa3id / qa3da naqra jarida.",
+  "neu": "qa3id / qa3da naqra jarida. (Was liest du gerade? — Ich lese gerade eine Zeitung.)"
+ },
+ {
+  "id": 975,
+  "alt": "qa3din yaklu khubz.",
+  "neu": "qa3din yaklu khubz. (Was essen sie gerade? — Sie essen gerade Brot.)"
+ },
+ {
+  "id": 976,
+  "alt": "qa3da tiktib jwab.",
+  "neu": "qa3da tiktib jwab. (Was schreibt sie gerade? — Sie schreibt gerade eine Antwort.)"
+ },
+ {
+  "id": 977,
+  "alt": "qa3id / qa3da nitkallim m3a muhammid.",
+  "neu": "qa3id / qa3da nitkallim m3a muhammid. (Mit wem sprichst du gerade? — Ich spreche gerade mit Muhammid.)"
+ },
+ {
+  "id": 978,
+  "alt": "qa3din nsibbu jaru.",
+  "neu": "qa3din nsibbu jaru. (Wen beschimpft ihr gerade? — Wir beschimpfen gerade unseren Nachbarn.)"
+ },
+ {
+  "id": 992,
+  "alt": "ih, a7na qa3din nushrbu fi-qahwa tawwa. / la, mannash qa3din nushrbu fi-qahwa tawwa.",
+  "neu": "ih, a7na qa3din nushrbu fi-qahwa tawwa. / la, mannash qa3din nushrbu fi-qahwa tawwa. (Trinkt ihr gerade im Café? — Ja, wir trinken gerade im Café. / Nein, wir trinken gerade nicht im Café.)"
+ },
+ {
+  "id": 993,
+  "alt": "ih, hiyya qa3da tuftur tawwa. / la, hiyya mahish qa3da tuftur tawwa.",
+  "neu": "ih, hiyya qa3da tuftur tawwa. / la, hiyya mahish qa3da tuftur tawwa. (Frühstückt Sunya gerade? — Ja, sie frühstückt gerade. / Nein, sie frühstückt gerade nicht.)"
+ },
+ {
+  "id": 994,
+  "alt": "ih, houwwa qa3id yimsa7 f-it-tawla tawwa. / la, houwwa mahush qa3id yimsa7 f-it-tawla tawwa.",
+  "neu": "ih, houwwa qa3id yimsa7 f-it-tawla tawwa. / la, houwwa mahush qa3id yimsa7 f-it-tawla tawwa. (Wischt dein Mann gerade den Tisch ab? — Ja, er wischt gerade den Tisch ab. / Nein, er wischt gerade den Tisch nicht ab.)"
+ },
+ {
+  "id": 995,
+  "alt": "ih, ena qa3id / qa3da nistanna fi-sunya tawwa. / la, manish qa3id / qa3da nistanna fi-sunya tawwa.",
+  "neu": "ih, ena qa3id / qa3da nistanna fi-sunya tawwa. / la, manish qa3id / qa3da nistanna fi-sunya tawwa. (Wartest du gerade auf Sunya? — Ja, ich warte gerade auf Sunya. / Nein, ich warte gerade nicht auf Sunya.)"
+ },
+ {
+  "id": 997,
+  "alt": "ih, a7na qa3din nashru f-il-qahwa tawwa. / la, mannash qa3din nashru f-il-qahwa tawwa.",
+  "neu": "ih, a7na qa3din nashru f-il-qahwa tawwa. / la, mannash qa3din nashru f-il-qahwa tawwa. (Bleibt ihr gerade im Café auf? — Ja, wir bleiben gerade im Café auf. / Nein, wir bleiben gerade nicht im Café auf.)"
+ },
+ {
+  "id": 998,
+  "alt": "ih, houwwa qa3id yjib m-il-khidma. / la, houwwa mahush qa3id yjib m-il-khidma.",
+  "neu": "ih, houwwa qa3id yjib m-il-khidma. / la, houwwa mahush qa3id yjib m-il-khidma. (Bringt er gerade etwas von der Arbeit mit? — Ja, er bringt gerade etwas von der Arbeit mit. / Nein, er bringt gerade nichts von der Arbeit mit.)"
+ },
+ {
+  "id": 1000,
+  "alt": "ih, hiyya qa3da taghsil fish-sha3r. / la, hiyya mahish qa3da taghsil fish-sha3r.",
+  "neu": "ih, hiyya qa3da taghsil fish-sha3r. / la, hiyya mahish qa3da taghsil fish-sha3r. (Wäscht sie sich gerade die Haare? — Ja, sie wäscht sich gerade die Haare. / Nein, sie wäscht sich gerade nicht die Haare.)"
+ },
+ {
+  "id": 1001,
+  "alt": "tnajjim t3um f-il-pisin.",
+  "neu": "tnajjim t3um f-il-pisin. (Wo kann ich schwimmen? — Du kannst im Schwimmbad schwimmen.)"
+ },
+ {
+  "id": 1002,
+  "alt": "ih, tnajjam tzurni ba3d il-khidma. / la, ma-tnajjam-sh tzurni ba3d il-khidma.",
+  "neu": "ih, tnajjam tzurni ba3d il-khidma. / la, ma-tnajjam-sh tzurni ba3d il-khidma. (Kann ich dich nach der Arbeit besuchen? — Ja, du kannst mich nach der Arbeit besuchen. / Nein, du kannst mich nach der Arbeit nicht besuchen.)"
+ },
+ {
+  "id": 1003,
+  "alt": "ih, nnajjim nmidd-lik ij-jarida. / la, ma-nnajjam-sh nmidd-lik ij-jarida.",
+  "neu": "ih, nnajjim nmidd-lik ij-jarida. / la, ma-nnajjam-sh nmidd-lik ij-jarida. (Kannst du mir die Zeitung reichen? — Ja, ich kann dir die Zeitung reichen. / Nein, ich kann dir die Zeitung nicht reichen.)"
+ },
+ {
+  "id": 1004,
+  "alt": "ih, nnajjmu n7illu ish-shbabik. / la, ma-nnajjmu-sh n7illu ish-shbabik.",
+  "neu": "ih, nnajjmu n7illu ish-shbabik. / la, ma-nnajjmu-sh n7illu ish-shbabik. (Könnt ihr die Fenster öffnen? — Ja, wir können die Fenster öffnen. / Nein, wir können die Fenster nicht öffnen.)"
+ },
+ {
+  "id": 1005,
+  "alt": "ih, y7ibb ymiss il-kalb. / la, ma-y7ibb-sh ymiss il-kalb.",
+  "neu": "ih, y7ibb ymiss il-kalb. / la, ma-y7ibb-sh ymiss il-kalb. (Will das Kind den Hund anfassen? — Ja, es will den Hund anfassen. / Nein, es will den Hund nicht anfassen.)"
+ },
+ {
+  "id": 1006,
+  "alt": "ih, n7ibb nimshi l-il-qahwa m3ak. / la, ma-n7ibb-sh nimshi l-il-qahwa m3ak.",
+  "neu": "ih, n7ibb nimshi l-il-qahwa m3ak. / la, ma-n7ibb-sh nimshi l-il-qahwa m3ak. (Möchtest du mit mir ins Café gehen? — Ja, ich möchte mit dir ins Café gehen. / Nein, ich möchte nicht mit dir ins Café gehen.)"
+ },
+ {
+  "id": 1007,
+  "alt": "ih, n7ibb nuftur m3ak f-il-mat3am. / la, ma-n7ibb-sh nuftur m3ak f-il-mat3am.",
+  "neu": "ih, n7ibb nuftur m3ak f-il-mat3am. / la, ma-n7ibb-sh nuftur m3ak f-il-mat3am. (Möchtest du mit mir im Restaurant frühstücken? — Ja, ich möchte mit dir im Restaurant frühstücken. / Nein, ich möchte nicht mit dir im Restaurant frühstücken.)"
+ },
+ {
+  "id": 1008,
+  "alt": "n7ibbu nibdau f-il-khidma is-sba7 bikri.",
+  "neu": "n7ibbu nibdau f-il-khidma is-sba7 bikri. (Wann möchtet ihr mit der Arbeit anfangen? — Wir möchten morgens früh mit der Arbeit anfangen.)"
+ },
+ {
+  "id": 1009,
+  "alt": "ih, nnajjim nibda f-il-matar bikri. / la, ma-nnajjam-sh nibda f-il-matar bikri.",
+  "neu": "ih, nnajjim nibda f-il-matar bikri. / la, ma-nnajjam-sh nibda f-il-matar bikri. (Kannst du früh am Flughafen anfangen? — Ja, ich kann früh am Flughafen anfangen. / Nein, ich kann nicht früh am Flughafen anfangen.)"
+ },
+ {
+  "id": 1010,
+  "alt": "ih, nnajjam nukhruj m-id-dar bikri. / la, ma-nnajjam-sh nukhruj m-id-dar bikri.",
+  "neu": "ih, nnajjam nukhruj m-id-dar bikri. / la, ma-nnajjam-sh nukhruj m-id-dar bikri. (Kannst du früh das Haus verlassen? — Ja, ich kann früh das Haus verlassen. / Nein, ich kann nicht früh das Haus verlassen.)"
+ },
+ {
+  "id": 1011,
+  "alt": "ih, n7ibb nimshiu l-tunis. / la, ma-n7ibb-sh nimshiu l-tunis.",
+  "neu": "ih, n7ibb nimshiu l-tunis. / la, ma-n7ibb-sh nimshiu l-tunis. (Möchtest du, dass wir nach Tunis fahren? — Ja, ich möchte, dass wir nach Tunis fahren. / Nein, ich möchte nicht, dass wir nach Tunis fahren.)"
+ },
+ {
+  "id": 1012,
+  "alt": "ih, n7ibb nahbtu l-wust li-blad. / la, ma-n7ibb-sh nahbtu l-wust li-blad.",
+  "neu": "ih, n7ibb nahbtu l-wust li-blad. / la, ma-n7ibb-sh nahbtu l-wust li-blad. (Möchtest du, dass wir in die Stadtmitte hinuntergehen? — Ja, ich möchte, dass wir in die Stadtmitte gehen. / Nein, ich möchte nicht, dass wir in die Stadtmitte gehen.)"
+ },
+ {
+  "id": 1013,
+  "alt": "n7ibb nushrub qahwa.",
+  "neu": "n7ibb nushrub qahwa. (Was möchtest du trinken? — Ich möchte Kaffee trinken.)"
+ },
+ {
+  "id": 1014,
+  "alt": "n7ibb nakul f-il-3ada f-id-duhr.",
+  "neu": "n7ibb nakul f-il-3ada f-id-duhr. (Wann möchtest du essen? — Ich möchte normalerweise mittags essen.)"
+ },
+ {
+  "id": 1015,
+  "alt": "ih, nnajjam nqul ayy walla la. / la, ma-nnajjam-sh nqul ayy walla la.",
+  "neu": "ih, nnajjam nqul ayy walla la. / la, ma-nnajjam-sh nqul ayy walla la. (Kannst du „ja“ oder „nein“ sagen? — Ja, ich kann „ja“ oder „nein“ sagen. / Nein, ich kann nicht „ja“ oder „nein“ sagen.)"
+ },
+ {
+  "id": 1016,
+  "alt": "n7ibb nuq3ud fi-dari.",
+  "neu": "n7ibb nuq3ud fi-dari. (Was möchtest du nach der Arbeit machen? — Ich möchte zu Hause bleiben.)"
+ },
+ {
+  "id": 1017,
+  "alt": "ih, nnajjmu nislkhu l-3allush. / la, ma-nnajjmu-sh nislkhu l-3allush.",
+  "neu": "ih, nnajjmu nislkhu l-3allush. / la, ma-nnajjmu-sh nislkhu l-3allush. (Könnt ihr das Lamm häuten? — Ja, wir können das Lamm häuten. / Nein, wir können das Lamm nicht häuten.)"
+ },
+ {
+  "id": 1018,
+  "alt": "ih, n7ibb nishtah m3ak. / la, ma-n7ibb-sh nishtah m3ak.",
+  "neu": "ih, n7ibb nishtah m3ak. / la, ma-n7ibb-sh nishtah m3ak. (Möchtest du mit mir tanzen? — Ja, ich möchte mit dir tanzen. / Nein, ich möchte nicht mit dir tanzen.)"
+ },
+ {
+  "id": 1019,
+  "alt": "ih, n7ibb na3mil hetha. / la, ma-n7ibb-sh na3mil hetha.",
+  "neu": "ih, n7ibb na3mil hetha. / la, ma-n7ibb-sh na3mil hetha. (Möchtest du das machen? — Ja, ich möchte das machen. / Nein, ich möchte das nicht machen.)"
+ },
+ {
+  "id": 1020,
+  "alt": "ih, n7ibb nidbah 3allush il-lila. / la, ma-n7ibb-sh nidbah 3allush il-lila.",
+  "neu": "ih, n7ibb nidbah 3allush il-lila. / la, ma-n7ibb-sh nidbah 3allush il-lila. (Möchtest du heute Abend ein Lamm schlachten? — Ja, ich möchte heute Abend ein Lamm schlachten. / Nein, ich möchte heute Abend kein Lamm schlachten.)"
+ },
+ {
+  "id": 1021,
+  "alt": "ih, n7ibb ukhti tisbagh sha3rha. / la, ma-n7ibb-sh ukhti tisbagh sha3rha.",
+  "neu": "ih, n7ibb ukhti tisbagh sha3rha. / la, ma-n7ibb-sh ukhti tisbagh sha3rha. (Möchte deine Schwester sich die Haare färben? — Ja, ich möchte, dass meine Schwester sich die Haare färbt. / Nein, ich möchte nicht, dass meine Schwester sich die Haare färbt.)"
+ },
+ {
+  "id": 1022,
+  "alt": "ih, n7ibb nushrub hetha. / la, ma-n7ibb-sh nushrub hetha.",
+  "neu": "ih, n7ibb nushrub hetha. / la, ma-n7ibb-sh nushrub hetha. (Möchtest du das trinken? — Ja, ich möchte das trinken. / Nein, ich möchte das nicht trinken.)"
+ },
+ {
+  "id": 1023,
+  "alt": "nnajjmu nashru fis-sinima.",
+  "neu": "nnajjmu nashru fis-sinima. (Wo können wir heute Nacht aufbleiben? — Wir können im Kino aufbleiben.)"
+ },
+ {
+  "id": 1024,
+  "alt": "ih, nnajjim nqum bikri ghudwa. / la, ma-nnajjam-sh nqum bikri ghudwa.",
+  "neu": "ih, nnajjim nqum bikri ghudwa. / la, ma-nnajjam-sh nqum bikri ghudwa. (Kannst du morgen früh aufstehen? — Ja, ich kann morgen früh aufstehen. / Nein, ich kann morgen nicht früh aufstehen.)"
+ },
+ {
+  "id": 1025,
+  "alt": "ih, n7ibb nshuf s7abi il-yum. / la, ma-n7ibb-sh nshuf s7abi il-yum.",
+  "neu": "ih, n7ibb nshuf s7abi il-yum. / la, ma-n7ibb-sh nshuf s7abi il-yum. (Möchtest du heute deine Freunde sehen? — Ja, ich möchte heute meine Freunde sehen. / Nein, ich möchte heute meine Freunde nicht sehen.)"
+ },
+ {
+  "id": 1122,
+  "alt": "n7ibbha 7louwa barsha.",
+  "neu": "n7ibbha 7louwa barsha. (Magst du deinen Kaffee süß oder bitter? — Ich mag ihn sehr süß.)"
+ },
+ {
+  "id": 1123,
+  "alt": "n7ibbu khfif shwayya.",
+  "neu": "n7ibbu khfif shwayya. (Magst du deinen Tee leicht oder stark? — Ich mag ihn eher leicht.)"
+ },
+ {
+  "id": 1124,
+  "alt": "hiyya malyana barsha.",
+  "neu": "hiyya malyana barsha. (Ist das Auto leer oder voll? — Es ist sehr voll.)"
+ },
+ {
+  "id": 1125,
+  "alt": "houwwa rkhis shwayya.",
+  "neu": "houwwa rkhis shwayya. (Ist dieser Markt billig oder teuer? — Er ist ziemlich billig.)"
+ },
+ {
+  "id": 1127,
+  "alt": "nushrubha b-shwayya sukkur.",
+  "neu": "nushrubha b-shwayya sukkur. (Trinkst du deinen Kaffee mit Zucker oder ohne? — Ich trinke ihn mit ein bisschen Zucker.)"
+ },
+ {
+  "id": 1128,
+  "alt": "ena shib3ana shwayya.",
+  "neu": "ena shib3ana shwayya. (Bist du satt oder hungrig? — Ich bin ein bisschen satt.)"
+ },
+ {
+  "id": 1129,
+  "alt": "hiyya jdida barsha.",
+  "neu": "hiyya jdida barsha. (Ist euer Auto neu oder alt? — Es ist sehr neu.)"
+ },
+ {
+  "id": 1130,
+  "alt": "khuya kbir shwayya.",
+  "neu": "khuya kbir shwayya. (Ist dein Bruder groß oder klein? — Mein Bruder ist ziemlich groß.)"
+ },
+ {
+  "id": 1131,
+  "alt": "jarna bahi barsha.",
+  "neu": "jarna bahi barsha. (Ist euer Nachbar gut oder schlecht? — Unser Nachbar ist sehr gut.)"
+ },
+ {
+  "id": 1132,
+  "alt": "ih, na3rif barsha nas. / la, na3rif shwayya nas.",
+  "neu": "ih, na3rif barsha nas. / la, na3rif shwayya nas. (Kennst du viele Leute? — Ja, ich kenne viele Leute. / Nein, ich kenne wenige Leute.)"
+ },
+ {
+  "id": 1133,
+  "alt": "ih, 3andi barsha s7ab. / la, 3andi shwayya s7ab.",
+  "neu": "ih, 3andi barsha s7ab. / la, 3andi shwayya s7ab. (Hast du viele Freunde? — Ja, ich habe viele Freunde. / Nein, ich habe wenige Freunde.)"
+ },
+ {
+  "id": 1198,
+  "alt": "nqum is-sitta kull yum. Pl.: waqtash tqumu kull yum? – nqumu is-sitta kull yum.",
+  "neu": "nqum is-sitta kull yum. Pl.: waqtash tqumu kull yum? – nqumu is-sitta kull yum. (Wann stehst du jeden Tag auf? — Ich stehe jeden Tag um sechs auf.)"
+ },
+ {
+  "id": 1199,
+  "alt": "nimshi l-il-khidma is-sab3a. Pl.: waqtash timshiu l-il-khidma? – nimshiu l-il-khidma is-sab3a.",
+  "neu": "nimshi l-il-khidma is-sab3a. Pl.: waqtash timshiu l-il-khidma? – nimshiu l-il-khidma is-sab3a. (Wann gehst du zur Arbeit? — Ich gehe um sieben zur Arbeit.)"
+ },
+ {
+  "id": 1200,
+  "alt": "nuftur is-sab3a w-nuss. Pl.: fi-ana waqt tuftru? – nuftru is-sab3a w-nuss.",
+  "neu": "nuftur is-sab3a w-nuss. Pl.: fi-ana waqt tuftru? – nuftru is-sab3a w-nuss. (Um wie viel Uhr frühstückst du? — Ich frühstücke um halb acht.)"
+ },
+ {
+  "id": 1201,
+  "alt": "nirja3 l-il-khidma is-sa3tin. Pl.: fi-ana waqt tirj3u l-il-khidma? – nirj3u l-il-khidma is-sa3tin.",
+  "neu": "nirja3 l-il-khidma is-sa3tin. Pl.: fi-ana waqt tirj3u l-il-khidma? – nirj3u l-il-khidma is-sa3tin. (Wann kommst du zur Arbeit zurück? — Ich komme um zwei Uhr zur Arbeit zurück.)"
+ },
+ {
+  "id": 1202,
+  "alt": "nrawwa7 l-id-dar il-khamsa. Pl.: fi-ana waqt trawwhu l-id-dar? – nrawwhu l-id-dar il-khamsa.",
+  "neu": "nrawwa7 l-id-dar il-khamsa. Pl.: fi-ana waqt trawwhu l-id-dar? – nrawwhu l-id-dar il-khamsa. (Wann kommst du nach Hause? — Ich komme um fünf nach Hause.)"
+ },
+ {
+  "id": 1203,
+  "alt": "nimshiu madi sa3a.",
+  "neu": "nimshiu madi sa3a. (Wann gehen wir? — Wir gehen um ein Uhr.)"
+ },
+ {
+  "id": 1204,
+  "alt": "nit3ashsha ba7da s7abi is-sab3a. Pl.: waqtash bash tit3ashshau ba7da s7abkum? – nit3ashshau ba7da s7abna is-sab3a.",
+  "neu": "nit3ashsha ba7da s7abi is-sab3a. Pl.: waqtash bash tit3ashshau ba7da s7abkum? – nit3ashshau ba7da s7abna is-sab3a. (Wann isst du mit deinem Freund zu Abend? — Ich esse um sieben mit meinem Freund zu Abend.)"
+ },
+ {
+  "id": 1205,
+  "alt": "naqra il-lil. Pl.: waqtash taqrau? – naqrau il-lil.",
+  "neu": "naqra il-lil. Pl.: waqtash taqrau? – naqrau il-lil. (Wann liest du? — Ich lese nachts.)"
+ },
+ {
+  "id": 1206,
+  "alt": "mashi l-il-blad ghudwa. Pl.: waqtash mashyin l-il-blad? – mashyin l-il-blad ghudwa.",
+  "neu": "mashi l-il-blad ghudwa. Pl.: waqtash mashyin l-il-blad? – mashyin l-il-blad ghudwa. (Wann fährst du in die Heimat? — Ich fahre morgen in die Heimat.)"
+ },
+ {
+  "id": 1207,
+  "alt": "na3mil talifun l-sa7bi il-3shiya. Pl.: waqtash bash ta3mlu talifun l-as7abkum? – na3mlu talifun l-as7abna il-3shiya.",
+  "neu": "na3mil talifun l-sa7bi il-3shiya. Pl.: waqtash bash ta3mlu talifun l-as7abkum? – na3mlu talifun l-as7abna il-3shiya. (Wann rufst du deinen Freund an? — Ich rufe meinen Freund abends an.)"
+ },
+ {
+  "id": 1208,
+  "alt": "nji ba7dak is-sab3a. Pl.: njiu ba7dakum is-sab3a.",
+  "neu": "nji ba7dak is-sab3a. Pl.: njiu ba7dakum is-sab3a. (Wann möchtet ihr zu uns kommen? — Ich komme um sieben zu dir.)"
+ },
+ {
+  "id": 1209,
+  "alt": "nimshi l-il-busta is-sitta. Pl.: waqtash timshiu l-il-busta? – nimshiu l-il-busta is-sitta.",
+  "neu": "nimshi l-il-busta is-sitta. Pl.: waqtash timshiu l-il-busta? – nimshiu l-il-busta is-sitta. (Wann gehst du zur Post? — Ich gehe um sechs zur Post.)"
+ },
+ {
+  "id": 1211,
+  "alt": "nukhruj m-id-dar is-sitta w-nuss kull yum. Pl.: fi-ana waqt tukhrju m-id-dar kull yum? – nukhrju m-id-dar is-sitta w-nuss kull yum.",
+  "neu": "nukhruj m-id-dar is-sitta w-nuss kull yum. Pl.: fi-ana waqt tukhrju m-id-dar kull yum? – nukhrju m-id-dar is-sitta w-nuss kull yum. (Um wie viel Uhr verlässt du jeden Tag das Haus? — Ich verlasse jeden Tag um halb sieben das Haus.)"
+ },
+ {
+  "id": 1212,
+  "alt": "nhar l-ahad ma-nikhdim-sh. Pl.: fi-ana nhar ma-tikhdmu-sh? – nhar l-ahad ma-nikhdmu-sh.",
+  "neu": "nhar l-ahad ma-nikhdim-sh. Pl.: fi-ana nhar ma-tikhdmu-sh? – nhar l-ahad ma-nikhdmu-sh. (An welchem Tag arbeitest du nicht? — Am Sonntag arbeite ich nicht.)"
+ },
+ {
+  "id": 1213,
+  "alt": "3id miladi fi-jwan.",
+  "neu": "3id miladi fi-jwan. (In welchem Monat ist dein Geburtstag? — Mein Geburtstag ist im Januar.)"
+ },
+ {
+  "id": 1214,
+  "alt": "nurqud bikri nhar l-ahad. Pl.: fi-ana nhar turqdu bikri? – nurqdu bikri nhar l-ahad.",
+  "neu": "nurqud bikri nhar l-ahad. Pl.: fi-ana nhar turqdu bikri? – nurqdu bikri nhar l-ahad. (An welchem Tag gehst du früh schlafen? — Am Sonntag gehe ich früh schlafen.)"
+ },
+ {
+  "id": 1225,
+  "alt": "nhar ij-jim3a naqrau m-is-sab3a 7atta l-il-3ashra.",
+  "neu": "nhar ij-jim3a naqrau m-is-sab3a 7atta l-il-3ashra. (Wann lest ihr am Freitag? — Am Freitag lesen wir von sieben bis zehn.)"
+ },
+ {
+  "id": 1226,
+  "alt": "nhar l-ahad khuya yisma3 ir-radyu m-is-sitta 7atta l-it-tis3a.",
+  "neu": "nhar l-ahad khuya yisma3 ir-radyu m-is-sitta 7atta l-it-tis3a. (Wann hört dein Bruder am Sonntag Radio? — Am Sonntag hört mein Bruder von sechs bis neun Radio.)"
+ },
+ {
+  "id": 1227,
+  "alt": "ummi titfarrij f-it-talfza m-is-sab3a 7atta l-il-3ashra mta3 il-lil.",
+  "neu": "ummi titfarrij f-it-talfza m-is-sab3a 7atta l-il-3ashra mta3 il-lil. (Wann sieht deine Mutter fern? — Meine Mutter sieht abends von sieben bis zehn fern.)"
+ },
+ {
+  "id": 1228,
+  "alt": "nhar is-sibt nal3ab tennis m-il-khamsa 7atta l-is-sitta.",
+  "neu": "nhar is-sibt nal3ab tennis m-il-khamsa 7atta l-is-sitta. (Wann spielst du am Samstag Tennis? — Am Samstag spiele ich von fünf bis sechs Tennis.)"
+ },
+ {
+  "id": 1229,
+  "alt": "nurqud m-la-7dash 7atta l-is-sitta mta3 is-sba7.",
+  "neu": "nurqud m-la-7dash 7atta l-is-sitta mta3 is-sba7. (Von wann bis wann schläfst du nachts? — Ich schlafe von elf bis sechs Uhr morgens.)"
+ },
+ {
+  "id": 1282,
+  "alt": "ih, bash nji ba7dak. / la, manish bash nji ba7dak.",
+  "neu": "ih, bash nji ba7dak. / la, manish bash nji ba7dak. (Kommst du nach der Arbeit zu mir? — Ja, ich komme zu dir. / Nein, ich komme nicht zu dir.)"
+ },
+ {
+  "id": 1283,
+  "alt": "ih, bash nqum is-sitta ghudwa. / la, manish bash nqum is-sitta ghudwa.",
+  "neu": "ih, bash nqum is-sitta ghudwa. / la, manish bash nqum is-sitta ghudwa. (Stehst du morgen um sechs Uhr morgens auf? — Ja, ich stehe morgen um sechs auf. / Nein, ich stehe morgen nicht um sechs auf.)"
+ },
+ {
+  "id": 1284,
+  "alt": "ih, bash nuq3du f-id-dar il-yum. / la, mannash bash nuq3du f-id-dar il-yum.",
+  "neu": "ih, bash nuq3du f-id-dar il-yum. / la, mannash bash nuq3du f-id-dar il-yum. (Bleibt ihr heute zu Hause? — Ja, wir bleiben heute zu Hause. / Nein, wir bleiben heute nicht zu Hause.)"
+ },
+ {
+  "id": 1285,
+  "alt": "ih, bash nimshiu nishriu il-khubz. / la, mannash bash nimshiu nishriu il-khubz.",
+  "neu": "ih, bash nimshiu nishriu il-khubz. / la, mannash bash nimshiu nishriu il-khubz. (Geht ihr Brot kaufen? — Ja, wir gehen Brot kaufen. / Nein, wir gehen kein Brot kaufen.)"
+ },
+ {
+  "id": 1286,
+  "alt": "ih, bash nhutt sukkur f-il-qahwa. / la, manish bash nhutt sukkur f-il-qahwa.",
+  "neu": "ih, bash nhutt sukkur f-il-qahwa. / la, manish bash nhutt sukkur f-il-qahwa. (Tust du Zucker in den Kaffee? — Ja, ich tue Zucker in den Kaffee. / Nein, ich tue keinen Zucker in den Kaffee.)"
+ },
+ {
+  "id": 1287,
+  "alt": "ih, bash nushrbu tay m3akum. / la, mannash bash nushrbu tay m3akum.",
+  "neu": "ih, bash nushrbu tay m3akum. / la, mannash bash nushrbu tay m3akum. (Trinkt ihr mit uns Tee? — Ja, wir trinken mit euch Tee. / Nein, wir trinken nicht mit euch Tee.)"
+ },
+ {
+  "id": 1288,
+  "alt": "ih, 3li bash yhaddar ftur is-sba7. / la, 3li mahush bash yhaddar ftur is-sba7.",
+  "neu": "ih, 3li bash yhaddar ftur is-sba7. / la, 3li mahush bash yhaddar ftur is-sba7. (Bereitet Ali das Frühstück zu? — Ja, Ali bereitet das Frühstück zu. / Nein, Ali bereitet das Frühstück nicht zu.)"
+ },
+ {
+  "id": 1289,
+  "alt": "ih, bash nishriu khubz skhoun. / la, mannash bash nishriu khubz skhoun.",
+  "neu": "ih, bash nishriu khubz skhoun. / la, mannash bash nishriu khubz skhoun. (Kauft ihr warmes Brot? — Ja, wir kaufen warmes Brot. / Nein, wir kaufen kein warmes Brot.)"
+ },
+ {
+  "id": 1290,
+  "alt": "ih, bash naklu barsha 7lu. / la, mannash bash naklu barsha 7lu.",
+  "neu": "ih, bash naklu barsha 7lu. / la, mannash bash naklu barsha 7lu. (Esst ihr viel Süßes? — Ja, wir essen viel Süßes. / Nein, wir essen nicht viel Süßes.)"
+ },
+ {
+  "id": 1291,
+  "alt": "ih, bash nurqud bikri il-lila. / la, manish bash nurqud bikri il-lila.",
+  "neu": "ih, bash nurqud bikri il-lila. / la, manish bash nurqud bikri il-lila. (Gehst du heute Abend früh schlafen? — Ja, ich gehe heute Abend früh schlafen. / Nein, ich gehe heute Abend nicht früh schlafen.)"
+ },
+ {
+  "id": 1292,
+  "alt": "ih, bash nimshiu lis-sinima. / la, mannash bash nimshiu lis-sinima.",
+  "neu": "ih, bash nimshiu lis-sinima. / la, mannash bash nimshiu lis-sinima. (Gehen wir nächste Woche ins Kino? — Ja, wir gehen ins Kino. / Nein, wir gehen nicht ins Kino.)"
+ },
+ {
+  "id": 1293,
+  "alt": "ih, bash njiu ba7dakum. / la, mannash bash njiu ba7dakum.",
+  "neu": "ih, bash njiu ba7dakum. / la, mannash bash njiu ba7dakum. (Kommt ihr nächsten Monat zu uns? — Ja, wir kommen zu euch. / Nein, wir kommen nicht zu euch.)"
+ },
+ {
+  "id": 1294,
+  "alt": "ih, bash nibdau nijriu kull yum. / la, mannash bash nibdau nijriu kull yum.",
+  "neu": "ih, bash nibdau nijriu kull yum. / la, mannash bash nibdau nijriu kull yum. (Fangt ihr an, jeden Tag zu joggen? — Ja, wir fangen an, jeden Tag zu joggen. / Nein, wir fangen nicht an, jeden Tag zu joggen.)"
+ },
+ {
+  "id": 1295,
+  "alt": "ih, bash yitfarrju f-il-mats. / la, mahumsh bash yitfarrju f-il-mats.",
+  "neu": "ih, bash yitfarrju f-il-mats. / la, mahumsh bash yitfarrju f-il-mats. (Schauen sie sich das Spiel an? — Ja, sie schauen sich das Spiel an. / Nein, sie schauen sich das Spiel nicht an.)"
+ },
+ {
+  "id": 1296,
+  "alt": "ih, ukhti bash tshum f-il-pisin. / la, ukhti mahish bash tshum f-il-pisin.",
+  "neu": "ih, ukhti bash tshum f-il-pisin. / la, ukhti mahish bash tshum f-il-pisin. (Schwimmt deine Schwester im Schwimmbad? — Ja, meine Schwester schwimmt im Schwimmbad. / Nein, meine Schwester schwimmt nicht im Schwimmbad.)"
+ },
+ {
+  "id": 1297,
+  "alt": "bash nishriu khubz w-7lib.",
+  "neu": "bash nishriu khubz w-7lib. (Was kaufen wir im Laden? — Wir kaufen Brot und Milch.)"
+ },
+ {
+  "id": 1298,
+  "alt": "bash nkhallas warqit il-ma.",
+  "neu": "bash nkhallas warqit il-ma. (Was machst du auf der Post? — Ich bezahle die Wasserrechnung.)"
+ },
+ {
+  "id": 1299,
+  "alt": "bash naqdi shwayya khidma.",
+  "neu": "bash naqdi shwayya khidma. (Was erledigst du in der Stadtmitte? — Ich erledige ein bisschen Arbeit.)"
+ },
+ {
+  "id": 1300,
+  "alt": "bash naqrau il-kilmat ij-jdida.",
+  "neu": "bash naqrau il-kilmat ij-jdida. (Was lesen wir jetzt? — Wir lesen die neuen Wörter.)"
+ },
+ {
+  "id": 1301,
+  "alt": "bash nimshi l-il-khidma.",
+  "neu": "bash nimshi l-il-khidma. (Was machst du morgen? — Ich gehe zur Arbeit.)"
+ },
+ {
+  "id": 1302,
+  "alt": "bash nimshi ntull 3la sa7bi.",
+  "neu": "bash nimshi ntull 3la sa7bi. (Wohin gehst du nächsten Sonntag? — Ich besuche meinen Freund.)"
+ },
+ {
+  "id": 1303,
+  "alt": "bash nushrbu qahwa.",
+  "neu": "bash nushrbu qahwa. (Was macht ihr gleich? — Wir trinken Kaffee.)"
+ },
+ {
+  "id": 1304,
+  "alt": "bash nuftur khubz w-jbin.",
+  "neu": "bash nuftur khubz w-jbin. (Was frühstückst du am Montagmorgen? — Ich frühstücke Brot und Käse.)"
+ },
+ {
+  "id": 1305,
+  "alt": "bash nit3ashsha m3a 3ayilti.",
+  "neu": "bash nit3ashsha m3a 3ayilti. (Was machst du nach der Arbeit zum Abendessen? — Ich esse mit meiner Familie zu Abend.)"
+ },
+ {
+  "id": 1306,
+  "alt": "bash nitfarrjou f-it-talfza.",
+  "neu": "bash nitfarrjou f-it-talfza. (Was macht ihr nach dem Frühstück? — Wir sehen fern.)"
+ },
+ {
+  "id": 1307,
+  "alt": "bash yimshi l-il-biru.",
+  "neu": "bash yimshi l-il-biru. (Was macht er morgen? — Er geht ins Büro.)"
+ },
+ {
+  "id": 1308,
+  "alt": "bash naqra fi-ktabi.",
+  "neu": "bash naqra fi-ktabi. (Was macht ihr heute Abend? — Ich lese in meinem Buch.)"
+ },
+ {
+  "id": 1309,
+  "alt": "bash yimshiu l-il-kharij.",
+  "neu": "bash yimshiu l-il-kharij. (Was machen deine Freunde nächstes Jahr? — Sie gehen ins Ausland.)"
+ },
+ {
+  "id": 1310,
+  "alt": "bash nuq3du f-id-dar nirta7u.",
+  "neu": "bash nuq3du f-id-dar nirta7u. (Was macht ihr nächsten Samstag? — Wir bleiben zu Hause und ruhen uns aus.)"
+ },
+ {
+  "id": 1311,
+  "alt": "bash ttayyib kuskusi.",
+  "neu": "bash ttayyib kuskusi. (Was kocht deine Mutter heute Abend? — Sie kocht mein Couscous.)"
+ },
+ {
+  "id": 1312,
+  "alt": "bash yishri khudra w-ghlla.",
+  "neu": "bash yishri khudra w-ghlla. (Was kauft dein Bruder auf dem Markt? — Er kauft Gemüse und Getreide.)"
+ },
+ {
+  "id": 1313,
+  "alt": "bash nimshi m3a s7abi.",
+  "neu": "bash nimshi m3a s7abi. (Mit wem gehst du ins Büro? — Ich gehe mit meinem Freund.)"
+ },
+ {
+  "id": 1314,
+  "alt": "bash nrawwa7 wa7di.",
+  "neu": "bash nrawwa7 wa7di. (Mit wem fährst du nach Hause? — Ich fahre allein nach Hause.)"
+ },
+ {
+  "id": 1397,
+  "alt": "qaddash 3umrik? – 3umri tlata w-3ishrin sna.",
+  "neu": "qaddash 3umrik? – 3umri tlata w-3ishrin sna. (Wie alt bist du? — Ich bin 23 Jahre alt.)"
+ },
+ {
+  "id": 1398,
+  "alt": "qaddash-in kilu tmatim thibb tishri? – nhibb tlata kilu.",
+  "neu": "qaddash-in kilu tmatim thibb tishri? – nhibb tlata kilu. (Wie viele Kilo Tomaten möchtest du kaufen? — Ich möchte drei Kilo.)"
+ },
+ {
+  "id": 1399,
+  "alt": "b-qaddash kilu il-hanan? – il-kilu b-dinar.",
+  "neu": "b-qaddash kilu il-hanan? – il-kilu b-dinar. (Wie viel kostet das Kilo Bananen? — Das Kilo kostet einen Dinar.)"
+ },
+ {
+  "id": 1400,
+  "alt": "qaddash 3andik fi-tunis? – 3andi 3am.",
+  "neu": "qaddash 3andik fi-tunis? – 3andi 3am. (Wie lange bist du schon in Tunis? — Ich bin seit einem Jahr hier.)"
+ },
+ {
+  "id": 1714,
+  "alt": "qaddash sumu bi-llahi? – tlatin dinar.",
+  "neu": "qaddash sumu bi-llahi? – tlatin dinar. (Wie viel kostet es? — Dreißig Dinar.)"
+ },
+ {
+  "id": 1715,
+  "alt": "b-qaddash it-timbri? – b-mitin millim.",
+  "neu": "b-qaddash it-timbri? – b-mitin millim. (Was kostet die Briefmarke? — Zweihundert Millim.)"
+ },
+ {
+  "id": 1723,
+  "alt": "ash hashtik? – 7ashti b-shwayya khass.",
+  "neu": "ash hashtik? – 7ashti b-shwayya khass. (Was brauchst du? — Ich brauche etwas Salat.)"
+ },
+ {
+  "id": 1728,
+  "alt": "qaddash hashtik? – 7ashti b-nuss rtal filfil 7arr.",
+  "neu": "qaddash hashtik? – 7ashti b-nuss rtal filfil 7arr. (Wie viel brauchst du? — Ich brauche ein halbes Kilo scharfe Peperoni.)"
+ },
+ {
+  "id": 1737,
+  "alt": "bash timshi wahdik? – la, manish bash nimshi wahdi.",
+  "neu": "bash timshi wahdik? – la, manish bash nimshi wahdi. (Gehst du allein? — Nein, ich gehe nicht allein.)"
+ },
+ {
+  "id": 1747,
+  "alt": "yilzimik timshi l-il-khaddar? – ih, yilzimni nimshi.",
+  "neu": "yilzimik timshi l-il-khaddar? – ih, yilzimni nimshi. (Musst du zum Gemüsehändler gehen? — Ja, ich muss gehen.)"
+ },
+ {
+  "id": 1754,
+  "alt": "waqtash tuq3ud fi-tunis? – ma-nuq3ud kan shhar.",
+  "neu": "waqtash tuq3ud fi-tunis? – ma-nuq3ud kan shhar. (Wie lange bleibst du in Tunis? — Ich bleibe nur einen Monat.)"
+ },
+ {
+  "id": 1789,
+  "alt": "kunt tuskun wahdik fi-almanya? – ih, kunt nuskun wahdi.",
+  "neu": "kunt tuskun wahdik fi-almanya? – ih, kunt nuskun wahdi. (Hast du früher allein in Deutschland gewohnt? — Ja, ich habe allein gewohnt.)"
+ },
+ {
+  "id": 1884,
+  "alt": "qaddash-in ktab bash tishri? – bash nishri tlata ktub.",
+  "neu": "qaddash-in ktab bash tishri? – bash nishri tlata ktub. (Wie viele Bücher willst du kaufen? — Ich will drei Bücher kaufen.)"
+ },
+ {
+  "id": 1887,
+  "alt": "qaddash 3andik flus fi-l-banka? – ma-3andi-sh barsha.",
+  "neu": "qaddash 3andik flus fi-l-banka? – ma-3andi-sh barsha. (Wie viel Geld hast du auf der Bank? — Ich habe nicht viel.)"
+ },
+ {
+  "id": 1906,
+  "alt": "7ashtik-shi b-7aja? – la, bark allahu fik.",
+  "neu": "7ashtik-shi b-7aja? – la, bark allahu fik. (Brauchst du etwas? — Nein, danke.)"
+ }
+]
