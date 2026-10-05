@@ -3202,7 +3202,9 @@ function showStats(){
   const recalcMax = ALL_VOCAB.filter(v => { const p = srsProgress[v.id]; return p && p.next_review && p.last_reviewed; }).length;
   const stPct = (a,b) => b ? Math.round(100*a/b) : 0;
   const stCell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+';line-height:1.2">'+icon+' '+stPct(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+a+' / '+b+'</div></div>';
-  const stRow = (label, a1, b1, a2, b2, phases) => '<div style="margin-top:.7rem"><div style="display:grid;grid-template-columns:5.2rem 1fr 1fr;gap:.5rem;align-items:center"><div style="font-size:.85rem;color:var(--text)">'+label+'</div>'+stCell('📅',a1,b1)+stCell('⭐',a2,b2)+'</div><div style="font-size:.75rem;color:var(--muted);margin-top:.3rem">'+phases+'</div></div>';
+  const stNum = n => Number(n).toLocaleString('de-DE');
+  const stTile = (n, label, color) => '<div style="display:flex;align-items:baseline;gap:.5rem;padding:.4rem .6rem;background:var(--surface2);border:1px solid var(--border);border-radius:4px"><span style="font-size:1.1rem;font-weight:700;color:'+color+'">'+stNum(n)+'</span><span style="font-size:.85rem;color:var(--text)">'+label+'</span></div>';
+  const stRow = (label, a1, b1, a2, b2, ph) => '<div style="margin-top:.9rem"><div style="font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:.5rem">'+label+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">'+stCell('📅',a1,b1)+stCell('⭐',a2,b2)+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.6rem">'+stTile(ph[0],'Neu','var(--muted)')+stTile(ph[1],'Anfänger','#e05555')+stTile(ph[2],'Fortgeschritten','var(--gold)')+stTile(ph[3],'Profi','var(--green)')+'</div></div>';
   c.innerHTML = `
     ${cLesson === 'all' ? `<div style="margin-bottom:1rem;">
       <div style="font-size:.85rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);font-weight:700;margin-bottom:.5rem;">Heute fällig</div>
@@ -3257,9 +3259,8 @@ function showStats(){
       <div style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem;">Gesamtfortschritt</div>
       ${(cLesson === 'all' && phaseAnfaengerWeighted < 25) ? '<div style="margin-bottom:.6rem;padding:.4rem .6rem;background:rgba(201,76,76,.1);border:1px solid var(--red);font-size:.75rem;color:var(--red)">⚠️ Anfänger-Puffer wird knapp (noch ' + anfaengerGesamt + ' in L0-L2: ' + phaseAnfaenger + ' Vokabeln + ' + coursePhaseAnfaenger + ' Kurs-Übungen) — neuen Stoff hinzufügen</div>' : ''}
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem .9rem;">
-        <div style="display:grid;grid-template-columns:5.2rem 1fr 1fr;gap:.5rem;font-size:.75rem;color:var(--muted)"><div></div><div>📅 Fälligkeit</div><div>⭐ Punkte</div></div>
-        ${stRow('Vokabeln', activeSRS, totalVocab, totalPoints, maxPointsActive, 'Neu '+notStarted+' · Anfänger '+phaseAnfaenger+' · Fortgeschr. '+phaseEditable+' · Profi '+phaseMeistert)}
-        ${cLesson==='all' ? stRow('Übungen', courseActiveCount, courseTotalItems, courseTotalPoints, courseMaxPointsActive, 'Neu '+courseNotStarted+' · Anfänger '+coursePhaseAnfaenger+' · Fortgeschr. '+coursePhaseEditable+' · Profi '+coursePhaseMeistert) : ''}
+        ${stRow('Vokabeln', activeSRS, totalVocab, totalPoints, maxPointsActive, [notStarted, phaseAnfaenger, phaseEditable, phaseMeistert])}
+        ${cLesson==='all' ? stRow('Übungen', courseActiveCount, courseTotalItems, courseTotalPoints, courseMaxPointsActive, [courseNotStarted, coursePhaseAnfaenger, coursePhaseEditable, coursePhaseMeistert]) : ''}
       </div>
     </div>
 
@@ -5711,6 +5712,7 @@ function renderCourseOverview(){
     h += '<button onclick="showCourseLesson('+l.id+')" style="padding:.5rem .9rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.85rem;font-weight:700;cursor:pointer;border-radius:4px;white-space:nowrap">Öffnen</button>';
     h += '</div>';
     h += statLines;
+    if(lessonVocab(l).length) h += '<button onclick="courseGoToVocab('+l.id+')" style="width:100%;margin-top:.7rem;padding:.55rem;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:\'IBM Plex Mono\',monospace;font-size:.85rem;font-weight:700;cursor:pointer;border-radius:4px">📚 Vokabeln der Lektion</button>';
     h += '</div>';
   });
   h += '</div></div>';
