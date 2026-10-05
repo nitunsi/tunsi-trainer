@@ -572,6 +572,31 @@ function vById(id){ return VOCAB_BY_ID[id] || null; }
 
 // ── Audio-Wiedergabe (ninja_audio_url) ──────────────────────────────────────
 let _audioPlayer = null;
+// Vorladen: pro URL ein Audio-Objekt im Hintergrund laden, damit der Klick auf 🔊 sofort abspielt.
+const _audioCache = new Map();
+function audioPreload(url){
+  if(!url || _audioCache.has(url)) return;
+  try{
+    const a = new Audio();
+    a.preload = 'auto';
+    a._end = 0;
+    a.addEventListener('timeupdate', () => { if(a._end && a.currentTime >= a._end) a.pause(); });
+    a.src = url;
+    _audioCache.set(url, a);
+    if(_audioCache.size > 40){ _audioCache.delete(_audioCache.keys().next().value); }
+  }catch(e){}
+}
+// Vorladen der aktuellen und der nächsten drei Karten der Session (exList/cIdx), Vokabel- und Kurs-Karten.
+function audioPreloadAhead(){
+  try{
+    for(let i=0;i<4;i++){
+      const e = exList[cIdx+i];
+      if(!e) break;
+      const u = e.v ? e.v.au : (e.exercise && e.exercise.vocabulary ? e.exercise.vocabulary.ninja_audio_url : null);
+      if(u) audioPreload(u);
+    }
+  }catch(e){}
+}
 // start/end (Sekunden) grenzen auf das eigentliche Wort ein — Ninjas Aufnahmen
 // enthalten vor dem Wort oft noch eine gesprochene Katalognummer aus der Aufnahmesession.
 function playVocabAudio(url, ev, start, end){
@@ -579,12 +604,39 @@ function playVocabAudio(url, ev, start, end){
   if(!url) return;
   try{
     if(_audioPlayer){ _audioPlayer.pause(); _audioPlayer = null; }
-    const a = new Audio(url);
+    audioPreload(url);
+    const a = _audioCache.get(url);
+    if(!a) return;
     _audioPlayer = a;
-    if(start) a.addEventListener('loadedmetadata', () => { a.currentTime = start; }, {once:true});
-    if(end) a.addEventListener('timeupdate', () => { if(a.currentTime >= end) a.pause(); });
-    a.play().catch(()=>{});
+    a._end = end || 0;
+    const go = () => { try{ a.currentTime = start || 0; }catch(e){} a.play().catch(()=>{}); };
+    if(a.readyState >= 1) go();
+    else a.addEventListener('loadedmetadata', go, {once:true});
   }catch(e){}
+}
+
+// Einstellung „Audio beim Aufdecken“ (localStorage, Standard aus)
+let audioAutoplay = false;
+try{ audioAutoplay = localStorage.getItem('audio-autoplay') === 'true'; }catch(e){}
+function audioToggleHtml(cls){
+  return '<button class="'+cls+' audio-toggle" onclick="toggleAudioAutoplay()" title="Audio beim Aufdecken automatisch abspielen" style="opacity:'+(audioAutoplay?'1':'.5')+'">'+(audioAutoplay?'🔊 AN':'🔇 AUS')+'</button>';
+}
+function toggleAudioAutoplay(){
+  audioAutoplay = !audioAutoplay;
+  try{ localStorage.setItem('audio-autoplay', audioAutoplay); }catch(e){}
+  document.querySelectorAll('.audio-toggle').forEach(b => {
+    b.textContent = audioAutoplay ? '🔊 AN' : '🔇 AUS';
+    b.style.opacity = audioAutoplay ? '1' : '.5';
+  });
+  const inp = document.getElementById('flash-input') || document.getElementById('course-input');
+  if(inp && !inp.disabled) inp.focus({preventScroll:true});
+}
+function audioAutoplayFor(url, start, end){
+  if(audioAutoplay && url) playVocabAudio(url, null, start, end);
+}
+function audioAutoplayExercise(exercise){
+  const v = exercise && exercise.vocabulary;
+  if(v && v.ninja_audio_url) audioAutoplayFor(v.ninja_audio_url, v.ninja_audio_start||0, v.ninja_audio_end||0);
 }
 
 function srsKey(v){ return v.tr; }
@@ -2620,9 +2672,11 @@ function rFlash(ex,el){
       '<button class="sticky-check-ghost" onclick="skipFlash()" title="Überspringen">⏭</button>' +
       prevBtnHtml() +
       '<button class="sticky-check-ghost" id="latin-toggle" onclick="toggleLatin()">' + latinLabel + '</button>' +
+      audioToggleHtml('sticky-check-ghost') +
       '<button class="sticky-check-ghost flag-btn ' + (flagged ? 'flagged' : '') + '" onclick="toggleFlagById(' + v.id + ',this)">' + (flagged ? '🚩' : '🏳️') + '</button>';
     document.getElementById('sticky-check').style.display = 'block';
   })();
+  audioPreloadAhead();
   // Fokus ohne Scroll-Manipulation
   setTimeout(()=>{
     const inp = document.getElementById('flash-input');
@@ -2666,6 +2720,7 @@ function chkFlash(){
   updScore();
   window._lastFlashVocab = {v: v, ok: ok};
   window._lastAnsweredKind = 'flash';
+  audioAutoplayFor(v.au, v.aus||0, v.aue||0);
   showNext();
   showFlashNextBar(v, ok);
 }
@@ -5402,6 +5457,7 @@ function rCourseEx(ex, el){
   h += '<span style="flex-shrink:0;font-size:.7rem;color:var(--muted)">'+prog+'</span>';
   h += '</div>';
   const hintFirst = courseHintFirst(exercise);
+  audioPreloadAhead();
   if(hintFirst){
     // Die deutsche Frage ist die Aufgabe. Die Tounsi-Wörter aus dem Prompt (Ausgangsform, die halbe
     // Lösung) werden nicht gezeigt, auch nicht als Hinweis (Nils: Hinweis ausblenden).
@@ -5426,6 +5482,7 @@ function rCourseEx(ex, el){
     if(inner){
       inner.innerHTML = '<button class="sticky-check-btn" onclick="courseSrsReveal()">Lösung zeigen</button>'
                       + prevBtnHtml()
+                      + audioToggleHtml('sticky-check-ghost')
                       + courseVocabIconsHtml(exercise, 'sticky-check-ghost', '');
       document.getElementById('sticky-check').style.display='block';
     }
@@ -5438,6 +5495,7 @@ function rCourseEx(ex, el){
     if(inner){
       inner.innerHTML = '<button class="sticky-check-btn" onclick="hideStickyCheck();chkCourseEx()">Prüfen</button>'
                       + prevBtnHtml()
+                      + audioToggleHtml('sticky-check-ghost')
                       + courseVocabIconsHtml(exercise, 'sticky-check-ghost', '');
       document.getElementById('sticky-check').style.display='block';
     }
@@ -5450,6 +5508,7 @@ function courseSrsReveal(){
   const exercise = exList[cIdx].exercise;
   const box = document.getElementById('course-solution-box');
   if(!box) return;
+  audioAutoplayExercise(exercise);
   // Beim Aufdecken die Fragetabelle (Pronomen mit „…“) ausblenden: die Lösungstabelle zeigt dieselben
   // Pronomen schon mit den Formen, zwei Tabellen untereinander sind überflüssig.
   const q = document.getElementById('course-drill-question');
@@ -5536,6 +5595,7 @@ function chkCourseEx(selfCorrect){
     // jede Tounsi-Loesung angenommen, keine deutsche Uebersetzung faelschlich akzeptiert.
     const r = checkAnswer(val, courseSolutionCore(exercise.solution));
     ok = r.ok;
+    audioAutoplayExercise(exercise);
     if(inp){ inp.style.borderColor = ok?'var(--green)':'var(--red)'; inp.disabled = true; }
     const fb = document.getElementById('feedback');
     if(fb){
