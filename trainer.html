@@ -5767,7 +5767,7 @@ function renderCourseOverview(){
     return {n, total:list.length, pts, max:n*6}; };
   const pc = (a,b) => b ? Math.round(100*a/b) : 0;
   // Eine Zeile: Label | 📅 Anteil mit Fälligkeit | ⭐ Punkte-Anteil (Prozent groß, Zähler klein darunter)
-  const statCell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:var(--gold2);line-height:1.2">'+icon+' '+pc(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+a+' / '+b+'</div></div>';
+  const statCell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+';line-height:1.2">'+icon+' '+pc(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+a+' / '+b+'</div></div>';
   const statRow = (label, st) => '<div style="display:grid;grid-template-columns:5.2rem 1fr 1fr;gap:.5rem;align-items:center;margin-top:.5rem"><div style="font-size:.85rem;color:var(--text)">'+label+'</div>'+statCell('📅',st.n,st.total)+statCell('⭐',st.pts,st.max)+'</div>';
   const lessonVocab = l => { const f = parseCourseVocabRefs(l.vocab_lesson_refs); return ALL_VOCAB.filter(v=>f.ids.has(v.id)||f.tr.has(v.tr)); };
   const allVocabSet = new Map();
@@ -5786,7 +5786,7 @@ function renderCourseOverview(){
     const unlockedItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]).length,0);
     const masteredItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]&&(COURSE_EX_PROGRESS[e.id].correct_count||0)>=4).length,0);
     const lessonItems = lessonChunks.reduce((s,ch)=>s.concat(ch.srsItems),[]);
-    const statLines = (totalItems ? statRow('Übungen', exStat(lessonItems)) : '') + (lessonVocab(l).length ? statRow('Vokabeln', vocStat(lessonVocab(l))) : '');
+    const statLines = (lessonVocab(l).length ? statRow('Vokabeln', vocStat(lessonVocab(l))) : '') + (totalItems ? statRow('Übungen', exStat(lessonItems)) : '');
     const icon = totalItems===0 ? '📄' : masteredItems>=totalItems ? '✅' : unlockedItems>0 ? '🟡' : '🔒';
     const statusTxt = totalItems===0 ? 'nur Lesen' : masteredItems>=totalItems ? 'abgeschlossen' : unlockedItems>0 ? masteredItems+'/'+totalItems+' Übungen gemeistert' : 'noch nicht erreicht';
     h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem .9rem">';
