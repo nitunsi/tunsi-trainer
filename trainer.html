@@ -619,13 +619,13 @@ function playVocabAudio(url, ev, start, end){
 let audioAutoplay = false;
 try{ audioAutoplay = localStorage.getItem('audio-autoplay') === 'true'; }catch(e){}
 function audioToggleHtml(cls){
-  return '<button class="'+cls+' audio-toggle" onclick="toggleAudioAutoplay()" title="Audio beim Aufdecken automatisch abspielen" style="opacity:'+(audioAutoplay?'1':'.5')+'">'+(audioAutoplay?'🔊 AN':'🔇 AUS')+'</button>';
+  return '<button class="'+cls+' audio-toggle" onclick="toggleAudioAutoplay()" title="Audio beim Aufdecken automatisch abspielen" style="opacity:'+(audioAutoplay?'1':'.5')+'">'+(audioAutoplay?'🔊':'🔇')+'</button>';
 }
 function toggleAudioAutoplay(){
   audioAutoplay = !audioAutoplay;
   try{ localStorage.setItem('audio-autoplay', audioAutoplay); }catch(e){}
   document.querySelectorAll('.audio-toggle').forEach(b => {
-    b.textContent = audioAutoplay ? '🔊 AN' : '🔇 AUS';
+    b.textContent = audioAutoplay ? '🔊' : '🔇';
     b.style.opacity = audioAutoplay ? '1' : '.5';
   });
   const inp = document.getElementById('flash-input') || document.getElementById('course-input');
@@ -2672,8 +2672,7 @@ function rFlash(ex,el){
       '<button class="sticky-check-ghost" onclick="skipFlash()" title="Überspringen">⏭</button>' +
       prevBtnHtml() +
       '<button class="sticky-check-ghost" id="latin-toggle" onclick="toggleLatin()">' + latinLabel + '</button>' +
-      audioToggleHtml('sticky-check-ghost') +
-      '<button class="sticky-check-ghost flag-btn ' + (flagged ? 'flagged' : '') + '" onclick="toggleFlagById(' + v.id + ',this)">' + (flagged ? '🚩' : '🏳️') + '</button>';
+      audioToggleHtml('sticky-check-ghost');
     document.getElementById('sticky-check').style.display = 'block';
   })();
   audioPreloadAhead();
