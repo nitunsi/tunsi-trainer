@@ -346,3 +346,4 @@ Geprüft:
 - **`khsir`:** gestrichen (keine Karte verlangt es).
 - **Regeln** in `COURSE_MODE.md` ergänzt (Pronomen, Transliteration, Übersetzungs-Anhang).
 - Undo: `exports/analyse_2026-10-01/restpunkte_undo.sql`.
+- **Karte 895:** `meta.solution_de` „Sie trinken Kaffee.“ → „Sie trinken Kaffee, bitte.“ (`b-rabbi` = Vokabel 1393 `brabbi`, „Bitte“, extern bestätigt). Damit entfällt die Unsicherheit bei 895.
