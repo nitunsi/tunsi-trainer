@@ -5759,18 +5759,31 @@ function renderCourseOverview(){
   const chunks = courseFlattenChunks();
   let h = '<div style="padding:1rem;max-width:600px;margin:0 auto">';
   h += '<div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:1rem">Uni-Wien-Kurs</div>';
+  // Fälligkeit gesetzt = next_review vorhanden (Anzahl und Anteil), für Kurs-Übungen und Vokabeln
+  const dueStat = (n, total) => n+' von '+total+' ('+(total ? Math.round(100*n/total) : 0)+' %)';
+  const courseTotal = chunks.reduce((s,ch)=>s+ch.srsItems.length,0);
+  const courseWithDue = chunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]&&COURSE_EX_PROGRESS[e.id].next_review).length,0);
+  const vocTotal = (typeof ALL_VOCAB!=='undefined' ? ALL_VOCAB.length : 0);
+  const vocWithDue = (typeof ALL_VOCAB!=='undefined' ? ALL_VOCAB.filter(v=>srsProgress[v.id]&&srsProgress[v.id].next_review).length : 0);
+  h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem;font-size:.8rem">';
+  h += '<div style="font-size:.6rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:.35rem">Fälligkeit gesetzt</div>';
+  h += '<div style="display:flex;justify-content:space-between;gap:.6rem"><span>Kurs-Übungen</span><span style="color:var(--gold2)">'+dueStat(courseWithDue, courseTotal)+'</span></div>';
+  h += '<div style="display:flex;justify-content:space-between;gap:.6rem;margin-top:.2rem"><span>Vokabeln</span><span style="color:var(--gold2)">'+dueStat(vocWithDue, vocTotal)+'</span></div>';
+  h += '</div>';
   h += '<div style="display:flex;flex-direction:column;gap:.5rem">';
   COURSE_LESSONS.forEach(l=>{
     const lessonChunks = chunks.filter(ch=>ch.lessonId===l.id);
     const totalItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.length,0);
     const unlockedItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]).length,0);
     const masteredItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]&&(COURSE_EX_PROGRESS[e.id].correct_count||0)>=4).length,0);
+    const dueItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]&&COURSE_EX_PROGRESS[e.id].next_review).length,0);
+    const dueTxt = totalItems ? ' · Fälligkeit '+dueItems+'/'+totalItems+' ('+Math.round(100*dueItems/totalItems)+' %)' : '';
     const icon = totalItems===0 ? '📄' : masteredItems>=totalItems ? '✅' : unlockedItems>0 ? '🟡' : '🔒';
     const statusTxt = totalItems===0 ? 'nur Lesen' : masteredItems>=totalItems ? 'abgeschlossen' : unlockedItems>0 ? masteredItems+'/'+totalItems+' Übungen gemeistert' : 'noch nicht erreicht';
     h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;display:flex;justify-content:space-between;align-items:center;gap:.6rem">';
     h += '<div style="flex:1;min-width:0">';
     h += '<div style="font-size:.9rem;color:var(--text)">'+icon+' L'+l.course_number+' <span style="color:var(--gold2)">'+escHtml(l.title||'')+'</span></div>';
-    h += '<div style="font-size:.68rem;color:var(--muted);margin-top:.15rem">'+statusTxt+'</div>';
+    h += '<div style="font-size:.68rem;color:var(--muted);margin-top:.15rem">'+statusTxt+dueTxt+'</div>';
     h += '</div>';
     h += '<button onclick="showCourseLesson('+l.id+')" style="padding:.35rem .7rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.75rem;font-weight:700;cursor:pointer;border-radius:4px;white-space:nowrap">Öffnen</button>';
     h += '</div>';
