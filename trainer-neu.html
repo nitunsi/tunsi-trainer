@@ -621,7 +621,7 @@ function playVocabAudio(url, ev, start, end){
 let audioAutoplay = false;
 try{ audioAutoplay = localStorage.getItem('audio-autoplay') === 'true'; }catch(e){}
 function audioToggleHtml(cls){
-  return '<button class="'+cls+' audio-toggle" onclick="toggleAudioAutoplay()" title="Audio beim Aufdecken automatisch abspielen" style="opacity:'+(audioAutoplay?'1':'.5')+'">'+(audioAutoplay?'🔊':'🔇')+'</button>';
+  return '<button class="'+cls+' audio-toggle" onclick="toggleAudioAutoplay()" title="Ton: Audio beim Aufdecken und Höraufgaben" style="opacity:'+(audioAutoplay?'1':'.5')+'">'+(audioAutoplay?'🔊':'🔇')+'</button>';
 }
 function toggleAudioAutoplay(){
   audioAutoplay = !audioAutoplay;
@@ -2595,7 +2595,7 @@ function bFlash(vocab){
     }
     const lvl = srsGetLevel(v);
     // L0-L2: zufällig; L3+: immer Deutsch→Tounsi (produktiv)
-    const dir = lvl >= 3 ? 'de2ar' : (Math.random()>.5?'ar2de':'de2ar');
+    const dir = neuPickDir(v, lvl);
     items.push({type:'flash',v,dir});
   });
   return sh(items);
@@ -2633,8 +2633,11 @@ function showCA(){
 }
 function rFlash(ex,el){
   answered=false;
-  const v=ex.v, dir=ex.dir;
-  const isAr2De = dir==='ar2de';
+  const v=ex.v;
+  if(ex.dir==='au2de' && !audioAutoplay) ex.dir='ar2de'; // Ton aus: Hörkarte wird zur normalen Karte
+  const dir=ex.dir;
+  const isAudio = dir==='au2de';
+  const isAr2De = dir==='ar2de' || isAudio;
   const _prog = (document.getElementById('ex-progress')||{}).textContent||'';
   const isNew = !srsProgress[v.id];
   el.innerHTML=`
@@ -2648,7 +2651,9 @@ function rFlash(ex,el){
       <span class="neu-prog" style="flex-shrink:0;font-size:.7rem;color:var(--muted)">${_prog}</span>
     </div>
     <div class="q-card" style="min-height:80px;margin-bottom:.5rem">
-      ${isAr2De
+      ${isAudio
+        ? `<button type="button" class="neu-audioq" onclick="playVocabAudio('${String(v.au||'').replace(/'/g,"\\'")}',event,${v.aus||0},${v.aue||0})" aria-label="Abspielen">🔊</button><div class="q-sub" style="font-family:inherit!important">Hören und die Bedeutung eingeben</div>`
+        : isAr2De
         ? `<div class="q-arabic" style="font-size:2.8rem">${v.ar}</div><div class="q-sub latin">${v.tr}</div>`
         : `<div class="q-text" style="font-size:1.3rem">${v.en}</div>`
       }
@@ -2678,6 +2683,7 @@ function rFlash(ex,el){
     document.getElementById('sticky-check').style.display = 'block';
   })();
   audioPreloadAhead();
+  if(isAudio) setTimeout(()=>playVocabAudio(v.au,null,v.aus||0,v.aue||0),150);
   // Fokus ohne Scroll-Manipulation
   setTimeout(()=>{
     const inp = document.getElementById('flash-input');
@@ -2693,7 +2699,7 @@ function chkFlash(){
   if(!inp)return;
   const val=inp.value.trim();
   const ex=exList[cIdx];
-  const v=ex.v, dir=ex.dir;
+  const v=ex.v, dir=(ex.dir==='au2de'?'ar2de':ex.dir);
   let ok=false;
   if(dir==='ar2de'){
     {const r=checkAnswer(val,v.en);ok=r.ok;if(ok&&!r.exact)flashFuzzy=v.en;}
@@ -2705,7 +2711,7 @@ function chkFlash(){
   const fb=document.getElementById('feedback');
   const solAr = '<span style="font-family:\'Playfair Display\',serif;font-size:2.2rem;color:var(--gold2);display:block">'+v.ar+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+v.tr+'</span>';
   const solDe = '<span style="font-family:\'Playfair Display\',serif;font-size:1.5rem;display:block">'+v.en+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+v.tr+'</span>';
-  const sol = dir==='ar2de' ? solDe : solAr;
+  const sol = ex.dir==='au2de' ? solDe+'<span style="font-family:\'Playfair Display\',serif;font-size:2.2rem;color:var(--gold2);display:block;margin-top:.3rem">'+v.ar+'</span>' : (dir==='ar2de' ? solDe : solAr);
   const homNote = homonymNote(v)+synonymNote(v)+schreibungNote(v);
   if(ok){
     fb.className='feedback show correct';
@@ -5325,7 +5331,7 @@ function bMix(){
   const vocabNeeded = 10 - courseItems.length;
   const vocabItems = dueVocab.slice(0,vocabNeeded).map(v=>{
     const lvl = srsGetLevel(v);
-    const dir = lvl>=3 ? 'de2ar' : (Math.random()>.5?'ar2de':'de2ar');
+    const dir = neuPickDir(v, lvl);
     return {type:'flash', v, dir};
   });
   return sh([...courseItems, ...vocabItems]);

@@ -143,21 +143,37 @@ async function loadActivity(){
   if(_cache.act && Date.now() - _cache.act.t < 120000) return _cache.act;
   const berlin = d => d.toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
   const midnight = new Date(); midnight.setHours(0,0,0,0);
+  const now = new Date();
+  const todayKey = berlin(now);
+  const yest = new Date(now); yest.setDate(yest.getDate() - 1);
+  const yKey = berlin(yest);
   const days = new Set(); let today = 0;
-  for(let page = 0; page < 8; page++){
+  const fetchPage = async page => {
     const r = await sbApi('review_log?user_id=eq.'+currentUser.id+'&select=created_at&order=created_at.desc&limit=1000&offset='+(page*1000));
-    if(!r || !r.length) break;
-    r.forEach(x => { const d = new Date(x.created_at); days.add(berlin(d)); if(d >= midnight) today++; });
-    const oldest = berlin(new Date(r[r.length-1].created_at));
-    let d = new Date(), k = berlin(d);
-    if(!days.has(k)){ d.setDate(d.getDate()-1); k = berlin(d); }
-    let streak = 0;
-    while(days.has(k)){ streak++; d.setDate(d.getDate()-1); k = berlin(d); }
-    // Die erste fehlende Tag-Lücke liegt entweder im geladenen Bereich (fertig) oder davor (nachladen)
-    const complete = r.length < 1000 || k > oldest;
-    if(complete || page === 7){ _cache.act = {t:Date.now(), today, streak, capped:!complete}; return _cache.act; }
+    (r || []).forEach(x => { const d = new Date(x.created_at); days.add(berlin(d)); if(d >= midnight) today++; });
+    return r || [];
+  };
+  // Serie bis gestern: aus dem Gedächtnis des Geräts, wenn gestern schon gezählt wurde, sonst komplett nachzählen
+  let saved = null;
+  try{ saved = JSON.parse(LS.get('neu-streak','null')); }catch(e){}
+  let upToYesterday;
+  const first = await fetchPage(0);
+  if(saved && saved.day === yKey && Number.isInteger(saved.n)){
+    upToYesterday = saved.n;
+  } else {
+    let page = 0, r = first;
+    const walk = () => { let d = new Date(yest), k = yKey, n = 0; while(days.has(k)){ n++; d.setDate(d.getDate()-1); k = berlin(d); } return {n, k}; };
+    for(;;){
+      const w = walk();
+      const oldest = r.length ? berlin(new Date(r[r.length-1].created_at)) : '';
+      // fertig, wenn die Lücke im geladenen Bereich liegt oder keine älteren Daten mehr kommen
+      if(r.length < 1000 || w.k > oldest || page >= 150){ upToYesterday = w.n; break; }
+      page++; r = await fetchPage(page);
+    }
   }
-  _cache.act = {t:Date.now(), today, streak:0, capped:false};
+  LS.set('neu-streak', JSON.stringify({day:yKey, n:upToYesterday}));
+  const streak = upToYesterday + (days.has(todayKey) ? 1 : 0);
+  _cache.act = {t:Date.now(), today, streak};
   return _cache.act;
 }
 async function loadPartnerLine(){
@@ -213,7 +229,7 @@ function goHome(){
     const p = a.today / goal;
     r.innerHTML = ring(p, 92, 9, p >= 1 ? 'var(--green)' : 'var(--gold)', Math.min(999, Math.round(p*100)) + ' %');
     $('neu-goal-t').textContent = fmtN(a.today) + ' von ' + fmtN(goal) + ' Antworten';
-    $('neu-streak').textContent = a.streak ? a.streak + (a.capped ? '+' : '') + ' Tag' + (a.streak===1?'':'e') + ' in Folge' : 'Noch keine Serie';
+    $('neu-streak').textContent = a.streak ? a.streak + ' Tag' + (a.streak===1?'':'e') + ' in Folge' : 'Noch keine Serie';
   }).catch(() => { const s = $('neu-streak'); if(s) s.textContent = ''; });
 }
 window.neuGoHome = goHome;
@@ -265,6 +281,15 @@ const _srsAnswer = window.srsAnswer;
 if(_srsAnswer) window.srsAnswer = function(v, ok){ vibe(ok); return _srsAnswer.apply(this, arguments); };
 const _courseExAnswer = window.courseExAnswer;
 if(_courseExAnswer) window.courseExAnswer = function(ex, ok){ vibe(ok); return _courseExAnswer.apply(this, arguments); };
+
+/* ---------- Höraufgaben im normalen Lernen (Richtung „Audio → Deutsch“) ---------- */
+// Nur bei eingeschaltetem Ton (Lautsprecher-Schalter unten) und eingeschalteter Einstellung, nur für Vokabeln mit Audio.
+window.neuPickDir = function(v, lvl){
+  const base = lvl >= 3 ? 'de2ar' : (Math.random() > .5 ? 'ar2de' : 'de2ar');
+  if(!audioAutoplay || LS.get('neu-listen','1') !== '1' || !v.au) return base;
+  return Math.random() < (lvl >= 3 ? 0.15 : 0.34) ? 'au2de' : base;
+};
+window.neuToggleListen = function(){ LS.set('neu-listen', LS.get('neu-listen','1') === '1' ? '0' : '1'); showMore(); };
 
 /* ---------- Leerer Zustand in der Sitzung ---------- */
 function nothingDue(){
