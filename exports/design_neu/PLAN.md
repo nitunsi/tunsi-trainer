@@ -37,6 +37,9 @@ Die Dateien: `trainer-neu.html` (Kopie des alten Stands, mit zwei Einbindungen),
 - Admin-Seiten im neuen Stil: Aktivierung als Karten mit fester Leiste (Erste N auswählen, Jetzt fällig setzen), alle übrigen Admin-Seiten (Prüfungen, Partner-Queue, Partner-Check, Quellenabgleich, Umschrift-Regeln, Export, Vokabel hinzufügen, Lektionen) mit größeren Bedienelementen (Mindesthöhe, 16 px) und gleicher Optik
 - Tastatur im Lernen: sobald das Eingabefeld Fokus hat, wird die Seite kompakt (keine Kopfzeile, kleinere Karte, kompakte Leiste) und das Feld in den sichtbaren Bereich gerollt; geprüft bei 330 px sichtbarer Höhe (Vokabel- und Kurs-Karten, Schrift Mittel und Groß)
 
+- Startseite „Lernen“ passt auf eine Seite ohne Scrollen (geprüft bei 390×844, 390×740, 360×740, 360×640; bei kleiner Höhe werden Abstände kleiner, bei unter 680 px entfallen Untertexte und Schnellknöpfe)
+- Motivationsmeldung auf der Startseite: „heute geplant“ = heute schon beantwortet + noch fällig. Verglichen mit dem Tagesschnitt der letzten 7/14/30/90 Tage (ohne heute, Berliner Tage, nur wenn so viele Tage Verlauf da sind). Gezeigt wird immer das höchste übertroffene Fenster (90 vor 30 vor 14 vor 7). Tageszahlen werden auf dem Gerät gemerkt, geladen wird nur der neue Teil.
+
 ## Nicht gebaut / Entscheidungen
 - Wischgesten für selbstbewertete Karten: nicht gebaut (Knöpfe bleiben).
 - 12-Wochen-Aktivitätsraster: nicht gebaut. Dafür bräuchte es eine Tageszählung in der Datenbank (View/RPC), sonst müssten ~14.000 Zeilen geladen werden. Ohne Rückfrage kein Schema ändern.
