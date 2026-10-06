@@ -2641,7 +2641,7 @@ function rFlash(ex,el){
   const _prog = (document.getElementById('ex-progress')||{}).textContent||'';
   const isNew = !srsProgress[v.id];
   el.innerHTML=`
-    <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem">
+    <div class="neu-inforow" style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem">
       <span class="lesson-badge" style="margin:0;flex:0 0 48%;min-width:0;width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(v.ls+' · '+v.tp)}">${v.ls} · ${v.tp}</span>
       ${isNew ? `<span style="flex-shrink:0;font-size:.65rem;font-weight:700;color:var(--gold);background:rgba(201,166,74,.15);border:1px solid var(--gold);padding:.1rem .45rem;border-radius:3px">🆕 Neu</span>` : ''}
       <span class="srs-info-badge" style="flex:1;min-width:0;margin:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${srsInfoBadge(v)}</span>
@@ -5467,7 +5467,7 @@ function rCourseEx(ex, el){
   const prog = (document.getElementById('ex-progress')||{}).textContent||'';
   // Ganze Karte deutlich blau eingefärbt (statt Gold wie bei Vokabeln) — im Mix auf einen
   // Blick erkennbar, ob gerade eine Vokabel- oder eine Kurs-Karte dran ist.
-  let h = '<div style="background:rgba(76,122,201,.10);border:1px solid var(--blue);border-radius:10px;padding:1rem;margin-bottom:1.2rem">';
+  let h = '<div class="neu-ccard" style="background:rgba(76,122,201,.10);border:1px solid var(--blue);border-radius:10px;padding:1rem;margin-bottom:1.2rem">';
   h += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem;flex-wrap:wrap">';
   h += '<span style="flex-shrink:0;font-size:.65rem;font-weight:700;letter-spacing:.3px;color:#fff;background:var(--blue);padding:.15rem .55rem;border-radius:3px" title="'+escHtml((lesson?('L'+lesson.course_number):'')+' · '+label)+'">🎓 '+(lesson?('L'+lesson.course_number):'')+' · '+label+'</span>';
   if(isNew) h += '<span style="flex-shrink:0;font-size:.65rem;font-weight:700;color:var(--gold);background:rgba(201,166,74,.15);border:1px solid var(--gold);padding:.1rem .45rem;border-radius:3px">🆕 Neu</span>';
