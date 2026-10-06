@@ -29,7 +29,8 @@ Die Dateien: `trainer-neu.html` (Kopie des alten Stands, mit zwei Einbindungen),
 - Kurs als Lernpfad (Ring pro Lektion, „Weiter mit“, vier Werte pro Lektion, Sprung zu den Vokabeln)
 - Vokabelliste als Karten, Filter eingeklappt
 - Statistik: Level in einer Farbe (Goldrampe), Aktivität in Gold statt Rot/Grün
-- Höraufgabe (Audio hören, Bedeutung wählen), ohne Fortschrittswertung
+- Höraufgabe als eigener Modus (Audio hören, Bedeutung wählen, ohne Fortschrittswertung) und als dritte Richtung im normalen Lernen („Audio → Deutsch“, zählt wie jede Karte): nur bei „Ton an“ (Lautsprecher-Schalter in der Lernleiste) und eingeschalteter Einstellung „Höraufgaben beim Lernen“ (Mehr). Wird der Ton mitten im Lernen ausgeschaltet, werden die restlichen Hörkarten zu normalen Karten.
+- Serie exakt, ohne Obergrenze (Tage mit mindestens einer Antwort, Berliner Tag); wird auf dem Gerät gemerkt und nur bei Lücken neu gezählt (Gegenprobe: 97 Tage)
 - Vibration (Android), standardmäßig aus
 
 ## Nicht gebaut / Entscheidungen
@@ -42,9 +43,8 @@ Die Dateien: `trainer-neu.html` (Kopie des alten Stands, mit zwei Einbindungen),
 
 ## Offene Fragen
 1. **Tagesziel:** Standard 100 Antworten. Dein Schnitt liegt bei etwa 165. Passt 100, oder lieber 150 als Standard?
-2. **Serie:** Gezählt wird jeder Tag mit mindestens einer Antwort (Berliner Tag). Die Anzeige hört bei „48+ Tage“ auf zu zählen (8 × 1.000 Zeilen). Reicht das?
-3. **12-Wochen-Raster:** Soll dafür eine schreibgeschützte Tageszählung in der Datenbank angelegt werden (neue View, ändert nur das Schema)?
-4. **Höraufgabe:** Bewusst ohne Fortschrittswertung. Soll sie später Vokabel-Stufen beeinflussen?
-5. **Wischgesten** bei Kurs-Karten (rechts = richtig, links = falsch): gewünscht?
-6. **Partner-Ansicht** für Semia im neuen Design: gewünscht?
-7. **Umstellung:** Wenn du ganz wechseln willst, wird `trainer-neu.html` zu `trainer.html` (die alte Datei bleibt als `trainer-alt.html`) und `index.html` zeigt auf die neue.
+2. **12-Wochen-Raster:** Soll dafür eine schreibgeschützte Tageszählung in der Datenbank angelegt werden (neue View, ändert nur das Schema)?
+3. **Wischgesten** bei Kurs-Karten (rechts = richtig, links = falsch): gewünscht?
+4. **Partner-Ansicht** für Semia im neuen Design: gewünscht?
+5. **Umstellung:** Wenn du ganz wechseln willst, wird `trainer-neu.html` zu `trainer.html` (die alte Datei bleibt als `trainer-alt.html`) und `index.html` zeigt auf die neue.
+6. **Hörkarten im Lernen:** Anteil aktuell etwa jede dritte Karte bei Stufe 0 bis 2 und jede siebte ab Stufe 3 (nur Vokabeln mit Audio). Anders gewünscht?
