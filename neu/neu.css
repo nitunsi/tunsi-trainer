@@ -195,3 +195,22 @@ body.neu-admin #exercise-content input[type=checkbox]{width:20px;height:20px}
 .neu-batch{position:fixed;left:0;right:0;bottom:0;z-index:150;background:var(--surface);border-top:2px solid var(--gold);padding:.6rem 1rem calc(.6rem + env(safe-area-inset-bottom,0px));display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;box-shadow:0 -6px 20px rgba(0,0,0,.5)}
 .neu-batch input{width:64px;min-height:48px;text-align:center;background:var(--surface2);border:1px solid var(--border);color:var(--gold2);border-radius:12px;font-size:16px}
 .neu-batch .neu-btn[disabled]{opacity:.35}
+
+/* --- Startseite auf einer Seite --- */
+.neu-home .neu-card{margin-bottom:.6rem}
+body.neu-tabs.neu-nohdr main{padding-bottom:calc(var(--tabh) + .6rem + env(safe-area-inset-bottom,0px))!important}
+.neu-home .neu-chips{flex-wrap:wrap;overflow:visible}
+
+@media (max-height:780px){
+  .neu-home .neu-card{padding:.55rem .85rem!important;margin-bottom:.45rem}
+  .neu-home #neu-ring svg{width:62px;height:62px}
+  .neu-home .neu-btn{min-height:50px!important}
+  .neu-home .neu-row2 .neu-btn{min-height:64px!important;padding:.4rem .8rem!important}
+  .neu-home .neu-row2 .neu-btn span:nth-child(2){font-size:1.25rem!important}
+  .neu-home .neu-chip{min-height:34px}
+}
+@media (max-height:680px){
+  .neu-home #neu-partner .neu-sub{display:none}
+  .neu-home .neu-chips{display:none}
+  .neu-home .neu-row2 .neu-btn small{display:none}
+}

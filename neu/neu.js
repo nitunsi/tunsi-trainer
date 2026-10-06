@@ -198,43 +198,109 @@ function lessonFilterChip(){
 }
 window.neuFilterOff = function(){ try{ filterLessonDropdown('all'); }catch(e){ cLesson = 'all'; } goHome(); };
 
+/* Tagesdurchschnitte (7/14/30/90 Tage) aus review_log: erledigte Tage werden auf dem Gerät gemerkt,
+   geladen wird nur, was seit dem letzten Mal dazukam. Berliner Kalendertage, heute zählt nicht mit. */
+async function loadDayCounts(){
+  if(_cache.dc && Date.now() - _cache.dc.t < 120000) return _cache.dc;
+  const berlin = d => d.toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
+  const now = new Date();
+  const todayKey = berlin(now);
+  const yest = new Date(now); yest.setDate(yest.getDate() - 1);
+  const yKey = berlin(yest);
+  let saved = null;
+  try{ saved = JSON.parse(LS.get('neu-days', 'null')); }catch(e){}
+  const counts = {};
+  let sinceISO;
+  if(saved && saved.c && saved.upTo){
+    Object.assign(counts, saved.c);
+    // Berliner Mitternacht des Tages nach upTo liegt höchstens 3 Stunden vor 00:00 UTC dieses Tages
+    sinceISO = new Date(new Date(saved.upTo + 'T00:00:00Z').getTime() + 86400000 - 3*3600000).toISOString();
+  } else {
+    sinceISO = new Date(now.getTime() - 91*86400000).toISOString();
+  }
+  const fresh = {};
+  for(let page = 0; page < 40; page++){
+    const r = await sbApi('review_log?user_id=eq.'+currentUser.id+'&select=created_at&created_at=gte.'+sinceISO+'&order=created_at.desc&limit=1000&offset='+(page*1000));
+    (r || []).forEach(x => { const k = berlin(new Date(x.created_at)); fresh[k] = (fresh[k] || 0) + 1; });
+    if(!r || r.length < 1000) break;
+  }
+  const lowest = saved && saved.upTo ? saved.upTo : '';
+  Object.keys(fresh).forEach(k => { if(k > lowest) counts[k] = fresh[k]; });
+  const today = counts[todayKey] || 0;
+  // nur erledigte Tage (bis gestern) und höchstens 100 Tage merken
+  const keep = {};
+  const limit = new Date(now.getTime() - 100*86400000);
+  Object.keys(counts).forEach(k => { if(k <= yKey && new Date(k + 'T12:00:00Z') >= limit) keep[k] = counts[k]; });
+  LS.set('neu-days', JSON.stringify({upTo: yKey, c: keep}));
+  // Durchschnitt über die letzten N Tage vor heute; nur wenn so viele Tage Verlauf da sind
+  const keys = Object.keys(keep).sort();
+  const first = keys.length ? new Date(keys[0] + 'T12:00:00Z') : null;
+  const span = first ? Math.round((new Date(yKey + 'T12:00:00Z') - first) / 86400000) + 1 : 0;
+  const avgs = {};
+  [7, 14, 30, 90].forEach(n => {
+    if(span < n) return;
+    let sum = 0;
+    for(let i = 1; i <= n; i++){ const d = new Date(now); d.setDate(d.getDate() - i); sum += keep[berlin(d)] || 0; }
+    avgs[n] = sum / n;
+  });
+  _cache.dc = {t: Date.now(), today, avgs};
+  return _cache.dc;
+}
+// Immer das höchste übertroffene Fenster zeigen (90 vor 30 vor 14 vor 7)
+function motivation(planned, avgs){
+  for(const n of [90, 30, 14, 7]){
+    if(avgs[n] > 0 && planned > avgs[n]) return {n, avg: Math.round(avgs[n]), pct: Math.round((planned / avgs[n] - 1) * 100)};
+  }
+  return null;
+}
+
 function goHome(){
   reset('home');
   const c = $('exercise-content'); if(!c) return;
   const d = dueCounts(), total = d.voc + d.course;
   const goal = parseInt(LS.get('neu-goal','100'), 10) || 100;
   const empty = total === 0;
-  c.innerHTML = '<div class="neu-wrap">'
+  c.innerHTML = '<div class="neu-wrap neu-home">'
     + lessonFilterChip()
-    + '<div class="neu-card" style="display:flex;align-items:center;gap:1rem;padding:1.1rem">'
-    +   '<div id="neu-ring">'+ring(0, 92, 9, 'var(--gold)', '…')+'</div>'
-    +   '<div style="flex:1;min-width:0"><div class="neu-sub">Tagesziel</div><div id="neu-goal-t" style="font-size:1.25rem;font-weight:700;margin:2px 0">… von '+goal+' Antworten</div><div id="neu-streak" class="neu-sub">&nbsp;</div></div>'
+    + '<div class="neu-card" style="display:flex;align-items:center;gap:.9rem;padding:.8rem 1rem">'
+    +   '<div id="neu-ring">'+ring(0, 76, 8, 'var(--gold)', '…')+'</div>'
+    +   '<div style="flex:1;min-width:0"><div class="neu-sub">Tagesziel (Antworten)</div><div id="neu-goal-t" style="font-size:1.15rem;font-weight:700;margin:1px 0">… von '+goal+'</div><div id="neu-streak" class="neu-sub">&nbsp;</div></div>'
     + '</div>'
+    + '<div id="neu-motiv"></div>'
     + (empty
-      ? '<div class="neu-card" style="text-align:center;padding:1.4rem"><div style="font-size:1.3rem;font-weight:700;color:var(--gold2)">Alles erledigt</div><div class="neu-sub" style="margin-top:.4rem">Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b></div></div>'
-      : '<button class="neu-btn" style="min-height:60px;font-size:1.15rem;margin:.2rem 0 .8rem" onclick="setMode(\'mix\')">Los geht’s · '+fmtN(total)+' fällig</button>')
-    + '<div class="neu-row2" style="margin-bottom:.8rem">'
-    +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:92px;padding:.9rem" '+(d.voc?'':'disabled')+' onclick="setMode(\'flash\')"><span class="neu-sub">Vokabeln</span><span style="font-size:1.8rem">'+fmtN(d.voc)+'</span><small>fällig'+(d.blocked?' · '+fmtN(d.blocked)+' gesperrt':'')+'</small></button>'
-    +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:92px;padding:.9rem;border-color:#3b4f7a" '+(d.course?'':'disabled')+' onclick="setMode(\'coursesrs\')"><span class="neu-sub" style="color:var(--blue)">Kurs</span><span style="font-size:1.8rem">'+fmtN(d.course)+'</span><small>fällig</small></button>'
+      ? '<div class="neu-card" style="text-align:center;padding:.8rem"><div style="font-size:1.15rem;font-weight:700;color:var(--gold2)">Alles erledigt</div><div class="neu-sub" style="margin-top:.2rem">Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b></div></div>'
+      : '<button class="neu-btn" style="min-height:56px;font-size:1.1rem;margin:0 0 .6rem" onclick="setMode(\'mix\')">Los geht’s · '+fmtN(total)+' fällig</button>')
+    + '<div class="neu-row2" style="margin-bottom:.6rem">'
+    +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem" '+(d.voc?'':'disabled')+' onclick="setMode(\'flash\')"><span class="neu-sub">Vokabeln</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.voc)+'</span><small>fällig'+(d.blocked?' · '+fmtN(d.blocked)+' gesperrt':'')+'</small></button>'
+    +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem;border-color:#3b4f7a" '+(d.course?'':'disabled')+' onclick="setMode(\'coursesrs\')"><span class="neu-sub" style="color:var(--blue)">Kurs</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.course)+'</span><small>fällig</small></button>'
     + '</div>'
-    + '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer" onclick="setMode(\'partnerqueue\')"><div class="neu-sub">Partner wird geladen …</div></div>'
-    + '<div class="neu-card"><div class="neu-cap">Mehr Stoff</div><div style="display:flex;gap:.5rem;flex-wrap:wrap">'
+    + '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer;padding:.7rem 1rem" onclick="setMode(\'partnerqueue\')"><div class="neu-sub">Partner wird geladen …</div></div>'
+    + '<div class="neu-chips" style="padding-bottom:0">'
     +   '<span class="neu-chip" onclick="statsActivateVocab(10)">10 Vokabeln neu</span>'
-    +   '<span class="neu-chip" onclick="statsUnlockNextChunk()">Nächster Kurs-Abschnitt</span>'
+    +   '<span class="neu-chip" onclick="statsUnlockNextChunk()">Nächster Abschnitt</span>'
     +   '<span class="neu-chip" onclick="openPullForward()">Vorziehen</span>'
     +   '<span class="neu-chip" onclick="setMode(\'listen\')">Höraufgabe</span>'
-    + '</div></div>'
+    + '</div>'
     + '</div>';
   loadPartnerLine();
   loadActivity().then(a => {
     const r = $('neu-ring'); if(!r || cMode !== 'home') return;
     const p = a.today / goal;
-    r.innerHTML = ring(p, 92, 9, p >= 1 ? 'var(--green)' : 'var(--gold)', Math.min(999, Math.round(p*100)) + ' %');
-    $('neu-goal-t').textContent = fmtN(a.today) + ' von ' + fmtN(goal) + ' Antworten';
+    r.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', Math.min(999, Math.round(p*100)) + ' %');
+    $('neu-goal-t').textContent = fmtN(a.today) + ' von ' + fmtN(goal);
     $('neu-streak').textContent = a.streak ? a.streak + ' Tag' + (a.streak===1?'':'e') + ' in Folge' : 'Noch keine Serie';
   }).catch(() => { const s = $('neu-streak'); if(s) s.textContent = ''; });
+  // Motivation: heute geplant = heute schon beantwortet + noch fällig
+  loadDayCounts().then(dc => {
+    const el = $('neu-motiv'); if(!el || cMode !== 'home') return;
+    const planned = dc.today + total;
+    const m = motivation(planned, dc.avgs);
+    if(!m) return;
+    el.innerHTML = '<div class="neu-card" style="border-color:var(--gold-d);background:rgba(201,168,76,.08);padding:.7rem 1rem"><div style="font-weight:700;color:var(--gold2)">Über deinem '+m.n+'-Tage-Schnitt</div><div class="neu-sub" style="margin-top:2px">Heute geplant: <b style="color:var(--text)">'+fmtN(planned)+'</b> · Schnitt: '+fmtN(m.avg)+' (+'+m.pct+' %)</div></div>';
+  }).catch(() => {});
 }
 window.neuGoHome = goHome;
+window.neuDayCounts = loadDayCounts;
 
 /* ---------- „Mehr“ ---------- */
 function li(icon, label, act, extra){ return '<button onclick="'+act+'">'+IC[icon]+'<span class="sp">'+label+'</span>'+(extra||'<span class="chev">›</span>')+'</button>'; }
