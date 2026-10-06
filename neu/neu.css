@@ -1,0 +1,139 @@
+/* ===== Tounsi Trainer — neues Design (Schicht über trainer-neu.html) =====
+   Wird nur von trainer-neu.html geladen. Der alte Weg (trainer.html) bleibt unverändert. */
+
+:root{
+  --neu-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --tabh:64px;
+  --gold-d:#b0913f;
+  --lv0:#6f6246;--lv1:#8c7536;--lv2:#a68a3a;--lv3:#c4a449;--lv4:#d6b755;--lv5:#e8c96a;--lv6:#f6de8e;
+}
+
+/* --- Schrift: ruhige Sans für Oberfläche, Mono nur für Umschrift --- */
+body,button,input,select,textarea{font-family:var(--neu-ui)!important}
+.latin,.q-sub,.neu-mono,.tr-col{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace!important}
+[style*="text-transform:uppercase"],.nav-section-label,.ex-type,.login-label,.partner-logo small{text-transform:none!important;letter-spacing:.2px!important}
+body{line-height:1.45}
+
+/* --- Kopfzeile --- */
+.nav-strip{padding:.55rem .9rem;min-height:52px}
+.nav-logo{font-family:var(--neu-ui)!important;font-size:1.05rem;font-weight:700}
+.nav-logo em{font-style:normal}
+#nav-toggle-btn,#nav-panel{display:none!important}
+#neu-close{display:none;width:44px;height:44px;flex:none;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:12px;cursor:pointer;padding:0}
+#neu-close svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#neu-prog{display:none;flex:1;min-width:0;align-items:center;gap:.7rem}
+#neu-prog .bar{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden}
+#neu-prog .bar i{display:block;height:100%;width:0;background:var(--gold);border-radius:4px;transition:width .3s}
+#neu-prog span{font-size:.9rem;color:var(--muted);white-space:nowrap;min-width:3.2rem;text-align:right}
+body.neu-session #neu-close{display:flex}
+body.neu-session.neu-hasprog #neu-prog{display:flex}
+body.neu-session .nav-logo{display:none}
+body.neu-session .nav-left{gap:.7rem}
+
+/* --- Untere Navigation --- */
+#tabbar{display:none;position:fixed;left:0;right:0;bottom:0;height:calc(var(--tabh) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);background:var(--surface);border-top:1px solid var(--border);z-index:90}
+body.neu-tabs #tabbar{display:flex}
+#tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:var(--muted);font-size:.72rem;cursor:pointer;min-height:var(--tabh);padding:0}
+#tabbar button.a{color:var(--gold2)}
+#tabbar svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+body.neu-tabs main{padding-bottom:calc(var(--tabh) + 2rem + env(safe-area-inset-bottom,0px))}
+body.neu-tabs #act-batch-bar{bottom:calc(var(--tabh) + env(safe-area-inset-bottom,0px))!important}
+body.neu-tabs #vl-bulk-bar{bottom:calc(var(--tabh) + env(safe-area-inset-bottom,0px))!important}
+body.neu-nohdr .exercise-header,body.neu-nohdr .progress-bar{display:none!important}
+.exercise-header{padding:.6rem 0 .3rem}
+.ex-type{font-size:1.15rem!important;font-weight:700;color:var(--text)!important;opacity:1!important}
+
+/* --- Bausteine --- */
+.neu-wrap{max-width:600px;margin:0 auto;padding:.4rem 0 1rem}
+.neu-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:.8rem}
+.neu-cap{font-size:.85rem;color:var(--muted);margin-bottom:.5rem}
+.neu-h{font-size:1.1rem;font-weight:700;margin:1.1rem 0 .5rem}
+.neu-btn{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;min-height:52px;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:var(--gold);color:#17120a;padding:.6rem 1rem;line-height:1.25;text-align:center}
+.neu-btn.blue{background:var(--blue);color:#fff}
+.neu-btn.ghost{background:var(--surface);border:1px solid var(--border);color:var(--text)}
+.neu-btn.line{background:transparent;border:1px solid var(--gold-d);color:var(--gold2)}
+.neu-btn small{display:block;font-weight:400;font-size:.8rem;opacity:.85}
+.neu-btn[disabled]{opacity:.35;cursor:default}
+.neu-row2{display:flex;gap:.6rem}
+.neu-row2>*{flex:1;min-width:0}
+.neu-chip{display:inline-flex;align-items:center;min-height:36px;padding:0 .85rem;border:1px solid var(--border);border-radius:18px;font-size:.85rem;color:var(--muted);background:var(--surface);cursor:pointer;white-space:nowrap}
+.neu-chip.on{color:var(--gold2);border-color:var(--gold-d)}
+.neu-big{font-size:2.6rem;font-weight:700;line-height:1;color:var(--gold2)}
+.neu-sub{font-size:.9rem;color:var(--muted)}
+.neu-list{padding:0;margin:0}
+.neu-list button,.neu-list .li{display:flex;align-items:center;gap:.9rem;width:100%;min-height:54px;padding:.6rem .3rem;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:1rem;text-align:left;cursor:pointer}
+.neu-list button:last-child,.neu-list .li:last-child{border-bottom:none}
+.neu-list svg{width:22px;height:22px;flex:none;stroke:var(--muted);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.neu-list .sp{flex:1}
+.neu-list .chev{color:var(--muted);font-size:1.2rem}
+.neu-seg{display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.neu-seg button{flex:1;min-height:42px;background:var(--surface);border:none;border-right:1px solid var(--border);color:var(--muted);font-size:.95rem;cursor:pointer}
+.neu-seg button:last-child{border-right:none}
+.neu-seg button.on{background:var(--gold);color:#17120a;font-weight:700}
+.neu-switch{width:50px;height:30px;border-radius:15px;background:var(--surface2);border:1px solid var(--border);position:relative;flex:none;cursor:pointer}
+.neu-switch i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--muted);transition:all .15s}
+.neu-switch.on{background:rgba(201,168,76,.25);border-color:var(--gold-d)}
+.neu-switch.on i{left:23px;background:var(--gold2)}
+
+/* --- Lernkarte --- */
+.q-card{border-radius:14px!important;min-height:170px;padding:1.4rem 1.2rem!important;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.q-card::before{display:none}
+.q-text{font-family:var(--neu-ui)!important;font-size:2rem!important;font-weight:600;line-height:1.3}
+.q-arabic{font-family:"Noto Naskh Arabic","Amiri","Playfair Display",serif!important;font-size:3.6rem!important}
+.q-sub{font-size:1rem!important}
+.q-hint{font-size:.95rem;color:var(--muted)}
+#flash-input,#course-input{font-size:18px!important;padding:1rem!important;border-radius:12px!important;min-height:56px}
+.lesson-badge{border-radius:16px;font-size:.85rem;padding:.25rem .8rem}
+.feedback{border-radius:12px;font-size:1rem}
+.neu-prog{display:none!important}
+.sticky-check,.sticky-next{padding:.6rem 1rem calc(.6rem + env(safe-area-inset-bottom,0px))!important;border-top:1px solid var(--border)}
+.sticky-check-btn,.sticky-next-btn{height:54px;border-radius:12px;font-size:1.05rem;text-transform:none!important;letter-spacing:0!important;padding:0 1rem}
+.sticky-check-inner{gap:8px!important}
+.sticky-check-btn{min-width:0}
+.sticky-check-ghost{width:46px;height:54px;padding:0!important;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;text-transform:none!important;letter-spacing:0!important;flex:none}
+#latin-toggle{width:auto;padding:0 10px!important;font-size:13px}
+#flash-action-bar{padding-bottom:env(safe-area-inset-bottom,0px)}
+
+/* --- Abschluss --- */
+#result-screen{padding:1.5rem;background:var(--bg)}
+#result-screen .neu-res{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center}
+#result-screen .neu-res .msg{font-size:1.4rem;font-weight:700;margin-top:1rem}
+#result-screen .neu-res .sub{font-size:.95rem;color:var(--muted);margin:.4rem 0 1.4rem}
+#result-screen .neu-res .rows{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:1.4rem}
+#result-screen .neu-res .rows div{display:flex;justify-content:space-between;padding:.8rem 1rem;border-bottom:1px solid var(--border);font-size:1rem}
+#result-screen .neu-res .rows div:last-child{border-bottom:none}
+
+/* --- Vokabelliste als Karten --- */
+.neu-vrow{display:flex;align-items:center;gap:.7rem;padding:.7rem .8rem;border-bottom:1px solid var(--border);background:var(--surface)}
+.neu-vrow:last-child{border-bottom:none}
+.neu-vrow .ar{font-family:"Noto Naskh Arabic","Amiri","Playfair Display",serif;font-size:1.45rem;color:var(--gold2);min-width:4.2rem;max-width:6rem;text-align:right;direction:rtl;line-height:1.3}
+.neu-vrow .mid{flex:1;min-width:0}
+.neu-vrow .t1{font-size:1rem}
+.neu-vrow .t2{font-size:.85rem;color:var(--muted);margin-top:2px}
+.neu-vrow .rt{text-align:right;flex:none}
+.neu-vrow .lv{font-size:.85rem;white-space:nowrap}
+.neu-vrow .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.neu-vrow input[type=checkbox]{width:20px;height:20px;flex:none}
+.neu-vrow .ib{background:none;border:1px solid var(--border);color:var(--muted);border-radius:10px;min-width:36px;min-height:36px;font-size:.9rem;cursor:pointer;padding:0}
+.neu-vlist{border:1px solid var(--border);border-radius:14px;overflow:hidden}
+details.neu-filter{margin-bottom:.7rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.1rem .8rem}
+details.neu-filter summary{min-height:46px;display:flex;align-items:center;cursor:pointer;color:var(--gold2);font-size:.95rem;list-style:none}
+details.neu-filter summary::-webkit-details-marker{display:none}
+details.neu-filter[open] summary{border-bottom:1px solid var(--border);margin-bottom:.6rem}
+#vocab-search{border-radius:12px!important;min-height:50px;font-size:1rem!important}
+
+/* --- Kurs-Lernpfad --- */
+.neu-node{padding:.9rem .2rem;border-bottom:1px solid var(--border);cursor:pointer}
+.neu-node:last-child{border-bottom:none}
+.neu-node.lock{opacity:.5}
+.neu-node .top{display:flex;gap:.9rem;align-items:center}
+.neu-node .tx{flex:1;min-width:0}
+.neu-node .t1{font-size:1.05rem;font-weight:700}
+.neu-node .t2{font-size:.92rem;color:var(--muted);margin-top:1px}
+.neu-node .t3{font-size:.85rem;margin-top:3px}
+.neu-node .st{margin-top:.6rem}
+.neu-stat{display:grid;grid-template-columns:5.2rem 1fr 1fr;gap:.5rem;align-items:center;margin-top:.5rem}
+.neu-stat .l{font-size:.95rem}
+.neu-stat .c{font-size:1rem;font-weight:700;line-height:1.2}
+.neu-stat .c small{display:block;font-size:.8rem;font-weight:400;color:var(--text);opacity:.75}
+main{padding-top:.6rem!important}

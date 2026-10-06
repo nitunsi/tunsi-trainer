@@ -255,6 +255,7 @@ body.hide-latin .chat-opt .latin {
   padding-bottom:.3rem;
 }
 </style>
+<link rel="stylesheet" href="neu/neu.css">
 </head>
 <body>
 <div id="login-screen">
@@ -2228,7 +2229,7 @@ function fmtDue(date){
   if(diff===1) return 'morgen';
   return 'in '+diff+'T';
 }
-const SRS_LEVEL_COLORS = ['#9b6fd4','#e05555','#e07832','#c9a84c','#2a9d8f','#4cac6e','#1a7a3a'];
+const SRS_LEVEL_COLORS = ['#6f6246','#8c7536','#a68a3a','#c4a449','#d6b755','#e8c96a','#f6de8e'];
 const SRS_LEVEL_LABELS = ['L0','L1','L2','L3','L4','L5','L6'];
 function srsInfoBadge(vocab){
   if(!vocab || !vocab.id) return '';
@@ -2644,7 +2645,7 @@ function rFlash(ex,el){
       ${v.ps ? `<span style="flex-shrink:0;font-size:.85rem" title="Partner: ${v.ps}">${v.ps==='approved'?'✅':v.ps==='rejected'?'❌':v.ps==='unknown'?'❓':v.ps==='pending'?'⏳':v.ps==='skipped'?'⏭':'💡'}</span>` : ''}
       ${v.au ? `<button onclick="playVocabAudio('${v.au.replace(/'/g,"\\'")}',event,${v.aus||0},${v.aue||0})" title="Aussprache abspielen" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.8rem;padding:.1rem .4rem;border-radius:3px;cursor:pointer;line-height:1.4">🔊</button>` : extConfirmIcon(v, 'flex-shrink:0;font-size:.8rem;color:var(--muted)')}
       ${v.cj ? `<button onclick="toggleConjTable()" title="Konjugationstabelle anzeigen" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.8rem;padding:.1rem .4rem;border-radius:3px;cursor:pointer;line-height:1.4">🔠</button>` : ''}
-      <span style="flex-shrink:0;font-size:.7rem;color:var(--muted)">${_prog}</span>
+      <span class="neu-prog" style="flex-shrink:0;font-size:.7rem;color:var(--muted)">${_prog}</span>
     </div>
     <div class="q-card" style="min-height:80px;margin-bottom:.5rem">
       ${isAr2De
@@ -3133,7 +3134,7 @@ function showStats(){
   const lessonLabel = cLesson === 'all' ? 'Alle Lektionen' : cLesson;
 
   const c = document.getElementById('exercise-content');
-  const levelColors = ['#555555','#9b6fd4','#e05555','#e07832','#c9a84c','#2a9d8f','#4cac6e','#1a7a3a'];
+  const levelColors = ['#3a3228','#6f6246','#8c7536','#a68a3a','#c4a449','#d6b755','#e8c96a','#f6de8e'];
   // Vokabeln + Kurs erst hier beim Rendern zusammenzählen (dueDays/courseDueDays bleiben
   // getrennte Arrays, siehe oben) — Fällig-Forecast zeigt weiterhin beide gemeinsam.
   const dayTotals = dueDays.map((levels,i) => levels.reduce((s,x) => s+x, 0) + courseDueDays[i].reduce((s,x)=>s+x,0));
@@ -3165,14 +3166,14 @@ function showStats(){
   // Level-Verteilung: Zeile für "Nicht gestartet" + Level 1–5
   const levelRows = (() => {
     const buckets = [
-      { label: 'Neu', color: '#555555', idx: 0, hint: 'Ohne Fälligkeit' },
-      { label: 'Level 0', color: '#9b6fd4', idx: 1, hint: 'fällig' },
-      { label: 'Level 1', color: '#e05555', idx: 2, hint: 'Wdh. in 1d' },
-      { label: 'Level 2', color: '#e07832', idx: 3, hint: 'Wdh. in 3d' },
+      { label: 'Neu', color: '#6a5e4a', idx: 0, hint: 'Ohne Fälligkeit' },
+      { label: 'Level 0', color: '#8c7a4a', idx: 1, hint: 'fällig' },
+      { label: 'Level 1', color: '#a08236', idx: 2, hint: 'Wdh. in 1d' },
+      { label: 'Level 2', color: '#b69338', idx: 3, hint: 'Wdh. in 3d' },
       { label: 'Level 3', color: '#c9a84c', idx: 4, hint: 'Wdh. in 7d' },
-      { label: 'Level 4', color: '#2a9d8f', idx: 5, hint: 'Wdh. in 14d' },
-      { label: 'Level 5', color: '#4cac6e', idx: 6, hint: 'Wdh. in 30d' },
-      { label: 'Level 6', color: '#1a7a3a', idx: 7, hint: 'Wdh. in 90d' },
+      { label: 'Level 4', color: '#d6b755', idx: 5, hint: 'Wdh. in 14d' },
+      { label: 'Level 5', color: '#e8c96a', idx: 6, hint: 'Wdh. in 30d' },
+      { label: 'Level 6', color: '#f6de8e', idx: 7, hint: 'Wdh. in 90d' },
     ];
     // "Neu"-Bucket (idx 0): courseLevelCount[0] wird nie befüllt (gesperrte Kurs-Übungen
     // stecken in courseNotStarted, siehe Kommentar oben), hier für die kombinierte
@@ -3208,7 +3209,7 @@ function showStats(){
   const stCell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+';line-height:1.2">'+icon+' '+stPct(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+fmtN(a)+' / '+fmtN(b)+'</div></div>';
   const stNum = fmtN;
   const stTile = (n, label, color, act, tip) => '<div'+(act ? ' onclick="'+act+'" title="'+escHtml(tip||'')+'"' : '')+' style="display:flex;align-items:baseline;gap:.5rem;padding:.4rem .6rem;background:var(--surface2);border:1px solid '+(act ? 'var(--gold)' : 'var(--border)')+';border-radius:4px'+(act ? ';cursor:pointer' : '')+'"><span style="font-size:1.1rem;font-weight:700;color:'+color+'">'+stNum(n)+'</span><span style="font-size:.85rem;color:'+(act ? 'var(--gold)' : 'var(--text)')+(act ? ';text-decoration:underline dotted' : '')+'">'+label+'</span></div>';
-  const stRow = (label, a1, b1, a2, b2, ph, neuAct, neuTip) => '<div style="margin-top:.9rem"><div style="font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:.5rem">'+label+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">'+stCell('📅',a1,b1)+stCell('⭐',a2,b2)+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.6rem">'+stTile(ph[0],'Neu','var(--muted)',neuAct,neuTip)+stTile(ph[1],'Anfänger','#e05555')+stTile(ph[2],'Fortgeschritten','var(--gold)')+stTile(ph[3],'Profi','var(--green)')+'</div></div>';
+  const stRow = (label, a1, b1, a2, b2, ph, neuAct, neuTip) => '<div style="margin-top:.9rem"><div style="font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:.5rem">'+label+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">'+stCell('📅',a1,b1)+stCell('⭐',a2,b2)+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.6rem">'+stTile(ph[0],'Neu','var(--muted)',neuAct,neuTip)+stTile(ph[1],'Anfänger','var(--lv1,#8c7536)')+stTile(ph[2],'Fortgeschritten','var(--gold)')+stTile(ph[3],'Profi','var(--green)')+'</div></div>';
   c.innerHTML = `
     ${cLesson === 'all' ? `<div style="margin-bottom:1rem;">
       <div style="font-size:.85rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);font-weight:700;margin-bottom:.5rem;">Heute fällig</div>
@@ -3433,7 +3434,7 @@ async function loadActivityStats(){
         <span style="font-size:.75rem;font-weight:700;color:${labelColor};line-height:1.1">${x.attempts ? fmtN(x.attempts) : ''}</span>
         <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;position:relative">
           ${avgAttempts > 0 ? `<div style="position:absolute;left:0;right:0;bottom:${avgLinePct}%;border-top:1px dashed var(--gold);opacity:.7;z-index:2;"></div>` : ''}
-          ${x.attempts ? `<div style="width:100%;height:${Math.round(h*hWrong/100)}%;min-height:${wrong?'3px':'0'};background:var(--red);"></div><div style="width:100%;height:${Math.round(h*hCorrect/100)}%;min-height:${x.correct?'3px':'0'};background:var(--green);"></div>` : ''}
+          ${x.attempts ? `<div style="width:100%;height:${Math.round(h*hWrong/100)}%;min-height:${wrong?'3px':'0'};background:#6b5a3a;"></div><div style="width:100%;height:${Math.round(h*hCorrect/100)}%;min-height:${x.correct?'3px':'0'};background:var(--gold);"></div>` : ''}
         </div>
         ${totalCourseAttempts ? courseShareGauge(x.courseAttempts, x.attempts) : ''}
         <span style="font-size:.72rem;color:var(--muted);text-align:center">${name}</span>
@@ -3812,6 +3813,7 @@ function showVocabList(){
                color:var(--text);font-size:1rem;font-family:'IBM Plex Mono',monospace;border-radius:6px;"
         oninput="filterVocabList()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
     </div>
+    <details class="neu-filter"><summary>Filter und Sortierung</summary>
     <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem;align-items:center">
       <button id="flag-filter-btn" onclick="toggleFlagFilter()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:.3rem .7rem;border-radius:4px;cursor:pointer;font-size:.8rem">🏳️ Alle</button>
       <span style="color:var(--border);font-size:.8rem">|</span>
@@ -3866,6 +3868,7 @@ function showVocabList(){
         <option value="unconfirmed">gar kein Beleg</option>
       </select>
     </div>
+    </details>
     <div id="vocab-table"></div>
   `;
   renderVocabTable(vocab);
@@ -5466,7 +5469,7 @@ function rCourseEx(ex, el){
          if(lvl) h += '<span class="srs-info-badge" style="flex-shrink:0;font-size:.7rem;margin:0">'+lvl+'</span>'; }
   h += '<span style="flex:1"></span>';
   h += courseGrammarButtonHtml(exercise);
-  h += '<span style="flex-shrink:0;font-size:.7rem;color:var(--muted)">'+prog+'</span>';
+  h += '<span class="neu-prog" style="flex-shrink:0;font-size:.7rem;color:var(--muted)">'+prog+'</span>';
   h += '</div>';
   const hintFirst = courseHintFirst(exercise);
   audioPreloadAhead();
@@ -8812,5 +8815,6 @@ window.addEventListener('unhandledrejection', (e) => {
   <button onclick="selectedVocabIds.clear();filterVocabList()" style="padding:.45rem .6rem;background:none;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.8rem;cursor:pointer;border-radius:4px">✕</button>
 </div>
 
+<script src="neu/neu.js"></script>
 </body>
 </html>

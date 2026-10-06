@@ -17,4 +17,34 @@
 5. Kurs als Lernpfad, Lektionen als Karten, Vokabelliste als Karten, Statistik im neuen Stil
 6. Extras: Höraufgabe, Vibration (aus), leere Zustände
 
-## Offene Fragen (werden unten gesammelt)
+## Stand (2026-10-06): gebaut und getestet
+Die Dateien: `trainer-neu.html` (Kopie des alten Stands, mit zwei Einbindungen), `neu/neu.css`, `neu/neu.js`. Getestet mit echten Daten (nur Lesezugriffe, Schreibzugriffe im Test blockiert) bei 360 und 390 px Breite.
+
+- Untere Navigation (Lernen, Kurs, Vokabeln, Statistik, Mehr); Lernsitzungen im Vollbild mit ✕ und Fortschrittsbalken oben
+- Startseite „Heute“: Tagesziel-Ring (Standard 100 Antworten, wählbar), Serie, „Los geht’s“ (Mix), Vokabeln/Kurs fällig, Partnerzeile, Schnellaktionen
+- „Mehr“: gegliederte Liste, Schriftgröße Klein/Mittel/Groß, Tagesziel, Audio beim Aufdecken, Vibration, Lektions-Einschränkung, Zum alten Design
+- Lernkarte: große Karte, Symbolleiste passt auch bei 360 px und großer Schrift, Fortschritt oben statt im Kartenkopf
+- Abschluss nach einem 10er-Block: Ring, Richtig/Falsch/Gesamt, „Noch einen Block“ / „Fertig für heute“
+- Leerer Zustand („Alles erledigt“) mit den drei Wegen: 10 Vokabeln fällig setzen, nächster Kurs-Abschnitt, Vorziehen
+- Kurs als Lernpfad (Ring pro Lektion, „Weiter mit“, vier Werte pro Lektion, Sprung zu den Vokabeln)
+- Vokabelliste als Karten, Filter eingeklappt
+- Statistik: Level in einer Farbe (Goldrampe), Aktivität in Gold statt Rot/Grün
+- Höraufgabe (Audio hören, Bedeutung wählen), ohne Fortschrittswertung
+- Vibration (Android), standardmäßig aus
+
+## Nicht gebaut / Entscheidungen
+- Wischgesten für selbstbewertete Karten: nicht gebaut (Knöpfe bleiben).
+- 12-Wochen-Aktivitätsraster: nicht gebaut. Dafür bräuchte es eine Tageszählung in der Datenbank (View/RPC), sonst müssten ~14.000 Zeilen geladen werden. Ohne Rückfrage kein Schema ändern.
+- Level-Verteilung (8 Zeilen) und die Statistik-Seite bleiben inhaltlich wie im alten Weg, nur anders gefärbt.
+- Admin-Seiten (Aktivierung, Prüfungen, Partner-Queue, Quellenabgleich, Export …) laufen unverändert im alten Stil, erreichbar über „Mehr“.
+- Die Partner-Oberfläche (Semia) ist nicht Teil des neuen Designs und unverändert.
+- Der alte Weg bleibt unverändert; Fehlerkorrekturen dort bitte in `trainer-neu.html` nachziehen.
+
+## Offene Fragen
+1. **Tagesziel:** Standard 100 Antworten. Dein Schnitt liegt bei etwa 165. Passt 100, oder lieber 150 als Standard?
+2. **Serie:** Gezählt wird jeder Tag mit mindestens einer Antwort (Berliner Tag). Die Anzeige hört bei „48+ Tage“ auf zu zählen (8 × 1.000 Zeilen). Reicht das?
+3. **12-Wochen-Raster:** Soll dafür eine schreibgeschützte Tageszählung in der Datenbank angelegt werden (neue View, ändert nur das Schema)?
+4. **Höraufgabe:** Bewusst ohne Fortschrittswertung. Soll sie später Vokabel-Stufen beeinflussen?
+5. **Wischgesten** bei Kurs-Karten (rechts = richtig, links = falsch): gewünscht?
+6. **Partner-Ansicht** für Semia im neuen Design: gewünscht?
+7. **Umstellung:** Wenn du ganz wechseln willst, wird `trainer-neu.html` zu `trainer.html` (die alte Datei bleibt als `trainer-alt.html`) und `index.html` zeigt auf die neue.
