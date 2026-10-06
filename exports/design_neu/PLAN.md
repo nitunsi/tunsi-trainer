@@ -34,11 +34,14 @@ Die Dateien: `trainer-neu.html` (Kopie des alten Stands, mit zwei Einbindungen),
 - Serie exakt, ohne Obergrenze (Tage mit mindestens einer Antwort, Berliner Tag); wird auf dem Gerät gemerkt und nur bei Lücken neu gezählt (Gegenprobe: 97 Tage)
 - Vibration (Android), standardmäßig aus
 
+- Admin-Seiten im neuen Stil: Aktivierung als Karten mit fester Leiste (Erste N auswählen, Jetzt fällig setzen), alle übrigen Admin-Seiten (Prüfungen, Partner-Queue, Partner-Check, Quellenabgleich, Umschrift-Regeln, Export, Vokabel hinzufügen, Lektionen) mit größeren Bedienelementen (Mindesthöhe, 16 px) und gleicher Optik
+- Tastatur im Lernen: sobald das Eingabefeld Fokus hat, wird die Seite kompakt (keine Kopfzeile, kleinere Karte, kompakte Leiste) und das Feld in den sichtbaren Bereich gerollt; geprüft bei 330 px sichtbarer Höhe (Vokabel- und Kurs-Karten, Schrift Mittel und Groß)
+
 ## Nicht gebaut / Entscheidungen
 - Wischgesten für selbstbewertete Karten: nicht gebaut (Knöpfe bleiben).
 - 12-Wochen-Aktivitätsraster: nicht gebaut. Dafür bräuchte es eine Tageszählung in der Datenbank (View/RPC), sonst müssten ~14.000 Zeilen geladen werden. Ohne Rückfrage kein Schema ändern.
 - Level-Verteilung (8 Zeilen) und die Statistik-Seite bleiben inhaltlich wie im alten Weg, nur anders gefärbt.
-- Admin-Seiten (Aktivierung, Prüfungen, Partner-Queue, Quellenabgleich, Export …) laufen unverändert im alten Stil, erreichbar über „Mehr“.
+- Die Admin-Seiten haben das neue Gerüst (Navigation, Schrift, Bedienelemente); ihr Inhalt und ihre Funktionen sind unverändert.
 - Die Partner-Oberfläche (Semia) ist nicht Teil des neuen Designs und unverändert.
 - Der alte Weg bleibt unverändert; Fehlerkorrekturen dort bitte in `trainer-neu.html` nachziehen.
 

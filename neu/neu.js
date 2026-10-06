@@ -42,6 +42,7 @@ function applyFont(){ document.documentElement.style.fontSize = (FONT[LS.get('ne
 applyFont();
 const SESSION = ['flash','coursesrs','mix','pairs','listen'];
 const HASPROG = ['flash','coursesrs','mix','listen'];
+const ADMIN = ['addvocab','activate','dupes','partnerqueue','partnercheck','quellen','translitregeln','export','lessons'];
 
 /* ---------- Rahmen: untere Leiste, Schließen, Fortschritt ---------- */
 function buildChrome(){
@@ -67,6 +68,7 @@ function chrome(mode){
   document.body.classList.toggle('neu-hasprog', HASPROG.includes(mode));
   document.body.classList.toggle('neu-tabs', appVisible && !sess);
   document.body.classList.toggle('neu-nohdr', mode==='home' || mode==='more');
+  document.body.classList.toggle('neu-admin', ADMIN.includes(mode));
   const t = TABOF(mode);
   document.querySelectorAll('#tabbar button').forEach(b => b.classList.toggle('a', b.dataset.m === t));
 }
@@ -511,6 +513,91 @@ window.neuListenState = () => LQ;
 window.neuListenNext = function(){ if(!LQ) return; LQ.i++; if(LQ.i >= LQ.deck.length){ showRes(); } else renderListen(); };
 const _restart = window.restartExercise;
 window.restartExercise = function(){ if(cMode === 'listen'){ closeResult(); startListen(); return; } return _restart.apply(this, arguments); };
+
+
+/* ---------- Tastatur: im Lernen immer Platz fürs Eingabefeld ----------
+   Zusätzlich zur Logik der Hauptdatei (Leisten über die Tastatur schieben): sobald ein Eingabefeld
+   Fokus hat, wird die Seite kompakt (kleinere Karte, keine Kopfzeile) und das Feld in den sichtbaren
+   Bereich gerollt. Auch auf Handys mit kleinem Bildschirm bleibt so Karte + Feld + Prüfen-Leiste sichtbar. */
+(function(){
+  let t = null;
+  const isField = el => el && (el.id === 'flash-input' || el.id === 'course-input');
+  function ensureVisible(){
+    const el = document.activeElement;
+    if(!isField(el)) return;
+    const vv = window.visualViewport;
+    const vh = vv ? vv.height : window.innerHeight;
+    const bar = $('sticky-check');
+    const barH = bar && getComputedStyle(bar).display !== 'none' ? bar.getBoundingClientRect().height : 0;
+    const r = el.getBoundingClientRect();
+    const limit = vh - barH - 8;
+    if(r.bottom > limit) window.scrollBy({top: r.bottom - limit + 4, behavior: 'instant'});
+    else if(r.top < 4) window.scrollBy({top: r.top - 8, behavior: 'instant'});
+  }
+  document.addEventListener('focusin', e => {
+    if(!isField(e.target)) return;
+    clearTimeout(t);
+    document.body.classList.add('neu-kb');
+    setTimeout(ensureVisible, 60); setTimeout(ensureVisible, 350); setTimeout(ensureVisible, 800);
+  });
+  document.addEventListener('focusout', e => {
+    if(!isField(e.target)) return;
+    clearTimeout(t);
+    t = setTimeout(() => { if(!isField(document.activeElement)) document.body.classList.remove('neu-kb'); }, 250);
+  });
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', () => { if(document.body.classList.contains('neu-kb')) setTimeout(ensureVisible, 50); });
+  }
+  // Neue Karte rendern: Fokus bleibt im neuen Feld, Platz sofort prüfen
+  const _r2 = window.render;
+  window.render = function(){ _r2.apply(this, arguments); if(document.body.classList.contains('neu-kb')) setTimeout(ensureVisible, 120); };
+})();
+
+
+/* ---------- Aktivierung (Admin) im neuen Stil: Karten statt Tabelle ---------- */
+window._buildActivateHTML = function(){
+  return '<div class="neu-wrap">'
+    + '<div class="neu-card" style="display:flex;justify-content:space-between;gap:.8rem"><div><div class="neu-sub">Nicht aktiv</div><div id="act-stat-total" style="font-size:1.6rem;font-weight:700;color:var(--gold2)">–</div></div>'
+    + '<div><div class="neu-sub">Ausgewählt</div><div id="act-stat-sel" style="font-size:1.6rem;font-weight:700">0</div></div>'
+    + '<div><div class="neu-sub">Aktiviert</div><div id="act-stat-done" style="font-size:1.6rem;font-weight:700;color:var(--green)">0</div></div></div>'
+    + '<div class="neu-chips">'
+    + [['all','Alle'],['1','Prio 1'],['2','Prio 2'],['3','Prio 3'],['0','Ohne Prio']].map(([k,l]) => '<button class="act-pchip neu-chip'+(k==='all'?' active on':'')+'" data-prio="'+k+'">'+l+'</button>').join('')
+    + '</div>'
+    + '<details class="neu-filter"><summary>Sortierung und Themen</summary>'
+    + '<label class="sh-l" style="margin-top:0">Sortieren nach</label><select id="act-sort" class="sh-in"><option value="prio">Priorität</option><option value="topic">Thema</option><option value="lesson">Lektion</option><option value="alpha">A–Z</option></select>'
+    + '<div id="act-topic-bar" style="display:flex;gap:.4rem;flex-wrap:wrap;margin:.7rem 0 .6rem"></div></details>'
+    + '<label style="display:flex;align-items:center;gap:.6rem;margin:.2rem 0 .6rem;color:var(--muted);font-size:.95rem"><input type="checkbox" id="act-check-all" style="width:22px;height:22px"> Alle sichtbaren auswählen</label>'
+    + '<div id="act-progress-bar" style="height:3px;background:var(--border);border-radius:2px;display:none;margin-bottom:.6rem"><div id="act-progress-fill" style="height:3px;background:var(--gold);width:0%;transition:width .3s;border-radius:2px"></div></div>'
+    + '<div id="act-table" class="neu-vlist"><div id="act-tbody"></div></div>'
+    + '<div id="act-empty" style="display:none;text-align:center;color:var(--muted);padding:2rem">Nichts zu aktivieren</div>'
+    + '<div style="height:9rem"></div>'
+    + '<div id="act-batch-bar" class="neu-batch">'
+    +   '<div id="act-btn-info" class="neu-sub" style="width:100%;min-height:1.2rem"></div>'
+    +   '<input id="act-batch-n" type="number" value="10" min="1" max="100" inputmode="numeric">'
+    +   '<button id="act-btn-topn" class="neu-btn line" style="flex:1;width:auto;min-height:48px;padding:0 1rem">Erste N auswählen</button>'
+    +   '<button id="act-btn-clear" class="neu-btn ghost" style="width:auto;min-height:48px;padding:0 1rem" aria-label="Auswahl leeren">✕</button>'
+    +   '<button id="act-btn-go" class="neu-btn" disabled style="flex:1 1 100%;min-height:50px">Jetzt fällig setzen</button>'
+    + '</div></div>';
+};
+window._actRender = function(){
+  const body = $('act-tbody'); if(!body) return;
+  const PRIO_ICON = {1:'🔴', 2:'🟠', 3:'🔵', 0:'⚪'};
+  body.innerHTML = _actFiltered.map(v => {
+    const pr = actGetPrio(v), sel = _actSelected.has(v.id);
+    return '<label class="neu-vrow" style="'+(sel?'background:rgba(201,168,76,.08)':'')+'"><input type="checkbox" data-id="'+v.id+'"'+(sel?' checked':'')+' style="display:block;accent-color:var(--gold)">'
+      + '<div class="ar">'+(v.ar||'')+'</div><div class="mid"><div class="t1">'+escHtml(v.en||'')+'</div><div class="t2 neu-mono">'+escHtml(v.tr||'')+'</div><div class="t2">'+v.ls+' · '+PRIO_ICON[pr.prio]+' '+escHtml(pr.label)+'</div></div></label>';
+  }).join('');
+  body.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', () => {
+    const id = parseInt(cb.dataset.id);
+    if(cb.checked) _actSelected.add(id); else _actSelected.delete(id);
+    cb.closest('label').style.background = cb.checked ? 'rgba(201,168,76,.08)' : '';
+    _actUpdateStats();
+  }));
+  const empty = $('act-empty'), tbl = $('act-table');
+  if(_actFiltered.length === 0){ if(empty) empty.style.display = 'block'; if(tbl) tbl.style.display = 'none'; }
+  else { if(empty) empty.style.display = 'none'; if(tbl) tbl.style.display = 'block'; }
+  _actUpdateStats();
+};
 
 /* ---------- Erster Einstieg: nach dem Laden auf die Startseite ---------- */
 let landed = false;
