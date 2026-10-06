@@ -104,24 +104,50 @@ body.neu-nohdr .exercise-header,body.neu-nohdr .progress-bar{display:none!import
 #result-screen .neu-res .rows div:last-child{border-bottom:none}
 
 /* --- Vokabelliste als Karten --- */
-.neu-vrow{display:flex;align-items:center;gap:.7rem;padding:.7rem .8rem;border-bottom:1px solid var(--border);background:var(--surface)}
+.neu-vrow{display:flex;align-items:center;gap:.7rem;padding:.75rem .8rem;border-bottom:1px solid var(--border);background:var(--surface);cursor:pointer}
+.neu-vrow:active{background:var(--surface2)}
 .neu-vrow:last-child{border-bottom:none}
-.neu-vrow .ar{font-family:"Noto Naskh Arabic","Amiri","Playfair Display",serif;font-size:1.45rem;color:var(--gold2);min-width:4.2rem;max-width:6rem;text-align:right;direction:rtl;line-height:1.3}
+.neu-vrow .ar{font-family:"Noto Naskh Arabic","Amiri","Playfair Display",serif;font-size:1.5rem;color:var(--gold2);min-width:4.2rem;max-width:5.6rem;text-align:right;direction:rtl;line-height:1.35}
 .neu-vrow .mid{flex:1;min-width:0}
-.neu-vrow .t1{font-size:1rem}
-.neu-vrow .t2{font-size:.85rem;color:var(--muted);margin-top:2px}
-.neu-vrow .rt{text-align:right;flex:none}
+.neu-vrow .t1{font-size:1.02rem;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.neu-vrow .t2{font-size:.84rem;color:var(--muted);margin-top:2px}
+.neu-vrow .rt{text-align:right;flex:none;min-width:4.6rem}
 .neu-vrow .lv{font-size:.85rem;white-space:nowrap}
 .neu-vrow .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
-.neu-vrow input[type=checkbox]{width:20px;height:20px;flex:none}
-.neu-vrow .ib{background:none;border:1px solid var(--border);color:var(--muted);border-radius:10px;min-width:36px;min-height:36px;font-size:.9rem;cursor:pointer;padding:0}
+.neu-vrow input[type=checkbox]{display:none;width:22px;height:22px;flex:none}
+#vocab-table.neu-sel .neu-vrow input[type=checkbox]{display:block}
+.neu-vrow .ib{background:none;border:1px solid var(--border);color:var(--muted);border-radius:10px;min-width:38px;min-height:38px;font-size:.9rem;cursor:pointer;padding:0}
 .neu-vlist{border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.neu-chips{display:flex;gap:.5rem;overflow-x:auto;padding:0 0 .6rem;margin:0 -.2rem;-webkit-overflow-scrolling:touch}
+.neu-chips .neu-chip{flex:none}
 details.neu-filter{margin-bottom:.7rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.1rem .8rem}
 details.neu-filter summary{min-height:46px;display:flex;align-items:center;cursor:pointer;color:var(--gold2);font-size:.95rem;list-style:none}
 details.neu-filter summary::-webkit-details-marker{display:none}
 details.neu-filter[open] summary{border-bottom:1px solid var(--border);margin-bottom:.6rem}
 #vocab-search{border-radius:12px!important;min-height:50px;font-size:1rem!important}
+div:has(> #vocab-search){position:sticky;top:52px;z-index:20;background:var(--bg);padding:.4rem 0 .5rem;margin-bottom:0!important}
 
+/* --- Vokabel bearbeiten (Bottom-Sheet) --- */
+.neu-sheet{position:fixed;left:0;right:0;bottom:0;z-index:200;background:var(--surface);border-top:2px solid var(--gold);border-radius:18px 18px 0 0;max-height:92vh;max-height:92dvh;display:flex;flex-direction:column;box-shadow:0 -8px 28px rgba(0,0,0,.65)}
+.neu-sheet .sh-head{padding:.5rem 1rem .6rem;border-bottom:1px solid var(--border);flex:none}
+.sh-grip{width:42px;height:4px;border-radius:2px;background:var(--border);margin:0 auto .5rem}
+.sh-title{font-size:1.1rem;font-weight:700}
+.sh-sum{font-size:.85rem;color:var(--muted);margin-top:2px}
+.sh-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:.3rem 1rem;flex:1}
+.sh-sec{font-size:.82rem;color:var(--gold);font-weight:700;margin:1.2rem 0 .1rem}
+.sh-l{display:block;font-size:.85rem;color:var(--muted);margin:.7rem 0 .25rem}
+.sh-in{width:100%;min-height:50px;padding:.6rem .8rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:12px;font-size:16px}
+textarea.sh-in{min-height:76px;resize:none}
+.sh-in.ar{font-family:"Noto Naskh Arabic","Amiri","Playfair Display",serif!important;direction:rtl;font-size:1.7rem;color:var(--gold2);min-height:62px}
+.sh-ib{min-width:50px;min-height:50px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:1.1rem;cursor:pointer;flex:none}
+.sh-ib.red{color:var(--red);border-color:rgba(201,76,76,.6)}
+.sh-line{width:100%;min-height:48px;margin-top:.7rem;border-radius:12px;border:1px solid var(--gold-d);background:transparent;color:var(--gold2);font-size:.95rem;cursor:pointer}
+.sh-line.red{border-color:rgba(201,76,76,.6);color:var(--red)}
+.sh-step{display:flex;gap:.5rem;align-items:center}
+.sh-step button{width:56px;min-height:50px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:1.4rem;cursor:pointer}
+.sh-step input{flex:1;min-width:0;min-height:50px;text-align:center;font-size:1.3rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:12px}
+.sh-foot{flex:none;display:flex;gap:.6rem;padding:.7rem 1rem calc(.7rem + env(safe-area-inset-bottom,0px));border-top:1px solid var(--border);background:var(--surface)}
+.sh-save{flex:1;min-height:52px;border:none;border-radius:12px;background:var(--gold);color:#17120a;font-size:1.05rem;font-weight:700;cursor:pointer}
 /* --- Kurs-Lernpfad --- */
 .neu-node{padding:.9rem .2rem;border-bottom:1px solid var(--border);cursor:pointer}
 .neu-node:last-child{border-bottom:none}

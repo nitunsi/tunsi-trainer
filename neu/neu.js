@@ -376,16 +376,54 @@ window.renderCourseOverview = function(){
 };
 
 /* ---------- Vokabelliste als Karten ---------- */
+const NEUF = {due:false, neu:false, audio:false, flag:false, select:false};
+window.neuChipsHtml = function(){
+  const c = (k, l) => '<span class="neu-chip'+(NEUF[k]?' on':'')+'" data-k="'+k+'" onclick="neuVChip(\''+k+'\')">'+l+'</span>';
+  return '<div class="neu-chips" id="neu-vchips">'+c('due','Fällig')+c('neu','Ohne Fälligkeit')+c('audio','Mit Audio')+c('flag','Markiert')+'</div>';
+};
+window.neuVChip = function(k){
+  NEUF[k] = !NEUF[k];
+  document.querySelectorAll('#neu-vchips .neu-chip').forEach(e => e.classList.toggle('on', !!NEUF[e.dataset.k]));
+  filterVocabList();
+};
+window.neuToggleSelect = function(){
+  NEUF.select = !NEUF.select;
+  if(!NEUF.select){ try{ selectedVocabIds.clear(); updateBulkBar(); }catch(e){} }
+  renderVocabTableRows();
+};
+window.neuRowTap = function(ev, id, i){
+  if(NEUF.select){
+    if(ev.target.closest('button')) return;
+    const cb = ev.currentTarget.querySelector('input[type=checkbox]');
+    if(cb && ev.target !== cb){ cb.checked = !cb.checked; toggleVocabSelect(cb); }
+    return;
+  }
+  if(ev.target.closest('button,input')) return;
+  openVocabEdit(id, i);
+};
+function applyChips(vocab){
+  if(NEUF.due) vocab = vocab.filter(v => srsIsDue(v));
+  if(NEUF.neu) vocab = vocab.filter(v => { const p = srsProgress[v.id]; return !(p && p.next_review); });
+  if(NEUF.audio) vocab = vocab.filter(v => !!v.au);
+  if(NEUF.flag) vocab = vocab.filter(v => flaggedVocab.has(v.tr));
+  return vocab;
+}
+const _rvt = window.renderVocabTable;
+window.renderVocabTable = function(vocab){ return _rvt.call(this, applyChips(vocab)); };
+const _svl = window.showVocabList;
+window.showVocabList = function(){ NEUF.due = NEUF.neu = NEUF.audio = NEUF.flag = NEUF.select = false; return _svl.apply(this, arguments); };
+
 window.renderVocabTableRows = function(){
   const vocabFull = vocabFilteredFull;
   const el = $('vocab-table'); if(!el) return;
-  if(!vocabFull.length){ el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem">Keine Vokabeln gefunden</div>'; vocabTableRenderedIds = []; return; }
+  el.classList.toggle('neu-sel', NEUF.select);
+  const top = '<div style="display:flex;justify-content:space-between;align-items:center;margin:.1rem 0 .6rem;min-height:40px;font-size:.9rem;color:var(--muted)">'
+    + (NEUF.select ? '<label style="display:flex;align-items:center;gap:.5rem;cursor:pointer"><input type="checkbox" id="vl-check-all" onchange="toggleSelectAll(this)" style="width:20px;height:20px"> Alle</label>' : '<span>'+fmtN(vocabFull.length)+(vocabFull.length === 1 ? ' Vokabel' : ' Vokabeln')+'</span>')
+    + '<span class="neu-chip'+(NEUF.select?' on':'')+'" onclick="neuToggleSelect()">'+(NEUF.select?'Fertig':'Auswählen')+'</span></div>';
+  if(!vocabFull.length){ el.innerHTML = top + '<div style="text-align:center;color:var(--muted);padding:2rem">Keine Vokabeln gefunden</div>'; vocabTableRenderedIds = []; return; }
   const vocab = vocabFull.slice(0, vocabVisibleCount);
   vocabTableRenderedIds = vocab.map(v => v.id);
-  const countLabel = vocab.length < vocabFull.length ? 'Zeige '+fmtN(vocab.length)+' von '+fmtN(vocabFull.length)+' Vokabeln' : fmtN(vocabFull.length)+' Vokabeln';
-  let h = '<div style="display:flex;justify-content:space-between;align-items:center;margin:.2rem 0 .6rem;font-size:.9rem;color:var(--muted)">'
-    + '<label style="display:flex;align-items:center;gap:.5rem;cursor:pointer"><input type="checkbox" id="vl-check-all" onchange="toggleSelectAll(this)" style="width:20px;height:20px"> Alle</label><span>'+countLabel+'</span></div>';
-  h += '<div class="neu-vlist">';
+  let h = top + '<div class="neu-vlist">';
   vocab.forEach((v,i) => {
     const p = v.id ? srsProgress[v.id] : null;
     const level = p ? (p.level||0) : 0;
@@ -394,15 +432,14 @@ window.renderVocabTableRows = function(){
     const due = started ? fmtDue(p.next_review) : '';
     const isDueNow = started && srsIsDue(v);
     const flag = flaggedVocab.has(v.tr) ? ' 🚩' : '';
-    const conj = v.cj || v.cr ? ' <button onclick="showConjModal('+v.id+')" title="Konjugationstabelle" style="background:none;border:none;color:inherit;cursor:pointer;padding:0 .2rem;font-size:1em">🔠</button>' : '';
+    const conj = v.cj || v.cr ? ' <button onclick="event.stopPropagation();showConjModal('+v.id+')" title="Konjugationstabelle" style="background:none;border:none;color:inherit;cursor:pointer;padding:0 .2rem;font-size:1em">🔠</button>' : '';
     const ps = v.ps;
     const psIcon = ps==='approved'?'✅' : ps==='rejected'?'❌' : ps==='unknown'?'❓' : ps==='pending'?'⏳' : ps==='skipped'?'⏭' : ps==='suggested'?'💡' : '';
-    const audio = v.au ? '<button class="ib" onclick="playVocabAudio(\''+v.au.replace(/'/g,"\\'")+'\',event,'+(v.aus||0)+','+(v.aue||0)+')" title="Aussprache">🔊</button>' : '';
-    h += '<div class="neu-vrow"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)"'+(selectedVocabIds.has(v.id)?' checked':'')+'/>'
+    const audio = v.au ? '<button class="ib" onclick="event.stopPropagation();playVocabAudio(\''+v.au.replace(/'/g,"\\'")+'\',event,'+(v.aus||0)+','+(v.aue||0)+')" title="Aussprache" aria-label="Aussprache">🔊</button>' : '';
+    h += '<div class="neu-vrow" onclick="neuRowTap(event,'+(v.id||0)+','+i+')"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)"'+(selectedVocabIds.has(v.id)?' checked':'')+'/>'
       + '<div class="ar">'+v.ar+'</div>'
-      + '<div class="mid"><div class="t1 neu-mono" style="font-size:.95rem">'+escHtml(v.tr)+conj+'</div><div class="t2">'+escHtml(v.en)+' · '+v.ls+flag+(psIcon?' '+psIcon:'')+'</div></div>'
-      + '<div class="rt"><div class="lv"><span class="dot" style="background:'+col+'"></span>'+(started?'L'+level:'Neu')+'</div><div class="t2" style="'+(isDueNow?'color:var(--red)':'')+'">'+(started?due:'ohne Fälligkeit')+'</div>'
-      + '<div style="display:flex;gap:.3rem;justify-content:flex-end;margin-top:.3rem">'+audio+'<button class="ib" onclick="openVocabEdit('+(v.id||'')+','+i+')" title="Bearbeiten">✏️</button></div></div></div>';
+      + '<div class="mid"><div class="t1">'+escHtml(v.en)+'</div><div class="t2 neu-mono">'+escHtml(v.tr)+conj+'</div><div class="t2">'+v.ls+flag+(psIcon?' · '+psIcon:'')+'</div></div>'
+      + '<div class="rt"><div class="lv"><span class="dot" style="background:'+col+'"></span>'+(started?'Stufe '+level:'Neu')+'</div><div class="t2" style="'+(isDueNow?'color:var(--red)':'')+'">'+(started?due:'—')+'</div>'+(audio?'<div style="margin-top:.3rem">'+audio+'</div>':'')+'</div></div>';
   });
   h += '</div>';
   if(vocab.length < vocabFull.length){
@@ -412,6 +449,21 @@ window.renderVocabTableRows = function(){
   updateBulkBar();
 };
 
+/* ---------- Vokabel bearbeiten: Zusammenfassung, Audio, Schnellknöpfe ---------- */
+const _ove = window.openVocabEdit;
+window.openVocabEdit = function(id, i){ _ove.apply(this, arguments); setTimeout(() => fillSheet(id), 40); };
+function fillSheet(id){
+  const v = vById(id); if(!v) return;
+  const p = srsProgress[id];
+  const parts = [v.ls];
+  if(p && p.next_review) parts.push('Stufe '+(p.level||0), fmtDue(p.next_review), (p.review_count||0)+'× geübt');
+  else parts.push('noch nicht gestartet');
+  const sum = $('ei-summary'); if(sum) sum.textContent = parts.join(' · ');
+  const au = $('ei-audio'); if(au) au.style.display = v.au ? '' : 'none';
+}
+window.neuEditAudio = function(){ const v = vById(_editSheetVocabId); if(v && v.au) playVocabAudio(v.au, null, v.aus||0, v.aue||0); };
+window.neuDueNow = function(){ const e = $('ei-nr'); if(e) e.value = toLocalInputDE(new Date()); };
+window.neuLvl = function(d){ const e = $('ei-lvl'); if(e) e.value = Math.max(0, Math.min(6, (parseInt(e.value,10)||0) + d)); };
 
 /* ---------- Höraufgabe: Audio hören, Bedeutung wählen (ohne Fortschrittswertung) ---------- */
 let LQ = null;

@@ -27,7 +27,8 @@ Die Dateien: `trainer-neu.html` (Kopie des alten Stands, mit zwei Einbindungen),
 - Abschluss nach einem 10er-Block: Ring, Richtig/Falsch/Gesamt, „Noch einen Block“ / „Fertig für heute“
 - Leerer Zustand („Alles erledigt“) mit den drei Wegen: 10 Vokabeln fällig setzen, nächster Kurs-Abschnitt, Vorziehen
 - Kurs als Lernpfad (Ring pro Lektion, „Weiter mit“, vier Werte pro Lektion, Sprung zu den Vokabeln)
-- Vokabelliste als Karten, Filter eingeklappt
+- Vokabelliste als Karten: Suche bleibt oben stehen, Schnellfilter (Fällig, Ohne Fälligkeit, Mit Audio, Markiert), weitere Filter eingeklappt, Tippen auf eine Zeile öffnet das Bearbeiten, „Auswählen“ blendet erst die Häkchen für Sammelaktionen ein
+- Vokabel bearbeiten als Bottom-Sheet: Abschnitte (Wort, Einordnung, Lernstand, Partner und Notizen), Beschriftungen, große Felder, Speichern/Flagge/Löschen fest unten, „Jetzt fällig“, Stufe per Plus/Minus, Zusammenfassung und Audio oben
 - Statistik: Level in einer Farbe (Goldrampe), Aktivität in Gold statt Rot/Grün
 - Höraufgabe als eigener Modus (Audio hören, Bedeutung wählen, ohne Fortschrittswertung) und als dritte Richtung im normalen Lernen („Audio → Deutsch“, zählt wie jede Karte): nur bei „Ton an“ (Lautsprecher-Schalter in der Lernleiste) und eingeschalteter Einstellung „Höraufgaben beim Lernen“ (Mehr). Wird der Ton mitten im Lernen ausgeschaltet, werden die restlichen Hörkarten zu normalen Karten.
 - Serie exakt, ohne Obergrenze (Tage mit mindestens einer Antwort, Berliner Tag); wird auf dem Gerät gemerkt und nur bei Lücken neu gezählt (Gegenprobe: 97 Tage)

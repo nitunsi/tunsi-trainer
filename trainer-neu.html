@@ -3819,6 +3819,7 @@ function showVocabList(){
                color:var(--text);font-size:1rem;font-family:'IBM Plex Mono',monospace;border-radius:6px;"
         oninput="filterVocabList()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
     </div>
+    ${neuChipsHtml()}
     <details class="neu-filter"><summary>Filter und Sortierung</summary>
     <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem;align-items:center">
       <button id="flag-filter-btn" onclick="toggleFlagFilter()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:.3rem .7rem;border-radius:4px;cursor:pointer;font-size:.8rem">🏳️ Alle</button>
@@ -8747,49 +8748,66 @@ window.addEventListener('unhandledrejection', (e) => {
 </div>
 
 <!-- Vocab Edit Bottom Sheet -->
-<div id="vocab-edit-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--surface2);border-top:2px solid var(--gold);padding:1rem;box-shadow:0 -4px 14px rgba(0,0,0,.5);will-change:transform;transform:translateZ(0);max-height:85vh;max-height:85dvh;overflow-y:auto;-webkit-overflow-scrolling:touch">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem">
-    <span style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold)">Vokabel bearbeiten</span>
-    <button onclick="closeVocabEdit()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:.2rem .5rem">✕</button>
+<div id="vocab-edit-sheet" class="neu-sheet" style="display:none">
+  <div class="sh-head">
+    <div class="sh-grip"></div>
+    <div style="display:flex;align-items:center;gap:.6rem">
+      <div style="flex:1;min-width:0"><div class="sh-title">Vokabel bearbeiten</div><div id="ei-summary" class="sh-sum"></div></div>
+      <button id="ei-audio" class="sh-ib" style="display:none" onclick="neuEditAudio()" aria-label="Aussprache">🔊</button>
+      <button class="sh-ib" onclick="closeVocabEdit()" aria-label="Schließen">✕</button>
+    </div>
   </div>
-  <div style="display:grid;gap:.4rem">
-    <input id="ei-ar" placeholder="Arabisch" style="font-family:'Playfair Display',serif;direction:rtl;font-size:1rem;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--gold2);border-radius:4px" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-    <div style="display:flex;gap:.4rem">
-      <input id="ei-tr" placeholder="Transliteration" style="flex:1;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.9rem" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-      <button onclick="suggestTransliterationFromArabic()" title="Transliteration aus Arabisch vorschlagen" style="background:none;border:1px solid var(--border);color:var(--gold2);padding:.5rem .6rem;cursor:pointer;border-radius:4px;font-size:.9rem;white-space:nowrap">✨</button>
+  <div class="sh-body">
+    <div class="sh-sec">Wort</div>
+    <label class="sh-l">Arabisch</label>
+    <input id="ei-ar" class="sh-in ar" placeholder="Arabisch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <label class="sh-l">Umschrift</label>
+    <div style="display:flex;gap:.5rem">
+      <input id="ei-tr" class="sh-in" placeholder="Transliteration" style="flex:1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button class="sh-ib" onclick="suggestTransliterationFromArabic()" title="Umschrift aus Arabisch vorschlagen" aria-label="Umschrift vorschlagen">✨</button>
     </div>
-    <input id="ei-en" placeholder="Deutsch" style="padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.9rem" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-    <button onclick="showSourceCheck()" style="background:none;border:1px solid var(--border);color:var(--gold2);padding:.5rem;cursor:pointer;border-radius:4px;font-size:.78rem">🔍 Quellenabgleich (Ninja/TUNICO/Peace Corps)</button>
-    <div id="vs-results" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden"></div>
-    <div style="display:flex;gap:.4rem">
-      <input id="ei-tp" placeholder="Topic" style="flex:1;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.85rem" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-      <select id="ei-ls" style="width:7rem;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.85rem"></select>
+    <label class="sh-l">Deutsch</label>
+    <input id="ei-en" class="sh-in" placeholder="Deutsch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <button class="sh-line" onclick="showSourceCheck()">🔍 Quellenabgleich (Ninja, TUNICO, Peace Corps)</button>
+    <div id="vs-results" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:.5rem"></div>
+
+    <div class="sh-sec">Einordnung</div>
+    <div style="display:flex;gap:.6rem">
+      <div style="flex:1;min-width:0"><label class="sh-l">Lektion</label><select id="ei-ls" class="sh-in"></select></div>
+      <div style="flex:1;min-width:0"><label class="sh-l">Thema</label><input id="ei-tp" class="sh-in" placeholder="Thema" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>
     </div>
-    <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap">
-      <input id="ei-nr" type="datetime-local" style="flex:1;min-width:160px;padding:.4rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.8rem">
-      <button onclick="clearDueDateSheet()" style="background:none;border:1px solid var(--red);color:var(--red);padding:.4rem .6rem;cursor:pointer;border-radius:4px;font-size:.8rem;white-space:nowrap">✕ Fälligkeit</button>
-      <label style="color:var(--muted);font-size:.75rem;white-space:nowrap">Level:</label>
-      <input id="ei-lvl" type="number" min="0" max="5" value="0" style="width:3.5rem;padding:.4rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.85rem">
+
+    <div class="sh-sec">Lernstand</div>
+    <label class="sh-l">Fällig am</label>
+    <input id="ei-nr" class="sh-in" type="datetime-local">
+    <div style="display:flex;gap:.5rem;margin-top:.5rem">
+      <button class="sh-line" style="flex:1" onclick="neuDueNow()">Jetzt fällig</button>
+      <button class="sh-line red" style="flex:1" onclick="clearDueDateSheet()">Fälligkeit löschen</button>
     </div>
-    <div style="display:flex;gap:.4rem;align-items:center">
-      <label style="font-size:.72rem;color:var(--muted);white-space:nowrap;text-transform:uppercase;letter-spacing:.05em">Partner:</label>
-      <select id="ei-ps" style="flex:1;padding:.4rem .5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.8rem;font-family:'IBM Plex Mono',monospace">
-        <option value="">— kein Status —</option>
-        <option value="pending">⏳ pending</option>
-        <option value="approved">✅ approved</option>
-        <option value="rejected">❌ rejected</option>
-        <option value="unknown">❓ unknown</option>
-        <option value="skipped">⏭ skipped</option>
-        <option value="suggested">💡 suggested</option>
-      </select>
-    </div>
-    <textarea id="ei-pc" placeholder="Partner-Kommentar…" rows="2" style="width:100%;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.82rem;font-family:'IBM Plex Mono',monospace;resize:none;outline:none"></textarea>
-    <textarea id="ei-nt" placeholder="Interner Kommentar (z.B. Quelle/Sicherheit: Ninja-bestätigt, arabisch selbst erstellt …)" rows="2" style="width:100%;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:4px;font-size:.78rem;font-family:'IBM Plex Mono',monospace;resize:none;outline:none"></textarea>
-    <div style="display:flex;gap:.4rem;flex-wrap:wrap">
-      <button onclick="saveVocabEditSheet()" style="flex:1;background:var(--gold);border:none;color:#0e0c0a;padding:.5rem;cursor:pointer;border-radius:4px;font-weight:700;font-size:.85rem">Speichern</button>
-      <button id="sheet-flag-btn" onclick="toggleFlagSheet()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:.5rem .8rem;cursor:pointer;border-radius:4px;font-size:.85rem">🏳️</button>
-      <button onclick="deleteVocabSheet()" style="background:none;border:1px solid var(--red);color:var(--red);padding:.5rem .8rem;cursor:pointer;border-radius:4px;font-size:.85rem">🗑</button>
-    </div>
+    <label class="sh-l">Stufe</label>
+    <div class="sh-step"><button onclick="neuLvl(-1)" aria-label="Stufe runter">−</button><input id="ei-lvl" type="number" min="0" max="6" value="0" inputmode="numeric"><button onclick="neuLvl(1)" aria-label="Stufe rauf">+</button></div>
+
+    <div class="sh-sec">Partner und Notizen</div>
+    <label class="sh-l">Partner-Status</label>
+    <select id="ei-ps" class="sh-in">
+      <option value="">— kein Status —</option>
+      <option value="pending">⏳ pending</option>
+      <option value="approved">✅ approved</option>
+      <option value="rejected">❌ rejected</option>
+      <option value="unknown">❓ unknown</option>
+      <option value="skipped">⏭ skipped</option>
+      <option value="suggested">💡 suggested</option>
+    </select>
+    <label class="sh-l">Partner-Kommentar</label>
+    <textarea id="ei-pc" class="sh-in" placeholder="Partner-Kommentar…" rows="2"></textarea>
+    <label class="sh-l">Interner Kommentar</label>
+    <textarea id="ei-nt" class="sh-in" placeholder="z. B. Quelle/Sicherheit: Ninja-bestätigt, arabisch selbst erstellt …" rows="2"></textarea>
+    <div style="height:5.5rem"></div>
+  </div>
+  <div class="sh-foot">
+    <button class="sh-save" onclick="saveVocabEditSheet()">Speichern</button>
+    <button id="sheet-flag-btn" class="sh-ib" onclick="toggleFlagSheet()" aria-label="Flagge">🏳️</button>
+    <button class="sh-ib red" onclick="deleteVocabSheet()" aria-label="Löschen">🗑</button>
   </div>
 </div>
 <div id="vocab-edit-overlay" onclick="closeVocabEdit()" style="display:none;position:fixed;inset:0;z-index:199;background:rgba(0,0,0,.4);will-change:opacity;transform:translateZ(0)"></div>
