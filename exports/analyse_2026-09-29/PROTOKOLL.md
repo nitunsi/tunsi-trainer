@@ -371,3 +371,4 @@ Geprüft:
 - **Neues Design (Startseite):** passt auf eine Seite; Motivationsmeldung, wenn heute geplant (erledigt + noch fällig) über dem 7/14/30/90-Tage-Schnitt liegt, es wird das höchste übertroffene Fenster gezeigt. Mit echten Daten getestet (Schnitte 7 T 175, 14 T 163, 30 T 154, 90 T 178).
 - **Neues Design (Vorziehen):** der Dialog zeigt zusätzlich, wie viele Einträge pro Stufe 4, 5 und 6 vorziehbar sind (Vokabeln und Kurs-Übungen zusammen).
 - **Neues Design (Vorziehen):** die Stufen-4/5/6-Kacheln im Dialog zählen nur Einträge, die morgen fällig sind (Auswahllogik des Vorziehens unverändert). Gegenprobe direkt aus den Daten stimmt (22 / 16 / 0).
+- **Neues Design (Kurs):** Knopf „Lernen“ mit „Weiter mit L1“ entfernt (er startete die fälligen Übungen aller Lektionen, nicht die genannte Lektion); stattdessen ist die aktuelle Lektion in der Liste markiert.

@@ -411,6 +411,16 @@ window.renderCourseOverview = function(){
   const allV = new Map(); COURSE_LESSONS.forEach(l => lessonVocab(l).forEach(v => allV.set(v.id, v)));
   const allItems = chunks.reduce((s,ch) => s.concat(ch.srsItems), []);
   let nextId = null, firstOpen = null;
+  COURSE_LESSONS.forEach(l => {
+    const items = chunks.filter(ch => ch.lessonId === l.id).reduce((s,ch) => s.concat(ch.srsItems), []);
+    const total = items.length;
+    const unlocked = items.filter(e => COURSE_EX_PROGRESS[e.id]).length;
+    const mastered = items.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
+    const st = total === 0 ? 'read' : mastered >= total ? 'done' : unlocked > 0 ? 'run' : 'lock';
+    if(st === 'run') nextId = l.id; // aktuell = höchste Lektion mit freigeschalteten, noch nicht gemeisterten Übungen
+    if(st !== 'done' && st !== 'read' && firstOpen === null) firstOpen = l.id;
+  });
+  const curId = nextId !== null ? nextId : firstOpen;
   const nodes = COURSE_LESSONS.map(l => {
     const lc = chunks.filter(ch => ch.lessonId === l.id);
     const items = lc.reduce((s,ch) => s.concat(ch.srsItems), []);
@@ -418,26 +428,22 @@ window.renderCourseOverview = function(){
     const unlocked = items.filter(e => COURSE_EX_PROGRESS[e.id]).length;
     const mastered = items.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
     const state = total === 0 ? 'read' : mastered >= total ? 'done' : unlocked > 0 ? 'run' : 'lock';
-    if(state === 'run' && nextId === null) nextId = l.id;
-    if(state !== 'done' && state !== 'read' && firstOpen === null) firstOpen = l.id;
     const frac = total ? mastered / total : 0;
     const col = state === 'done' ? 'var(--green)' : state === 'run' ? 'var(--gold)' : 'var(--border)';
     const txt = state === 'done' ? '✓' : state === 'read' ? '–' : Math.round(frac*100);
     const sub = state === 'read' ? 'nur Lesen' : state === 'done' ? 'abgeschlossen' : state === 'run' ? fmtN(mastered)+' von '+fmtN(total)+' Übungen gemeistert' : 'noch nicht freigeschaltet';
     const lv = lessonVocab(l);
     const stats = (lv.length ? line('Vokabeln', vocStat(lv)) : '') + (total ? line('Übungen', exStat(items)) : '');
-    return '<div class="neu-node'+(state==='lock'?' lock':'')+'" onclick="showCourseLesson('+l.id+')">'
+    return '<div class="neu-node'+(state==='lock'?' lock':'')+(l.id===curId?' cur':'')+'" onclick="showCourseLesson('+l.id+')">'
       + '<div class="top">'+ring(state==='lock'?0:frac, 54, 6, col, txt)
-      + '<div class="tx"><div class="t1">Lektion '+l.course_number+'</div><div class="t2">'+escHtml(cleanTitle(l.title))+'</div><div class="t3" style="color:'+(state==='run'?'var(--gold2)':'var(--muted)')+'">'+sub+'</div></div>'
+      + '<div class="tx"><div class="t1">Lektion '+l.course_number+(l.id===curId?' <span class="neu-chip on" style="min-height:22px;padding:0 .5rem;font-size:.72rem;vertical-align:middle">aktuell</span>':'')+'</div><div class="t2">'+escHtml(cleanTitle(l.title))+'</div><div class="t3" style="color:'+(state==='run'?'var(--gold2)':'var(--muted)')+'">'+sub+'</div></div>'
       + '<div style="color:var(--muted);font-size:1.3rem">›</div></div>'
       + (stats ? '<div class="st">'+stats+'</div>' : '')
       + (lv.length ? '<div style="margin-top:.6rem"><span class="neu-chip" onclick="event.stopPropagation();courseGoToVocab('+l.id+')">Vokabeln der Lektion</span></div>' : '')
       + '</div>';
   }).join('');
-  const target = COURSE_LESSONS.find(l => l.id === (nextId !== null ? nextId : firstOpen));
   c.innerHTML = '<div class="neu-wrap">'
     + '<div style="font-size:1.5rem;font-weight:700;margin:.2rem 0 .6rem">Kurs</div>'
-    + (target ? '<div class="neu-card" style="display:flex;align-items:center;gap:.8rem"><div style="flex:1;min-width:0"><div class="neu-sub">Weiter mit</div><div style="font-size:1.05rem;font-weight:700">L'+target.course_number+' · '+escHtml(cleanTitle(target.title))+'</div></div><button class="neu-btn blue" style="width:auto;min-height:46px;padding:0 1.2rem" onclick="setMode(\'coursesrs\')">Lernen</button></div>' : '')
     + '<div class="neu-card"><div class="neu-cap">Gesamt</div>'+line('Vokabeln', vocStat([...allV.values()]))+line('Übungen', exStat(allItems))+'</div>'
     + '<div class="neu-card" style="padding:.2rem .9rem">'+nodes+'</div>'
     + '</div>';
