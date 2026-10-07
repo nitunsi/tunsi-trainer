@@ -208,7 +208,7 @@ async function loadDayCounts(){
   const yest = new Date(now); yest.setDate(yest.getDate() - 1);
   const yKey = berlin(yest);
   let saved = null;
-  try{ saved = JSON.parse(LS.get('neu-days', 'null')); }catch(e){}
+  try{ saved = JSON.parse(LS.get('neu-days4', 'null')); }catch(e){}
   const counts = {};
   let sinceISO;
   if(saved && saved.c && saved.upTo){
@@ -218,9 +218,11 @@ async function loadDayCounts(){
   } else {
     sinceISO = new Date(now.getTime() - 91*86400000).toISOString();
   }
+  // Gezählt werden pro Berliner Tag nur RICHTIGE Antworten (Vokabeln und Kurs-Übungen zusammen). Mehrfach richtig
+  // am selben Tag ist selten, deshalb reicht die Anzahl; sie gilt für Tagesziel, heute geschafft und alle Schnitte.
   const fresh = {};
   for(let page = 0; page < 40; page++){
-    const r = await sbApi('review_log?user_id=eq.'+currentUser.id+'&select=created_at&created_at=gte.'+sinceISO+'&order=created_at.desc&limit=1000&offset='+(page*1000));
+    const r = await sbApi('review_log?user_id=eq.'+currentUser.id+'&select=created_at&correct=eq.true&created_at=gte.'+sinceISO+'&order=created_at.desc&limit=1000&offset='+(page*1000));
     (r || []).forEach(x => { const k = berlin(new Date(x.created_at)); fresh[k] = (fresh[k] || 0) + 1; });
     if(!r || r.length < 1000) break;
   }
@@ -231,7 +233,7 @@ async function loadDayCounts(){
   const keep = {};
   const limit = new Date(now.getTime() - 100*86400000);
   Object.keys(counts).forEach(k => { if(k <= yKey && new Date(k + 'T12:00:00Z') >= limit) keep[k] = counts[k]; });
-  LS.set('neu-days', JSON.stringify({upTo: yKey, c: keep}));
+  LS.set('neu-days4', JSON.stringify({upTo: yKey, c: keep}));
   // Durchschnitt über die letzten N Tage vor heute; nur wenn so viele Tage Verlauf da sind
   const keys = Object.keys(keep).sort();
   const first = keys.length ? new Date(keys[0] + 'T12:00:00Z') : null;
@@ -264,7 +266,7 @@ function goHome(){
     + lessonFilterChip()
     + '<div class="neu-card" style="display:flex;align-items:center;gap:.9rem;padding:.8rem 1rem">'
     +   '<div id="neu-ring">'+ring(0, 76, 8, 'var(--gold)', '…')+'</div>'
-    +   '<div style="flex:1;min-width:0"><div class="neu-sub">Tagesziel (Antworten)</div><div id="neu-goal-t" style="font-size:1.15rem;font-weight:700;margin:1px 0">… von '+goal+'</div><div id="neu-streak" class="neu-sub">&nbsp;</div></div>'
+    +   '<div style="flex:1;min-width:0"><div class="neu-sub">Tagesziel (richtige Antworten)</div><div id="neu-goal-t" style="font-size:1.15rem;font-weight:700;margin:1px 0">… von '+goal+'</div><div id="neu-streak" class="neu-sub">&nbsp;</div></div>'
     + '</div>'
     + '<div id="neu-motiv"></div>'
     + (empty
@@ -283,11 +285,11 @@ function goHome(){
     + '</div>'
     + '</div>';
   loadPartnerLine();
-  loadActivity().then(a => {
+  Promise.all([loadActivity(), loadDayCounts()]).then(([a, dc]) => {
     const r = $('neu-ring'); if(!r || cMode !== 'home') return;
-    const p = a.today / goal;
+    const p = dc.today / goal;
     r.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', Math.min(999, Math.round(p*100)) + ' %');
-    $('neu-goal-t').textContent = fmtN(a.today) + ' von ' + fmtN(goal);
+    $('neu-goal-t').textContent = fmtN(dc.today) + ' von ' + fmtN(goal);
     $('neu-streak').textContent = a.streak ? a.streak + ' Tag' + (a.streak===1?'':'e') + ' in Folge' : 'Noch keine Serie';
   }).catch(() => { const s = $('neu-streak'); if(s) s.textContent = ''; });
   // Motivation: zählt nur, was heute tatsächlich geschafft (beantwortet) ist — nicht, was noch geplant/fällig ist
@@ -301,8 +303,8 @@ function goHome(){
       const low = ws.reduce((b, n) => dc.avgs[n] < dc.avgs[b] ? n : b);
       const need = Math.floor(dc.avgs[low]) + 1 - dc.today;
       if(need > 0){
-        const title = need <= 10 ? 'Fast geschafft! Nur noch '+fmtN(need)+', dann bist du über deinem Schnitt 💪'
-          : need <= 40 ? 'Tagesziel geschafft — noch '+fmtN(need)+' und du bist über deinem Schnitt!'
+        const title = need <= 10 ? 'Fast geschafft! Nur noch '+fmtN(need)+' Vokabeln, dann bist du über deinem Schnitt 💪'
+          : need <= 40 ? 'Tagesziel geschafft — noch '+fmtN(need)+' Vokabeln und du bist über deinem Schnitt!'
           : 'Tagesziel geschafft! Bis über deinen Schnitt sind es noch '+fmtN(need)+'.';
         el.innerHTML = '<div class="neu-card" style="border-color:var(--gold-d);background:rgba(201,168,76,.08);padding:.7rem 1rem"><div style="font-weight:700;color:var(--gold2)">'+title+'</div></div>';
         return;
@@ -339,7 +341,7 @@ function showMore(){
     + '</div>'
     + '<div class="neu-h">Darstellung und Lernen</div><div class="neu-card">'
     +   '<div class="neu-cap">Schriftgröße</div>'+seg([['S','Klein'],['M','Mittel'],['L','Groß']], font, "neuSetFont('%v')")
-    +   '<div class="neu-cap" style="margin-top:1rem">Tagesziel (Antworten pro Tag)</div>'+seg([[50,'50'],[100,'100'],[150,'150'],[200,'200']], goal, "neuSetGoal(%v)")
+    +   '<div class="neu-cap" style="margin-top:1rem">Tagesziel (richtige Antworten pro Tag)</div>'+seg([[50,'50'],[100,'100'],[150,'150'],[200,'200']], goal, "neuSetGoal(%v)")
     +   '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Audio beim Aufdecken abspielen</span>'+sw(audioAutoplay, "toggleAudioAutoplay();showMore()")+'</div>'
     +   '<div class="li"><span class="sp">Vibration bei Richtig und Falsch</span>'+sw(vib, "neuToggleVib()")+'</div></div>'
     +   '<div class="neu-cap" style="margin-top:1rem">Lektion einschränken</div>'
@@ -854,21 +856,21 @@ function renderActivityCard(){
     if(!$('neu-act-body') || N !== activityWindow) return;
     // full = N volle Tage vor heute + heute; der Durchschnitt zählt nur volle Tage (heute ist noch nicht vorbei)
     const prior = full.slice(0, N), list = full.slice(1);
-    const tot = prior.reduce((s,x)=>s+x.a, 0), avg = tot / N, mx = Math.max(0, ...prior.map(x=>x.a)), act = prior.filter(x=>x.a>0).length;
+    const tot = prior.reduce((s,x)=>s+x.c, 0), avg = tot / N, mx = Math.max(0, ...prior.map(x=>x.c)), act = prior.filter(x=>x.c>0).length;
     const dm = d => d.getDate()+'.'+(d.getMonth()+1)+'.';
     const sum = [['Ø pro Tag', fmtN(Math.round(avg))], ['Bester Tag', fmtN(mx)], ['Aktive Tage', act+' von '+N]];
     let items, opts = {sum};
     if(N >= 90){
       items = [];
       for(let i = 0; i < list.length; i += 7){
-        const part = list.slice(i, i+7), a = part.reduce((s,x)=>s+x.a,0), c = part.reduce((s,x)=>s+x.c,0), per = Math.round(a / part.length);
-        items.push({v:a, c, num:fmtN(per), ax:dm(part[0].d), tip:'Woche ab '+dm(part[0].d)+': '+fmtN(a)+' beantwortet, Ø '+fmtN(per)+' pro Tag'});
+        const part = list.slice(i, i+7), c = part.reduce((s,x)=>s+x.c,0), per = Math.round(c / part.length);
+        items.push({v:c, num:fmtN(per), ax:dm(part[0].d), tip:'Woche ab '+dm(part[0].d)+': '+fmtN(c)+' richtig, Ø '+fmtN(per)+' pro Tag'});
       }
       opts.avg = items.reduce((s,x)=>s+x.v,0) / items.length; opts.avgUnit = ' / Woche';
       opts.def = 'Balken = Woche, Zahl = Ø pro Tag. Antippen: Details';
     } else {
-      items = list.map((x,i) => ({v:x.a, c:x.c, hot:i===list.length-1, label: N <= 7 ? (i===list.length-1 ? 'Heute' : WD[x.d.getDay()]) : '', ax: dm(x.d),
-        tip: (i===list.length-1 ? 'Heute' : WD[x.d.getDay()]+' '+dm(x.d))+': '+fmtN(x.a)+' beantwortet, '+fmtN(x.c)+' richtig'}));
+      items = list.map((x,i) => ({v:x.c, hot:i===list.length-1, label: N <= 7 ? (i===list.length-1 ? 'Heute' : WD[x.d.getDay()]) : '', ax: dm(x.d),
+        tip: (i===list.length-1 ? 'Heute' : WD[x.d.getDay()]+' '+dm(x.d))+': '+fmtN(x.c)+' richtig (von '+fmtN(x.a)+' beantwortet)'}));
       opts.avg = avg;
     }
     el.innerHTML = barChart(items, opts);
@@ -962,7 +964,7 @@ window.showStats = function(){
     + '</div><div id="smooth-result" style="font-size:.85rem;color:var(--muted)"></div></details>'
     + '</div>';
   if(all){ loadPartnerLine(); renderActivityCard(); }
-  loadActivity().then(a => { const t = $('neu-st-today'), s = $('neu-st-streak'); if(t) t.textContent = fmtN(a.today); if(s) s.textContent = a.streak ? a.streak + ' T' : '–'; }).catch(() => {});
+  Promise.all([loadActivity(), loadDayCounts()]).then(([a, dc]) => { const t = $('neu-st-today'), s = $('neu-st-streak'); if(t) t.textContent = fmtN(dc.today); if(s) s.textContent = a.streak ? a.streak + ' T' : '–'; }).catch(() => {});
 };
 
 /* ---------- Erster Einstieg: nach dem Laden auf die Startseite ---------- */

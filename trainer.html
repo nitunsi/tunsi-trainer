@@ -5164,7 +5164,7 @@ async function courseExAnswer(exercise, correct){
   }
   // (Keine automatische Freischaltung des nächsten Chunks mehr, siehe courseEnsureFrontierUnlocked.)
   courseEnsureFrontierUnlocked().catch(()=>{});
-  return await logCourseReview(correct);
+  return await logCourseReview(correct, exId);
 }
 
 // Wie logReview(), aber für Kurs-Übungen — landet in derselben review_log-Tabelle
@@ -5172,10 +5172,10 @@ async function courseExAnswer(exercise, correct){
 // zusammen zählt. Bewusst ohne Offline-Queue-Anbindung (reine Statistik, kein Kernstand).
 // Gibt die id der geschriebenen Zeile zurück, damit eine spätere Korrektur
 // (courseCorrectLast) dieselbe Zeile patchen kann statt doppelt zu zählen.
-async function logCourseReview(correct){
+async function logCourseReview(correct, exerciseId){
   if(!currentUser) return null;
   try{
-    const res = await sbApi('review_log', 'POST', { user_id: currentUser.id, vocabulary_id: null, correct, mode: 'course', created_at: new Date().toISOString() });
+    const res = await sbApi('review_log', 'POST', { user_id: currentUser.id, vocabulary_id: null, course_exercise_id: exerciseId || null, correct, mode: 'course', created_at: new Date().toISOString() });
     return res && res[0] ? res[0].id : null;
   }catch(e){
     dbg('Kurs review_log FEHLER: '+e.message, 'warn');
@@ -6628,7 +6628,7 @@ function buildBackupSQL(data, today){
   parts.push('-- review_log ('+reviewLog.length+' Zeilen)');
   parts.push(buildUpsertSQL('review_log', [
     {name:'id',type:'num'},{name:'user_id',type:'str'},{name:'vocabulary_id',type:'num'},{name:'correct',type:'bool'},
-    {name:'mode',type:'str'},{name:'created_at',type:'str'}
+    {name:'mode',type:'str'},{name:'created_at',type:'str'},{name:'course_exercise_id',type:'num'}
   ], reviewLog));
   parts.push('');
   parts.push('-- course_lessons ('+courseLessons.length+' Zeilen)');
@@ -6687,7 +6687,7 @@ async function runCombinedExport(){
     prog.textContent = 'Lade progress…';
     const progress = await fetchAllPaged('progress', 'id,user_id,vocabulary_id,correct_count,wrong_count,review_count,next_review,last_reviewed,last_correct', 'id.asc');
     prog.textContent = 'Lade review_log…';
-    const reviewLog = await fetchAllPaged('review_log', 'id,user_id,vocabulary_id,correct,mode,created_at', 'id.asc');
+    const reviewLog = await fetchAllPaged('review_log', 'id,user_id,vocabulary_id,correct,mode,created_at,course_exercise_id', 'id.asc');
     prog.textContent = 'Lade course_lessons…';
     const courseLessons = await fetchAllPaged('course_lessons', 'id,course_number,skript,title,dialog_text,grammar_notes,vocab_lesson_refs,chunk_order', 'course_number.asc');
     prog.textContent = 'Lade course_exercises…';
