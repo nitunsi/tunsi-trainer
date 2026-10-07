@@ -1046,6 +1046,10 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     if(!card) return;
     let box = card.querySelector('.neu-cq');
     if(!box){
+      // Die Standardanweisung „Übersetzen Sie (ins Tunesische).“ wiederholt nur die Kopfzeile „Übersetzen“ — weglassen.
+      // Gilt nur, wenn die Aufgabe als „Übersetzen“ gekennzeichnet ist; Anweisungen mit Inhalt (Muster, Plural …) bleiben.
+      if(/Übersetzen/.test(card.firstElementChild ? card.firstElementChild.textContent : ''))
+        [...card.children].slice(1).forEach(k => { if(!k.id && /^Übersetze(n Sie)?( ins Tunesische)?\.?$/i.test(k.textContent.trim())) k.remove(); });
       const kids = [...card.children], take = [];
       for(let i = 1; i < kids.length; i++){ if(STOP.has(kids[i].id) || kids[i].classList.contains('feedback')) break; take.push(kids[i]); }
       if(!take.length) return;
