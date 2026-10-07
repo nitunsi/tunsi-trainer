@@ -1885,7 +1885,7 @@ async function partnerInit(containerId){
   main.innerHTML=partnerTabBar('review')+'<div style="text-align:center;padding:2rem;color:var(--muted)">Lade…</div>';
   try{
   // Reihenfolge (Nils, 2026-10-03), in dieser Priorität:
-  //   1. fällig vor nicht fällig (nur ja/nein, das Datum zählt hier noch nicht)
+  //   1. mit Fälligkeitsdatum vor ohne (nur ja/nein — NICHT „heute fällig“; das Datum zählt hier noch nicht)
   //   2. Partner-Status: pending vor übersprungen vor „ohne Status“ (pending setzt Nils nur noch von Hand)
   //   3. Quellenlage: unbestätigte zuerst (belegStufe 0 vor 1 vor 2)
   //   4. Fälligkeitsdatum: älteste zuerst; ohne Datum zuletzt, dort zufällig
@@ -1910,12 +1910,13 @@ async function partnerInit(containerId){
   // b) übersprungene (wenige) und ohne Status, unbestätigte zuerst (die ersten 300 genügen für einen Block)
   const skippedRows = await sbApi('vocabulary?partner_status=in.(skipped,pending)&select='+cols+'&limit=200');
   (skippedRows||[]).forEach(v=>pool.set(v.id,v));
-  const nullRows = await sbApi('vocabulary?partner_status=is.null&select='+cols+'&order=external_confirmed.asc.nullsfirst&limit=300');
+  // alle offenen, noch unbestätigten (gut 1.000): nur so ist sicher, dass die mit Datum und ohne Beleg vorn landen
+  const nullRows = await sbApiPaged('vocabulary?partner_status=is.null&or=(external_confirmed.is.null,external_confirmed.eq.false)&select='+cols+'&order=id.asc', 1000);
   (nullRows||[]).forEach(v=>{ if(!pool.has(v.id)) pool.set(v.id,v); });
   const cand = [...pool.values()];
   cand.forEach(v=>{
     const d = progMap.get(v.id) || null;
-    v._nextReview = d; v._due = !!d && isDueByDay(d); v._rnd = Math.random();
+    v._nextReview = d; v._due = !!d; v._rnd = Math.random();  // _due = hat ein Fälligkeitsdatum (ja/nein)
   });
   const stat = v => v.partner_status==='pending' ? 0 : v.partner_status==='skipped' ? 1 : 2;
   cand.sort((a,b)=>{
