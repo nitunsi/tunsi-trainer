@@ -3645,7 +3645,7 @@ function openPullForward(){
   o.innerHTML = '<div style="background:var(--surface);border:1px solid var(--gold);border-radius:12px;padding:.8rem 1rem;width:100%;max-width:340px">'
     + '<div style="font-size:1.05rem;font-weight:700;color:var(--gold)">Vorziehen</div>'
     + '<div style="font-size:.8rem;color:var(--muted);margin:.1rem 0 .5rem">Vorziehbar: '+fmtN(avail)+' · frühestes Datum, hohe Stufe zuerst</div>'
-    + '<div style="font-size:.8rem;color:var(--muted);margin-bottom:.25rem">Morgen fällig, nach Stufe:</div><div style="display:flex;gap:.4rem;margin-bottom:.6rem">'+[4,5,6].map(l => '<div style="flex:1;text-align:center;padding:.3rem .2rem;background:var(--bg);border:1px solid var(--border);border-radius:10px"><div style="font-size:.72rem;color:var(--muted)">Stufe '+l+'</div><div style="font-size:1.1rem;font-weight:700;color:var(--gold2)">'+fmtN(perLv[l])+'</div></div>').join('')+'</div>'
+    + '<div style="font-size:.8rem;color:var(--muted);margin-bottom:.25rem">Morgen fällig, nach Stufe:</div><div style="display:flex;gap:.4rem;margin-bottom:.6rem">'+[4,5,6].map(l => '<div class="pf-tile" data-n="'+perLv[l]+'" style="flex:1;text-align:center;padding:.3rem .2rem;background:var(--bg);border:1px solid var(--border);border-radius:10px;cursor:pointer"><div style="font-size:.72rem;color:var(--muted)">Stufe '+l+'</div><div style="font-size:1.1rem;font-weight:700;color:var(--gold2)">'+fmtN(perLv[l])+'</div></div>').join('')+'</div>'
     + '<div id="pf-chips" style="display:flex;gap:.4rem;margin-bottom:.5rem">'+[[10,'10'],[20,'20'],[perLv[4]+perLv[5]+perLv[6],'Stufe 4–6: '+(perLv[4]+perLv[5]+perLv[6])],[avail,'Alle '+avail]].filter(c=>c[0]>0&&c[0]<=Math.min(avail,500)).filter((c,k,a)=>a.findIndex(x=>x[0]===c[0])===k).map(c=>'<button type="button" data-n="'+c[0]+'" style="flex:'+(c[1].length>4?'2':'1')+';min-height:42px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:.9rem;border-radius:10px;cursor:pointer">'+c[1]+'</button>').join('')+'</div>'
     + '<input id="pf-n" type="number" inputmode="numeric" min="1" max="'+Math.min(avail,500)+'" value="'+Math.min(last,avail)+'" style="width:100%;padding:.4rem;background:var(--bg);border:1px solid var(--gold);color:var(--text);font-size:1.2rem;text-align:center;border-radius:10px;margin-bottom:.6rem;min-height:44px">'
     + '<div style="display:flex;gap:.5rem">'
@@ -3666,6 +3666,14 @@ function openPullForward(){
   document.getElementById('pf-n').addEventListener('keydown', e => { if(e.key === 'Enter') go(); if(e.key === 'Escape') close(); });
   const inp = document.getElementById('pf-n');
   o.querySelectorAll('#pf-chips button').forEach(b => b.onclick = () => { inp.value = b.dataset.n; });
+  // Antippen der Stufen-Kacheln (4/5/6) trägt deren Anzahl ein
+  o.querySelectorAll('.pf-tile').forEach(t => t.onclick = () => {
+    const n = parseInt(t.dataset.n, 10) || 0;
+    if(n < 1) return;
+    inp.value = Math.min(n, 500, avail);
+    o.querySelectorAll('.pf-tile').forEach(x => x.style.borderColor = 'var(--border)');
+    t.style.borderColor = 'var(--gold)';
+  });
 }
 
 // ── Nav Toggle ────────────────────────────────────────────────────────────
