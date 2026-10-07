@@ -1,9 +1,10 @@
-# Neues Design — Arbeitsplan (trainer-neu.html)
+# Neues Design — Arbeitsplan (jetzt trainer.html)
 
 **Ziel:** Neues Gesamtdesign parallel zum alten entwickeln, Hin- und Herwechseln jederzeit möglich.
 
 - `trainer.html` = alt, bleibt Hauptweg, bekommt nur Fehlerkorrekturen und den Knopf „Neues Design“ (Menü, unten).
-- `trainer-neu.html` = neu, Kopie des alten Stands (Stand 2026-10-06), wird umgebaut. Knopf „Altes Design“ im Menü bzw. unter „Mehr“.
+- **Umstellung 2026-10-07 erledigt:** `trainer.html` = neues Design, `trainer-alt.html` = alter Weg, `trainer-neu.html` leitet auf `trainer.html` weiter (alte Lesezeichen). Tagesziel-Standard bleibt 100. Die Angaben „trainer-neu.html“ unten meinen jetzt `trainer.html`.
+- (früher) `trainer-neu.html` = neu, Kopie des alten Stands (Stand 2026-10-06), wird umgebaut. Knopf „Altes Design“ im Menü bzw. unter „Mehr“.
 - Gleiche Adresse (Vercel), gleiche Anmeldung (localStorage `tounsi_session`), gleiche Datenbank, gleiche Einstellungen im Browser.
 - **Regel für Änderungen:** Neue Funktionen nur in `trainer-neu.html`. Fehler im alten Weg in beiden Dateien beheben (beim Fix im alten Weg: im Protokoll vermerken, in der neuen nachziehen).
 - Es wird nichts in Supabase geschrieben, was die alte Seite nicht auch schriebe (kein Schema-Änderung, keine neuen Tabellen).
@@ -46,7 +47,7 @@ Die Dateien: `trainer-neu.html` (Kopie des alten Stands, mit zwei Einbindungen),
 
 ## Nicht gebaut / Entscheidungen
 - Wischgesten für selbstbewertete Karten: nicht gebaut (Knöpfe bleiben).
-- 12-Wochen-Aktivitätsraster: nicht gebaut. Dafür bräuchte es eine Tageszählung in der Datenbank (View/RPC), sonst müssten ~14.000 Zeilen geladen werden. Ohne Rückfrage kein Schema ändern.
+- 12-Wochen-Aktivitätsraster: **entschieden: kein Raster** (Nils, 2026-10-07). Keine DB-View, nichts gebaut.
 - Level-Verteilung (8 Zeilen) und die Statistik-Seite bleiben inhaltlich wie im alten Weg, nur anders gefärbt.
 - Die Admin-Seiten haben das neue Gerüst (Navigation, Schrift, Bedienelemente); ihr Inhalt und ihre Funktionen sind unverändert.
 - Die Partner-Oberfläche (Semia) ist nicht Teil des neuen Designs und unverändert.
@@ -54,7 +55,7 @@ Die Dateien: `trainer-neu.html` (Kopie des alten Stands, mit zwei Einbindungen),
 
 ## Offene Fragen
 1. **Tagesziel:** Standard 100 Antworten. Dein Schnitt liegt bei etwa 165. Passt 100, oder lieber 150 als Standard?
-2. **12-Wochen-Raster:** Soll dafür eine schreibgeschützte Tageszählung in der Datenbank angelegt werden (neue View, ändert nur das Schema)?
+2. ~~12-Wochen-Raster~~ — entschieden: nicht bauen.
 3. **Wischgesten** bei Kurs-Karten (rechts = richtig, links = falsch): gewünscht?
 4. **Partner-Ansicht** für Semia im neuen Design: gewünscht?
 5. **Umstellung:** Wenn du ganz wechseln willst, wird `trainer-neu.html` zu `trainer.html` (die alte Datei bleibt als `trainer-alt.html`) und `index.html` zeigt auf die neue.

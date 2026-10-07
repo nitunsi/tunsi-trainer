@@ -1,5 +1,5 @@
 /* ===== Tounsi Trainer — neues Design: Logik-Schicht =====
-   Wird nur von trainer-neu.html geladen (nach dem Hauptskript). Überschreibt einzelne
+   Wird nur von trainer.html geladen (nach dem Hauptskript). Überschreibt einzelne
    Funktionen der Hauptdatei und baut Navigation, Startseite und „Mehr“ neu. Daten und
    Lernlogik bleiben die der Hauptdatei. */
 (function(){
@@ -332,7 +332,7 @@ function showMore(){
     + '</div>'
     + '<div class="neu-h">Konto</div><div class="neu-card neu-list" style="padding:.3rem .9rem">'
     +   '<div class="li"><span class="sp neu-sub">'+escHtml(currentUser ? currentUser.username : '')+' · '+APP_VERSION+' (neu)</span></div>'
-    +   li('swap','Zum alten Design',"location.href='trainer.html'") + li('bug','Debug',"toggleDebug()") + li('out','Abmelden',"doLogout()")
+    +   li('swap','Zum alten Design',"location.href='trainer-alt.html'") + li('bug','Debug',"toggleDebug()") + li('out','Abmelden',"doLogout()")
     + '</div>'
     + '</div>';
   const sel = $('neu-lesson');

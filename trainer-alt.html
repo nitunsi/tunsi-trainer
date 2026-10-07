@@ -7,7 +7,7 @@
 <meta http-equiv="expires" content="0">
 <!-- build:1778362931 updated:1778361524 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
-<title>Tounsi Trainer</title>
+<title>Tounsi Trainer (alt) v10</title>
 <link rel="preconnect" href="https://lzecflvfalxkodytnwzf.supabase.co">
 <link rel="dns-prefetch" href="https://lzecflvfalxkodytnwzf.supabase.co">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -255,7 +255,6 @@ body.hide-latin .chat-opt .latin {
   padding-bottom:.3rem;
 }
 </style>
-<link rel="stylesheet" href="neu/neu.css">
 </head>
 <body>
 <div id="login-screen">
@@ -336,7 +335,7 @@ body.hide-latin .chat-opt .latin {
   <div class="nav-footer">
     <span class="nav-user" id="header-user"></span>
     <span style="display:flex;gap:.5rem">
-      <button class="logout-btn" onclick="location.href='trainer-alt.html'" style="color:var(--blue);border-color:var(--blue);font-size:.7rem">Altes Design</button>
+      <button class="logout-btn" onclick="location.href='trainer.html'" style="color:var(--blue);border-color:var(--blue);font-size:.7rem">Neues Design</button>
       <button class="logout-btn" id="dbg-btn" onclick="toggleDebug()" style="color:var(--gold);border-color:var(--gold);font-size:.7rem">DBG</button>
       <button class="logout-btn" onclick="doLogout()">Abmelden</button>
     </span>
@@ -621,7 +620,7 @@ function playVocabAudio(url, ev, start, end){
 let audioAutoplay = false;
 try{ audioAutoplay = localStorage.getItem('audio-autoplay') === 'true'; }catch(e){}
 function audioToggleHtml(cls){
-  return '<button class="'+cls+' audio-toggle" onclick="toggleAudioAutoplay()" title="Ton: Audio beim Aufdecken und Höraufgaben" style="opacity:'+(audioAutoplay?'1':'.5')+'">'+(audioAutoplay?'🔊':'🔇')+'</button>';
+  return '<button class="'+cls+' audio-toggle" onclick="toggleAudioAutoplay()" title="Audio beim Aufdecken automatisch abspielen" style="opacity:'+(audioAutoplay?'1':'.5')+'">'+(audioAutoplay?'🔊':'🔇')+'</button>';
 }
 function toggleAudioAutoplay(){
   audioAutoplay = !audioAutoplay;
@@ -2229,7 +2228,7 @@ function fmtDue(date){
   if(diff===1) return 'morgen';
   return 'in '+diff+'T';
 }
-const SRS_LEVEL_COLORS = ['#6f6246','#8c7536','#a68a3a','#c4a449','#d6b755','#e8c96a','#f6de8e'];
+const SRS_LEVEL_COLORS = ['#9b6fd4','#e05555','#e07832','#c9a84c','#2a9d8f','#4cac6e','#1a7a3a'];
 const SRS_LEVEL_LABELS = ['L0','L1','L2','L3','L4','L5','L6'];
 function srsInfoBadge(vocab){
   if(!vocab || !vocab.id) return '';
@@ -2595,7 +2594,7 @@ function bFlash(vocab){
     }
     const lvl = srsGetLevel(v);
     // L0-L2: zufällig; L3+: immer Deutsch→Tounsi (produktiv)
-    const dir = neuPickDir(v, lvl);
+    const dir = lvl >= 3 ? 'de2ar' : (Math.random()>.5?'ar2de':'de2ar');
     items.push({type:'flash',v,dir});
   });
   return sh(items);
@@ -2633,27 +2632,22 @@ function showCA(){
 }
 function rFlash(ex,el){
   answered=false;
-  const v=ex.v;
-  if(ex.dir==='au2de' && !audioAutoplay) ex.dir='ar2de'; // Ton aus: Hörkarte wird zur normalen Karte
-  const dir=ex.dir;
-  const isAudio = dir==='au2de';
-  const isAr2De = dir==='ar2de' || isAudio;
+  const v=ex.v, dir=ex.dir;
+  const isAr2De = dir==='ar2de';
   const _prog = (document.getElementById('ex-progress')||{}).textContent||'';
   const isNew = !srsProgress[v.id];
   el.innerHTML=`
-    <div class="neu-inforow" style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem">
+    <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem">
       <span class="lesson-badge" style="margin:0;flex:0 0 48%;min-width:0;width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(v.ls+' · '+v.tp)}">${v.ls} · ${v.tp}</span>
       ${isNew ? `<span style="flex-shrink:0;font-size:.65rem;font-weight:700;color:var(--gold);background:rgba(201,166,74,.15);border:1px solid var(--gold);padding:.1rem .45rem;border-radius:3px">🆕 Neu</span>` : ''}
       <span class="srs-info-badge" style="flex:1;min-width:0;margin:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${srsInfoBadge(v)}</span>
       ${v.ps ? `<span style="flex-shrink:0;font-size:.85rem" title="Partner: ${v.ps}">${v.ps==='approved'?'✅':v.ps==='rejected'?'❌':v.ps==='unknown'?'❓':v.ps==='pending'?'⏳':v.ps==='skipped'?'⏭':'💡'}</span>` : ''}
       ${v.au ? `<button onclick="playVocabAudio('${v.au.replace(/'/g,"\\'")}',event,${v.aus||0},${v.aue||0})" title="Aussprache abspielen" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.8rem;padding:.1rem .4rem;border-radius:3px;cursor:pointer;line-height:1.4">🔊</button>` : extConfirmIcon(v, 'flex-shrink:0;font-size:.8rem;color:var(--muted)')}
       ${v.cj ? `<button onclick="toggleConjTable()" title="Konjugationstabelle anzeigen" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.8rem;padding:.1rem .4rem;border-radius:3px;cursor:pointer;line-height:1.4">🔠</button>` : ''}
-      <span class="neu-prog" style="flex-shrink:0;font-size:.7rem;color:var(--muted)">${_prog}</span>
+      <span style="flex-shrink:0;font-size:.7rem;color:var(--muted)">${_prog}</span>
     </div>
     <div class="q-card" style="min-height:80px;margin-bottom:.5rem">
-      ${isAudio
-        ? `<button type="button" class="neu-audioq" onclick="playVocabAudio('${String(v.au||'').replace(/'/g,"\\'")}',event,${v.aus||0},${v.aue||0})" aria-label="Abspielen">🔊</button><div class="q-sub" style="font-family:inherit!important">Hören und die Bedeutung eingeben</div>`
-        : isAr2De
+      ${isAr2De
         ? `<div class="q-arabic" style="font-size:2.8rem">${v.ar}</div><div class="q-sub latin">${v.tr}</div>`
         : `<div class="q-text" style="font-size:1.3rem">${v.en}</div>`
       }
@@ -2683,7 +2677,6 @@ function rFlash(ex,el){
     document.getElementById('sticky-check').style.display = 'block';
   })();
   audioPreloadAhead();
-  if(isAudio) setTimeout(()=>playVocabAudio(v.au,null,v.aus||0,v.aue||0),150);
   // Fokus ohne Scroll-Manipulation
   setTimeout(()=>{
     const inp = document.getElementById('flash-input');
@@ -2699,7 +2692,7 @@ function chkFlash(){
   if(!inp)return;
   const val=inp.value.trim();
   const ex=exList[cIdx];
-  const v=ex.v, dir=(ex.dir==='au2de'?'ar2de':ex.dir);
+  const v=ex.v, dir=ex.dir;
   let ok=false;
   if(dir==='ar2de'){
     {const r=checkAnswer(val,v.en);ok=r.ok;if(ok&&!r.exact)flashFuzzy=v.en;}
@@ -2711,7 +2704,7 @@ function chkFlash(){
   const fb=document.getElementById('feedback');
   const solAr = '<span style="font-family:\'Playfair Display\',serif;font-size:2.2rem;color:var(--gold2);display:block">'+v.ar+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+v.tr+'</span>';
   const solDe = '<span style="font-family:\'Playfair Display\',serif;font-size:1.5rem;display:block">'+v.en+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+v.tr+'</span>';
-  const sol = ex.dir==='au2de' ? solDe+'<span style="font-family:\'Playfair Display\',serif;font-size:2.2rem;color:var(--gold2);display:block;margin-top:.3rem">'+v.ar+'</span>' : (dir==='ar2de' ? solDe : solAr);
+  const sol = dir==='ar2de' ? solDe : solAr;
   const homNote = homonymNote(v)+synonymNote(v)+schreibungNote(v);
   if(ok){
     fb.className='feedback show correct';
@@ -3140,7 +3133,7 @@ function showStats(){
   const lessonLabel = cLesson === 'all' ? 'Alle Lektionen' : cLesson;
 
   const c = document.getElementById('exercise-content');
-  const levelColors = ['#3a3228','#6f6246','#8c7536','#a68a3a','#c4a449','#d6b755','#e8c96a','#f6de8e'];
+  const levelColors = ['#555555','#9b6fd4','#e05555','#e07832','#c9a84c','#2a9d8f','#4cac6e','#1a7a3a'];
   // Vokabeln + Kurs erst hier beim Rendern zusammenzählen (dueDays/courseDueDays bleiben
   // getrennte Arrays, siehe oben) — Fällig-Forecast zeigt weiterhin beide gemeinsam.
   const dayTotals = dueDays.map((levels,i) => levels.reduce((s,x) => s+x, 0) + courseDueDays[i].reduce((s,x)=>s+x,0));
@@ -3172,14 +3165,14 @@ function showStats(){
   // Level-Verteilung: Zeile für "Nicht gestartet" + Level 1–5
   const levelRows = (() => {
     const buckets = [
-      { label: 'Neu', color: '#6a5e4a', idx: 0, hint: 'Ohne Fälligkeit' },
-      { label: 'Level 0', color: '#8c7a4a', idx: 1, hint: 'fällig' },
-      { label: 'Level 1', color: '#a08236', idx: 2, hint: 'Wdh. in 1d' },
-      { label: 'Level 2', color: '#b69338', idx: 3, hint: 'Wdh. in 3d' },
+      { label: 'Neu', color: '#555555', idx: 0, hint: 'Ohne Fälligkeit' },
+      { label: 'Level 0', color: '#9b6fd4', idx: 1, hint: 'fällig' },
+      { label: 'Level 1', color: '#e05555', idx: 2, hint: 'Wdh. in 1d' },
+      { label: 'Level 2', color: '#e07832', idx: 3, hint: 'Wdh. in 3d' },
       { label: 'Level 3', color: '#c9a84c', idx: 4, hint: 'Wdh. in 7d' },
-      { label: 'Level 4', color: '#d6b755', idx: 5, hint: 'Wdh. in 14d' },
-      { label: 'Level 5', color: '#e8c96a', idx: 6, hint: 'Wdh. in 30d' },
-      { label: 'Level 6', color: '#f6de8e', idx: 7, hint: 'Wdh. in 90d' },
+      { label: 'Level 4', color: '#2a9d8f', idx: 5, hint: 'Wdh. in 14d' },
+      { label: 'Level 5', color: '#4cac6e', idx: 6, hint: 'Wdh. in 30d' },
+      { label: 'Level 6', color: '#1a7a3a', idx: 7, hint: 'Wdh. in 90d' },
     ];
     // "Neu"-Bucket (idx 0): courseLevelCount[0] wird nie befüllt (gesperrte Kurs-Übungen
     // stecken in courseNotStarted, siehe Kommentar oben), hier für die kombinierte
@@ -3215,7 +3208,7 @@ function showStats(){
   const stCell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+';line-height:1.2">'+icon+' '+stPct(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+fmtN(a)+' / '+fmtN(b)+'</div></div>';
   const stNum = fmtN;
   const stTile = (n, label, color, act, tip) => '<div'+(act ? ' onclick="'+act+'" title="'+escHtml(tip||'')+'"' : '')+' style="display:flex;align-items:baseline;gap:.5rem;padding:.4rem .6rem;background:var(--surface2);border:1px solid '+(act ? 'var(--gold)' : 'var(--border)')+';border-radius:4px'+(act ? ';cursor:pointer' : '')+'"><span style="font-size:1.1rem;font-weight:700;color:'+color+'">'+stNum(n)+'</span><span style="font-size:.85rem;color:'+(act ? 'var(--gold)' : 'var(--text)')+(act ? ';text-decoration:underline dotted' : '')+'">'+label+'</span></div>';
-  const stRow = (label, a1, b1, a2, b2, ph, neuAct, neuTip) => '<div style="margin-top:.9rem"><div style="font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:.5rem">'+label+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">'+stCell('📅',a1,b1)+stCell('⭐',a2,b2)+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.6rem">'+stTile(ph[0],'Neu','var(--muted)',neuAct,neuTip)+stTile(ph[1],'Anfänger','var(--lv1,#8c7536)')+stTile(ph[2],'Fortgeschritten','var(--gold)')+stTile(ph[3],'Profi','var(--green)')+'</div></div>';
+  const stRow = (label, a1, b1, a2, b2, ph, neuAct, neuTip) => '<div style="margin-top:.9rem"><div style="font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:.5rem">'+label+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">'+stCell('📅',a1,b1)+stCell('⭐',a2,b2)+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.6rem">'+stTile(ph[0],'Neu','var(--muted)',neuAct,neuTip)+stTile(ph[1],'Anfänger','#e05555')+stTile(ph[2],'Fortgeschritten','var(--gold)')+stTile(ph[3],'Profi','var(--green)')+'</div></div>';
   c.innerHTML = `
     ${cLesson === 'all' ? `<div style="margin-bottom:1rem;">
       <div style="font-size:.85rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);font-weight:700;margin-bottom:.5rem;">Heute fällig</div>
@@ -3440,7 +3433,7 @@ async function loadActivityStats(){
         <span style="font-size:.75rem;font-weight:700;color:${labelColor};line-height:1.1">${x.attempts ? fmtN(x.attempts) : ''}</span>
         <div style="width:100%;background:var(--border);border-radius:3px;height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;position:relative">
           ${avgAttempts > 0 ? `<div style="position:absolute;left:0;right:0;bottom:${avgLinePct}%;border-top:1px dashed var(--gold);opacity:.7;z-index:2;"></div>` : ''}
-          ${x.attempts ? `<div style="width:100%;height:${Math.round(h*hWrong/100)}%;min-height:${wrong?'3px':'0'};background:#6b5a3a;"></div><div style="width:100%;height:${Math.round(h*hCorrect/100)}%;min-height:${x.correct?'3px':'0'};background:var(--gold);"></div>` : ''}
+          ${x.attempts ? `<div style="width:100%;height:${Math.round(h*hWrong/100)}%;min-height:${wrong?'3px':'0'};background:var(--red);"></div><div style="width:100%;height:${Math.round(h*hCorrect/100)}%;min-height:${x.correct?'3px':'0'};background:var(--green);"></div>` : ''}
         </div>
         ${totalCourseAttempts ? courseShareGauge(x.courseAttempts, x.attempts) : ''}
         <span style="font-size:.72rem;color:var(--muted);text-align:center">${name}</span>
@@ -3625,28 +3618,21 @@ async function pullForwardVocab(n){
 
 // Dialog: Klick auf „Heute“ im Fällig-Balken. Zahl änderbar, zuletzt benutzte Zahl wird gemerkt.
 function openPullForward(){
-  const cands = pullForwardCandidates();
-  const avail = cands.length;
-  const perLv = {4:0, 5:0, 6:0};
-  // Nur Einträge, die morgen fällig sind (die beim Vorziehen als Erste drankommen, höhere Stufe zuerst)
-  const tmr = new Date(); tmr.setHours(0,0,0,0); tmr.setDate(tmr.getDate() + 1);
-  cands.forEach(c => { if(c.day === tmr.getTime() && perLv[c.level] !== undefined) perLv[c.level]++; });
+  const avail = pullForwardCandidates().length;
   if(!avail){ showToast('Nichts zum Vorziehen: alles ist schon fällig','warn'); return; }
   let last = 20;
   try{ last = parseInt(localStorage.getItem('pull-forward-n'),10) || 20; }catch(e){}
   const old = document.getElementById('pf-overlay'); if(old) old.remove();
   const o = document.createElement('div');
   o.id = 'pf-overlay';
-  o.style.cssText = 'position:fixed;left:0;right:0;top:var(--vvt,0px);height:var(--vvh,100%);background:rgba(0,0,0,.65);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:.8rem 1rem;overflow-y:auto';
-  o.innerHTML = '<div style="background:var(--surface);border:1px solid var(--gold);border-radius:12px;padding:.8rem 1rem;width:100%;max-width:340px">'
-    + '<div style="font-size:1.05rem;font-weight:700;color:var(--gold)">Vorziehen</div>'
-    + '<div style="font-size:.8rem;color:var(--muted);margin:.1rem 0 .5rem">Vorziehbar: '+fmtN(avail)+' · frühestes Datum, hohe Stufe zuerst</div>'
-    + '<div style="font-size:.8rem;color:var(--muted);margin-bottom:.25rem">Morgen fällig, nach Stufe:</div><div style="display:flex;gap:.4rem;margin-bottom:.6rem">'+[4,5,6].map(l => '<div style="flex:1;text-align:center;padding:.3rem .2rem;background:var(--bg);border:1px solid var(--border);border-radius:10px"><div style="font-size:.72rem;color:var(--muted)">Stufe '+l+'</div><div style="font-size:1.1rem;font-weight:700;color:var(--gold2)">'+fmtN(perLv[l])+'</div></div>').join('')+'</div>'
-    + '<div id="pf-chips" style="display:flex;gap:.4rem;margin-bottom:.5rem">'+[10,20,50,100].filter(v=>v<=Math.min(avail,500)).concat(avail<=500?[avail]:[]).filter((v,k,a)=>a.indexOf(v)===k).map(v=>'<button type="button" data-n="'+v+'" style="flex:1;min-height:42px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:.95rem;border-radius:10px;cursor:pointer">'+(v===avail?'Alle '+v:v)+'</button>').join('')+'</div>'
-    + '<input id="pf-n" type="number" inputmode="numeric" min="1" max="'+Math.min(avail,500)+'" value="'+Math.min(last,avail)+'" style="width:100%;padding:.4rem;background:var(--bg);border:1px solid var(--gold);color:var(--text);font-size:1.2rem;text-align:center;border-radius:10px;margin-bottom:.6rem;min-height:44px">'
-    + '<div style="display:flex;gap:.5rem">'
-    + '<button id="pf-cancel" style="flex:1;min-height:46px;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.95rem;border-radius:10px;cursor:pointer">Abbrechen</button>'
-    + '<button id="pf-go" style="flex:1;min-height:46px;background:var(--gold);border:none;color:#0e0c0a;font-weight:700;font-size:.95rem;border-radius:10px;cursor:pointer">Vorziehen</button>'
+  o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem';
+  o.innerHTML = '<div style="background:var(--surface);border:1px solid var(--gold);border-radius:8px;padding:1.1rem;width:100%;max-width:340px">'
+    + '<div style="font-size:1rem;font-weight:700;color:var(--gold);margin-bottom:.4rem">Vorziehen</div>'
+    + '<div style="font-size:.85rem;color:var(--muted);line-height:1.5;margin-bottom:.8rem">Wie viele Einträge sollen jetzt fällig werden? Es kommen die nächsten dran (frühestes Datum zuerst), Vokabeln und Kurs-Übungen zusammen. Vorziehbar: '+fmtN(avail)+'.</div>'
+    + '<input id="pf-n" type="number" inputmode="numeric" min="1" max="'+Math.min(avail,500)+'" value="'+Math.min(last,avail)+'" style="width:100%;padding:.7rem;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:1.2rem;text-align:center;border-radius:4px;margin-bottom:.8rem">'
+    + '<div style="display:flex;gap:.6rem">'
+    + '<button id="pf-cancel" style="flex:1;padding:.7rem;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:\'IBM Plex Mono\',monospace;font-size:.9rem;border-radius:4px;cursor:pointer">Abbrechen</button>'
+    + '<button id="pf-go" style="flex:1;padding:.7rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:.9rem;border-radius:4px;cursor:pointer">Vorziehen</button>'
     + '</div></div>';
   document.body.appendChild(o);
   const close = () => o.remove();
@@ -3660,8 +3646,7 @@ function openPullForward(){
   document.getElementById('pf-go').onclick = go;
   o.addEventListener('click', e => { if(e.target === o) close(); });
   document.getElementById('pf-n').addEventListener('keydown', e => { if(e.key === 'Enter') go(); if(e.key === 'Escape') close(); });
-  const inp = document.getElementById('pf-n');
-  o.querySelectorAll('#pf-chips button').forEach(b => b.onclick = () => { inp.value = b.dataset.n; });
+  const inp = document.getElementById('pf-n'); inp.focus(); inp.select();
 }
 
 // ── Nav Toggle ────────────────────────────────────────────────────────────
@@ -3827,8 +3812,6 @@ function showVocabList(){
                color:var(--text);font-size:1rem;font-family:'IBM Plex Mono',monospace;border-radius:6px;"
         oninput="filterVocabList()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
     </div>
-    ${neuChipsHtml()}
-    <details class="neu-filter"><summary>Filter und Sortierung</summary>
     <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem;align-items:center">
       <button id="flag-filter-btn" onclick="toggleFlagFilter()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:.3rem .7rem;border-radius:4px;cursor:pointer;font-size:.8rem">🏳️ Alle</button>
       <span style="color:var(--border);font-size:.8rem">|</span>
@@ -3883,7 +3866,6 @@ function showVocabList(){
         <option value="unconfirmed">gar kein Beleg</option>
       </select>
     </div>
-    </details>
     <div id="vocab-table"></div>
   `;
   renderVocabTable(vocab);
@@ -5340,7 +5322,7 @@ function bMix(){
   const vocabNeeded = 10 - courseItems.length;
   const vocabItems = dueVocab.slice(0,vocabNeeded).map(v=>{
     const lvl = srsGetLevel(v);
-    const dir = neuPickDir(v, lvl);
+    const dir = lvl>=3 ? 'de2ar' : (Math.random()>.5?'ar2de':'de2ar');
     return {type:'flash', v, dir};
   });
   return sh([...courseItems, ...vocabItems]);
@@ -5475,7 +5457,7 @@ function rCourseEx(ex, el){
   const prog = (document.getElementById('ex-progress')||{}).textContent||'';
   // Ganze Karte deutlich blau eingefärbt (statt Gold wie bei Vokabeln) — im Mix auf einen
   // Blick erkennbar, ob gerade eine Vokabel- oder eine Kurs-Karte dran ist.
-  let h = '<div class="neu-ccard" style="background:rgba(76,122,201,.10);border:1px solid var(--blue);border-radius:10px;padding:1rem;margin-bottom:1.2rem">';
+  let h = '<div style="background:rgba(76,122,201,.10);border:1px solid var(--blue);border-radius:10px;padding:1rem;margin-bottom:1.2rem">';
   h += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem;flex-wrap:wrap">';
   h += '<span style="flex-shrink:0;font-size:.65rem;font-weight:700;letter-spacing:.3px;color:#fff;background:var(--blue);padding:.15rem .55rem;border-radius:3px" title="'+escHtml((lesson?('L'+lesson.course_number):'')+' · '+label)+'">🎓 '+(lesson?('L'+lesson.course_number):'')+' · '+label+'</span>';
   if(isNew) h += '<span style="flex-shrink:0;font-size:.65rem;font-weight:700;color:var(--gold);background:rgba(201,166,74,.15);border:1px solid var(--gold);padding:.1rem .45rem;border-radius:3px">🆕 Neu</span>';
@@ -5484,7 +5466,7 @@ function rCourseEx(ex, el){
          if(lvl) h += '<span class="srs-info-badge" style="flex-shrink:0;font-size:.7rem;margin:0">'+lvl+'</span>'; }
   h += '<span style="flex:1"></span>';
   h += courseGrammarButtonHtml(exercise);
-  h += '<span class="neu-prog" style="flex-shrink:0;font-size:.7rem;color:var(--muted)">'+prog+'</span>';
+  h += '<span style="flex-shrink:0;font-size:.7rem;color:var(--muted)">'+prog+'</span>';
   h += '</div>';
   const hintFirst = courseHintFirst(exercise);
   audioPreloadAhead();
@@ -8756,66 +8738,49 @@ window.addEventListener('unhandledrejection', (e) => {
 </div>
 
 <!-- Vocab Edit Bottom Sheet -->
-<div id="vocab-edit-sheet" class="neu-sheet" style="display:none">
-  <div class="sh-head">
-    <div class="sh-grip"></div>
-    <div style="display:flex;align-items:center;gap:.6rem">
-      <div style="flex:1;min-width:0"><div class="sh-title">Vokabel bearbeiten</div><div id="ei-summary" class="sh-sum"></div></div>
-      <button id="ei-audio" class="sh-ib" style="display:none" onclick="neuEditAudio()" aria-label="Aussprache">🔊</button>
-      <button class="sh-ib" onclick="closeVocabEdit()" aria-label="Schließen">✕</button>
-    </div>
+<div id="vocab-edit-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--surface2);border-top:2px solid var(--gold);padding:1rem;box-shadow:0 -4px 14px rgba(0,0,0,.5);will-change:transform;transform:translateZ(0);max-height:85vh;max-height:85dvh;overflow-y:auto;-webkit-overflow-scrolling:touch">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem">
+    <span style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold)">Vokabel bearbeiten</span>
+    <button onclick="closeVocabEdit()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:.2rem .5rem">✕</button>
   </div>
-  <div class="sh-body">
-    <div class="sh-sec">Wort</div>
-    <label class="sh-l">Arabisch</label>
-    <input id="ei-ar" class="sh-in ar" placeholder="Arabisch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-    <label class="sh-l">Umschrift</label>
-    <div style="display:flex;gap:.5rem">
-      <input id="ei-tr" class="sh-in" placeholder="Transliteration" style="flex:1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-      <button class="sh-ib" onclick="suggestTransliterationFromArabic()" title="Umschrift aus Arabisch vorschlagen" aria-label="Umschrift vorschlagen">✨</button>
+  <div style="display:grid;gap:.4rem">
+    <input id="ei-ar" placeholder="Arabisch" style="font-family:'Playfair Display',serif;direction:rtl;font-size:1rem;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--gold2);border-radius:4px" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <div style="display:flex;gap:.4rem">
+      <input id="ei-tr" placeholder="Transliteration" style="flex:1;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.9rem" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button onclick="suggestTransliterationFromArabic()" title="Transliteration aus Arabisch vorschlagen" style="background:none;border:1px solid var(--border);color:var(--gold2);padding:.5rem .6rem;cursor:pointer;border-radius:4px;font-size:.9rem;white-space:nowrap">✨</button>
     </div>
-    <label class="sh-l">Deutsch</label>
-    <input id="ei-en" class="sh-in" placeholder="Deutsch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-    <button class="sh-line" onclick="showSourceCheck()">🔍 Quellenabgleich (Ninja, TUNICO, Peace Corps)</button>
-    <div id="vs-results" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:.5rem"></div>
-
-    <div class="sh-sec">Einordnung</div>
-    <div style="display:flex;gap:.6rem">
-      <div style="flex:1;min-width:0"><label class="sh-l">Lektion</label><select id="ei-ls" class="sh-in"></select></div>
-      <div style="flex:1;min-width:0"><label class="sh-l">Thema</label><input id="ei-tp" class="sh-in" placeholder="Thema" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>
+    <input id="ei-en" placeholder="Deutsch" style="padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.9rem" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <button onclick="showSourceCheck()" style="background:none;border:1px solid var(--border);color:var(--gold2);padding:.5rem;cursor:pointer;border-radius:4px;font-size:.78rem">🔍 Quellenabgleich (Ninja/TUNICO/Peace Corps)</button>
+    <div id="vs-results" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden"></div>
+    <div style="display:flex;gap:.4rem">
+      <input id="ei-tp" placeholder="Topic" style="flex:1;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.85rem" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <select id="ei-ls" style="width:7rem;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.85rem"></select>
     </div>
-
-    <div class="sh-sec">Lernstand</div>
-    <label class="sh-l">Fällig am</label>
-    <input id="ei-nr" class="sh-in" type="datetime-local">
-    <div style="display:flex;gap:.5rem;margin-top:.5rem">
-      <button class="sh-line" style="flex:1" onclick="neuDueNow()">Jetzt fällig</button>
-      <button class="sh-line red" style="flex:1" onclick="clearDueDateSheet()">Fälligkeit löschen</button>
+    <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap">
+      <input id="ei-nr" type="datetime-local" style="flex:1;min-width:160px;padding:.4rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.8rem">
+      <button onclick="clearDueDateSheet()" style="background:none;border:1px solid var(--red);color:var(--red);padding:.4rem .6rem;cursor:pointer;border-radius:4px;font-size:.8rem;white-space:nowrap">✕ Fälligkeit</button>
+      <label style="color:var(--muted);font-size:.75rem;white-space:nowrap">Level:</label>
+      <input id="ei-lvl" type="number" min="0" max="5" value="0" style="width:3.5rem;padding:.4rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.85rem">
     </div>
-    <label class="sh-l">Stufe</label>
-    <div class="sh-step"><button onclick="neuLvl(-1)" aria-label="Stufe runter">−</button><input id="ei-lvl" type="number" min="0" max="6" value="0" inputmode="numeric"><button onclick="neuLvl(1)" aria-label="Stufe rauf">+</button></div>
-
-    <div class="sh-sec">Partner und Notizen</div>
-    <label class="sh-l">Partner-Status</label>
-    <select id="ei-ps" class="sh-in">
-      <option value="">— kein Status —</option>
-      <option value="pending">⏳ pending</option>
-      <option value="approved">✅ approved</option>
-      <option value="rejected">❌ rejected</option>
-      <option value="unknown">❓ unknown</option>
-      <option value="skipped">⏭ skipped</option>
-      <option value="suggested">💡 suggested</option>
-    </select>
-    <label class="sh-l">Partner-Kommentar</label>
-    <textarea id="ei-pc" class="sh-in" placeholder="Partner-Kommentar…" rows="2"></textarea>
-    <label class="sh-l">Interner Kommentar</label>
-    <textarea id="ei-nt" class="sh-in" placeholder="z. B. Quelle/Sicherheit: Ninja-bestätigt, arabisch selbst erstellt …" rows="2"></textarea>
-    <div style="height:5.5rem"></div>
-  </div>
-  <div class="sh-foot">
-    <button class="sh-save" onclick="saveVocabEditSheet()">Speichern</button>
-    <button id="sheet-flag-btn" class="sh-ib" onclick="toggleFlagSheet()" aria-label="Flagge">🏳️</button>
-    <button class="sh-ib red" onclick="deleteVocabSheet()" aria-label="Löschen">🗑</button>
+    <div style="display:flex;gap:.4rem;align-items:center">
+      <label style="font-size:.72rem;color:var(--muted);white-space:nowrap;text-transform:uppercase;letter-spacing:.05em">Partner:</label>
+      <select id="ei-ps" style="flex:1;padding:.4rem .5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.8rem;font-family:'IBM Plex Mono',monospace">
+        <option value="">— kein Status —</option>
+        <option value="pending">⏳ pending</option>
+        <option value="approved">✅ approved</option>
+        <option value="rejected">❌ rejected</option>
+        <option value="unknown">❓ unknown</option>
+        <option value="skipped">⏭ skipped</option>
+        <option value="suggested">💡 suggested</option>
+      </select>
+    </div>
+    <textarea id="ei-pc" placeholder="Partner-Kommentar…" rows="2" style="width:100%;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.82rem;font-family:'IBM Plex Mono',monospace;resize:none;outline:none"></textarea>
+    <textarea id="ei-nt" placeholder="Interner Kommentar (z.B. Quelle/Sicherheit: Ninja-bestätigt, arabisch selbst erstellt …)" rows="2" style="width:100%;padding:.5rem;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:4px;font-size:.78rem;font-family:'IBM Plex Mono',monospace;resize:none;outline:none"></textarea>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+      <button onclick="saveVocabEditSheet()" style="flex:1;background:var(--gold);border:none;color:#0e0c0a;padding:.5rem;cursor:pointer;border-radius:4px;font-weight:700;font-size:.85rem">Speichern</button>
+      <button id="sheet-flag-btn" onclick="toggleFlagSheet()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:.5rem .8rem;cursor:pointer;border-radius:4px;font-size:.85rem">🏳️</button>
+      <button onclick="deleteVocabSheet()" style="background:none;border:1px solid var(--red);color:var(--red);padding:.5rem .8rem;cursor:pointer;border-radius:4px;font-size:.85rem">🗑</button>
+    </div>
   </div>
 </div>
 <div id="vocab-edit-overlay" onclick="closeVocabEdit()" style="display:none;position:fixed;inset:0;z-index:199;background:rgba(0,0,0,.4);will-change:opacity;transform:translateZ(0)"></div>
@@ -8847,6 +8812,5 @@ window.addEventListener('unhandledrejection', (e) => {
   <button onclick="selectedVocabIds.clear();filterVocabList()" style="padding:.45rem .6rem;background:none;border:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.8rem;cursor:pointer;border-radius:4px">✕</button>
 </div>
 
-<script src="neu/neu.js"></script>
 </body>
 </html>
