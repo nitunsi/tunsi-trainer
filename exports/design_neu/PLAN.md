@@ -26,7 +26,7 @@ Die Dateien: `trainer-neu.html` (Kopie des alten Stands, mit zwei Einbindungen),
 - Lernkarte: große Karte, Symbolleiste passt auch bei 360 px und großer Schrift, Fortschritt oben statt im Kartenkopf
 - Abschluss nach einem 10er-Block: Ring, Richtig/Falsch/Gesamt, „Noch einen Block“ / „Fertig für heute“
 - Leerer Zustand („Alles erledigt“) mit den drei Wegen: 10 Vokabeln fällig setzen, nächster Kurs-Abschnitt, Vorziehen
-- Kurs als Lernpfad (Ring pro Lektion, „Weiter mit“, vier Werte pro Lektion, Sprung zu den Vokabeln)
+- Kurs als Lernpfad (Ring pro Lektion, vier Werte pro Lektion, Sprung zu den Vokabeln). Die aktuelle Lektion (höchste mit freigeschalteten, noch nicht gemeisterten Übungen) ist markiert. Den Knopf „Lernen“ gibt es dort nicht mehr: er startete die fälligen Übungen aller Lektionen und passte nicht zur angezeigten Lektion; das Lernen startet auf der Startseite und unter „Mehr“.
 - Vokabelliste als Karten: Suche bleibt oben stehen, Schnellfilter (Fällig, Ohne Fälligkeit, Mit Audio, Markiert), weitere Filter eingeklappt, Tippen auf eine Zeile öffnet das Bearbeiten, „Auswählen“ blendet erst die Häkchen für Sammelaktionen ein
 - Vokabel bearbeiten als Bottom-Sheet: Abschnitte (Wort, Einordnung, Lernstand, Partner und Notizen), Beschriftungen, große Felder, Speichern/Flagge/Löschen fest unten, „Jetzt fällig“, Stufe per Plus/Minus, Zusammenfassung und Audio oben
 - Statistik: Level in einer Farbe (Goldrampe), Aktivität in Gold statt Rot/Grün
@@ -55,3 +55,10 @@ Die Dateien: `trainer-neu.html` (Kopie des alten Stands, mit zwei Einbindungen),
 4. **Partner-Ansicht** für Semia im neuen Design: gewünscht?
 5. **Umstellung:** Wenn du ganz wechseln willst, wird `trainer-neu.html` zu `trainer.html` (die alte Datei bleibt als `trainer-alt.html`) und `index.html` zeigt auf die neue.
 6. **Hörkarten im Lernen:** Anteil aktuell etwa jede dritte Karte bei Stufe 0 bis 2 und jede siebte ab Stufe 3 (nur Vokabeln mit Audio). Anders gewünscht?
+
+## Noch möglich (nicht entschieden, nicht gebaut)
+- Kurs-Lektionsansicht (Tabs Lernen/Test, Dialog, Grammatik) im neuen Stil — läuft bisher im alten Aussehen mit neuem Rahmen
+- Statistik-Seite umbauen (Level-Verteilung als ein Balken, Heute-Kopf) — bisher nur umgefärbt und mit größerer Schrift
+- Antwort-Paare, Konjugations-Fenster, Login, Synchronisations-Anzeige im neuen Stil
+- Partner-Ansicht für Semia im neuen Stil
+- Test auf dem Handy (echte Tastatur, iOS, Ton) und danach Feinschliff
