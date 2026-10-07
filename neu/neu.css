@@ -386,7 +386,7 @@ body.neu-kb .neu-cq{height:8.6rem}
 html[data-theme="light"]{
   color-scheme:light;
   --bg:#f6f1e7;--surface:#fffdf8;--surface2:#efe8d9;--border:#d8ccb3;
-  --gold:#b88a1e;--gold2:#8a6410;--gold-d:#a47c22;
+  --gold:#8c6510;--gold2:#6f4e08;--gold-d:#a47c22;
   --red:#b83a3a;--green:#2b8650;--blue:#2f5fb8;
   --text:#2a2218;--muted:#6b604d;
   --lvn:#d9cfba;--lv0:#cdbf9c;--lv1:#c3ad72;--lv2:#b99a48;--lv3:#a8832a;--lv4:#946f1c;--lv5:#7d5c12;--lv6:#654708;
@@ -407,3 +407,7 @@ html[data-theme="light"] .neu-bars .col{background:var(--surface2)}
 :root{--ph0:#3a3228;--ph1:#7a6330;--ph2:#b0913f;--ph3:#e8c96a}
 html[data-theme="light"]{--ph0:#ddd3bd;--ph1:#c9b078;--ph2:#b08a2c;--ph3:#7d5c12}
 html[data-theme="light"] .neu-ccard{background:#e9effa!important;border-color:#8aa6dd!important}
+/* Buttons mit fest dunkler Schrift (für goldenen Hintergrund gedacht): im hellen Modus weiße Schrift auf dem dunkleren Gold */
+html[data-theme="light"] [style*="color:#0e0c0a"]{color:#fff!important}
+.partner-logo em{font-style:normal!important}
+.partner-logo small{font-family:var(--neu-ui)!important}
