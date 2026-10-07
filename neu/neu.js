@@ -921,3 +921,37 @@ window.loadOverlayHide = function(){
 
 buildChrome();
 })();
+
+
+/* ---------- Antwort-Paare im neuen Stil ---------- */
+window.renderPairsItem = function(){
+  const c = document.getElementById('exercise-content');
+  if(!c) return;
+  if(!_pairsItems.length){
+    c.innerHTML = '<div class="neu-card" style="text-align:center;color:var(--muted)">Noch keine festen Antwort-Formeln erfasst.</div>';
+    return;
+  }
+  if(_pairsIdx >= _pairsItems.length){
+    const n = _pairsC + _pairsW;
+    c.innerHTML = '<div class="neu-card" style="text-align:center;padding:1.6rem 1rem">'
+      + '<div style="font-size:1.5rem;font-weight:700;color:var(--gold2)">'+_pairsC+' von '+n+' richtig</div>'
+      + '<div class="neu-sub" style="margin:.3rem 0 1.2rem">Antwort-Paare geschafft</div>'
+      + '<button class="neu-btn" onclick="showPairsMode()">Nochmal</button>'
+      + '<button class="neu-btn ghost" style="margin-top:.6rem" onclick="neuGoHome()">Fertig</button></div>';
+    return;
+  }
+  const ex = _pairsItems[_pairsIdx], md = ex.meta || {};
+  let h = '<div class="neu-sub" style="margin:.2rem 0 .5rem">Antwort-Paare · '+(_pairsIdx+1)+' von '+_pairsItems.length+'</div>'
+    + '<div class="neu-sub" style="margin-bottom:.5rem">'+escHtml(ex.instruction||'Was antwortet man darauf?')+'</div>'
+    + '<div class="neu-card" style="font-size:1.25rem;padding:1.2rem 1rem;text-align:center">'+escHtml(ex.prompt||'')
+    + (_pairsRevealed && md.prompt_de ? '<div class="neu-sub" style="margin-top:.5rem">'+escHtml(md.prompt_de)+'</div>' : '') + '</div>';
+  if(!_pairsRevealed){
+    h += '<button class="neu-btn line" onclick="pairsReveal()">Antwort zeigen</button>';
+  } else {
+    h += '<div class="neu-card" style="border-color:var(--gold-d);font-size:1.25rem;color:var(--gold2);text-align:center;padding:1.2rem 1rem">'+escHtml(ex.solution||'—')
+      + (md.solution_de ? '<div class="neu-sub" style="margin-top:.5rem">'+escHtml(md.solution_de)+'</div>' : '') + '</div>'
+      + '<div class="neu-row2"><button class="neu-btn ghost" style="border-color:var(--red);color:var(--red)" onclick="pairsNext(false)">Falsch</button>'
+      + '<button class="neu-btn" style="background:var(--green);color:#0b1a10" onclick="pairsNext(true)">Richtig</button></div>';
+  }
+  c.innerHTML = h;
+};

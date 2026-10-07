@@ -57,11 +57,11 @@ Die Dateien: `trainer-neu.html` (Kopie des alten Stands, mit zwei Einbindungen),
 1. **Tagesziel:** Standard 100 Antworten. Dein Schnitt liegt bei etwa 165. Passt 100, oder lieber 150 als Standard?
 2. ~~12-Wochen-Raster~~ — entschieden: nicht bauen.
 3. **Wischgesten** bei Kurs-Karten (rechts = richtig, links = falsch): gewünscht?
-4. **Partner-Ansicht** für Semia im neuen Design: gewünscht?
+4. ~~Partner-Ansicht~~ — umgesetzt (nur Skin, Ablauf unverändert).
 5. **Umstellung:** Wenn du ganz wechseln willst, wird `trainer-neu.html` zu `trainer.html` (die alte Datei bleibt als `trainer-alt.html`) und `index.html` zeigt auf die neue.
 6. **Hörkarten im Lernen:** Anteil aktuell etwa jede dritte Karte bei Stufe 0 bis 2 und jede siebte ab Stufe 3 (nur Vokabeln mit Audio). Anders gewünscht?
 
 ## Noch möglich (nicht entschieden, nicht gebaut)
-- Antwort-Paare, Konjugations-Fenster, Login, Synchronisations-Anzeige im neuen Stil
-- Partner-Ansicht für Semia im neuen Stil
+- ~~Antwort-Paare, Konjugations-Fenster, Login, Sync-Anzeige~~ im neuen Stil (2026-10-07, im Browser getestet, nicht auf dem Handy)
+- ~~Partner-Ansicht für Semia~~ per CSS im neuen Stil (nicht visuell getestet, braucht Partner-Anmeldung)
 - Test auf dem Handy (echte Tastatur, iOS, Ton) und danach Feinschliff
