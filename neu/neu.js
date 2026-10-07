@@ -991,8 +991,14 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
       lo.insertBefore(lod, lo.firstChild);
     }
     if(lod) lod.innerHTML = arts[i];
+    const ls = document.getElementById('login-screen');
+    // Mit gültiger Sitzung bleibt die Anmeldekarte verborgen (kein Aufblitzen vor dem Ladebildschirm);
+    // sie erscheint erst, wenn die Wiederanmeldung scheitert (Skript setzt dann display zurück) oder man abmeldet.
+    if(ls && !(typeof loadSession === 'function' && loadSession())) ls.classList.add('neu-ready');
   }
   apply();
+  { const ls = document.getElementById('login-screen');
+    if(ls) new MutationObserver(() => { if(ls.style.display !== 'none') ls.classList.add('neu-ready'); }).observe(ls, {attributes:true, attributeFilter:['style']}); }
   ['doLogout','doPartnerLogout'].forEach(n => {
     const f = window[n];
     if(typeof f === 'function') window[n] = function(){ const r = f.apply(this, arguments); apply(); return r; };
