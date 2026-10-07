@@ -362,3 +362,19 @@ body.neu-kb .neu-cq{height:5.6rem}
 .neu-cq .cq-p{font-size:1.6rem!important;line-height:1.4!important;font-weight:600;color:var(--text)}
 .neu-cq{height:11rem}
 body.neu-kb .neu-cq{height:8.6rem}
+
+/* ---------- Statistik-Diagramme: lesbar bei 14/30/90 Tagen ---------- */
+.neu-chart{touch-action:pan-y}
+.neu-bars.multi{position:relative;gap:3px}
+.neu-bars.multi .b{gap:.15rem}
+.neu-bars.multi .b b{font-size:.68rem;min-height:1em;letter-spacing:-.2px}
+.neu-bars.multi.thin{gap:1px}
+.neu-bars.multi .b.sel .col{outline:2px solid var(--gold2);outline-offset:1px}
+.neu-bars .avg{position:absolute;left:0;right:0;border-top:1.5px dashed var(--gold2);opacity:.85;pointer-events:none;height:0}
+.neu-bars .avg em{position:absolute;right:0;top:-1.25rem;font-style:normal;font-size:.72rem;color:var(--gold2);background:var(--surface);padding:0 .25rem;border-radius:4px}
+.neu-axis{font-size:.75rem}
+.neu-tip{min-height:1.5em;margin-top:.45rem;font-size:.9rem;color:var(--text)}
+.neu-sumrow{display:flex;gap:.5rem;margin-top:.7rem;border-top:1px solid var(--border);padding-top:.6rem}
+.neu-sumrow>div{flex:1;min-width:0}
+.neu-sumrow small{display:block;font-size:.75rem;color:var(--muted);white-space:nowrap}
+.neu-sumrow b{display:block;font-size:1.1rem;color:var(--gold2);white-space:nowrap}

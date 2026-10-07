@@ -780,7 +780,7 @@ async function loadActivityBars(N){
   if(_cache[key] && Date.now() - _cache[key].t < 120000) return _cache[key].d;
   const berlin = d => d.toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
   const midnight = new Date(); midnight.setHours(0,0,0,0);
-  const since = new Date(midnight); since.setDate(since.getDate() - (N-1));
+  const since = new Date(midnight); since.setDate(since.getDate() - N);
   const days = {};
   for(let page = 0; page < 30; page++){
     const r = await sbApi('review_log?user_id=eq.'+currentUser.id+'&select=correct,created_at&created_at=gte.'+since.toISOString()+'&order=created_at.desc&limit=1000&offset='+(page*1000));
@@ -788,30 +788,43 @@ async function loadActivityBars(N){
     if(!r || r.length < 1000) break;
   }
   const list = [];
-  for(let i = N-1; i >= 0; i--){ const d = new Date(midnight); d.setDate(d.getDate() - i); const e = days[berlin(d)] || {a:0, c:0}; list.push({d, a:e.a, c:e.c}); }
+  for(let i = N; i >= 0; i--){ const d = new Date(midnight); d.setDate(d.getDate() - i); const e = days[berlin(d)] || {a:0, c:0}; list.push({d, a:e.a, c:e.c}); }
   _cache[key] = {t: Date.now(), d: list};
   return list;
 }
 const WD = ['So','Mo','Di','Mi','Do','Fr','Sa'];
 function barChart(items, opts){
-  // items: [{v, c?, label, hot, act}] — c = Teilwert (richtig) für gestapelte Balken
-  const max = Math.max(1, ...items.map(x => x.v));
-  const H = 96, thin = items.length > 16, nums = items.length <= 14 && max < 1000;
-  const body = items.map(x => {
-    const h = Math.round(x.v / max * H);
-    const hc = x.c != null && x.v ? Math.round(h * x.c / x.v) : h;
-    const bar = x.v ? (x.c != null
+  // items: [{v, c?, label, hot, act, tip, num}] — c = Teilwert (richtig) für gestapelte Balken, tip = Text beim Antippen
+  // opts: {avg, sum:[[Titel, Wert],…], def}. Bis 7 Balken: Zahlen über und Beschriftung unter den Balken.
+  // Darüber: Balken ohne Zahlen, Durchschnittslinie, Datumsachse, Antippen/Wischen zeigt die Werte.
+  opts = opts || {};
+  const n = items.length, max = Math.max(1, ...items.map(x => x.v)), H = 96;
+  const stack = x => {
+    const h = Math.round(x.v / max * H), hc = x.c != null && x.v ? Math.round(h * x.c / x.v) : h;
+    return x.v ? (x.c != null
       ? '<i style="height:'+(h-hc)+'px;background:#5a4c2e"></i><i style="height:'+hc+'px;background:var(--gold)"></i>'
       : '<i style="height:'+h+'px;background:'+(x.hot?'var(--gold2)':'#6f6246')+'"></i>') : '';
-    return '<div class="b'+(x.hot?' hot':'')+'"'+(x.act?' onclick="'+x.act+'"':'')+'>'+(nums?'<b>'+(x.v?fmtN(x.v):'')+'</b>':'')+'<div class="col">'+bar+'</div>'+(thin?'':'<span>'+(x.label||'')+'</span>')+'</div>';
-  }).join('');
-  let axis = '';
-  if(thin){
-    const n = items.length, pick = [0, Math.floor(n/2), n-1].map(i => items[i].ax || '');
-    axis = '<div class="neu-axis"><span>'+pick[0]+'</span><span>'+pick[1]+'</span><span>'+pick[2]+'</span></div>';
+  };
+  const sum = opts.sum ? '<div class="neu-sumrow">'+opts.sum.map(([t, v]) => '<div><small>'+t+'</small><b>'+v+'</b></div>').join('')+'</div>' : '';
+  if(n <= 7){
+    const body = items.map(x => '<div class="b'+(x.hot?' hot':'')+'"'+(x.act?' onclick="'+x.act+'"':'')+'><b>'+(x.v?fmtN(x.v):'')+'</b><div class="col">'+stack(x)+'</div><span>'+(x.label||'')+'</span></div>').join('');
+    return '<div class="neu-bars">'+body+'</div>'+sum;
   }
-  return '<div class="neu-bars'+(thin?' thin':'')+'">'+body+'</div>'+axis;
+  const showNums = items.some(x => x.num != null) && n <= 14;
+  const body = items.map(x => '<div class="b'+(x.hot?' hot':'')+'" data-tip="'+escHtml(x.tip||'')+'">'+(showNums?'<b>'+(x.num||'')+'</b>':'')+'<div class="col">'+stack(x)+'</div></div>').join('');
+  const avg = opts.avg ? '<div class="avg" style="bottom:'+Math.round(opts.avg/max*H)+'px"><em>Ø '+fmtN(Math.round(opts.avg))+(opts.avgUnit||'')+'</em></div>' : '';
+  const idx = [0, 1, 2, 3, 4].map(k => Math.round(k * (n-1) / 4));
+  const axis = '<div class="neu-axis">'+idx.map(i => '<span>'+(items[i].ax || '')+'</span>').join('')+'</div>';
+  return '<div class="neu-chart"><div class="neu-bars multi'+(n>30?' thin':'')+'" onpointerdown="neuBarsTap(event,this)" onpointermove="if(event.buttons)neuBarsTap(event,this)">'+body+avg+'</div>'+axis
+    + '<div class="neu-tip">'+(opts.def || 'Balken antippen: Werte anzeigen')+'</div></div>'+sum;
 }
+window.neuBarsTap = function(ev, el){
+  const bars = el.querySelectorAll('.b'); if(!bars.length) return;
+  const r = el.getBoundingClientRect();
+  const i = Math.max(0, Math.min(bars.length-1, Math.floor((ev.clientX - r.left) / r.width * bars.length)));
+  bars.forEach((b, k) => b.classList.toggle('sel', k === i));
+  const t = el.parentElement.querySelector('.neu-tip'); if(t) t.textContent = bars[i].dataset.tip || '';
+};
 function winChips(cur, fn){ return '<div style="display:flex;gap:.35rem">'+[7,14,30,90].map(n => '<span class="neu-chip'+(n===cur?' on':'')+'" style="min-height:32px;padding:0 .65rem" onclick="'+fn+'('+n+')">'+n+'</span>').join('')+'</div>'; }
 window.neuSetFc = function(n){ forecastWindow = n; showStats(); };
 window.neuSetAct = function(n){ activityWindow = n; renderActivityCard(); };
@@ -822,17 +835,28 @@ function renderActivityCard(){
   const N = activityWindow;
   $('neu-act-chips').innerHTML = winChips(N, 'neuSetAct');
   el.innerHTML = '<div class="neu-sub" style="padding:1.2rem 0;text-align:center">Lade …</div>';
-  loadActivityBars(N).then(list => {
+  loadActivityBars(N).then(full => {
     if(!$('neu-act-body') || N !== activityWindow) return;
-    let items;
+    // full = N volle Tage vor heute + heute; der Durchschnitt zählt nur volle Tage (heute ist noch nicht vorbei)
+    const prior = full.slice(0, N), list = full.slice(1);
+    const tot = prior.reduce((s,x)=>s+x.a, 0), avg = tot / N, mx = Math.max(0, ...prior.map(x=>x.a)), act = prior.filter(x=>x.a>0).length;
+    const dm = d => d.getDate()+'.'+(d.getMonth()+1)+'.';
+    const sum = [['Ø pro Tag', fmtN(Math.round(avg))], ['Bester Tag', fmtN(mx)], ['Aktive Tage', act+' von '+N]];
+    let items, opts = {sum};
     if(N >= 90){
       items = [];
-      for(let i = 0; i < list.length; i += 7){ const part = list.slice(i, i+7); const a = part.reduce((s,x)=>s+x.a,0), c = part.reduce((s,x)=>s+x.c,0); items.push({v:a, c, label:(part[0].d.getDate())+'.'+(part[0].d.getMonth()+1)+'.'}); }
-      items = items.map((x,i) => ({...x, label: i % 3 === 0 ? x.label : '', ax: x.label}));
+      for(let i = 0; i < list.length; i += 7){
+        const part = list.slice(i, i+7), a = part.reduce((s,x)=>s+x.a,0), c = part.reduce((s,x)=>s+x.c,0), per = Math.round(a / part.length);
+        items.push({v:a, c, num:fmtN(per), ax:dm(part[0].d), tip:'Woche ab '+dm(part[0].d)+': '+fmtN(a)+' beantwortet, Ø '+fmtN(per)+' pro Tag'});
+      }
+      opts.avg = items.reduce((s,x)=>s+x.v,0) / items.length; opts.avgUnit = ' / Woche';
+      opts.def = 'Balken = Woche, Zahl = Ø pro Tag. Antippen: Details';
     } else {
-      items = list.map((x,i) => ({v:x.a, c:x.c, hot:i===list.length-1, label: N <= 14 ? (i===list.length-1 ? 'Heute' : WD[x.d.getDay()]) : '', ax: x.d.getDate()+'.'+(x.d.getMonth()+1)+'.'}));
+      items = list.map((x,i) => ({v:x.a, c:x.c, hot:i===list.length-1, label: N <= 7 ? (i===list.length-1 ? 'Heute' : WD[x.d.getDay()]) : '', ax: dm(x.d),
+        tip: (i===list.length-1 ? 'Heute' : WD[x.d.getDay()]+' '+dm(x.d))+': '+fmtN(x.a)+' beantwortet, '+fmtN(x.c)+' richtig'}));
+      opts.avg = avg;
     }
-    el.innerHTML = barChart(items);
+    el.innerHTML = barChart(items, opts);
   }).catch(e => { const b = $('neu-act-body'); if(b) b.innerHTML = '<div style="color:var(--red);font-size:.85rem">Fehler: '+escHtml(e.message)+'</div>'; });
 }
 
@@ -885,8 +909,12 @@ window.showStats = function(){
     + segBar(p) + legend(p, act, tip) + '</div>';
 
   const fcItems = fc.map((v,i) => { const dd = new Date(todayD); dd.setDate(dd.getDate()+i);
-    const label = N <= 14 ? (i===0 ? 'Heute' : i===1 ? 'Morgen' : WD[dd.getDay()]) : '';
-    return {v, label, hot:i===0, act: i===0 ? 'openPullForward()' : '', ax: i===0 ? 'Heute' : dd.getDate()+'.'+(dd.getMonth()+1)+'.'}; });
+    const dm = dd.getDate()+'.'+(dd.getMonth()+1)+'.';
+    const label = N <= 7 ? (i===0 ? 'Heute' : i===1 ? 'Morgen' : WD[dd.getDay()]) : '';
+    return {v, label, hot:i===0, act: N <= 7 && i===0 ? 'openPullForward()' : '', ax: i===0 ? 'Heute' : dm,
+      tip: (i===0 ? 'Heute' : WD[dd.getDay()]+' '+dm)+': '+fmtN(v)+' fällig'}; });
+  const fcTotal = fc.reduce((a,x)=>a+x,0), fcMax = Math.max(0, ...fc);
+  const fcSum = [['Gesamt', fmtN(fcTotal)], ['Ø pro Tag', fmtN(Math.round(fcTotal / N))], ['Spitze', fmtN(fcMax)]];
   const lvTot = vb.map((x,i) => x + cb[i]), lvSum = lvTot.reduce((a,x)=>a+x,0) || 1;
   const hints = ['ohne Fälligkeit','fällig','Wdh. in 1 T','3 T','7 T','14 T','30 T','90 T'];
   const lvRows = lvTot.map((n,i) => '<div class="neu-lvrow"><u style="background:'+LV_COL[i]+'"></u><span>'+(i===0?'Neu':'Stufe '+(i-1))+'</span><em>'+hints[i]+'</em><b>'+fmtN(n)+'</b><s'+(dueByBucket[i]?' style="color:var(--red)"':'')+'>'+(dueByBucket[i]?fmtN(dueByBucket[i])+' fällig':'')+'</s></div>').join('');
@@ -906,7 +934,7 @@ window.showStats = function(){
     + '</div>'
     + '<div class="neu-card"><div class="neu-ch" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem"><span>Fällig</span><span style="display:flex;gap:.5rem;align-items:center"><span class="neu-chip" style="min-height:32px;padding:0 .7rem" onclick="openPullForward()">Vorziehen</span></span></div>'
     +   '<div style="margin:.2rem 0 .7rem">'+winChips(N, 'neuSetFc')+'</div>'
-    +   barChart(fcItems) + (fcBlocked ? '<div class="neu-sub" style="margin-top:.5rem">'+fmtN(fcBlocked)+' in der Partner-Queue gesperrt</div>' : '')
+    +   barChart(fcItems, {sum: fcSum, avg: fcTotal / N, def: 'Balken antippen: fällig an dem Tag'}) + (fcBlocked ? '<div class="neu-sub" style="margin-top:.5rem">'+fmtN(fcBlocked)+' in der Partner-Queue gesperrt</div>' : '')
     + '</div>'
     + (all ? '<div class="neu-card"><div class="neu-ch">Aktivität</div><div id="neu-act-chips" style="margin:.2rem 0 .7rem"></div><div id="neu-act-body"></div></div>' : '')
     + (all ? '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer" onclick="setMode(\'partnerqueue\')"><div class="neu-sub">Prüf-Aktivität wird geladen …</div></div>' : '')
