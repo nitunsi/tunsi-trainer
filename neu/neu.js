@@ -341,7 +341,8 @@ function showMore(){
     +   li('search','Prüfungen',"setMode('dupes')") + li('inbox','Partner-Queue',"setMode('partnerqueue')") + li('check','Partner-Check',"setMode('partnercheck')") + li('compass','Quellenabgleich',"setMode('quellen')") + li('abc','Transliterationsregeln',"setMode('translitregeln')") + li('save','Export',"setMode('export')")
     + '</div>'
     + '<div class="neu-h">Darstellung und Lernen</div><div class="neu-card">'
-    +   '<div class="neu-cap">Schriftgröße</div>'+seg([['S','Klein'],['M','Mittel'],['L','Groß']], font, "neuSetFont('%v')")
+    +   '<div class="neu-cap">Farbschema</div>'+seg([['auto','Automatisch'],['light','Hell'],['dark','Dunkel']], LS.get('neu-theme','light'), "neuSetTheme('%v')")
+    +   '<div class="neu-cap" style="margin-top:1rem">Schriftgröße</div>'+seg([['S','Klein'],['M','Mittel'],['L','Groß']], font, "neuSetFont('%v')")
     +   '<div class="neu-cap" style="margin-top:1rem">Tagesziel (richtige Antworten pro Tag)</div>'+seg([[50,'50'],[100,'100'],[150,'150'],[200,'200']], goal, "neuSetGoal(%v)")
     +   '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Audio beim Aufdecken abspielen</span>'+sw(audioAutoplay, "toggleAudioAutoplay();showMore()")+'</div>'
     +   '<div class="li"><span class="sp">Vibration bei Richtig und Falsch</span>'+sw(vib, "neuToggleVib()")+'</div></div>'
@@ -356,6 +357,17 @@ function showMore(){
   const sel = $('neu-lesson');
   if(sel){ sel.value = cLesson; if(sel.value !== cLesson) sel.value = 'all'; }
 }
+function applyTheme(){
+  const t = LS.get('neu-theme', 'light');
+  const light = t === 'light' || (t === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+  document.documentElement.setAttribute('data-theme', light ? 'light' : 'dark');
+  let m = document.querySelector('meta[name="theme-color"]');
+  if(!m){ m = document.createElement('meta'); m.name = 'theme-color'; document.head.appendChild(m); }
+  m.content = light ? '#f6f1e7' : '#0e0c0a';
+}
+applyTheme();
+if(window.matchMedia) try{ window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme); }catch(e){}
+window.neuSetTheme = function(v){ LS.set('neu-theme', v); applyTheme(); showMore(); };
 window.neuSetFont = function(k){ LS.set('neu-font', k); applyFont(); showMore(); };
 window.neuSetGoal = function(n){ LS.set('neu-goal', String(n)); showMore(); };
 window.neuToggleVib = function(){ LS.set('neu-vib', LS.get('neu-vib','0') === '1' ? '0' : '1'); if(LS.get('neu-vib') === '1' && navigator.vibrate) navigator.vibrate(30); showMore(); };
@@ -790,8 +802,8 @@ window.renderCourseVocabTab = function(tc, l){
 };
 
 /* ---------- Statistik im neuen Stil ---------- */
-const PHASE_COL = ['#3a3228', '#7a6330', '#b0913f', '#e8c96a'];
-const LV_COL = ['#4a4034','#6f6246','#8c7536','#a68a3a','#c4a449','#d6b755','#e8c96a','#f6de8e'];
+const PHASE_COL = ['var(--ph0)', 'var(--ph1)', 'var(--ph2)', 'var(--ph3)'];
+const LV_COL = ['var(--lvn)','var(--lv0)','var(--lv1)','var(--lv2)','var(--lv3)','var(--lv4)','var(--lv5)','var(--lv6)'];
 const pct0 = (a,b) => b ? Math.round(100*a/b) : 0;
 async function loadActivityBars(N){
   const key = 'act' + N;
@@ -821,7 +833,7 @@ function barChart(items, opts){
     const h = Math.round(x.v / max * H), hc = x.c != null && x.v ? Math.round(h * x.c / x.v) : h;
     return x.v ? (x.c != null
       ? '<i style="height:'+(h-hc)+'px;background:#5a4c2e"></i><i style="height:'+hc+'px;background:var(--gold)"></i>'
-      : '<i style="height:'+h+'px;background:'+(x.hot?'var(--gold2)':'#6f6246')+'"></i>') : '';
+      : '<i style="height:'+h+'px;background:'+(x.hot?'var(--gold2)':'var(--bar)')+'"></i>') : '';
   };
   const sum = opts.sum ? '<div class="neu-sumrow">'+opts.sum.map(([t, v]) => '<div><small>'+t+'</small><b>'+v+'</b></div>').join('')+'</div>' : '';
   if(n <= 7){
@@ -1021,11 +1033,11 @@ window.renderPairsItem = function(){
 (function(){
   const G='#c9a84c', G2='#e8c96a';
   const B='#5b8fc7';
-const sky=`<svg viewBox="0 0 220 100" width="220"><g fill="#14110e" stroke="${G}" stroke-width="2" stroke-linejoin="round"><path d="M6 96V62h30v34M40 96V44h34v52M78 96V68h26v28M108 96V52h30v44M142 96V70h28v26M174 96V58h38v38"/><path d="M40 44a17 14 0 0 1 34 0M108 52a15 12 0 0 1 30 0" stroke="${B}"/></g><g fill="${G2}"><rect x="50" y="58" width="6" height="10" rx="3"/><rect x="118" y="66" width="6" height="10" rx="3"/><rect x="186" y="72" width="7" height="12" rx="3.5"/><rect x="14" y="74" width="5" height="9" rx="2.5"/></g><path d="M0 98h220" stroke="${G}" stroke-width="2"/><g fill="none" stroke="${G2}" stroke-width="2"><path d="M178 20a11 11 0 1 0 6 18a9 9 0 1 1-6-18z" fill="${G2}" stroke="none"/></g></svg>`;
+const sky=`<svg viewBox="0 0 220 100" width="220"><g style="fill:var(--surface)" stroke="${G}" stroke-width="2" stroke-linejoin="round"><path d="M6 96V62h30v34M40 96V44h34v52M78 96V68h26v28M108 96V52h30v44M142 96V70h28v26M174 96V58h38v38"/><path d="M40 44a17 14 0 0 1 34 0M108 52a15 12 0 0 1 30 0" stroke="${B}"/></g><g fill="${G2}"><rect x="50" y="58" width="6" height="10" rx="3"/><rect x="118" y="66" width="6" height="10" rx="3"/><rect x="186" y="72" width="7" height="12" rx="3.5"/><rect x="14" y="74" width="5" height="9" rx="2.5"/></g><path d="M0 98h220" stroke="${G}" stroke-width="2"/><g fill="none" stroke="${G2}" stroke-width="2"><path d="M178 20a11 11 0 1 0 6 18a9 9 0 1 1-6-18z" fill="${G2}" stroke="none"/></g></svg>`;
 const arches=`<svg viewBox="0 0 220 110" width="220"><g fill="none" stroke="${G}" stroke-width="2.2">${[[20,40],[75,60],[145,40]].map(([x,w])=>`<path d="M${x} 104V${70-w/2+20}a${w/2} ${w/2} 0 0 1 ${w} 0V104"/>`).join('')}<path d="M75 104V70a30 30 0 0 1 60 0v34" stroke="${G2}" stroke-width="3"/><path d="M85 104V72a20 20 0 0 1 40 0v32" opacity=".5"/><path d="M0 104h220"/></g><circle cx="105" cy="38" r="3" fill="${G2}"/></svg>`;
 const olive=(()=>{const x0=14,y0=66,x1=206,y1=30,ang=Math.atan2(y1-y0,x1-x0);let g='';for(let i=0;i<7;i++){const t=(i+.6)/7.4,x=x0+(x1-x0)*t,y=y0+(y1-y0)*t;const d=ang*180/Math.PI;for(const sgn of [-1,1]){const cx=x+Math.sin(ang)*-sgn*-14*1+Math.cos(ang)*6*(sgn>0?1:-1)*0,cy=y+Math.cos(ang)*-sgn*14*-1*-1;const rot=d+sgn*62+90-90;g+=`<ellipse cx="${x+(-Math.sin(ang))*sgn*13*-1}" cy="${y+Math.cos(ang)*sgn*13*-1}" rx="4.5" ry="12" transform="rotate(${d+90+sgn*-55} ${x+(-Math.sin(ang))*sgn*13*-1} ${y+Math.cos(ang)*sgn*13*-1})" fill="none" stroke="${G2}" stroke-width="2"/>`}}
 return `<svg viewBox="0 0 220 90" width="220"><path d="M${x0} ${y0}L${x1} ${y1}" stroke="${G}" stroke-width="2.5"/>${g}<circle cx="70" cy="52" r="6" fill="${B}"/><circle cx="128" cy="38" r="6" fill="${B}"/></svg>`})();
-const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 100 0z" fill="${G}" opacity=".9"/>${[0,1,2,3].map(i=>`<path d="M0 ${68+i*9} q13.75 -8 27.5 0 t27.5 0 t27.5 0 t27.5 0 t27.5 0 t27.5 0 t27.5 0 t27.5 0" fill="none" stroke="${i%2?B:G2}" stroke-width="2" opacity="${1-i*.18}"/>`).join('')}<g transform="translate(110 38)"><path d="M0 -14a14 14 0 1 0 0 28a11 11 0 1 1 0 -28z" fill="#1a1612" transform="translate(-4 0)"/></g></svg>`;
+const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 100 0z" fill="${G}" opacity=".9"/>${[0,1,2,3].map(i=>`<path d="M0 ${68+i*9} q13.75 -8 27.5 0 t27.5 0 t27.5 0 t27.5 0 t27.5 0 t27.5 0 t27.5 0 t27.5 0" fill="none" stroke="${i%2?B:G2}" stroke-width="2" opacity="${1-i*.18}"/>`).join('')}<g transform="translate(110 38)"><path d="M0 -14a14 14 0 1 0 0 28a11 11 0 1 1 0 -28z" style="fill:var(--surface)" transform="translate(-4 0)"/></g></svg>`;
 
   const arts = [sky, arches, olive, sea];
   let lo, lod;
