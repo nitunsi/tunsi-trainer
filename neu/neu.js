@@ -615,7 +615,21 @@ window.restartExercise = function(){ if(cMode === 'listen'){ closeResult(); star
   document.addEventListener('focusout', e => {
     if(!isField(e.target)) return;
     clearTimeout(t);
-    t = setTimeout(() => { if(!isField(document.activeElement)) document.body.classList.remove('neu-kb'); }, 250);
+    // Nach dem Antworten wird das Feld deaktiviert (Fokus weg) — der kompakte Aufbau bleibt, solange die Karte
+    // da ist; sonst wäre der obere Block bei Frage und Antwort verschieden hoch und die Seite würde springen.
+    t = setTimeout(() => { if(!isField(document.activeElement) && !document.querySelector('#flash-input,#course-input')) document.body.classList.remove('neu-kb'); }, 250);
+  });
+  // Karte erscheint sofort im kompakten Aufbau (nicht erst, wenn das Feld Fokus bekommt) und verlässt ihn,
+  // sobald keine Eingabekarte mehr da ist (Ergebnis, Startseite …)
+  const inSession = () => document.body.classList.contains('neu-session');
+  setInterval(() => {
+    const has = !!document.querySelector('#flash-input,#course-input');
+    const on = document.body.classList.contains('neu-kb');
+    if(on && !has && !isField(document.activeElement)) document.body.classList.remove('neu-kb');
+  }, 400);
+  ['rFlash','rCourseEx'].forEach(n => {
+    const f = window[n];
+    if(typeof f === 'function') window[n] = function(){ if(inSession()) document.body.classList.add('neu-kb'); return f.apply(this, arguments); };
   });
   if(window.visualViewport){
     window.visualViewport.addEventListener('resize', () => { if(document.body.classList.contains('neu-kb')) setTimeout(ensureVisible, 50); });
