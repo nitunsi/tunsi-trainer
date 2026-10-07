@@ -8,6 +8,7 @@
 <!-- build:1778362931 updated:1778361524 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
 <title>Tounsi Trainer</title>
+<script>try{var _t=localStorage.getItem('neu-theme')||'auto';var _l=_t==='light'||(_t==='auto'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches);document.documentElement.setAttribute('data-theme',_l?'light':'dark');}catch(e){}</script>
 <link rel="preconnect" href="https://lzecflvfalxkodytnwzf.supabase.co">
 <link rel="dns-prefetch" href="https://lzecflvfalxkodytnwzf.supabase.co">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2232,7 +2233,7 @@ function fmtDue(date){
   if(diff===1) return 'morgen';
   return 'in '+diff+'T';
 }
-const SRS_LEVEL_COLORS = ['#6f6246','#8c7536','#a68a3a','#c4a449','#d6b755','#e8c96a','#f6de8e'];
+const SRS_LEVEL_COLORS = ['var(--lv0)','var(--lv1)','var(--lv2)','var(--lv3)','var(--lv4)','var(--lv5)','var(--lv6)'];
 const SRS_LEVEL_LABELS = ['L0','L1','L2','L3','L4','L5','L6'];
 function srsInfoBadge(vocab){
   if(!vocab || !vocab.id) return '';
