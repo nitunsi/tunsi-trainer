@@ -3628,7 +3628,9 @@ function openPullForward(){
   const cands = pullForwardCandidates();
   const avail = cands.length;
   const perLv = {4:0, 5:0, 6:0};
-  cands.forEach(c => { if(perLv[c.level] !== undefined) perLv[c.level]++; });
+  // Nur Einträge, die morgen fällig sind (die beim Vorziehen als Erste drankommen, höhere Stufe zuerst)
+  const tmr = new Date(); tmr.setHours(0,0,0,0); tmr.setDate(tmr.getDate() + 1);
+  cands.forEach(c => { if(c.day === tmr.getTime() && perLv[c.level] !== undefined) perLv[c.level]++; });
   if(!avail){ showToast('Nichts zum Vorziehen: alles ist schon fällig','warn'); return; }
   let last = 20;
   try{ last = parseInt(localStorage.getItem('pull-forward-n'),10) || 20; }catch(e){}
@@ -3639,7 +3641,7 @@ function openPullForward(){
   o.innerHTML = '<div style="background:var(--surface);border:1px solid var(--gold);border-radius:8px;padding:1.1rem;width:100%;max-width:340px">'
     + '<div style="font-size:1rem;font-weight:700;color:var(--gold);margin-bottom:.4rem">Vorziehen</div>'
     + '<div style="font-size:.85rem;color:var(--muted);line-height:1.5;margin-bottom:.8rem">Wie viele Einträge sollen jetzt fällig werden? Es kommen die nächsten dran (frühestes Datum zuerst), Vokabeln und Kurs-Übungen zusammen. Vorziehbar: '+fmtN(avail)+'.</div>'
-    + '<div style="display:flex;gap:.5rem;margin-bottom:.8rem">'+[4,5,6].map(l => '<div style="flex:1;text-align:center;padding:.5rem .2rem;background:var(--bg);border:1px solid var(--border);border-radius:10px"><div style="font-size:.78rem;color:var(--muted)">Stufe '+l+'</div><div style="font-size:1.2rem;font-weight:700;color:var(--gold2)">'+fmtN(perLv[l])+'</div></div>').join('')+'</div>'
+    + '<div style="font-size:.85rem;color:var(--muted);margin-bottom:.3rem">Morgen fällig, nach Stufe:</div><div style="display:flex;gap:.5rem;margin-bottom:.8rem">'+[4,5,6].map(l => '<div style="flex:1;text-align:center;padding:.5rem .2rem;background:var(--bg);border:1px solid var(--border);border-radius:10px"><div style="font-size:.78rem;color:var(--muted)">Stufe '+l+'</div><div style="font-size:1.2rem;font-weight:700;color:var(--gold2)">'+fmtN(perLv[l])+'</div></div>').join('')+'</div>'
     + '<input id="pf-n" type="number" inputmode="numeric" min="1" max="'+Math.min(avail,500)+'" value="'+Math.min(last,avail)+'" style="width:100%;padding:.7rem;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:1.2rem;text-align:center;border-radius:4px;margin-bottom:.8rem">'
     + '<div style="display:flex;gap:.6rem">'
     + '<button id="pf-cancel" style="flex:1;padding:.7rem;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:\'IBM Plex Mono\',monospace;font-size:.9rem;border-radius:4px;cursor:pointer">Abbrechen</button>'
