@@ -1046,20 +1046,28 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     if(!card) return;
     let box = card.querySelector('.neu-cq');
     if(!box){
+      // Die Standardanweisung „Übersetzen Sie (ins Tunesische).“ wiederholt nur die Kopfzeile „Übersetzen“ — weglassen.
+      // Gilt nur, wenn die Aufgabe als „Übersetzen“ gekennzeichnet ist; Anweisungen mit Inhalt (Muster, Plural …) bleiben.
+      if(/Übersetzen/.test(card.firstElementChild ? card.firstElementChild.textContent : ''))
+        [...card.children].slice(1).forEach(k => { if(!k.id && /^Übersetze(n Sie)?( ins Tunesische)?\.?$/i.test(k.textContent.trim())) k.remove(); });
       const kids = [...card.children], take = [];
       for(let i = 1; i < kids.length; i++){ if(STOP.has(kids[i].id) || kids[i].classList.contains('feedback')) break; take.push(kids[i]); }
       if(!take.length) return;
+      // Hinweiszeilen (klein im Altcode) und die eigentliche Aufgabe unterscheiden und größer setzen
+      take.forEach(k => k.classList.add(parseFloat(getComputedStyle(k).fontSize) < 15 ? 'cq-i' : 'cq-p'));
       box = document.createElement('div'); box.className = 'neu-cq';
       card.insertBefore(box, take[0]);
       take.forEach(k => box.appendChild(k));
     }
     fit(box);
   }
+  // Passt der Inhalt nicht in die feste Höhe, wird die Schrift in wenigen Schritten verkleinert (höchstens auf ~78 %), danach scrollt der Block
   function fit(box){
-    const items = box.querySelectorAll('div,span');
-    items.forEach(e => e.style.removeProperty('font-size'));
-    for(let k = 0; k < 6 && box.scrollHeight > box.clientHeight + 1; k++){
-      items.forEach(e => { if(e.children.length) return; const fs = parseFloat(getComputedStyle(e).fontSize); e.style.setProperty('font-size', Math.max(11, fs * .92) + 'px', 'important'); });
+    const kids = [...box.children];
+    kids.forEach(k => k.style.removeProperty('font-size'));
+    const base = kids.map(k => parseFloat(getComputedStyle(k).fontSize));
+    for(let n = 1; n <= 3 && box.scrollHeight > box.clientHeight + 1; n++){
+      kids.forEach((k, i) => k.style.setProperty('font-size', (base[i] * Math.pow(.92, n)) + 'px', 'important'));
     }
   }
   const _rc = window.rCourseEx;

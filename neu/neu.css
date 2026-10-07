@@ -355,3 +355,10 @@ body.neu-kb .neu-cq{height:5.6rem}
 .neu-ccard>div:first-child{flex-wrap:nowrap!important;min-height:1.9rem;overflow:hidden}
 .neu-ccard>div:first-child>span:first-child{min-width:0;flex-shrink:1!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .partner-card-meta{font-size:.95rem}.partner-card-german{font-size:1.15rem}
+
+/* Kurs-Karte: Aufgabe groß und gut lesbar, Hinweiszeile etwas kleiner; Mindesthöhe aus dem Altcode aufheben */
+.neu-cq div{min-height:0!important}
+.neu-cq .cq-i{font-size:1.05rem!important;color:var(--muted);margin-bottom:.5rem!important}
+.neu-cq .cq-p{font-size:1.6rem!important;line-height:1.4!important;font-weight:600;color:var(--text)}
+.neu-cq{height:11rem}
+body.neu-kb .neu-cq{height:8.6rem}
