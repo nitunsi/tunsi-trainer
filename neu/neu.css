@@ -268,7 +268,7 @@ body.neu-tabs.neu-nohdr main{padding-bottom:calc(var(--tabh) + .6rem + env(safe-
 .neu-leg div{min-width:0;padding:0 .35rem;font-size:.85rem}
 .neu-leg span{min-width:0;overflow-wrap:anywhere;line-height:1.1}
 .neu-row2>*{min-width:0}
-.neu-row2 .neu-sub{font-size:.78rem;overflow-wrap:anywhere}
+.neu-row2 .neu-sub{font-size:.85rem;white-space:nowrap}
 
 /* ---------- Konjugations-/Grammatik-Fenster als Sheet ---------- */
 #conj-modal>div,#grammar-modal>div{background:var(--surface)!important;border-top:2px solid var(--gold)!important;border-radius:18px 18px 0 0;padding:1rem 1rem calc(1rem + env(safe-area-inset-bottom,0px))!important;max-height:calc(var(--vvh,100vh) - 10px)!important}
@@ -319,3 +319,25 @@ body.neu-tabs.neu-nohdr main{padding-bottom:calc(var(--tabh) + .6rem + env(safe-
    Notausgang nach 1,5 s, falls das Skript nicht läuft */
 @keyframes neuShow{to{visibility:visible}}
 #login-screen:not(.neu-ready) .login-box{visibility:hidden;animation:neuShow 0s 1.5s forwards}
+
+/* ---------- Umbruch-Korrekturen (große Schrift / schmale Handys) ---------- */
+/* Kennzahlen-Kacheln: Wert und Beschriftung bleiben einzeilig */
+.neu-row2 .neu-kpi{font-size:clamp(1.2rem,6.2vw,1.6rem)!important;white-space:nowrap}
+.neu-row2 .neu-sub{font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.neu-row2>.neu-card{padding:.7rem .75rem!important}
+/* Kurs-/Lektionsübersicht: Bezeichnung oben, darunter zwei Zellen; Prozent und Zähler nie umbrechen */
+.neu-stat{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.neu-stat .l{grid-column:1/-1;font-weight:600}
+.neu-stat .c,.neu-stat .c small{white-space:nowrap}
+/* Legende: eine Spalte, wenn die Karte schmal ist (kein Brechen mitten im Wort) */
+@media (max-width:420px){.neu-leg{grid-template-columns:minmax(0,1fr)}}
+.neu-leg span{overflow-wrap:normal}
+/* Titel im Kopf von Admin-Seiten dürfen umbrechen statt abzuschneiden */
+.ex-type{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.25}
+/* Vokabelzeile: arabische Spalte begrenzen, damit der Text daneben Platz hat */
+.neu-vrow .ar{max-width:min(5.6rem,26%);font-size:1.35rem}
+.neu-vrow .rt{min-width:3.9rem}
+/* Sammelleiste */
+.neu-batch .neu-btn{font-size:.95rem;padding:.5rem .6rem}
+/* Aktivierung: Kennzahlen-Beschriftungen */
+.neu-actstat{white-space:nowrap}

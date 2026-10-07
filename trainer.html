@@ -3823,7 +3823,7 @@ function showVocabList(){
     ${courseFilterBanner}
     <div id="vl-since-banner"></div>
     <div style="margin-bottom:.8rem">
-      <input id="vocab-search" type="text" placeholder="Suchen... (Arabisch, Transliteration, Deutsch)"
+      <input id="vocab-search" type="text" placeholder="Suchen…"
         style="width:100%;padding:.75rem 1rem;background:var(--surface2);border:1px solid var(--border);
                color:var(--text);font-size:1rem;font-family:'IBM Plex Mono',monospace;border-radius:6px;"
         oninput="filterVocabList()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
@@ -4880,9 +4880,9 @@ function lessonStatHtml(list){
   });
   const total = list.length, max = n * 6;
   const pc = (a,b) => b ? Math.round(100*a/b) : 0;
-  const cell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+';line-height:1.2">'+icon+' '+pc(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+fmtN(a)+' / '+fmtN(b)+'</div></div>';
+  const cell = (icon, a, b) => '<div><div style="white-space:nowrap;font-size:1.05rem;font-weight:700;color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+';line-height:1.2">'+icon+' '+pc(a,b)+' %</div><div style="white-space:nowrap;font-size:.78rem;color:var(--text);opacity:.8">'+fmtN(a)+' / '+fmtN(b)+'</div></div>';
   return '<div style="font-size:.85rem;color:var(--muted);margin-top:.3rem">'+fmtN(total)+' Vokabeln'+(due ? ' · <span style="color:var(--red)">'+fmtN(due)+' heute fällig</span>' : '')+'</div>'
-       + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.5rem">'+cell('📅',n,total)+cell('⭐',pts,max)+'</div>';
+       + '<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.5rem;margin-top:.5rem">'+cell('📅',n,total)+cell('⭐',pts,max)+'</div>';
 }
 
 function openNewLesson(){
