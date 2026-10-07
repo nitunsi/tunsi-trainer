@@ -1,5 +1,5 @@
 /* ===== Tounsi Trainer — neues Design (Schicht über trainer.html) =====
-   Wird nur von trainer.html geladen. Der alte Weg (trainer-alt.html) bleibt unverändert. */
+   Wird von trainer.html geladen. */
 
 :root{
   --neu-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;

@@ -3,10 +3,10 @@
 **Ziel:** Neues Gesamtdesign parallel zum alten entwickeln, Hin- und Herwechseln jederzeit möglich.
 
 - `trainer.html` = alt, bleibt Hauptweg, bekommt nur Fehlerkorrekturen und den Knopf „Neues Design“ (Menü, unten).
-- **Umstellung 2026-10-07 erledigt:** `trainer.html` = neues Design, `trainer-alt.html` = alter Weg, `trainer-neu.html` leitet auf `trainer.html` weiter (alte Lesezeichen). Tagesziel-Standard bleibt 100. Die Angaben „trainer-neu.html“ unten meinen jetzt `trainer.html`.
+- **Umstellung 2026-10-07 erledigt, alter Weg am 2026-10-07 entfernt (Nils: nutzt ihn nicht mehr):** `trainer.html` = das Design (mit `neu/neu.css` + `neu/neu.js`). `trainer-alt.html` und die Umschalter „Altes Design“ sind gelöscht (in der Git-Historie wiederherstellbar). `trainer-neu.html` leitet auf `trainer.html` weiter (alte Lesezeichen).
 - (früher) `trainer-neu.html` = neu, Kopie des alten Stands (Stand 2026-10-06), wird umgebaut. Knopf „Altes Design“ im Menü bzw. unter „Mehr“.
 - Gleiche Adresse (Vercel), gleiche Anmeldung (localStorage `tounsi_session`), gleiche Datenbank, gleiche Einstellungen im Browser.
-- **Regel für Änderungen:** Neue Funktionen nur in `trainer-neu.html`. Fehler im alten Weg in beiden Dateien beheben (beim Fix im alten Weg: im Protokoll vermerken, in der neuen nachziehen).
+- **Regel für Änderungen:** Es gibt nur noch einen Weg (`trainer.html` + `neu/`). Keine Doppelpflege mehr.
 - Es wird nichts in Supabase geschrieben, was die alte Seite nicht auch schriebe (kein Schema-Änderung, keine neuen Tabellen).
 
 ## Bauplan (Stufen)
@@ -51,7 +51,7 @@ Die Dateien: `trainer-neu.html` (Kopie des alten Stands, mit zwei Einbindungen),
 - Level-Verteilung (8 Zeilen) und die Statistik-Seite bleiben inhaltlich wie im alten Weg, nur anders gefärbt.
 - Die Admin-Seiten haben das neue Gerüst (Navigation, Schrift, Bedienelemente); ihr Inhalt und ihre Funktionen sind unverändert.
 - Die Partner-Oberfläche (Semia) ist nicht Teil des neuen Designs und unverändert.
-- Der alte Weg bleibt unverändert; Fehlerkorrekturen dort bitte in `trainer-neu.html` nachziehen.
+- (erledigt) Der alte Weg ist entfernt; es gibt nichts mehr nachzuziehen.
 
 ## Offene Fragen
 1. **Tagesziel:** Standard 100 Antworten. Dein Schnitt liegt bei etwa 165. Passt 100, oder lieber 150 als Standard?
