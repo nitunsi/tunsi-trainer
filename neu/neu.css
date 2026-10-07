@@ -341,3 +341,10 @@ body.neu-tabs.neu-nohdr main{padding-bottom:calc(var(--tabh) + .6rem + env(safe-
 .neu-batch .neu-btn{font-size:.95rem;padding:.5rem .6rem}
 /* Aktivierung: Kennzahlen-Beschriftungen */
 .neu-actstat{white-space:nowrap}
+
+/* ---------- Chips umbrechen statt über den Rand zu laufen ---------- */
+.neu-chips{flex-wrap:wrap;overflow-x:visible;margin:0;padding:0 0 .4rem}
+
+/* ---------- Lernkarte: oberer Block bleibt von Karte zu Karte gleich hoch ---------- */
+.q-card{height:9.5rem;min-height:0!important;overflow:hidden}
+body.neu-kb .q-card{height:6rem;min-height:0!important}

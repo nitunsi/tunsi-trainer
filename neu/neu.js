@@ -1004,3 +1004,21 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     if(typeof f === 'function') window[n] = function(){ const r = f.apply(this, arguments); apply(); return r; };
   });
 })();
+
+
+/* ---------- Lernkarte: feste Höhe, lange Inhalte schrumpfen die Schrift (oberer Block springt nicht) ---------- */
+(function(){
+  function fit(){
+    const card = document.querySelector('#exercise-content .q-card');
+    if(!card) return;
+    const items = card.querySelectorAll('.q-arabic,.q-text,.q-sub');
+    items.forEach(e => e.style.removeProperty('font-size'));
+    for(let k = 0; k < 10 && card.scrollHeight > card.clientHeight + 1; k++){
+      items.forEach(e => { const fs = parseFloat(getComputedStyle(e).fontSize); e.style.setProperty('font-size', Math.max(11, fs * .9) + 'px', 'important'); });
+    }
+  }
+  const _rf = window.rFlash;
+  window.rFlash = function(){ const r = _rf.apply(this, arguments); fit(); setTimeout(fit, 350); return r; };
+  document.addEventListener('focusin', () => setTimeout(fit, 120));
+  document.addEventListener('focusout', () => setTimeout(fit, 400));
+})();
