@@ -3637,15 +3637,15 @@ function openPullForward(){
   const old = document.getElementById('pf-overlay'); if(old) old.remove();
   const o = document.createElement('div');
   o.id = 'pf-overlay';
-  o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem';
-  o.innerHTML = '<div style="background:var(--surface);border:1px solid var(--gold);border-radius:8px;padding:1.1rem;width:100%;max-width:340px">'
-    + '<div style="font-size:1rem;font-weight:700;color:var(--gold);margin-bottom:.4rem">Vorziehen</div>'
-    + '<div style="font-size:.85rem;color:var(--muted);line-height:1.5;margin-bottom:.8rem">Wie viele Einträge sollen jetzt fällig werden? Es kommen die nächsten dran (frühestes Datum zuerst), Vokabeln und Kurs-Übungen zusammen. Vorziehbar: '+fmtN(avail)+'.</div>'
-    + '<div style="font-size:.85rem;color:var(--muted);margin-bottom:.3rem">Morgen fällig, nach Stufe:</div><div style="display:flex;gap:.5rem;margin-bottom:.8rem">'+[4,5,6].map(l => '<div style="flex:1;text-align:center;padding:.5rem .2rem;background:var(--bg);border:1px solid var(--border);border-radius:10px"><div style="font-size:.78rem;color:var(--muted)">Stufe '+l+'</div><div style="font-size:1.2rem;font-weight:700;color:var(--gold2)">'+fmtN(perLv[l])+'</div></div>').join('')+'</div>'
-    + '<input id="pf-n" type="number" inputmode="numeric" min="1" max="'+Math.min(avail,500)+'" value="'+Math.min(last,avail)+'" style="width:100%;padding:.7rem;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:1.2rem;text-align:center;border-radius:4px;margin-bottom:.8rem">'
-    + '<div style="display:flex;gap:.6rem">'
-    + '<button id="pf-cancel" style="flex:1;padding:.7rem;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:\'IBM Plex Mono\',monospace;font-size:.9rem;border-radius:4px;cursor:pointer">Abbrechen</button>'
-    + '<button id="pf-go" style="flex:1;padding:.7rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:.9rem;border-radius:4px;cursor:pointer">Vorziehen</button>'
+  o.style.cssText = 'position:fixed;left:0;right:0;top:var(--vvt,0px);height:var(--vvh,100%);background:rgba(0,0,0,.65);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:.8rem 1rem;overflow-y:auto';
+  o.innerHTML = '<div style="background:var(--surface);border:1px solid var(--gold);border-radius:12px;padding:.8rem 1rem;width:100%;max-width:340px">'
+    + '<div style="font-size:1.05rem;font-weight:700;color:var(--gold)">Vorziehen</div>'
+    + '<div style="font-size:.8rem;color:var(--muted);margin:.1rem 0 .5rem">Vorziehbar: '+fmtN(avail)+' · frühestes Datum, hohe Stufe zuerst</div>'
+    + '<div style="font-size:.8rem;color:var(--muted);margin-bottom:.25rem">Morgen fällig, nach Stufe:</div><div style="display:flex;gap:.4rem;margin-bottom:.6rem">'+[4,5,6].map(l => '<div style="flex:1;text-align:center;padding:.3rem .2rem;background:var(--bg);border:1px solid var(--border);border-radius:10px"><div style="font-size:.72rem;color:var(--muted)">Stufe '+l+'</div><div style="font-size:1.1rem;font-weight:700;color:var(--gold2)">'+fmtN(perLv[l])+'</div></div>').join('')+'</div>'
+    + '<input id="pf-n" type="number" inputmode="numeric" min="1" max="'+Math.min(avail,500)+'" value="'+Math.min(last,avail)+'" style="width:100%;padding:.4rem;background:var(--bg);border:1px solid var(--gold);color:var(--text);font-size:1.2rem;text-align:center;border-radius:10px;margin-bottom:.6rem;min-height:48px">'
+    + '<div style="display:flex;gap:.5rem">'
+    + '<button id="pf-cancel" style="flex:1;min-height:46px;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.95rem;border-radius:10px;cursor:pointer">Abbrechen</button>'
+    + '<button id="pf-go" style="flex:1;min-height:46px;background:var(--gold);border:none;color:#0e0c0a;font-weight:700;font-size:.95rem;border-radius:10px;cursor:pointer">Vorziehen</button>'
     + '</div></div>';
   document.body.appendChild(o);
   const close = () => o.remove();

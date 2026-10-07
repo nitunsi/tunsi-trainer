@@ -215,3 +215,50 @@ body.neu-tabs.neu-nohdr main{padding-bottom:calc(var(--tabh) + .6rem + env(safe-
   .neu-home .neu-row2 .neu-btn small{display:none}
 }
 .neu-node.cur{border-left:3px solid var(--gold);padding-left:.6rem}
+
+/* --- Tastatur: Fenster und Sheets folgen dem sichtbaren Bereich --- */
+.neu-sheet{bottom:var(--kb,0px)!important;max-height:calc(var(--vvh,100vh) - 10px)!important}
+
+/* --- Lektionsansicht: Abschnittsliste --- */
+.neu-chunk{border-bottom:1px solid var(--border)}
+.neu-chunk:last-child{border-bottom:none}
+.neu-chunk.lock .hd{opacity:.55}
+.neu-chunk .hd{display:flex;align-items:center;gap:.8rem;width:100%;min-height:58px;background:none;border:none;color:var(--text);text-align:left;cursor:pointer;padding:.5rem 0}
+.neu-chunk .dot{width:12px;height:12px;border-radius:50%;flex:none}
+.neu-chunk .tx{flex:1;min-width:0}
+.neu-chunk .tx b{display:block;font-size:1rem;font-weight:600}
+.neu-chunk .tx small{display:block;color:var(--muted);font-size:.82rem;margin-top:1px}
+.neu-chunk .chev{color:var(--muted);font-size:1.1rem}
+.neu-chunk .bd{padding:0 0 1rem}
+
+/* --- Statistik --- */
+.neu-ch{font-size:1.05rem;font-weight:700;margin-bottom:.5rem}
+.neu-kpi{font-size:1.9rem;font-weight:700;color:var(--gold2);line-height:1.1}
+.neu-kpi.ok{color:var(--green)}
+.neu-seg2{display:flex;gap:2px;height:14px;border-radius:7px;overflow:hidden;margin:.7rem 0 .5rem}
+.neu-seg2 i{display:block;height:100%}
+.neu-leg{display:grid;grid-template-columns:1fr 1fr;gap:.4rem .8rem}
+.neu-leg div{display:flex;align-items:center;gap:.45rem;font-size:.9rem;min-height:34px;padding:0 .5rem;border-radius:8px}
+.neu-leg div.act{border:1px solid var(--gold-d);cursor:pointer}
+.neu-leg div.act span{color:var(--gold2);text-decoration:underline dotted}
+.neu-leg u,.neu-lvrow u{display:inline-block;width:10px;height:10px;border-radius:3px;flex:none;text-decoration:none}
+.neu-leg span{flex:1;color:var(--muted)}
+.neu-leg b{font-size:1rem}
+.neu-bars{display:flex;gap:.4rem;align-items:flex-end}
+.neu-bars .b{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:.2rem}
+.neu-bars .b b{font-size:.78rem;color:var(--muted);font-weight:600;min-height:1em}
+.neu-bars .b.hot b{color:var(--gold2)}
+.neu-bars .col{width:100%;height:96px;display:flex;flex-direction:column;justify-content:flex-end;background:var(--surface2);border-radius:4px;overflow:hidden}
+.neu-bars .col i{display:block;width:100%}
+.neu-bars .b span{font-size:.72rem;color:var(--muted);white-space:nowrap}
+.neu-bars .b.hot span{color:var(--gold2);text-decoration:underline dotted}
+.neu-bars.thin{gap:2px}
+.neu-bars.thin .col{border-radius:2px}
+.neu-bars .b[onclick]{cursor:pointer}
+.neu-lvrow{display:flex;align-items:center;gap:.6rem;min-height:40px;border-bottom:1px solid var(--border);font-size:.92rem}
+.neu-lvrow:last-child{border-bottom:none}
+.neu-lvrow span{width:4.6rem}
+.neu-lvrow em{flex:1;font-style:normal;color:var(--muted);font-size:.8rem}
+.neu-lvrow b{min-width:3rem;text-align:right}
+.neu-lvrow s{min-width:4.2rem;text-align:right;text-decoration:none;font-size:.8rem}
+.neu-axis{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-top:.3rem}
