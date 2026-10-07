@@ -247,9 +247,9 @@ async function loadDayCounts(){
   return _cache.dc;
 }
 // Immer das höchste übertroffene Fenster zeigen (90 vor 30 vor 14 vor 7)
-function motivation(planned, avgs){
+function motivation(done, avgs){
   for(const n of [90, 30, 14, 7]){
-    if(avgs[n] > 0 && planned > avgs[n]) return {n, avg: Math.round(avgs[n]), pct: Math.round((planned / avgs[n] - 1) * 100)};
+    if(avgs[n] > 0 && done > avgs[n]) return {n, avg: Math.round(avgs[n]), pct: Math.round((done / avgs[n] - 1) * 100)};
   }
   return null;
 }
@@ -290,10 +290,10 @@ function goHome(){
     $('neu-goal-t').textContent = fmtN(a.today) + ' von ' + fmtN(goal);
     $('neu-streak').textContent = a.streak ? a.streak + ' Tag' + (a.streak===1?'':'e') + ' in Folge' : 'Noch keine Serie';
   }).catch(() => { const s = $('neu-streak'); if(s) s.textContent = ''; });
-  // Motivation: heute geplant = heute schon beantwortet + noch fällig
+  // Motivation: zählt nur, was heute tatsächlich geschafft (beantwortet) ist — nicht, was noch geplant/fällig ist
   loadDayCounts().then(dc => {
     const el = $('neu-motiv'); if(!el || cMode !== 'home') return;
-    const planned = dc.today + total;
+    const done = dc.today;
     // 1) Tagesziel erreicht, aber heute noch nicht über dem niedrigsten Schnitt: zeigen, wie viel noch fehlt
     //    (zählt, was heute tatsächlich beantwortet ist; das Fällige steht nur als Hinweis dabei)
     const ws = [7, 14, 30, 90].filter(n => dc.avgs[n] > 0);
@@ -308,10 +308,10 @@ function goHome(){
         return;
       }
     }
-    // 2) sonst: heute geplant (beantwortet + fällig) liegt über einem Schnitt
-    const m = motivation(planned, dc.avgs);
+    // 2) sonst: heute Geschafftes liegt über einem Schnitt
+    const m = motivation(done, dc.avgs);
     if(!m) return;
-    el.innerHTML = '<div class="neu-card" style="border-color:var(--gold-d);background:rgba(201,168,76,.08);padding:.7rem 1rem"><div style="font-weight:700;color:var(--gold2)">Über deinem '+m.n+'-Tage-Schnitt</div><div class="neu-sub" style="margin-top:2px">Heute geplant: <b style="color:var(--text)">'+fmtN(planned)+'</b> · Schnitt: '+fmtN(m.avg)+' (+'+m.pct+' %)</div></div>';
+    el.innerHTML = '<div class="neu-card" style="border-color:var(--gold-d);background:rgba(201,168,76,.08);padding:.7rem 1rem"><div style="font-weight:700;color:var(--gold2)">Über deinem '+m.n+'-Tage-Schnitt</div><div class="neu-sub" style="margin-top:2px">Heute geschafft: <b style="color:var(--text)">'+fmtN(done)+'</b> · Schnitt: '+fmtN(m.avg)+' (+'+m.pct+' %)</div></div>';
   }).catch(() => {});
 }
 window.neuGoHome = goHome;
