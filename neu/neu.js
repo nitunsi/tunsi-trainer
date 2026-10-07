@@ -294,20 +294,23 @@ function goHome(){
   loadDayCounts().then(dc => {
     const el = $('neu-motiv'); if(!el || cMode !== 'home') return;
     const planned = dc.today + total;
-    const m = motivation(planned, dc.avgs);
-    if(!m){
-      // Tagesziel erreicht, aber auch mit allem Fälligen noch nicht über dem niedrigsten Schnitt: zeigen, wie viel fehlt
-      const ws = [7, 14, 30, 90].filter(n => dc.avgs[n] > 0);
-      if(dc.today >= goal && ws.length){
-        const low = ws.reduce((b, n) => dc.avgs[n] < dc.avgs[b] ? n : b);
-        const need = Math.floor(dc.avgs[low]) + 1 - dc.today;
-        if(need > 0){
-          const extra = need > total ? '<div class="neu-sub" style="margin-top:2px">Fällig sind nur noch '+fmtN(total)+' — mit „Vorziehen“ oder neuen Vokabeln kommst du darüber.</div>' : '';
-          el.innerHTML = '<div class="neu-card" style="border-color:var(--gold-d);background:rgba(201,168,76,.08);padding:.7rem 1rem"><div style="font-weight:700;color:var(--gold2)">Tagesziel geschafft ✓ — noch '+fmtN(need)+' bis über deinen niedrigsten Schnitt</div><div class="neu-sub" style="margin-top:2px">Ø '+fmtN(Math.round(dc.avgs[low]))+' pro Tag ('+low+'-Tage-Schnitt) · heute '+fmtN(dc.today)+'</div>'+extra+'</div>';
-        }
+    // 1) Tagesziel erreicht, aber heute noch nicht über dem niedrigsten Schnitt: zeigen, wie viel noch fehlt
+    //    (zählt, was heute tatsächlich beantwortet ist; das Fällige steht nur als Hinweis dabei)
+    const ws = [7, 14, 30, 90].filter(n => dc.avgs[n] > 0);
+    if(dc.today >= goal && ws.length){
+      const low = ws.reduce((b, n) => dc.avgs[n] < dc.avgs[b] ? n : b);
+      const need = Math.floor(dc.avgs[low]) + 1 - dc.today;
+      if(need > 0){
+        const hint = need <= total
+          ? 'Mit dem Fälligen ('+fmtN(total)+') schaffst du das.'
+          : 'Fällig sind nur noch '+fmtN(total)+' — mit „Vorziehen“ oder neuen Vokabeln kommst du darüber.';
+        el.innerHTML = '<div class="neu-card" style="border-color:var(--gold-d);background:rgba(201,168,76,.08);padding:.7rem 1rem"><div style="font-weight:700;color:var(--gold2)">Tagesziel geschafft ✓ — noch '+fmtN(need)+' bis über deinen niedrigsten Schnitt</div><div class="neu-sub" style="margin-top:2px">Ø '+fmtN(Math.round(dc.avgs[low]))+' pro Tag ('+low+'-Tage-Schnitt) · heute '+fmtN(dc.today)+'</div><div class="neu-sub" style="margin-top:2px">'+hint+'</div></div>';
+        return;
       }
-      return;
     }
+    // 2) sonst: heute geplant (beantwortet + fällig) liegt über einem Schnitt
+    const m = motivation(planned, dc.avgs);
+    if(!m) return;
     el.innerHTML = '<div class="neu-card" style="border-color:var(--gold-d);background:rgba(201,168,76,.08);padding:.7rem 1rem"><div style="font-weight:700;color:var(--gold2)">Über deinem '+m.n+'-Tage-Schnitt</div><div class="neu-sub" style="margin-top:2px">Heute geplant: <b style="color:var(--text)">'+fmtN(planned)+'</b> · Schnitt: '+fmtN(m.avg)+' (+'+m.pct+' %)</div></div>';
   }).catch(() => {});
 }
