@@ -970,24 +970,33 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
 const ring=`<svg viewBox="-70 -70 140 140" width="130"><g fill="none" stroke="${G}" stroke-width="1.8"><circle r="64"/><circle r="56" opacity=".5"/><rect x="-34" y="-34" width="68" height="68" stroke="${G2}"/><rect x="-34" y="-34" width="68" height="68" transform="rotate(45)" stroke="${G2}"/>${[0,45,90,135,180,225,270,315].map(a=>`<circle cx="0" cy="-60" r="2.5" transform="rotate(${a})" fill="${G}"/>`).join('')}</g><text y="12" text-anchor="middle" font-size="34" font-weight="700" fill="${G2}" style="font-family:Arial,sans-serif">تونس</text></svg>`;
 
   const arts = [sky, arches, olive, cards, sea, ring];
-  let last = -1;
-  try{ last = parseInt(localStorage.getItem('neu-login-art'),10); if(isNaN(last)) last = -1; }catch(e){}
-  let i = Math.floor(Math.random()*arts.length);
-  if(i === last) i = (i + 1 + Math.floor(Math.random()*(arts.length-1))) % arts.length;
-  try{ localStorage.setItem('neu-login-art', String(i)); }catch(e){}
-  const el = document.querySelector('#login-screen .login-flag');
-  if(el){
-    el.innerHTML = arts[i];
-    el.style.cssText = 'display:flex;justify-content:center;margin-bottom:.9rem;font-size:1rem';
-    el.setAttribute('aria-hidden','true');
+  let lo, lod;
+  // Pro Anmeldung genau ein Motiv (Anmeldeseite + Ladebildschirm zeigen dasselbe); bei jedem Laden
+  // und nach jedem Abmelden wird ein anderes gewählt.
+  function apply(){
+    let last = -1;
+    try{ last = parseInt(localStorage.getItem('neu-login-art'),10); if(isNaN(last)) last = -1; }catch(e){}
+    let i = Math.floor(Math.random()*arts.length);
+    if(i === last) i = (i + 1 + Math.floor(Math.random()*(arts.length-1))) % arts.length;
+    try{ localStorage.setItem('neu-login-art', String(i)); }catch(e){}
+    const el = document.querySelector('#login-screen .login-flag');
+    if(el){
+      el.innerHTML = arts[i];
+      el.style.cssText = 'display:flex;justify-content:center;margin-bottom:.9rem;font-size:1rem';
+      el.setAttribute('aria-hidden','true');
+    }
+    lo = document.getElementById('load-overlay');
+    if(lo && !lod){
+      lod = document.createElement('div');
+      lod.setAttribute('aria-hidden','true');
+      lod.style.cssText = 'display:flex;justify-content:center';
+      lo.insertBefore(lod, lo.firstChild);
+    }
+    if(lod) lod.innerHTML = arts[i];
   }
-  // Dasselbe Motiv über dem Ladebalken (bei gültiger Sitzung sieht man nur diesen Bildschirm)
-  const lo = document.getElementById('load-overlay');
-  if(lo){
-    const d = document.createElement('div');
-    d.setAttribute('aria-hidden','true');
-    d.style.cssText = 'display:flex;justify-content:center';
-    d.innerHTML = arts[i];
-    lo.insertBefore(d, lo.firstChild);
-  }
+  apply();
+  ['doLogout','doPartnerLogout'].forEach(n => {
+    const f = window[n];
+    if(typeof f === 'function') window[n] = function(){ const r = f.apply(this, arguments); apply(); return r; };
+  });
 })();
