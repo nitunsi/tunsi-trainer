@@ -1,9 +1,10 @@
-# Neues Design — Arbeitsplan (trainer-neu.html)
+# Neues Design — Arbeitsplan (jetzt trainer.html)
 
 **Ziel:** Neues Gesamtdesign parallel zum alten entwickeln, Hin- und Herwechseln jederzeit möglich.
 
 - `trainer.html` = alt, bleibt Hauptweg, bekommt nur Fehlerkorrekturen und den Knopf „Neues Design“ (Menü, unten).
-- `trainer-neu.html` = neu, Kopie des alten Stands (Stand 2026-10-06), wird umgebaut. Knopf „Altes Design“ im Menü bzw. unter „Mehr“.
+- **Umstellung 2026-10-07 erledigt:** `trainer.html` = neues Design, `trainer-alt.html` = alter Weg, `trainer-neu.html` leitet auf `trainer.html` weiter (alte Lesezeichen). Tagesziel-Standard bleibt 100. Die Angaben „trainer-neu.html“ unten meinen jetzt `trainer.html`.
+- (früher) `trainer-neu.html` = neu, Kopie des alten Stands (Stand 2026-10-06), wird umgebaut. Knopf „Altes Design“ im Menü bzw. unter „Mehr“.
 - Gleiche Adresse (Vercel), gleiche Anmeldung (localStorage `tounsi_session`), gleiche Datenbank, gleiche Einstellungen im Browser.
 - **Regel für Änderungen:** Neue Funktionen nur in `trainer-neu.html`. Fehler im alten Weg in beiden Dateien beheben (beim Fix im alten Weg: im Protokoll vermerken, in der neuen nachziehen).
 - Es wird nichts in Supabase geschrieben, was die alte Seite nicht auch schriebe (kein Schema-Änderung, keine neuen Tabellen).
