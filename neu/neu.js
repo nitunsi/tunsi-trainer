@@ -341,7 +341,7 @@ function showMore(){
     +   li('search','Prüfungen',"setMode('dupes')") + li('inbox','Partner-Queue',"setMode('partnerqueue')") + li('check','Partner-Check',"setMode('partnercheck')") + li('compass','Quellenabgleich',"setMode('quellen')") + li('abc','Transliterationsregeln',"setMode('translitregeln')") + li('save','Export',"setMode('export')")
     + '</div>'
     + '<div class="neu-h">Darstellung und Lernen</div><div class="neu-card">'
-    +   '<div class="neu-cap">Farbschema</div>'+seg([['auto','Automatisch'],['light','Hell'],['dark','Dunkel']], LS.get('neu-theme','auto'), "neuSetTheme('%v')")
+    +   '<div class="neu-cap">Farbschema</div>'+seg([['auto','Automatisch'],['light','Hell'],['dark','Dunkel']], LS.get('neu-theme','light'), "neuSetTheme('%v')")
     +   '<div class="neu-cap" style="margin-top:1rem">Schriftgröße</div>'+seg([['S','Klein'],['M','Mittel'],['L','Groß']], font, "neuSetFont('%v')")
     +   '<div class="neu-cap" style="margin-top:1rem">Tagesziel (richtige Antworten pro Tag)</div>'+seg([[50,'50'],[100,'100'],[150,'150'],[200,'200']], goal, "neuSetGoal(%v)")
     +   '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Audio beim Aufdecken abspielen</span>'+sw(audioAutoplay, "toggleAudioAutoplay();showMore()")+'</div>'
@@ -358,7 +358,7 @@ function showMore(){
   if(sel){ sel.value = cLesson; if(sel.value !== cLesson) sel.value = 'all'; }
 }
 function applyTheme(){
-  const t = LS.get('neu-theme', 'auto');
+  const t = LS.get('neu-theme', 'light');
   const light = t === 'light' || (t === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
   document.documentElement.setAttribute('data-theme', light ? 'light' : 'dark');
   let m = document.querySelector('meta[name="theme-color"]');
