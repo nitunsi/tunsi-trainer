@@ -262,3 +262,10 @@ body.neu-tabs.neu-nohdr main{padding-bottom:calc(var(--tabh) + .6rem + env(safe-
 .neu-lvrow b{min-width:3rem;text-align:right}
 .neu-lvrow s{min-width:4.2rem;text-align:right;text-decoration:none;font-size:.8rem}
 .neu-axis{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-top:.3rem}
+
+/* Statistik: nichts über den Kartenrand hinaus (große Systemschrift) */
+.neu-leg{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.4rem .5rem}
+.neu-leg div{min-width:0;padding:0 .35rem;font-size:.85rem}
+.neu-leg span{min-width:0;overflow-wrap:anywhere;line-height:1.1}
+.neu-row2>*{min-width:0}
+.neu-row2 .neu-sub{font-size:.78rem;overflow-wrap:anywhere}
