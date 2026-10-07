@@ -347,7 +347,7 @@ function showMore(){
     + '</div>'
     + '<div class="neu-h">Konto</div><div class="neu-card neu-list" style="padding:.3rem .9rem">'
     +   '<div class="li"><span class="sp neu-sub">'+escHtml(currentUser ? currentUser.username : '')+' · '+APP_VERSION+' (neu)</span></div>'
-    +   li('swap','Zum alten Design',"location.href='trainer-alt.html'") + li('bug','Debug',"toggleDebug()") + li('out','Abmelden',"doLogout()")
+    +   li('bug','Debug',"toggleDebug()") + li('out','Abmelden',"doLogout()")
     + '</div>'
     + '</div>';
   const sel = $('neu-lesson');
