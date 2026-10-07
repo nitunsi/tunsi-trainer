@@ -3623,8 +3623,9 @@ async function pullForwardVocab(n){
   const countDetail = courseCount > 0 ? ` (${vocabCount} Vokabeln, ${courseCount} Kurs-Übungen)` : '';
   showToast('✓ '+count+' vorgezogen'+countDetail+' — jetzt fällig','ok');
   updateLessonChips();
-  // Statistik neu rendern damit Forecast aktualisiert wird
-  showStats();
+  // Die Seite neu zeichnen, auf der man gerade ist (Startseite bleibt Startseite, Statistik bleibt Statistik)
+  if(cMode === 'home' && typeof window.neuGoHome === 'function') window.neuGoHome();
+  else if(cMode === 'stats') showStats();
 }
 
 // Dialog: Klick auf „Heute“ im Fällig-Balken. Zahl änderbar, zuletzt benutzte Zahl wird gemerkt.
