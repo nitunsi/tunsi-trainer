@@ -629,9 +629,9 @@ window.restartExercise = function(){ if(cMode === 'listen'){ closeResult(); star
 /* ---------- Aktivierung (Admin) im neuen Stil: Karten statt Tabelle ---------- */
 window._buildActivateHTML = function(){
   return '<div class="neu-wrap">'
-    + '<div class="neu-card" style="display:flex;justify-content:space-between;gap:.8rem"><div><div class="neu-sub">Nicht aktiv</div><div id="act-stat-total" style="font-size:1.6rem;font-weight:700;color:var(--gold2)">–</div></div>'
-    + '<div><div class="neu-sub">Ausgewählt</div><div id="act-stat-sel" style="font-size:1.6rem;font-weight:700">0</div></div>'
-    + '<div><div class="neu-sub">Aktiviert</div><div id="act-stat-done" style="font-size:1.6rem;font-weight:700;color:var(--green)">0</div></div></div>'
+    + '<div class="neu-card" style="display:flex;justify-content:space-between;gap:.8rem"><div><div class="neu-sub" style="white-space:nowrap;font-size:.85rem">Nicht aktiv</div><div id="act-stat-total" style="font-size:1.6rem;font-weight:700;color:var(--gold2)">–</div></div>'
+    + '<div><div class="neu-sub" style="white-space:nowrap;font-size:.85rem">Ausgewählt</div><div id="act-stat-sel" style="font-size:1.6rem;font-weight:700">0</div></div>'
+    + '<div><div class="neu-sub" style="white-space:nowrap;font-size:.85rem">Aktiviert</div><div id="act-stat-done" style="font-size:1.6rem;font-weight:700;color:var(--green)">0</div></div></div>'
     + '<div class="neu-chips">'
     + [['all','Alle'],['1','Prio 1'],['2','Prio 2'],['3','Prio 3'],['0','Ohne Prio']].map(([k,l]) => '<button class="act-pchip neu-chip'+(k==='all'?' active on':'')+'" data-prio="'+k+'">'+l+'</button>').join('')
     + '</div>'
@@ -881,8 +881,8 @@ window.showStats = function(){
     + '<div style="font-size:1.5rem;font-weight:700;margin:.2rem 0 .6rem">Statistik</div>'
     + (all ? '' : '<div style="margin-bottom:.6rem"><span class="neu-chip on" onclick="neuFilterOffStats()">Filter: '+escHtml(cLesson==='COURSEVOCAB'?'Kurs-Lektion':cLesson)+' ✕</span></div>')
     + '<div class="neu-row2" style="margin-bottom:.7rem">'
-    +   '<div class="neu-card" style="margin:0;padding:.7rem .9rem"><div class="neu-sub">Fällig heute</div><div class="neu-kpi" style="font-size:1.6rem">'+fmtN(d.voc + (all ? d.course : 0))+'</div></div>'
-    +   '<div class="neu-card" style="margin:0;padding:.7rem .9rem"><div class="neu-sub">Heute beantwortet</div><div class="neu-kpi" id="neu-st-today" style="font-size:1.6rem">…</div></div>'
+    +   '<div class="neu-card" style="margin:0;padding:.7rem .9rem"><div class="neu-sub">Fällig</div><div class="neu-kpi" style="font-size:1.6rem">'+fmtN(d.voc + (all ? d.course : 0))+'</div></div>'
+    +   '<div class="neu-card" style="margin:0;padding:.7rem .9rem"><div class="neu-sub">Erledigt</div><div class="neu-kpi" id="neu-st-today" style="font-size:1.6rem">…</div></div>'
     +   '<div class="neu-card" style="margin:0;padding:.7rem .9rem"><div class="neu-sub">Serie</div><div class="neu-kpi" id="neu-st-streak" style="font-size:1.6rem">…</div></div>'
     + '</div>'
     + (all && weighted < 25 ? '<div class="neu-card" style="border-color:var(--red);background:rgba(201,76,76,.08);padding:.6rem .9rem;color:var(--red);font-size:.9rem">Anfänger-Puffer wird knapp (noch '+Math.round(weighted)+'). Neuen Stoff hinzufügen: tippe unten bei „Neu“.</div>' : '')
@@ -1003,4 +1003,22 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     const f = window[n];
     if(typeof f === 'function') window[n] = function(){ const r = f.apply(this, arguments); apply(); return r; };
   });
+})();
+
+
+/* ---------- Lernkarte: feste Höhe, lange Inhalte schrumpfen die Schrift (oberer Block springt nicht) ---------- */
+(function(){
+  function fit(){
+    const card = document.querySelector('#exercise-content .q-card');
+    if(!card) return;
+    const items = card.querySelectorAll('.q-arabic,.q-text,.q-sub');
+    items.forEach(e => e.style.removeProperty('font-size'));
+    for(let k = 0; k < 10 && card.scrollHeight > card.clientHeight + 1; k++){
+      items.forEach(e => { const fs = parseFloat(getComputedStyle(e).fontSize); e.style.setProperty('font-size', Math.max(11, fs * .9) + 'px', 'important'); });
+    }
+  }
+  const _rf = window.rFlash;
+  window.rFlash = function(){ const r = _rf.apply(this, arguments); fit(); setTimeout(fit, 350); return r; };
+  document.addEventListener('focusin', () => setTimeout(fit, 120));
+  document.addEventListener('focusout', () => setTimeout(fit, 400));
 })();
