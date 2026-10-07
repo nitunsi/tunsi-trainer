@@ -348,3 +348,9 @@ body.neu-tabs.neu-nohdr main{padding-bottom:calc(var(--tabh) + .6rem + env(safe-
 /* ---------- Lernkarte: oberer Block bleibt von Karte zu Karte gleich hoch ---------- */
 .q-card{height:9.5rem;min-height:0!important;overflow:hidden}
 body.neu-kb .q-card{height:6rem;min-height:0!important}
+
+/* Kurs-Karte: Frageblock fester Höhe, bei Überlänge scrollt er */
+.neu-cq{height:9rem;overflow-y:auto;margin-bottom:.4rem}
+body.neu-kb .neu-cq{height:5.6rem}
+.neu-ccard>div:first-child{flex-wrap:nowrap!important;min-height:1.9rem;overflow:hidden}
+.neu-ccard>div:first-child>span:first-child{min-width:0;flex-shrink:1!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
