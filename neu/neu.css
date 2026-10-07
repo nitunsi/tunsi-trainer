@@ -314,3 +314,8 @@ body.neu-tabs.neu-nohdr main{padding-bottom:calc(var(--tabh) + .6rem + env(safe-
 #load-overlay>div:nth-child(2){font-family:var(--neu-ui)!important;font-weight:700;font-size:1.4rem!important;letter-spacing:0!important}
 #load-overlay>div:nth-child(2) em{font-style:normal}
 #load-detail{font-family:var(--neu-ui)!important}
+
+/* Anmeldekarte erst zeigen, wenn das Motiv gesetzt ist (sonst blitzt kurz die Flagge/ein leerer Platz auf);
+   Notausgang nach 1,5 s, falls das Skript nicht läuft */
+@keyframes neuShow{to{visibility:visible}}
+#login-screen:not(.neu-ready) .login-box{visibility:hidden;animation:neuShow 0s 1.5s forwards}

@@ -965,11 +965,9 @@ const sky=`<svg viewBox="0 0 220 100" width="220"><g fill="#14110e" stroke="${G}
 const arches=`<svg viewBox="0 0 220 110" width="220"><g fill="none" stroke="${G}" stroke-width="2.2">${[[20,40],[75,60],[145,40]].map(([x,w])=>`<path d="M${x} 104V${70-w/2+20}a${w/2} ${w/2} 0 0 1 ${w} 0V104"/>`).join('')}<path d="M75 104V70a30 30 0 0 1 60 0v34" stroke="${G2}" stroke-width="3"/><path d="M85 104V72a20 20 0 0 1 40 0v32" opacity=".5"/><path d="M0 104h220"/></g><circle cx="105" cy="38" r="3" fill="${G2}"/></svg>`;
 const olive=(()=>{const x0=14,y0=66,x1=206,y1=30,ang=Math.atan2(y1-y0,x1-x0);let g='';for(let i=0;i<7;i++){const t=(i+.6)/7.4,x=x0+(x1-x0)*t,y=y0+(y1-y0)*t;const d=ang*180/Math.PI;for(const sgn of [-1,1]){const cx=x+Math.sin(ang)*-sgn*-14*1+Math.cos(ang)*6*(sgn>0?1:-1)*0,cy=y+Math.cos(ang)*-sgn*14*-1*-1;const rot=d+sgn*62+90-90;g+=`<ellipse cx="${x+(-Math.sin(ang))*sgn*13*-1}" cy="${y+Math.cos(ang)*sgn*13*-1}" rx="4.5" ry="12" transform="rotate(${d+90+sgn*-55} ${x+(-Math.sin(ang))*sgn*13*-1} ${y+Math.cos(ang)*sgn*13*-1})" fill="none" stroke="${G2}" stroke-width="2"/>`}}
 return `<svg viewBox="0 0 220 90" width="220"><path d="M${x0} ${y0}L${x1} ${y1}" stroke="${G}" stroke-width="2.5"/>${g}<circle cx="70" cy="52" r="6" fill="${B}"/><circle cx="128" cy="38" r="6" fill="${B}"/></svg>`})();
-const cards=`<div style="position:relative;width:200px;height:120px"><div style="position:absolute;left:30px;top:16px;width:140px;height:92px;border:1.5px solid ${G};border-radius:12px;transform:rotate(-9deg);background:#14110e;opacity:.6"></div><div style="position:absolute;left:26px;top:8px;width:140px;height:92px;border:1.5px solid ${G};border-radius:12px;transform:rotate(5deg);background:#1a1612;opacity:.85"></div><div style="position:absolute;left:30px;top:14px;width:140px;height:92px;border:2px solid ${G2};border-radius:12px;background:#1a1612;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:34px;color:${G2};font-weight:700;line-height:1.2">مرحبا</div><div style="color:#8a7d6a;font-size:.8rem">Marhba</div></div></div>`;
 const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 100 0z" fill="${G}" opacity=".9"/>${[0,1,2,3].map(i=>`<path d="M0 ${68+i*9} q13.75 -8 27.5 0 t27.5 0 t27.5 0 t27.5 0 t27.5 0 t27.5 0 t27.5 0 t27.5 0" fill="none" stroke="${i%2?B:G2}" stroke-width="2" opacity="${1-i*.18}"/>`).join('')}<g transform="translate(110 38)"><path d="M0 -14a14 14 0 1 0 0 28a11 11 0 1 1 0 -28z" fill="#1a1612" transform="translate(-4 0)"/></g></svg>`;
-const ring=`<svg viewBox="-70 -70 140 140" width="130"><g fill="none" stroke="${G}" stroke-width="1.8"><circle r="64"/><circle r="56" opacity=".5"/><rect x="-34" y="-34" width="68" height="68" stroke="${G2}"/><rect x="-34" y="-34" width="68" height="68" transform="rotate(45)" stroke="${G2}"/>${[0,45,90,135,180,225,270,315].map(a=>`<circle cx="0" cy="-60" r="2.5" transform="rotate(${a})" fill="${G}"/>`).join('')}</g><text y="12" text-anchor="middle" font-size="34" font-weight="700" fill="${G2}" style="font-family:Arial,sans-serif">تونس</text></svg>`;
 
-  const arts = [sky, arches, olive, cards, sea, ring];
+  const arts = [sky, arches, olive, sea];
   let lo, lod;
   // Pro Anmeldung genau ein Motiv (Anmeldeseite + Ladebildschirm zeigen dasselbe); bei jedem Laden
   // und nach jedem Abmelden wird ein anderes gewählt.
@@ -993,8 +991,14 @@ const ring=`<svg viewBox="-70 -70 140 140" width="130"><g fill="none" stroke="${
       lo.insertBefore(lod, lo.firstChild);
     }
     if(lod) lod.innerHTML = arts[i];
+    const ls = document.getElementById('login-screen');
+    // Mit gültiger Sitzung bleibt die Anmeldekarte verborgen (kein Aufblitzen vor dem Ladebildschirm);
+    // sie erscheint erst, wenn die Wiederanmeldung scheitert (Skript setzt dann display zurück) oder man abmeldet.
+    if(ls && !(typeof loadSession === 'function' && loadSession())) ls.classList.add('neu-ready');
   }
   apply();
+  { const ls = document.getElementById('login-screen');
+    if(ls) new MutationObserver(() => { if(ls.style.display !== 'none') ls.classList.add('neu-ready'); }).observe(ls, {attributes:true, attributeFilter:['style']}); }
   ['doLogout','doPartnerLogout'].forEach(n => {
     const f = window[n];
     if(typeof f === 'function') window[n] = function(){ const r = f.apply(this, arguments); apply(); return r; };
