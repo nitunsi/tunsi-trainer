@@ -269,3 +269,43 @@ body.neu-tabs.neu-nohdr main{padding-bottom:calc(var(--tabh) + .6rem + env(safe-
 .neu-leg span{min-width:0;overflow-wrap:anywhere;line-height:1.1}
 .neu-row2>*{min-width:0}
 .neu-row2 .neu-sub{font-size:.78rem;overflow-wrap:anywhere}
+
+/* ---------- Konjugations-/Grammatik-Fenster als Sheet ---------- */
+#conj-modal>div,#grammar-modal>div{background:var(--surface)!important;border-top:2px solid var(--gold)!important;border-radius:18px 18px 0 0;padding:1rem 1rem calc(1rem + env(safe-area-inset-bottom,0px))!important;max-height:calc(var(--vvh,100vh) - 10px)!important}
+#conj-modal-title{font-size:1.05rem!important;font-weight:700;color:var(--gold2)!important;letter-spacing:0!important;text-transform:none!important}
+#conj-modal button,#grammar-modal>div button[onclick*="close"]{min-width:44px;min-height:44px;border-radius:12px!important;font-size:1.2rem!important}
+#conj-modal-body table{font-size:.95rem!important}
+#conj-modal-body th{font-size:.8rem!important;text-transform:none!important;letter-spacing:0!important}
+#conj-modal-body td,#conj-modal-body th{padding:.4rem .5rem!important}
+#conj-modal-body td:first-child{color:var(--muted)}
+
+/* ---------- Anmeldung ---------- */
+#login-screen{background:var(--bg)}
+.login-box{background:var(--surface)!important;backdrop-filter:none!important;border-radius:18px!important;padding:1.8rem 1.4rem!important;box-shadow:none!important}
+.login-title{font-family:var(--neu-ui)!important;font-size:1.6rem!important;font-weight:800!important}
+.login-sub{font-size:.9rem!important;margin-bottom:1.3rem!important}
+.login-label{font-size:.9rem!important;color:var(--muted)}
+.login-input{min-height:50px;border-radius:12px!important;font-size:1rem!important;background:var(--bg)!important}
+.login-btn{min-height:52px;border-radius:12px!important;background:var(--gold)!important;color:#17120a!important;font-size:1rem!important;font-weight:700!important;letter-spacing:0!important;text-transform:none!important}
+.login-toggle{min-height:44px;display:flex;align-items:center;justify-content:center;font-size:.95rem!important;color:var(--gold2)!important;text-decoration:none!important}
+.login-error{border-radius:10px!important;font-size:.9rem!important}
+
+/* ---------- Sync-Anzeige: runder Punkt ---------- */
+#sync-btn{min-width:40px;min-height:40px;padding:0 .7rem!important;border-radius:20px!important;border:1px solid var(--border)!important;background:var(--surface2)!important;font-size:.95rem!important;line-height:1}
+
+/* ---------- Partner-Ansicht (Semia) ---------- */
+#partner-screen{background:var(--bg)}
+.partner-header{padding:.7rem 1rem;background:var(--surface);border-bottom:1px solid var(--border)}
+.partner-logo{font-family:var(--neu-ui)!important;font-size:1.05rem;font-weight:700}
+.partner-logo em{font-style:normal}
+.partner-logo small{font-size:.8rem;opacity:.7}
+.partner-main{padding:1rem 1rem 5rem}
+.partner-card{border-radius:16px;padding:1.6rem 1.1rem}
+.partner-card-darija{font-family:var(--neu-ui)!important;font-weight:700}
+.partner-card-german{font-size:1.1rem}
+.partner-card-meta{color:var(--muted);text-transform:none;letter-spacing:0}
+.partner-comment{min-height:50px;border-radius:12px;font-size:1rem}
+.partner-btn{min-height:54px;border-radius:12px;font-size:1rem;font-weight:600;text-transform:none;letter-spacing:0}
+.partner-progress{font-size:.9rem;letter-spacing:0}
+.partner-reload-btn{min-height:50px;border-radius:12px;background:var(--gold);color:#17120a;font-size:1rem}
+.login-sub{text-transform:none!important;letter-spacing:.2px!important}
