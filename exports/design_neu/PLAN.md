@@ -40,6 +40,10 @@ Die Dateien: `trainer-neu.html` (Kopie des alten Stands, mit zwei Einbindungen),
 - Startseite „Lernen“ passt auf eine Seite ohne Scrollen (geprüft bei 390×844, 390×740, 360×740, 360×640; bei kleiner Höhe werden Abstände kleiner, bei unter 680 px entfallen Untertexte und Schnellknöpfe)
 - Motivationsmeldung auf der Startseite: „heute geplant“ = heute schon beantwortet + noch fällig. Verglichen mit dem Tagesschnitt der letzten 7/14/30/90 Tage (ohne heute, Berliner Tage, nur wenn so viele Tage Verlauf da sind). Gezeigt wird immer das höchste übertroffene Fenster (90 vor 30 vor 14 vor 7). Tageszahlen werden auf dem Gerät gemerkt, geladen wird nur der neue Teil.
 
+- Kurs-Lektionsansicht im neuen Stil: Kopfkarte mit Ring und Fortschritt, Tabs Ansicht/Vokabeln, Abschnittsliste mit Statuspunkt und „x von y gemeistert“, Freischalten-Knopf, Vokabel-Tab mit den vier Werten. Die Inhalte der Abschnitte (Dialoge, Grammatik) sind unverändert.
+- Statistik im neuen Stil: Kennzahlen oben (fällig heute, heute beantwortet, Serie), Fortschritt je Vokabeln/Übungen mit einem Balken in vier Phasen (die „Neu“-Zeile ist anklickbar wie zuvor), Fällig-Diagramm (7/14/30/90, Heute antippen oder „Vorziehen“), Aktivität (7/14/30/90, bei 90 Wochen), Prüf-Aktivität, Stufen als ein Balken mit Details, Lektions-/Kurs-Übersicht, Werkzeuge. Lektionsfilter bleibt möglich.
+- Vorziehen-Dialog: oben ausgerichtet, folgt dem sichtbaren Bereich (Tastatur) und bleibt bei 330 px sichtbarer Höhe vollständig bedienbar. Bottom-Sheets (Vokabel bearbeiten) folgen ebenfalls.
+
 ## Nicht gebaut / Entscheidungen
 - Wischgesten für selbstbewertete Karten: nicht gebaut (Knöpfe bleiben).
 - 12-Wochen-Aktivitätsraster: nicht gebaut. Dafür bräuchte es eine Tageszählung in der Datenbank (View/RPC), sonst müssten ~14.000 Zeilen geladen werden. Ohne Rückfrage kein Schema ändern.
@@ -57,8 +61,6 @@ Die Dateien: `trainer-neu.html` (Kopie des alten Stands, mit zwei Einbindungen),
 6. **Hörkarten im Lernen:** Anteil aktuell etwa jede dritte Karte bei Stufe 0 bis 2 und jede siebte ab Stufe 3 (nur Vokabeln mit Audio). Anders gewünscht?
 
 ## Noch möglich (nicht entschieden, nicht gebaut)
-- Kurs-Lektionsansicht (Tabs Lernen/Test, Dialog, Grammatik) im neuen Stil — läuft bisher im alten Aussehen mit neuem Rahmen
-- Statistik-Seite umbauen (Level-Verteilung als ein Balken, Heute-Kopf) — bisher nur umgefärbt und mit größerer Schrift
 - Antwort-Paare, Konjugations-Fenster, Login, Synchronisations-Anzeige im neuen Stil
 - Partner-Ansicht für Semia im neuen Stil
 - Test auf dem Handy (echte Tastatur, iOS, Ton) und danach Feinschliff

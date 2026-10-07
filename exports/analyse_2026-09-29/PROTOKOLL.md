@@ -372,3 +372,4 @@ Geprüft:
 - **Neues Design (Vorziehen):** der Dialog zeigt zusätzlich, wie viele Einträge pro Stufe 4, 5 und 6 vorziehbar sind (Vokabeln und Kurs-Übungen zusammen).
 - **Neues Design (Vorziehen):** die Stufen-4/5/6-Kacheln im Dialog zählen nur Einträge, die morgen fällig sind (Auswahllogik des Vorziehens unverändert). Gegenprobe direkt aus den Daten stimmt (22 / 16 / 0).
 - **Neues Design (Kurs):** Knopf „Lernen“ mit „Weiter mit L1“ entfernt (er startete die fälligen Übungen aller Lektionen, nicht die genannte Lektion); stattdessen ist die aktuelle Lektion in der Liste markiert.
+- **Neues Design (Lektionsansicht, Statistik, Vorziehen):** Kurs-Lektionsansicht und Statistik-Seite im neuen Stil; Vorziehen-Dialog kompakt und tastaturfest (bei 330 px sichtbarer Höhe komplett sichtbar); Sheets folgen dem sichtbaren Bereich. Mit echten Daten getestet (nur Lesen).

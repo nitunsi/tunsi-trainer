@@ -67,7 +67,7 @@ function chrome(mode){
   document.body.classList.toggle('neu-session', sess && appVisible);
   document.body.classList.toggle('neu-hasprog', HASPROG.includes(mode));
   document.body.classList.toggle('neu-tabs', appVisible && !sess);
-  document.body.classList.toggle('neu-nohdr', mode==='home' || mode==='more');
+  document.body.classList.toggle('neu-nohdr', mode==='home' || mode==='more' || mode==='stats');
   document.body.classList.toggle('neu-admin', ADMIN.includes(mode));
   const t = TABOF(mode);
   document.querySelectorAll('#tabbar button').forEach(b => b.classList.toggle('a', b.dataset.m === t));
@@ -669,6 +669,243 @@ window._actRender = function(){
   if(_actFiltered.length === 0){ if(empty) empty.style.display = 'block'; if(tbl) tbl.style.display = 'none'; }
   else { if(empty) empty.style.display = 'none'; if(tbl) tbl.style.display = 'block'; }
   _actUpdateStats();
+};
+
+
+/* ---------- sichtbarer Bereich (Tastatur) als CSS-Variablen: --vvh Höhe, --vvt Versatz, --kb Tastaturhöhe ---------- */
+(function(){
+  function upd(){
+    const vv = window.visualViewport;
+    const h = vv ? vv.height : window.innerHeight;
+    const top = vv ? vv.offsetTop : 0;
+    const st = document.documentElement.style;
+    st.setProperty('--vvh', Math.round(h) + 'px');
+    st.setProperty('--vvt', Math.round(top) + 'px');
+    st.setProperty('--kb', Math.max(0, Math.round(window.innerHeight - h - top)) + 'px');
+  }
+  upd();
+  window.addEventListener('resize', upd);
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize', upd); window.visualViewport.addEventListener('scroll', upd); }
+})();
+
+
+/* ---------- Kurs-Lektionsansicht im neuen Stil ---------- */
+const cleanLessonTitle = t => String(t||'').replace(/^Lektion\s*\d+\s*[—–-]\s*/i, '');
+function lessonProg(l){
+  const items = courseFlattenChunks().filter(ch => ch.lessonId === l.id).reduce((s,ch) => s.concat(ch.srsItems), []);
+  const total = items.length;
+  const unlocked = items.filter(e => COURSE_EX_PROGRESS[e.id]).length;
+  const mastered = items.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
+  const due = items.filter(e => { const p = COURSE_EX_PROGRESS[e.id]; return p && p.next_review && isDueByDay(courseParseTs(p.next_review)); }).length;
+  return {total, unlocked, mastered, due};
+}
+const _scl = window.showCourseLesson;
+window.showCourseLesson = function(){ cMode = 'course'; chrome('course'); return _scl.apply(this, arguments); };
+window.renderCourseLesson = function(){
+  const c = $('exercise-content'), l = _courseCurLesson;
+  if(!c || !l) return;
+  const chunked = courseHasChunks(l);
+  const pr = lessonProg(l);
+  const frac = pr.total ? pr.mastered / pr.total : 0;
+  const done = pr.total > 0 && pr.mastered >= pr.total;
+  const tab = (k, label) => '<button class="'+(_courseCurTab===k?'on':'')+'" onclick="courseSetTab(\''+k+'\')">'+label+'</button>';
+  c.innerHTML = '<div class="neu-wrap">'
+    + '<div style="margin-bottom:.6rem"><span class="neu-chip" onclick="showCourseOverview()">‹ Kurs</span></div>'
+    + '<div class="neu-card" style="display:flex;align-items:center;gap:.9rem">'+ring(frac, 64, 7, done ? 'var(--green)' : 'var(--gold)', done ? '✓' : Math.round(frac*100))
+    +   '<div style="flex:1;min-width:0"><div style="font-size:1.15rem;font-weight:700">Lektion '+l.course_number+'</div><div class="neu-sub" style="margin-top:1px">'+escHtml(cleanLessonTitle(l.title))+'</div>'
+    +   (pr.total ? '<div style="font-size:.85rem;margin-top:.3rem;color:var(--gold2)">'+fmtN(pr.mastered)+' von '+fmtN(pr.total)+' Übungen gemeistert'+(pr.due ? ' · <span style="color:var(--red)">'+fmtN(pr.due)+' fällig</span>' : '')+'</div>' : '')
+    + '</div></div>'
+    + '<div class="neu-seg" style="margin-bottom:.8rem">'+(chunked ? tab('course','Ansicht')+tab('vocab','Vokabeln') : tab('learn','Lernen')+tab('vocab','Vokabeln')+tab('test','Test'))+'</div>'
+    + '<div id="course-tab-content"></div></div>';
+  const tc = $('course-tab-content');
+  if(_courseCurTab === 'learn') renderCourseLearnTab(tc, l);
+  else if(_courseCurTab === 'vocab') renderCourseVocabTab(tc, l);
+  else if(_courseCurTab === 'test') renderCourseTestTab(tc, l);
+  else if(_courseCurTab === 'course') renderCourseBrowseTab(tc, l);
+};
+window.renderCourseBrowseTab = function(tc, l){
+  if(!courseHasChunks(l)){ renderCourseLearnTab(tc, l); return; }
+  const byKey = {};
+  (COURSE_EXERCISES_BY_LESSON[l.id]||[]).forEach(e => { (byKey[e.chunk_key] = byKey[e.chunk_key] || []).push(e); });
+  let h = '<div class="neu-card" style="padding:.1rem .9rem">';
+  (l.chunk_order||[]).forEach(c => {
+    const all = byKey[c.key] || [];
+    const srs = all.filter(e => COURSE_SRS_TYPES.includes(e.exercise_type));
+    const non = all.filter(e => !COURSE_SRS_TYPES.includes(e.exercise_type));
+    const unlocked = courseChunkUnlocked(srs), mastered = courseChunkMastered(srs);
+    const st = !srs.length ? 'read' : mastered ? 'done' : unlocked ? 'run' : 'lock';
+    const mc = srs.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 3).length; // gleiche Schwelle wie der Punkt (courseChunkMastered)
+    const open = _browseOpenChunk === c.key;
+    const dot = {done:'var(--green)', run:'var(--gold)', lock:'var(--border)', read:'var(--muted)'}[st];
+    const sub = srs.length ? fmtN(mc)+' von '+fmtN(srs.length)+' gemeistert'+(st==='lock' ? ' · gesperrt' : '') : non.length ? fmtN(non.length)+' zum Lesen' : '';
+    h += '<div class="neu-chunk'+(st==='lock'?' lock':'')+'"><button class="hd" onclick="courseBrowseToggle(\''+eq(c.key)+'\')"><span class="dot" style="background:'+dot+'"></span><span class="tx"><b>'+escHtml(c.label)+'</b><small>'+sub+'</small></span><span class="chev">'+(open?'⌃':'⌄')+'</span></button>';
+    if(open){
+      h += '<div class="bd">'+courseChunkLearnHtml(l, c);
+      if(srs.length && !unlocked) h += '<button class="neu-btn blue" style="margin-top:.7rem" onclick="courseManualUnlockChunk('+l.id+',\''+eq(c.key)+'\')">Diesen Abschnitt jetzt freischalten</button>';
+      if(srs.length) h += '<div class="neu-cap" style="margin:.9rem 0 .4rem">Übungen</div><div style="display:flex;flex-wrap:wrap;gap:.4rem">'+srs.map(e => '<span class="neu-chip" style="min-height:30px;cursor:default">'+courseExLevelBadge(e.id)+'</span>').join('')+'</div>';
+      h += courseNonSrsHtml(non)+'</div>';
+    }
+    h += '</div>';
+  });
+  tc.innerHTML = h + '</div>';
+};
+window.renderCourseVocabTab = function(tc, l){
+  const f = parseCourseVocabRefs(l.vocab_lesson_refs);
+  const list = ALL_VOCAB.filter(v => f.ids.has(v.id) || f.tr.has(v.tr));
+  tc.innerHTML = list.length
+    ? '<div class="neu-card">'+lessonStatHtml(list)+'</div><button class="neu-btn" onclick="courseGoToVocab('+l.id+')">Vokabeln der Lektion ansehen</button>'
+    : '<div class="neu-card neu-sub">Für diese Lektion sind noch keine Vokabeln verknüpft.</div>';
+};
+
+/* ---------- Statistik im neuen Stil ---------- */
+const PHASE_COL = ['#3a3228', '#7a6330', '#b0913f', '#e8c96a'];
+const LV_COL = ['#4a4034','#6f6246','#8c7536','#a68a3a','#c4a449','#d6b755','#e8c96a','#f6de8e'];
+const pct0 = (a,b) => b ? Math.round(100*a/b) : 0;
+async function loadActivityBars(N){
+  const key = 'act' + N;
+  if(_cache[key] && Date.now() - _cache[key].t < 120000) return _cache[key].d;
+  const berlin = d => d.toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
+  const midnight = new Date(); midnight.setHours(0,0,0,0);
+  const since = new Date(midnight); since.setDate(since.getDate() - (N-1));
+  const days = {};
+  for(let page = 0; page < 30; page++){
+    const r = await sbApi('review_log?user_id=eq.'+currentUser.id+'&select=correct,created_at&created_at=gte.'+since.toISOString()+'&order=created_at.desc&limit=1000&offset='+(page*1000));
+    (r || []).forEach(x => { const k = berlin(new Date(x.created_at)); const e = days[k] || (days[k] = {a:0, c:0}); e.a++; if(x.correct) e.c++; });
+    if(!r || r.length < 1000) break;
+  }
+  const list = [];
+  for(let i = N-1; i >= 0; i--){ const d = new Date(midnight); d.setDate(d.getDate() - i); const e = days[berlin(d)] || {a:0, c:0}; list.push({d, a:e.a, c:e.c}); }
+  _cache[key] = {t: Date.now(), d: list};
+  return list;
+}
+const WD = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+function barChart(items, opts){
+  // items: [{v, c?, label, hot, act}] — c = Teilwert (richtig) für gestapelte Balken
+  const max = Math.max(1, ...items.map(x => x.v));
+  const H = 96, thin = items.length > 16, nums = items.length <= 14 && max < 1000;
+  const body = items.map(x => {
+    const h = Math.round(x.v / max * H);
+    const hc = x.c != null && x.v ? Math.round(h * x.c / x.v) : h;
+    const bar = x.v ? (x.c != null
+      ? '<i style="height:'+(h-hc)+'px;background:#5a4c2e"></i><i style="height:'+hc+'px;background:var(--gold)"></i>'
+      : '<i style="height:'+h+'px;background:'+(x.hot?'var(--gold2)':'#6f6246')+'"></i>') : '';
+    return '<div class="b'+(x.hot?' hot':'')+'"'+(x.act?' onclick="'+x.act+'"':'')+'>'+(nums?'<b>'+(x.v?fmtN(x.v):'')+'</b>':'')+'<div class="col">'+bar+'</div>'+(thin?'':'<span>'+(x.label||'')+'</span>')+'</div>';
+  }).join('');
+  let axis = '';
+  if(thin){
+    const n = items.length, pick = [0, Math.floor(n/2), n-1].map(i => items[i].ax || '');
+    axis = '<div class="neu-axis"><span>'+pick[0]+'</span><span>'+pick[1]+'</span><span>'+pick[2]+'</span></div>';
+  }
+  return '<div class="neu-bars'+(thin?' thin':'')+'">'+body+'</div>'+axis;
+}
+function winChips(cur, fn){ return '<div style="display:flex;gap:.35rem">'+[7,14,30,90].map(n => '<span class="neu-chip'+(n===cur?' on':'')+'" style="min-height:32px;padding:0 .65rem" onclick="'+fn+'('+n+')">'+n+'</span>').join('')+'</div>'; }
+window.neuSetFc = function(n){ forecastWindow = n; showStats(); };
+window.neuSetAct = function(n){ activityWindow = n; renderActivityCard(); };
+window.neuFilterOffStats = function(){ try{ filterLessonDropdown('all'); }catch(e){ cLesson = 'all'; } showStats(); };
+
+function renderActivityCard(){
+  const el = $('neu-act-body'); if(!el) return;
+  const N = activityWindow;
+  $('neu-act-chips').innerHTML = winChips(N, 'neuSetAct');
+  el.innerHTML = '<div class="neu-sub" style="padding:1.2rem 0;text-align:center">Lade …</div>';
+  loadActivityBars(N).then(list => {
+    if(!$('neu-act-body') || N !== activityWindow) return;
+    let items;
+    if(N >= 90){
+      items = [];
+      for(let i = 0; i < list.length; i += 7){ const part = list.slice(i, i+7); const a = part.reduce((s,x)=>s+x.a,0), c = part.reduce((s,x)=>s+x.c,0); items.push({v:a, c, label:(part[0].d.getDate())+'.'+(part[0].d.getMonth()+1)+'.'}); }
+      items = items.map((x,i) => ({...x, label: i % 3 === 0 ? x.label : '', ax: x.label}));
+    } else {
+      items = list.map((x,i) => ({v:x.a, c:x.c, hot:i===list.length-1, label: N <= 14 ? (i===list.length-1 ? 'Heute' : WD[x.d.getDay()]) : '', ax: x.d.getDate()+'.'+(x.d.getMonth()+1)+'.'}));
+    }
+    el.innerHTML = barChart(items);
+  }).catch(e => { const b = $('neu-act-body'); if(b) b.innerHTML = '<div style="color:var(--red);font-size:.85rem">Fehler: '+escHtml(e.message)+'</div>'; });
+}
+
+window.showStats = function(){
+  reset('stats');
+  if(!_courseLoaded){ loadCourseData().then(() => { if(cMode === 'stats') showStats(); }).catch(()=>{}); }
+  const c = $('exercise-content'); if(!c) return;
+  const all = cLesson === 'all';
+  const base = all ? ALL_VOCAB : gv();
+  // Vokabel-Stufen: 0 = ohne Fälligkeit, 1..7 = L0..L6
+  const vb = [0,0,0,0,0,0,0,0]; let vPts = 0;
+  const todayD = new Date(); todayD.setHours(0,0,0,0);
+  const N = forecastWindow;
+  const fc = new Array(N).fill(0); let fcBlocked = 0;
+  const dueByBucket = [0,0,0,0,0,0,0,0];
+  const dayIdx = d => { const nd = new Date(d); nd.setHours(0,0,0,0); const diff = Math.round((nd - todayD) / 86400000); return diff < 0 ? 0 : diff; };
+  base.forEach(v => {
+    const p = srsProgress[v.id], st = p && p.next_review;
+    const lv = st ? (p.level||0) : -1;
+    const idx = !st ? 0 : (lv === 0 ? 1 : Math.min(lv+1, 7));
+    vb[idx]++; if(st) vPts += Math.min(lv,6);
+    if(st){ const di = dayIdx(p.next_review); if(di < N){ if(isQueueBlocked(v)) fcBlocked++; else fc[di]++; } if(srsIsDue(v) && !isQueueBlocked(v)) dueByBucket[idx]++; }
+  });
+  const cb = [0,0,0,0,0,0,0,0]; let cPts = 0, cTotal = 0, cActive = 0;
+  if(all){
+    cTotal = courseFlattenChunks().reduce((s,ch) => s + ch.srsItems.length, 0);
+    Object.values(COURSE_EX_PROGRESS).forEach(p => {
+      const lv = Math.min(p.correct_count||0, 6); const idx = lv === 0 ? 1 : Math.min(lv+1, 7);
+      cb[idx]++; cActive++; cPts += lv;
+      if(p.next_review){ const nd = courseParseTs(p.next_review); const di = dayIdx(nd); if(di < N) fc[di]++; if(isDueByDay(nd)) dueByBucket[idx]++; }
+    });
+    cb[0] = Math.max(0, cTotal - cActive);
+  }
+  const vTotal = base.length, vNew = vb[0], vStarted = vTotal - vNew;
+  const phase = b => [b[0], b[1]+b[2]+b[3], b[4]+b[5], b[6]+b[7]];
+  const vp = phase(vb), cp = phase(cb);
+  const weighted = ((vb[1]+cb[1])*3 + (vb[2]+cb[2])*2 + (vb[3]+cb[3])) / 3;
+  const d = dueCounts();
+  const smoothMax = ALL_VOCAB.filter(v => { const p = srsProgress[v.id]; return p && p.next_review && p.level >= 3; }).length;
+  const recalcMax = ALL_VOCAB.filter(v => { const p = srsProgress[v.id]; return p && p.next_review && p.last_reviewed; }).length;
+  const nextChunk = (all && _courseLoaded) ? statsNextLockedChunk() : null;
+  const courseVocabLeft = statsCourseVocabQueue().length;
+
+  const legend = (p, act, tip) => '<div class="neu-leg">'+['Neu','Anfänger','Fortgeschritten','Profi'].map((l,i) =>
+    '<div'+(i===0 && act ? ' class="act" onclick="'+act+'" title="'+escHtml(tip||'')+'"' : '')+'><u style="background:'+PHASE_COL[i]+'"></u><span>'+l+'</span><b>'+fmtN(p[i])+'</b></div>').join('')+'</div>';
+  const segBar = p => { const t = p.reduce((a,x)=>a+x,0) || 1; return '<div class="neu-seg2">'+p.map((x,i) => x ? '<i style="width:'+(x/t*100)+'%;background:'+PHASE_COL[i]+'"></i>' : '').join('')+'</div>'; };
+  const kpi = (label, a, b) => '<div><div class="neu-sub">'+label+'</div><div class="neu-kpi'+(b && a>=b ? ' ok':'')+'">'+pct0(a,b)+' %</div></div>';
+  const prog = (title, started, total, p, act, tip) => '<div class="neu-prog-block"><div style="font-weight:700;margin-bottom:.5rem">'+title+'</div>'
+    + '<div style="display:flex;gap:1.6rem">'+kpi('gestartet', started, total)+kpi('davon Profi', p[3], started)+'</div>'
+    + segBar(p) + legend(p, act, tip) + '</div>';
+
+  const fcItems = fc.map((v,i) => { const dd = new Date(todayD); dd.setDate(dd.getDate()+i);
+    const label = N <= 14 ? (i===0 ? 'Heute' : i===1 ? 'Morgen' : WD[dd.getDay()]) : '';
+    return {v, label, hot:i===0, act: i===0 ? 'openPullForward()' : '', ax: i===0 ? 'Heute' : dd.getDate()+'.'+(dd.getMonth()+1)+'.'}; });
+  const lvTot = vb.map((x,i) => x + cb[i]), lvSum = lvTot.reduce((a,x)=>a+x,0) || 1;
+  const hints = ['ohne Fälligkeit','fällig','Wdh. in 1 T','3 T','7 T','14 T','30 T','90 T'];
+  const lvRows = lvTot.map((n,i) => '<div class="neu-lvrow"><u style="background:'+LV_COL[i]+'"></u><span>'+(i===0?'Neu':'Stufe '+(i-1))+'</span><em>'+hints[i]+'</em><b>'+fmtN(n)+'</b><s'+(dueByBucket[i]?' style="color:var(--red)"':'')+'>'+(dueByBucket[i]?fmtN(dueByBucket[i])+' fällig':'')+'</s></div>').join('');
+
+  c.innerHTML = '<div class="neu-wrap">'
+    + '<div style="font-size:1.5rem;font-weight:700;margin:.2rem 0 .6rem">Statistik</div>'
+    + (all ? '' : '<div style="margin-bottom:.6rem"><span class="neu-chip on" onclick="neuFilterOffStats()">Filter: '+escHtml(cLesson==='COURSEVOCAB'?'Kurs-Lektion':cLesson)+' ✕</span></div>')
+    + '<div class="neu-row2" style="margin-bottom:.7rem">'
+    +   '<div class="neu-card" style="margin:0;padding:.7rem .9rem"><div class="neu-sub">Fällig heute</div><div class="neu-kpi" style="font-size:1.6rem">'+fmtN(d.voc + (all ? d.course : 0))+'</div></div>'
+    +   '<div class="neu-card" style="margin:0;padding:.7rem .9rem"><div class="neu-sub">Heute beantwortet</div><div class="neu-kpi" id="neu-st-today" style="font-size:1.6rem">…</div></div>'
+    +   '<div class="neu-card" style="margin:0;padding:.7rem .9rem"><div class="neu-sub">Serie</div><div class="neu-kpi" id="neu-st-streak" style="font-size:1.6rem">…</div></div>'
+    + '</div>'
+    + (all && weighted < 25 ? '<div class="neu-card" style="border-color:var(--red);background:rgba(201,76,76,.08);padding:.6rem .9rem;color:var(--red);font-size:.9rem">Anfänger-Puffer wird knapp (noch '+Math.round(weighted)+'). Neuen Stoff hinzufügen: tippe unten bei „Neu“.</div>' : '')
+    + '<div class="neu-card"><div class="neu-ch">Fortschritt</div>'
+    +   prog('Vokabeln', vStarted, vTotal, vp, all ? 'statsActivateVocab(10)' : '', '10 Vokabeln fällig setzen: erst mit Kursbezug ('+fmtN(courseVocabLeft)+' offen), danach aus dem Quellenabgleich')
+    +   (all ? '<div style="height:1px;background:var(--border);margin:1rem 0"></div>'+prog('Übungen', cActive, cTotal, cp, nextChunk ? 'statsUnlockNextChunk()' : '', nextChunk ? 'Nächsten Kurs-Abschnitt freischalten: K'+nextChunk.lesson.course_number+' · '+(nextChunk.chunkLabel||nextChunk.chunkKey) : '') : '')
+    + '</div>'
+    + '<div class="neu-card"><div class="neu-ch" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem"><span>Fällig</span><span style="display:flex;gap:.5rem;align-items:center"><span class="neu-chip" style="min-height:32px;padding:0 .7rem" onclick="openPullForward()">Vorziehen</span></span></div>'
+    +   '<div style="margin:.2rem 0 .7rem">'+winChips(N, 'neuSetFc')+'</div>'
+    +   barChart(fcItems) + (fcBlocked ? '<div class="neu-sub" style="margin-top:.5rem">'+fmtN(fcBlocked)+' in der Partner-Queue gesperrt</div>' : '')
+    + '</div>'
+    + (all ? '<div class="neu-card"><div class="neu-ch">Aktivität</div><div id="neu-act-chips" style="margin:.2rem 0 .7rem"></div><div id="neu-act-body"></div></div>' : '')
+    + (all ? '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer" onclick="setMode(\'partnerqueue\')"><div class="neu-sub">Prüf-Aktivität wird geladen …</div></div>' : '')
+    + '<div class="neu-card"><div class="neu-ch">Stufen</div><div class="neu-seg2" style="height:16px;margin:.2rem 0 .8rem">'+lvTot.map((x,i) => x ? '<i style="width:'+(x/lvSum*100)+'%;background:'+LV_COL[i]+'"></i>' : '').join('')+'</div>'
+    +   '<details class="neu-filter" style="margin:0;border:none;background:none;padding:0"><summary style="min-height:40px">Alle Stufen anzeigen</summary>'+lvRows+'</details></div>'
+    + '<div class="neu-row2" style="margin-bottom:.8rem"><button class="neu-btn ghost" onclick="statsStartMode(\'lessons\')">Lektions-Übersicht</button><button class="neu-btn ghost" style="border-color:#3b4f7a;color:var(--blue)" onclick="statsStartMode(\'course\')">Kurs-Übersicht</button></div>'
+    + '<details class="neu-filter"><summary>Weitere Werkzeuge</summary><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem">'
+    +   '<button class="neu-btn line" style="flex:1;min-width:10rem" onclick="if(confirm(\'Fälligkeiten glätten? (betrifft bis zu '+smoothMax+' Vokabeln)\'))smoothSchedule();">Glätten<small>bis zu '+fmtN(smoothMax)+' Einträge</small></button>'
+    +   '<button class="neu-btn ghost" style="flex:1;min-width:10rem;border-color:var(--red);color:var(--red)" onclick="if(confirm(\'Alle Fälligkeiten neu berechnen? (betrifft bis zu '+recalcMax+' Vokabeln)\'))recalcAllNextReview();">Alle neu berechnen<small>bis zu '+fmtN(recalcMax)+' Einträge</small></button>'
+    + '</div><div id="smooth-result" style="font-size:.85rem;color:var(--muted)"></div></details>'
+    + '</div>';
+  if(all){ loadPartnerLine(); renderActivityCard(); }
+  loadActivity().then(a => { const t = $('neu-st-today'), s = $('neu-st-streak'); if(t) t.textContent = fmtN(a.today); if(s) s.textContent = a.streak ? a.streak + ' T' : '–'; }).catch(() => {});
 };
 
 /* ---------- Erster Einstieg: nach dem Laden auf die Startseite ---------- */
