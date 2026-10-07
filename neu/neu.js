@@ -318,6 +318,7 @@ function goHome(){
 }
 window.neuGoHome = goHome;
 window.neuDayCounts = loadDayCounts;
+window.neuActivity = loadActivity;
 
 /* ---------- „Mehr“ ---------- */
 function li(icon, label, act, extra){ return '<button onclick="'+act+'">'+IC[icon]+'<span class="sp">'+label+'</span>'+(extra||'<span class="chev">›</span>')+'</button>'; }
@@ -1127,4 +1128,20 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
   window.rCourseEx = function(){ const r = _rc.apply(this, arguments); wrap(); setTimeout(wrap, 350); return r; };
   document.addEventListener('focusin', () => setTimeout(wrap, 120));
   document.addEventListener('focusout', () => setTimeout(wrap, 400));
+})();
+
+
+/* ---------- Tageswerte schon im Ladebildschirm holen (Ring, Serie, Schnitte stehen dann sofort) ---------- */
+(function(){
+  const f = window.loadCourseLessonOptions;
+  if(typeof f !== 'function') return;
+  window.loadCourseLessonOptions = async function(){
+    const r = await f.apply(this, arguments);
+    try{
+      loadOverlayUpdate('Tageswerte laden…', 99, 'Tagesziel, Serie, Schnitte');
+      // höchstens 40 s warten, danach lädt die Startseite die Werte selbst nach
+      await Promise.race([Promise.all([window.neuActivity(), window.neuDayCounts()]), new Promise(res => setTimeout(res, 40000))]);
+    }catch(e){}
+    return r;
+  };
 })();
