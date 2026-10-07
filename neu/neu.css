@@ -309,3 +309,8 @@ body.neu-tabs.neu-nohdr main{padding-bottom:calc(var(--tabh) + .6rem + env(safe-
 .partner-progress{font-size:.9rem;letter-spacing:0}
 .partner-reload-btn{min-height:50px;border-radius:12px;background:var(--gold);color:#17120a;font-size:1rem}
 .login-sub{text-transform:none!important;letter-spacing:.2px!important}
+
+/* Lade-Bildschirm */
+#load-overlay>div:nth-child(2){font-family:var(--neu-ui)!important;font-weight:700;font-size:1.4rem!important;letter-spacing:0!important}
+#load-overlay>div:nth-child(2) em{font-style:normal}
+#load-detail{font-family:var(--neu-ui)!important}
