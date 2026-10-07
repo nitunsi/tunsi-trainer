@@ -1022,3 +1022,34 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
   document.addEventListener('focusin', () => setTimeout(fit, 120));
   document.addEventListener('focusout', () => setTimeout(fit, 400));
 })();
+
+
+/* ---------- Kurs-Karte: Frage-/Aufgabenblock mit fester Höhe (Eingabefeld und Leiste springen nicht) ---------- */
+(function(){
+  const STOP = new Set(['course-drill-question','course-solution-box','course-grade-box','course-input','feedback']);
+  function wrap(){
+    const card = document.querySelector('#exercise-content .neu-ccard');
+    if(!card) return;
+    let box = card.querySelector('.neu-cq');
+    if(!box){
+      const kids = [...card.children], take = [];
+      for(let i = 1; i < kids.length; i++){ if(STOP.has(kids[i].id) || kids[i].classList.contains('feedback')) break; take.push(kids[i]); }
+      if(!take.length) return;
+      box = document.createElement('div'); box.className = 'neu-cq';
+      card.insertBefore(box, take[0]);
+      take.forEach(k => box.appendChild(k));
+    }
+    fit(box);
+  }
+  function fit(box){
+    const items = box.querySelectorAll('div,span');
+    items.forEach(e => e.style.removeProperty('font-size'));
+    for(let k = 0; k < 6 && box.scrollHeight > box.clientHeight + 1; k++){
+      items.forEach(e => { if(e.children.length) return; const fs = parseFloat(getComputedStyle(e).fontSize); e.style.setProperty('font-size', Math.max(11, fs * .92) + 'px', 'important'); });
+    }
+  }
+  const _rc = window.rCourseEx;
+  window.rCourseEx = function(){ const r = _rc.apply(this, arguments); wrap(); setTimeout(wrap, 350); return r; };
+  document.addEventListener('focusin', () => setTimeout(wrap, 120));
+  document.addEventListener('focusout', () => setTimeout(wrap, 400));
+})();
