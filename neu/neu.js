@@ -208,7 +208,7 @@ async function loadDayCounts(){
   const yest = new Date(now); yest.setDate(yest.getDate() - 1);
   const yKey = berlin(yest);
   let saved = null;
-  try{ saved = JSON.parse(LS.get('neu-days2', 'null')); }catch(e){}
+  try{ saved = JSON.parse(LS.get('neu-days3', 'null')); }catch(e){}
   const counts = {};
   let sinceISO;
   if(saved && saved.c && saved.upTo){
@@ -218,21 +218,30 @@ async function loadDayCounts(){
   } else {
     sinceISO = new Date(now.getTime() - 91*86400000).toISOString();
   }
-  // gezählt werden verschiedene Vokabeln pro Berliner Tag (Kurs-Übungen ohne Vokabel zählen nicht); todayAns = alle Antworten heute (fürs Tagesziel)
+  // Gezählt wird pro Berliner Tag: verschiedene Vokabeln + verschiedene Kurs-Übungen. Ältere Kurs-Antworten haben keine
+  // Übungs-Nummer im Protokoll; für sie gilt eine Schätzung: Antworten minus Wiederholungen nach Fehlern
+  // (je falscher Antwort rund 0,94 Wiederholungen, aus dem Vokabel-Verlauf gemessen). todayAns = alle Antworten heute (Tagesziel).
   const fresh = {}, ans = {};
   for(let page = 0; page < 40; page++){
-    const r = await sbApi('review_log?user_id=eq.'+currentUser.id+'&select=created_at,vocabulary_id&created_at=gte.'+sinceISO+'&order=created_at.desc&limit=1000&offset='+(page*1000));
-    (r || []).forEach(x => { const k = berlin(new Date(x.created_at)); ans[k] = (ans[k] || 0) + 1; if(x.vocabulary_id) (fresh[k] || (fresh[k] = new Set())).add(x.vocabulary_id); });
+    const r = await sbApi('review_log?user_id=eq.'+currentUser.id+'&select=created_at,vocabulary_id,course_exercise_id,mode,correct&created_at=gte.'+sinceISO+'&order=created_at.desc&limit=1000&offset='+(page*1000));
+    (r || []).forEach(x => {
+      const k = berlin(new Date(x.created_at));
+      ans[k] = (ans[k] || 0) + 1;
+      const e = fresh[k] || (fresh[k] = {v: new Set(), c: new Set(), oa: 0, ow: 0});
+      if(x.vocabulary_id) e.v.add(x.vocabulary_id);
+      else if(x.course_exercise_id) e.c.add(x.course_exercise_id);
+      else if(x.mode === 'course'){ e.oa++; if(x.correct === false) e.ow++; }
+    });
     if(!r || r.length < 1000) break;
   }
   const lowest = saved && saved.upTo ? saved.upTo : '';
-  Object.keys(fresh).forEach(k => { if(k > lowest) counts[k] = fresh[k].size; });
+  Object.keys(fresh).forEach(k => { if(k > lowest){ const e = fresh[k]; counts[k] = e.v.size + e.c.size + Math.max(0, Math.round(e.oa - 0.94 * e.ow)); } });
   const today = counts[todayKey] || 0, todayAns = ans[todayKey] || 0;
   // nur erledigte Tage (bis gestern) und höchstens 100 Tage merken
   const keep = {};
   const limit = new Date(now.getTime() - 100*86400000);
   Object.keys(counts).forEach(k => { if(k <= yKey && new Date(k + 'T12:00:00Z') >= limit) keep[k] = counts[k]; });
-  LS.set('neu-days2', JSON.stringify({upTo: yKey, c: keep}));
+  LS.set('neu-days3', JSON.stringify({upTo: yKey, c: keep}));
   // Durchschnitt über die letzten N Tage vor heute; nur wenn so viele Tage Verlauf da sind
   const keys = Object.keys(keep).sort();
   const first = keys.length ? new Date(keys[0] + 'T12:00:00Z') : null;
@@ -304,7 +313,7 @@ function goHome(){
       if(need > 0){
         const title = need <= 10 ? 'Fast geschafft! Nur noch '+fmtN(need)+' Vokabeln, dann bist du über deinem Schnitt 💪'
           : need <= 40 ? 'Tagesziel geschafft — noch '+fmtN(need)+' Vokabeln und du bist über deinem Schnitt!'
-          : 'Tagesziel geschafft! Bis über deinen Schnitt sind es noch '+fmtN(need)+' Vokabeln.';
+          : 'Tagesziel geschafft! Bis über deinen Schnitt sind es noch '+fmtN(need)+'.';
         el.innerHTML = '<div class="neu-card" style="border-color:var(--gold-d);background:rgba(201,168,76,.08);padding:.7rem 1rem"><div style="font-weight:700;color:var(--gold2)">'+title+'</div></div>';
         return;
       }
@@ -312,7 +321,7 @@ function goHome(){
     // 2) sonst: heute Geschafftes liegt über einem Schnitt
     const m = motivation(done, dc.avgs);
     if(!m) return;
-    el.innerHTML = '<div class="neu-card" style="border-color:var(--gold-d);background:rgba(201,168,76,.08);padding:.7rem 1rem"><div style="font-weight:700;color:var(--gold2)">Über deinem '+m.n+'-Tage-Schnitt</div><div class="neu-sub" style="margin-top:2px">Heute geschafft: <b style="color:var(--text)">'+fmtN(done)+'</b> Vokabeln · Schnitt: '+fmtN(m.avg)+' (+'+m.pct+' %)</div></div>';
+    el.innerHTML = '<div class="neu-card" style="border-color:var(--gold-d);background:rgba(201,168,76,.08);padding:.7rem 1rem"><div style="font-weight:700;color:var(--gold2)">Über deinem '+m.n+'-Tage-Schnitt</div><div class="neu-sub" style="margin-top:2px">Heute geschafft: <b style="color:var(--text)">'+fmtN(done)+'</b> · Schnitt: '+fmtN(m.avg)+' (+'+m.pct+' %)</div></div>';
   }).catch(() => {});
 }
 window.neuGoHome = goHome;
