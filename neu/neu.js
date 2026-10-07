@@ -529,10 +529,10 @@ window.openVocabEdit = function(id, i){ _ove.apply(this, arguments); setTimeout(
 function fillSheet(id){
   const v = vById(id); if(!v) return;
   const p = srsProgress[id];
-  const parts = [v.ls];
+  const parts = [escHtml(v.ls||'')];
   if(p && p.next_review) parts.push('Stufe '+(p.level||0), fmtDue(p.next_review), (p.review_count||0)+'× geübt');
   else parts.push('noch nicht gestartet');
-  const sum = $('ei-summary'); if(sum) sum.textContent = parts.join(' · ');
+  const sum = $('ei-summary'); if(sum) sum.innerHTML = parts.join(' · ');
   const au = $('ei-audio'); if(au) au.style.display = v.au ? '' : 'none';
 }
 window.neuEditAudio = function(){ const v = vById(_editSheetVocabId); if(v && v.au) playVocabAudio(v.au, null, v.aus||0, v.aue||0); };
