@@ -1885,9 +1885,9 @@ async function partnerInit(containerId){
   main.innerHTML=partnerTabBar('review')+'<div style="text-align:center;padding:2rem;color:var(--muted)">Lade…</div>';
   try{
   // Reihenfolge (Nils, 2026-10-03), in dieser Priorität:
-  //   1. fällig vor nicht fällig (nur ja/nein, das Datum zählt hier noch nicht)
+  //   1. mit Fälligkeitsdatum vor ohne (nur ja/nein — NICHT „heute fällig“; das Datum zählt hier noch nicht)
   //   2. Partner-Status: pending vor übersprungen vor „ohne Status“ (pending setzt Nils nur noch von Hand)
-  //   3. Quellenlage: unbestätigte zuerst (belegStufe 0 vor 1 vor 2)
+  //   3. Quellenlage: unbestätigte zuerst (belegStufe 0 vor 1 vor 2; mit Audio zählt als 2)
   //   4. Fälligkeitsdatum: älteste zuerst; ohne Datum zuletzt, dort zufällig
   // Fälligkeit = fest der Lernstand von Nils (PARTNER_QUEUE_DUE_USER_ID), unabhängig davon, wer angemeldet
   // ist: Semia prüft, was bei Nils bald dran ist. Nach Kalendertag wie beim Lernen.
@@ -1910,19 +1910,22 @@ async function partnerInit(containerId){
   // b) übersprungene (wenige) und ohne Status, unbestätigte zuerst (die ersten 300 genügen für einen Block)
   const skippedRows = await sbApi('vocabulary?partner_status=in.(skipped,pending)&select='+cols+'&limit=200');
   (skippedRows||[]).forEach(v=>pool.set(v.id,v));
-  const nullRows = await sbApi('vocabulary?partner_status=is.null&select='+cols+'&order=external_confirmed.asc.nullsfirst&limit=300');
+  // alle offenen, noch unbestätigten (gut 1.000): nur so ist sicher, dass die mit Datum und ohne Beleg vorn landen
+  const nullRows = await sbApiPaged('vocabulary?partner_status=is.null&or=(external_confirmed.is.null,external_confirmed.eq.false)&select='+cols+'&order=id.asc', 1000);
   (nullRows||[]).forEach(v=>{ if(!pool.has(v.id)) pool.set(v.id,v); });
   const cand = [...pool.values()];
   cand.forEach(v=>{
     const d = progMap.get(v.id) || null;
-    v._nextReview = d; v._due = !!d && isDueByDay(d); v._rnd = Math.random();
+    v._nextReview = d; v._due = !!d; v._rnd = Math.random();  // _due = hat ein Fälligkeitsdatum (ja/nein)
   });
+  // Audio (Ninja-Aufnahme) zählt als bestätigt: ein Muttersprachler hat das Wort eingesprochen (Nils, 2026-10-07)
+  const partnerBeleg = v => v.ninja_audio_url ? 2 : belegStufe(v);
   const stat = v => v.partner_status==='pending' ? 0 : v.partner_status==='skipped' ? 1 : 2;
   cand.sort((a,b)=>{
     if(a._due!==b._due) return a._due ? -1 : 1;
     const sa = stat(a), sb = stat(b);
     if(sa!==sb) return sa-sb;
-    const ra = belegStufe(a), rb = belegStufe(b);
+    const ra = partnerBeleg(a), rb = partnerBeleg(b);
     if(ra!==rb) return ra-rb;
     if(a._nextReview && b._nextReview) return a._nextReview - b._nextReview;
     if(a._nextReview) return -1;
@@ -1967,9 +1970,9 @@ function partnerShowCard(){
 // Rendert eine einzelne Prüfkarte. `existing` = bisheriges Ergebnis beim Bearbeiten, sonst null.
 function partnerRenderCard(v, existing){
   const main=_pMain();
-  const statusLabel = existing ? '<span style="color:var(--gold2);font-size:.75rem">✎ wird bearbeitet</span>' :
-                      v.partner_status === 'skipped' ? '<span style="color:var(--muted);font-size:.75rem">↩ übersprungen</span>' :
-                      v.partner_status === null ? '<span style="color:var(--border);font-size:.75rem">neu</span>' : '';
+  const statusLabel = existing ? '<span style="color:var(--gold2);font-size:.95rem">✎ wird bearbeitet</span>' :
+                      v.partner_status === 'skipped' ? '<span style="color:var(--muted);font-size:.95rem">↩ übersprungen</span>' :
+                      v.partner_status === null ? '<span style="color:var(--muted);font-size:.95rem">neu</span>' : '';
   const progressText = existing ? 'Bearbeiten' : (_pIdx+1)+' / '+_pBatch.length;
   const prefillComment = existing ? (existing.comment||'') : '';
   main.innerHTML=partnerTabBar('review')+`
@@ -1998,16 +2001,16 @@ function partnerRenderSummary(){
   const main=_pMain();
   const rows = _pResults.map((r,i)=>{
     const lbl = _P_RESULT_LABEL[r.status] || {icon:'·',text:r.status};
-    const comment = r.comment ? '<div style="margin-top:.3rem;font-size:.78rem;color:var(--muted)">💬 '+escHtml(r.comment)+'</div>' : '';
+    const comment = r.comment ? '<div style="margin-top:.3rem;font-size:.95rem;color:var(--muted)">💬 '+escHtml(r.comment)+'</div>' : '';
     return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.8rem .9rem;margin-bottom:.6rem;text-align:left">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem">
         <div>
-          <div style="font-family:'Playfair Display',serif;color:var(--gold2);font-size:1.05rem">${r.darija||''}</div>
-          <div style="font-size:.85rem;color:var(--muted)">${r.german||''}</div>
+          <div style="font-family:'Playfair Display',serif;color:var(--gold2);font-size:1.25rem">${r.darija||''}</div>
+          <div style="font-size:1rem;color:var(--muted)">${r.german||''}</div>
         </div>
         <div style="text-align:right;white-space:nowrap">
-          <div style="font-size:.85rem">${lbl.icon} ${lbl.text}</div>
-          <button class="partner-btn" style="padding:.3rem .6rem;font-size:.7rem;margin-top:.4rem" onclick="partnerEdit(${i})">✎ Anpassen</button>
+          <div style="font-size:1rem">${lbl.icon} ${lbl.text}</div>
+          <button class="partner-btn" style="padding:.4rem .7rem;font-size:.9rem;margin-top:.4rem" onclick="partnerEdit(${i})">✎ Anpassen</button>
         </div>
       </div>
       ${comment}
