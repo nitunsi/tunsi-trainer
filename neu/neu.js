@@ -453,11 +453,16 @@ window.showRes = function(){
     : pct >= 50 ? ['شْوَيَّة شْوَيَّة Shwayya shwayya', 'عَاوِد مَرَّة أُخرى 3awid marra okhra']
     : ['يَالَّة، عَاوِد! Yalla, 3awid!', 'صَبرَا جَمِيل Sabra jmil'];
   const r = $('result-screen');
+  // Nur eine Zahlenangabe zum Block (Ring: 9 / 10); darunter, wie viel heute noch fällig ist
+  const d = dueCounts(), left = d.voc + d.course;
+  const dueRow = left
+    ? '<div class="rows"><div><span>Heute noch fällig<small>Vokabeln '+fmtN(d.voc)+' · Kurs '+fmtN(d.course)+'</small></span><b style="color:var(--gold2);font-size:1.4rem">'+fmtN(left)+'</b></div></div>'
+    : '<div class="rows"><div><span>Heute noch fällig</span><b style="color:var(--green)">nichts mehr</b></div></div>';
   r.innerHTML = '<div class="neu-res">'
     + ring(pct/100, 150, 12, pct >= 70 ? 'var(--green)' : 'var(--gold)', score.c + ' / ' + score.t)
-    + '<div class="msg">'+(pct>=70?'Gut gemacht':'Weiter üben')+' · '+pct+' %</div>'
+    + '<div class="msg">'+(pct>=70?'Gut gemacht':'Weiter üben')+'</div>'
     + '<div class="sub">'+msgs[Math.floor(Math.random()*msgs.length)]+'</div>'
-    + '<div class="rows"><div><span>Richtig</span><b style="color:var(--green)">'+score.c+'</b></div><div><span>Falsch</span><b style="color:var(--red)">'+score.w+'</b></div><div><span>Gesamt</span><b>'+score.t+'</b></div></div>'
+    + dueRow
     + '<div style="width:100%;display:flex;flex-direction:column;gap:.7rem"><button class="neu-btn" onclick="restartExercise()">Noch einen Block</button><button class="neu-btn ghost" onclick="closeResult();neuGoHome()">Fertig für heute</button></div>'
     + '</div>';
   r.classList.add('show');
