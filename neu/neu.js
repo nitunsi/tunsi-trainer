@@ -393,14 +393,23 @@ window.neuToggleListen = function(){ LS.set('neu-listen', LS.get('neu-listen','1
 function nothingDue(){
   const c = $('exercise-content'); if(!c) return;
   const sn = $('sticky-next'); if(sn) sn.style.display = 'none';
+  // Ist im anderen Bereich (Vokabeln <-> Kurs) noch etwas fällig, zuerst dorthin weiterführen statt Vorziehen anzubieten
+  const d = dueCounts();
+  const go = [];
+  if(d.voc > 0 && cMode !== 'flash') go.push('<button class="neu-btn" onclick="setMode(\'flash\')">Weiter mit Vokabeln · '+fmtN(d.voc)+' fällig</button>');
+  if(d.course > 0 && cMode !== 'coursesrs') go.push('<button class="neu-btn blue" onclick="setMode(\'coursesrs\')">Weiter mit Kurs · '+fmtN(d.course)+' fällig</button>');
+  const part = cMode === 'coursesrs' ? 'Kurs' : cMode === 'flash' ? 'Vokabeln' : 'Hier';
+  const rest = '<button class="neu-btn '+(go.length?'ghost':'')+'" onclick="statsActivateVocab(10)">10 Vokabeln fällig setzen</button>'
+    + '<button class="neu-btn '+(go.length?'ghost':'blue')+'" onclick="statsUnlockNextChunk()">Nächsten Kurs-Abschnitt freischalten</button>'
+    + '<button class="neu-btn line" onclick="openPullForward()">Vorziehen</button>'
+    + '<button class="neu-btn ghost" onclick="neuGoHome()">Zur Startseite</button>';
   c.innerHTML = '<div class="neu-wrap" style="text-align:center;padding-top:2rem">'
-    + '<div style="font-size:1.5rem;font-weight:700;color:var(--gold2)">Alles erledigt</div>'
-    + '<div class="neu-sub" style="margin:.5rem 0 1.4rem">Nichts fällig. Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b></div>'
+    + '<div style="font-size:1.5rem;font-weight:700;color:var(--gold2)">'+(go.length ? part+' erledigt' : 'Alles erledigt')+'</div>'
+    + '<div class="neu-sub" style="margin:.5rem 0 1.4rem">'+(go.length ? 'Im anderen Bereich ist noch etwas fällig.' : 'Nichts fällig. Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b>')+'</div>'
     + '<div style="display:flex;flex-direction:column;gap:.7rem;text-align:left">'
-    +   '<button class="neu-btn" onclick="statsActivateVocab(10)">10 Vokabeln fällig setzen</button>'
-    +   '<button class="neu-btn blue" onclick="statsUnlockNextChunk()">Nächsten Kurs-Abschnitt freischalten</button>'
-    +   '<button class="neu-btn line" onclick="openPullForward()">Vorziehen</button>'
-    +   '<button class="neu-btn ghost" onclick="neuGoHome()">Zur Startseite</button>'
+    +   go.join('')
+    +   (go.length ? '<div class="neu-sub" style="margin:.4rem 0 -.2rem;text-align:center">oder</div>' : '')
+    +   rest
     + '</div></div>';
   $('ex-type-label').textContent = ''; $('ex-progress').textContent = '';
 }
