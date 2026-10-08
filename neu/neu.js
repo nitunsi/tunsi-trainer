@@ -256,6 +256,29 @@ function motivation(done, avgs){
   return null;
 }
 
+// Anfänger-Puffer (wie in der Statistik): Stufe 0 zählt 3, Stufe 1 zählt 2, Stufe 2 zählt 1, geteilt durch 3 — Vokabeln und Kurs-Übungen zusammen
+function learnBuffer(part){
+  let a = 0, b = 0, c = 0;
+  if(part !== 'course') ALL_VOCAB.forEach(v => { const p = srsProgress[v.id]; if(p && p.next_review){ const lv = p.level || 0; if(lv === 0) a++; else if(lv === 1) b++; else if(lv === 2) c++; } });
+  if(part !== 'vocab') Object.values(COURSE_EX_PROGRESS).forEach(p => { if(!p) return; const lv = Math.min(p.correct_count || 0, 6); if(lv === 0) a++; else if(lv === 1) b++; else if(lv === 2) c++; });
+  return (a * 3 + b * 2 + c) / 3;
+}
+// Hinweis: wann neue Vokabeln / Kurs-Übungen aufgenommen werden sollten (immer nur die wichtigste Meldung)
+//  Puffer < 40: Hinweis (gold) · < 25: knapp (rot) · < 10: sehr knapp (rot)
+function hintCard(text, red){
+  return '<div class="neu-card" style="border-color:'+(red?'var(--red)':'var(--gold-d)')+';background:'+(red?'rgba(201,76,76,.08)':'rgba(201,168,76,.08)')+';padding:.7rem 1rem">'
+    + '<div style="font-weight:700;color:'+(red?'var(--red)':'var(--gold2)')+'">'+text+'</div></div>';
+}
+window.neuLearnBuffer = learnBuffer;
+function newStuffHint(){
+  if(cLesson !== 'all') return '';
+  const w = learnBuffer(), n = Math.round(w);
+  if(w < 10) return hintCard('Fast nichts Neues mehr in der Wiederholung (noch '+n+') — nimm heute neue auf.', true);
+  if(w < 25) return hintCard('Zeit für Neues — dein Anfänger-Puffer wird knapp (noch '+n+').', true);
+  if(w < 40) return hintCard('Bald Zeit für Neues — dein Anfänger-Puffer sinkt (noch '+n+').', false);
+  return '';
+}
+
 function goHome(){
   reset('home');
   const c = $('exercise-content'); if(!c) return;
@@ -269,6 +292,7 @@ function goHome(){
     +   '<div style="flex:1;min-width:0"><div class="neu-sub">Tagesziel (richtige Antworten)</div><div id="neu-goal-t" style="font-size:1.15rem;font-weight:700;margin:1px 0">… von '+goal+'</div><div id="neu-streak" class="neu-sub">&nbsp;</div></div>'
     + '</div>'
     + '<div id="neu-motiv"></div>'
+    + '<div id="neu-new">'+newStuffHint()+'</div>'
     + (empty
       ? '<div class="neu-card" style="text-align:center;padding:.8rem"><div style="font-size:1.15rem;font-weight:700;color:var(--gold2)">Alles erledigt</div><div class="neu-sub" style="margin-top:.2rem">Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b></div></div>'
       : '<button class="neu-btn" style="min-height:56px;font-size:1.1rem;margin:0 0 .6rem" onclick="setMode(\'mix\')">Los geht’s · '+fmtN(total)+' fällig</button>')
@@ -296,6 +320,11 @@ function goHome(){
   loadDayCounts().then(dc => {
     const el = $('neu-motiv'); if(!el || cMode !== 'home') return;
     const done = dc.today;
+    // Ziel in Gefahr: das Fällige reicht nicht, um das Tagesziel noch zu erreichen -> wichtigste Meldung, ersetzt den Puffer-Hinweis
+    if(dc.today < goal && total < goal - dc.today){
+      const nw = $('neu-new');
+      if(nw) nw.innerHTML = hintCard('Fällig sind nur noch '+fmtN(total)+' — dir fehlen noch '+fmtN(goal - dc.today)+' zum Tagesziel. Nimm Neues auf oder zieh vor.', false);
+    }
     // 1) Tagesziel erreicht, aber heute noch nicht über dem niedrigsten Schnitt: zeigen, wie viel noch fehlt
     //    (zählt, was heute tatsächlich beantwortet ist; das Fällige steht nur als Hinweis dabei)
     const ws = [7, 14, 30, 90].filter(n => dc.avgs[n] > 0);
@@ -966,7 +995,7 @@ window.showStats = function(){
     +   '<div class="neu-card" style="margin:0;padding:.7rem .9rem"><div class="neu-sub">Erledigt</div><div class="neu-kpi" id="neu-st-today" style="font-size:1.6rem">…</div></div>'
     +   '<div class="neu-card" style="margin:0;padding:.7rem .9rem"><div class="neu-sub">Serie</div><div class="neu-kpi" id="neu-st-streak" style="font-size:1.6rem">…</div></div>'
     + '</div>'
-    + (all && weighted < 25 ? '<div class="neu-card" style="border-color:var(--red);background:rgba(201,76,76,.08);padding:.6rem .9rem;color:var(--red);font-size:.9rem">Anfänger-Puffer wird knapp (noch '+Math.round(weighted)+'). Neuen Stoff hinzufügen: tippe unten bei „Neu“.</div>' : '')
+    + (all ? newStuffHint() : '')
     + '<div class="neu-card"><div class="neu-ch">Fortschritt</div>'
     +   prog('Vokabeln', vStarted, vTotal, vp, all ? 'statsActivateVocab(10)' : '', '10 Vokabeln fällig setzen: erst mit Kursbezug ('+fmtN(courseVocabLeft)+' offen), danach aus dem Quellenabgleich')
     +   (all ? '<div style="height:1px;background:var(--border);margin:1rem 0"></div>'+prog('Übungen', cActive, cTotal, cp, nextChunk ? 'statsUnlockNextChunk()' : '', nextChunk ? 'Nächsten Kurs-Abschnitt freischalten: K'+nextChunk.lesson.course_number+' · '+(nextChunk.chunkLabel||nextChunk.chunkKey) : '') : '')
