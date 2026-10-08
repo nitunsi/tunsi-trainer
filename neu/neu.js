@@ -448,7 +448,7 @@ window.showCourseNothingDue = nothingDue;
 /* ---------- Abschluss nach einem Block ---------- */
 window.showRes = function(){
   const pct = score.t > 0 ? Math.round(score.c / score.t * 100) : 0;
-  const msgs = pct >= 90 ? ['مَشَاءَ الله! Māsha allah!', 'زِين بَرشَة! Zin barsha!']
+  const msgs = pct >= 90 ? ['مَشَاءَ الله! Masha allah!', 'زِين بَرشَة! Zin barsha!']
     : pct >= 70 ? ['مْلِيح بَرشَة Mli7 barsha!', 'هَكَّة نَعرَف! Hakka na3ref!']
     : pct >= 50 ? ['شْوَيَّة شْوَيَّة Shwayya shwayya', 'عَاوِد مَرَّة أُخرى 3awid marra okhra']
     : ['يَالَّة، عَاوِد! Yalla, 3awid!', 'صَبرَا جَمِيل Sabra jmil'];
