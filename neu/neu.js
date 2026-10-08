@@ -257,10 +257,10 @@ function motivation(done, avgs){
 }
 
 // Anfänger-Puffer (wie in der Statistik): Stufe 0 zählt 3, Stufe 1 zählt 2, Stufe 2 zählt 1, geteilt durch 3 — Vokabeln und Kurs-Übungen zusammen
-function learnBuffer(){
+function learnBuffer(part){
   let a = 0, b = 0, c = 0;
-  ALL_VOCAB.forEach(v => { const p = srsProgress[v.id]; if(p && p.next_review){ const lv = p.level || 0; if(lv === 0) a++; else if(lv === 1) b++; else if(lv === 2) c++; } });
-  Object.values(COURSE_EX_PROGRESS).forEach(p => { if(!p) return; const lv = Math.min(p.correct_count || 0, 6); if(lv === 0) a++; else if(lv === 1) b++; else if(lv === 2) c++; });
+  if(part !== 'course') ALL_VOCAB.forEach(v => { const p = srsProgress[v.id]; if(p && p.next_review){ const lv = p.level || 0; if(lv === 0) a++; else if(lv === 1) b++; else if(lv === 2) c++; } });
+  if(part !== 'vocab') Object.values(COURSE_EX_PROGRESS).forEach(p => { if(!p) return; const lv = Math.min(p.correct_count || 0, 6); if(lv === 0) a++; else if(lv === 1) b++; else if(lv === 2) c++; });
   return (a * 3 + b * 2 + c) / 3;
 }
 // Hinweis auf der Startseite: wann neue Vokabeln / Kurs-Übungen aufgenommen werden sollten
@@ -271,7 +271,7 @@ function newStuffHint(){
   if(w >= 25) return '';
   return '<div class="neu-card" style="border-color:var(--red);background:rgba(201,76,76,.08);padding:.7rem 1rem">'
     + '<div style="font-weight:700;color:var(--red)">Zeit für Neues — dein Anfänger-Puffer wird knapp (noch '+Math.round(w)+')</div>'
-    + '<div style="display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap"><span class="neu-chip" onclick="statsActivateVocab(10)">10 Vokabeln neu</span><span class="neu-chip" onclick="statsUnlockNextChunk()">Nächster Abschnitt</span></div></div>';
+    + '</div>';
 }
 
 function goHome(){
