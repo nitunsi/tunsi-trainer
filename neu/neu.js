@@ -316,34 +316,39 @@ function goHome(){
     $('neu-goal-t').textContent = fmtN(dc.today) + ' von ' + fmtN(goal);
     $('neu-streak').textContent = a.streak ? a.streak + ' Tag' + (a.streak===1?'':'e') + ' in Folge' : 'Noch keine Serie';
   }).catch(() => { const s = $('neu-streak'); if(s) s.textContent = ''; });
-  // Motivation: zählt nur, was heute tatsächlich geschafft (beantwortet) ist — nicht, was noch geplant/fällig ist
+  // Motivation: zählt nur, was heute tatsächlich geschafft (richtig beantwortet) ist — nicht, was noch geplant/fällig ist
   loadDayCounts().then(dc => {
-    const el = $('neu-motiv'); if(!el || cMode !== 'home') return;
-    const done = dc.today;
-    // Ziel in Gefahr: das Fällige reicht nicht, um das Tagesziel noch zu erreichen -> wichtigste Meldung, ersetzt den Puffer-Hinweis
-    if(dc.today < goal && total < goal - dc.today){
-      const nw = $('neu-new');
-      if(nw) nw.innerHTML = hintCard('Fällig sind nur noch '+fmtN(total)+' — dir fehlen noch '+fmtN(goal - dc.today)+' zum Tagesziel. Nimm Neues auf oder zieh vor.', false);
-    }
-    // 1) Tagesziel erreicht, aber heute noch nicht über dem niedrigsten Schnitt: zeigen, wie viel noch fehlt
-    //    (zählt, was heute tatsächlich beantwortet ist; das Fällige steht nur als Hinweis dabei)
-    const ws = [7, 14, 30, 90].filter(n => dc.avgs[n] > 0);
-    if(dc.today >= goal && ws.length){
-      const low = ws.reduce((b, n) => dc.avgs[n] < dc.avgs[b] ? n : b);
-      const need = Math.floor(dc.avgs[low]) + 1 - dc.today;
-      if(need > 0){
-        const title = need <= 10 ? 'Fast geschafft! Nur noch '+fmtN(need)+' Vokabeln, dann bist du über deinem Schnitt 💪'
-          : need <= 40 ? 'Tagesziel geschafft — noch '+fmtN(need)+' Vokabeln und du bist über deinem Schnitt!'
-          : 'Tagesziel geschafft! Bis über deinen Schnitt sind es noch '+fmtN(need)+'.';
-        el.innerHTML = '<div class="neu-card" style="border-color:var(--gold-d);background:rgba(201,168,76,.08);padding:.7rem 1rem"><div style="font-weight:700;color:var(--gold2)">'+title+'</div></div>';
-        return;
-      }
-    }
-    // 2) sonst: heute Geschafftes liegt über einem Schnitt
-    const m = motivation(done, dc.avgs);
-    if(!m) return;
-    el.innerHTML = '<div class="neu-card" style="border-color:var(--gold-d);background:rgba(201,168,76,.08);padding:.7rem 1rem"><div style="font-weight:700;color:var(--gold2)">Über deinem '+m.n+'-Tage-Schnitt</div><div class="neu-sub" style="margin-top:2px">Heute geschafft: <b style="color:var(--text)">'+fmtN(done)+'</b> · Schnitt: '+fmtN(m.avg)+' (+'+m.pct+' %)</div></div>';
+    if(cMode !== 'home') return;
+    const dng = dangerHtml(dc, goal, total), nw = $('neu-new');
+    if(dng && nw) nw.innerHTML = dng;
+    const el = $('neu-motiv'); if(el) el.innerHTML = motivationHtml(dc, goal);
   }).catch(() => {});
+}
+// Meldung zum Durchschnitt (Startseite und Abschlussseite)
+function motivationHtml(dc, goal){
+  const card = inner => '<div class="neu-card" style="border-color:var(--gold-d);background:rgba(201,168,76,.08);padding:.7rem 1rem">'+inner+'</div>';
+  // 1) Tagesziel erreicht, aber heute noch nicht über dem niedrigsten Schnitt: zeigen, wie viel noch fehlt
+  const ws = [7, 14, 30, 90].filter(n => dc.avgs[n] > 0);
+  if(dc.today >= goal && ws.length){
+    const low = ws.reduce((b, n) => dc.avgs[n] < dc.avgs[b] ? n : b);
+    const need = Math.floor(dc.avgs[low]) + 1 - dc.today;
+    if(need > 0){
+      const title = need <= 10 ? 'Fast geschafft! Nur noch '+fmtN(need)+', dann bist du über deinem Schnitt 💪'
+        : need <= 40 ? 'Tagesziel geschafft — noch '+fmtN(need)+' und du bist über deinem Schnitt!'
+        : 'Tagesziel geschafft! Bis über deinen Schnitt sind es noch '+fmtN(need)+'.';
+      return card('<div style="font-weight:700;color:var(--gold2)">'+title+'</div>');
+    }
+  }
+  // 2) sonst: heute Geschafftes liegt über einem Schnitt
+  const m = motivation(dc.today, dc.avgs);
+  if(!m) return '';
+  return card('<div style="font-weight:700;color:var(--gold2)">Über deinem '+m.n+'-Tage-Schnitt</div><div class="neu-sub" style="margin-top:2px">Heute geschafft: <b style="color:var(--text)">'+fmtN(dc.today)+'</b> · Schnitt: '+fmtN(m.avg)+' (+'+m.pct+' %)</div>');
+}
+// Ziel in Gefahr: das Fällige reicht nicht, um das Tagesziel noch zu erreichen
+function dangerHtml(dc, goal, total){
+  if(dc.today < goal && total < goal - dc.today)
+    return hintCard('Fällig sind nur noch '+fmtN(total)+' — dir fehlen noch '+fmtN(goal - dc.today)+' zum Tagesziel. Nimm Neues auf oder zieh vor.', false);
+  return '';
 }
 window.neuGoHome = goHome;
 window.neuDayCounts = loadDayCounts;
@@ -405,9 +410,10 @@ window.neuLesson = function(v){ const s = $('lesson-select'); if(s) s.value = v;
 /* Vibration (Android), standardmäßig aus */
 function vibe(ok){ if(LS.get('neu-vib','0') === '1' && navigator.vibrate) navigator.vibrate(ok ? 15 : [40,40,40]); }
 const _srsAnswer = window.srsAnswer;
-if(_srsAnswer) window.srsAnswer = function(v, ok){ vibe(ok); return _srsAnswer.apply(this, arguments); };
+const bumpToday = ok => { if(ok && _cache.dc){ _cache.dc.today++; _cache.dc.t = Date.now(); } };
+if(_srsAnswer) window.srsAnswer = function(v, ok){ vibe(ok); bumpToday(ok); return _srsAnswer.apply(this, arguments); };
 const _courseExAnswer = window.courseExAnswer;
-if(_courseExAnswer) window.courseExAnswer = function(ex, ok){ vibe(ok); return _courseExAnswer.apply(this, arguments); };
+if(_courseExAnswer) window.courseExAnswer = function(ex, ok){ vibe(ok); bumpToday(ok); return _courseExAnswer.apply(this, arguments); };
 
 /* ---------- Höraufgaben im normalen Lernen (Richtung „Audio → Deutsch“) ---------- */
 // Nur bei eingeschaltetem Ton (Lautsprecher-Schalter unten) und eingeschalteter Einstellung, nur für Vokabeln mit Audio.
@@ -462,10 +468,17 @@ window.showRes = function(){
     + ring(pct/100, 150, 12, pct >= 70 ? 'var(--green)' : 'var(--gold)', score.c + ' / ' + score.t)
     + '<div class="msg">'+(pct>=70?'Gut gemacht':'Weiter üben')+'</div>'
     + '<div class="sub">'+msgs[Math.floor(Math.random()*msgs.length)]+'</div>'
+    + '<div id="neu-res-msg" style="width:100%"></div>'
     + dueRow
     + '<div style="width:100%;display:flex;flex-direction:column;gap:.7rem"><button class="neu-btn" onclick="restartExercise()">Noch einen Block</button><button class="neu-btn ghost" onclick="closeResult();neuGoHome()">Fertig für heute</button></div>'
     + '</div>';
   r.classList.add('show');
+  // Meldung zum Durchschnitt bzw. zum Aufnehmen von Neuem (die wichtigste), sobald die Tageswerte da sind
+  loadDayCounts().then(dc => {
+    const el = $('neu-res-msg'); if(!el) return;
+    const goal = parseInt(LS.get('neu-goal','100'), 10) || 100;
+    el.innerHTML = motivationHtml(dc, goal) || dangerHtml(dc, goal, left) || newStuffHint();
+  }).catch(() => {});
 };
 
 /* ---------- Kurs als Lernpfad ---------- */
