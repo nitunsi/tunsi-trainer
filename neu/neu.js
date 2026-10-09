@@ -392,6 +392,10 @@ function showMore(){
     + '<div class="neu-h">Darstellung und Lernen</div><div class="neu-card">'
     +   '<div class="neu-cap">Farbschema</div>'+seg([['auto','Automatisch'],['light','Hell'],['dark','Dunkel']], LS.get('neu-theme','light'), "neuSetTheme('%v')")
     +   '<div class="neu-cap" style="margin-top:1rem">Schriftgröße</div>'+seg([['S','Klein'],['M','Mittel'],['L','Groß']], font, "neuSetFont('%v')")
+    +   '<div class="neu-cap" style="margin-top:1rem">Arabische Schrift</div>'+seg([['naskh','Naskh'],['amiri','Amiri'],['schehe','Scheherazade'],['kufi','Kufi']], LS.get('neu-arf','naskh'), "neuSetArf('%v')")
+    +   '<div style="height:.5rem"></div>'+seg([['0.85','Klein'],['1','Mittel'],['1.2','Groß'],['1.4','Sehr groß']], LS.get('neu-ars','1'), "neuSetArs('%v')")
+    +   '<div class="neu-list" style="margin-top:.4rem"><div class="li"><span class="sp">Vokalzeichen anzeigen</span>'+sw(LS.get('neu-arv','1') === '1', "neuToggleArv()")+'</div></div>'
+    +   '<div class="neu-arprev" id="neu-arprev">'+arPrev()+'</div>'
     +   '<div class="neu-cap" style="margin-top:1rem">Tagesziel (richtige Antworten pro Tag)</div>'+seg([[50,'50'],[100,'100'],[150,'150'],[200,'200']], goal, "neuSetGoal(%v)")
     +   '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Audio beim Aufdecken abspielen</span>'+sw(audioAutoplay, "toggleAudioAutoplay();showMore()")+'</div>'
     +   '<div class="li"><span class="sp">Vibration bei Richtig und Falsch</span>'+sw(vib, "neuToggleVib()")+'</div></div>'
@@ -1425,4 +1429,47 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
   function start(){ fix(document.body); mo.observe(document.body, {childList:true, subtree:true, characterData:true}); }
   if(document.body) start(); else document.addEventListener('DOMContentLoaded', start);
   window.neuIcons = fix;
+})();
+
+
+/* ===== Arabische Schrift: Schriftart, Größe, Vokalzeichen ===== */
+(function(){
+  const LS = { get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : v; }catch(e){ return d; } }, set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} } };
+  const HARAKAT = /[\u064B-\u065F\u0670\u06D6-\u06ED]/g;
+  const HAS = /[\u064B-\u065F\u0670\u06D6-\u06ED]/;
+  const orig = new Map();   // Textknoten -> Originaltext, solange Vokalzeichen ausgeblendet sind
+  const on = () => LS.get('neu-arv', '1') === '1';
+  const SKIP = {SCRIPT:1, STYLE:1, TEXTAREA:1, INPUT:1, OPTION:1, SELECT:1};
+  function apply(){
+    const r = document.documentElement;
+    const f = LS.get('neu-arf', 'naskh'); if(f === 'naskh') r.removeAttribute('data-arf'); else r.setAttribute('data-arf', f);
+    r.style.setProperty('--ars', LS.get('neu-ars', '1'));
+  }
+  function strip(root){
+    if(on()) return;
+    if(root && root.nodeType === 3) root = root.parentNode;
+    if(!root || root.nodeType !== 1 || SKIP[root.tagName] || root.closest('textarea,input,[contenteditable],[data-noicon]')) return;
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode(n){
+      const p = n.parentNode; if(!p || SKIP[p.tagName]) return NodeFilter.FILTER_REJECT;
+      return HAS.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT; }});
+    const list = []; while(w.nextNode()) list.push(w.currentNode);
+    list.forEach(n => { orig.set(n, n.nodeValue); n.nodeValue = n.nodeValue.replace(HARAKAT, ''); });
+  }
+  function restore(){ orig.forEach((v, n) => { if(n.isConnected) n.nodeValue = v; }); orig.clear(); }
+  let busy = false;
+  new MutationObserver(muts => {
+    if(busy || on()) return; busy = true;
+    try{ muts.forEach(m => m.addedNodes.forEach(n => strip(n))); }finally{ busy = false; }
+  }).observe(document.documentElement, {childList:true, subtree:true});
+  window.arPrev = function(){ const t = 'مَرْحَبًا بِكُمْ'; return on() ? t : t.replace(HARAKAT, ''); };
+  const prev = () => { const e = document.getElementById('neu-arprev'); if(e) e.textContent = window.arPrev(); };
+  window.neuSetArf = function(v){ LS.set('neu-arf', v); apply(); setMode('more'); };
+  window.neuSetArs = function(v){ LS.set('neu-ars', v); apply(); setMode('more'); };
+  window.neuToggleArv = function(){
+    LS.set('neu-arv', on() ? '0' : '1');
+    if(on()) restore(); else strip(document.body);
+    setMode('more');
+  };
+  apply();
+  if(!on()) document.addEventListener('DOMContentLoaded', () => strip(document.body));
 })();
