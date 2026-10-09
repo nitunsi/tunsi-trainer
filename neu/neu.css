@@ -489,3 +489,14 @@ html[data-theme="dark"] .neu-spkline.s3{--spk:#c58bbb}
 .neu-az{pointer-events:auto;display:flex;flex-direction:column;align-items:center;padding:.25rem .15rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:.62rem;line-height:1.05;color:var(--gold2);font-weight:700;max-height:60vh;touch-action:none}
 .neu-az span{padding:.12rem .3rem;cursor:pointer}
 .neu-azon .neu-vlist{margin-right:1.6rem}
+
+/* Weiche Übergänge */
+@keyframes neu-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#exercise-content > .neu-wrap{animation:neu-in .18s ease-out both}
+.neu-card{transition:border-color .15s,background .15s}
+.neu-btn,.neu-chip{transition:background .12s,border-color .12s,transform .08s}
+.neu-btn:active,.neu-chip:active{transform:scale(.98)}
+/* Wer im System „Bewegung reduzieren“ eingestellt hat, bekommt keine Animationen */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
