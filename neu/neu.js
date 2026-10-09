@@ -415,11 +415,19 @@ const _srsAnswer = window.srsAnswer;
 const berlinKey = () => new Date().toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
 const localToday = () => { try{ const o = JSON.parse(LS.get('neu-today','null')); return o && o.k === berlinKey() ? (o.n||0) : 0; }catch(e){ return 0; } };
 window.neuLocalToday = localToday;
-const bumpToday = ok => {
-  if(!ok) return;
-  try{ LS.set('neu-today', JSON.stringify({k: berlinKey(), n: localToday() + 1})); }catch(e){}
-  if(_cache.dc){ _cache.dc.today = Math.max(_cache.dc.today + 1, localToday()); _cache.dc.t = Date.now(); }
+const adjustToday = delta => {
+  try{ LS.set('neu-today', JSON.stringify({k: berlinKey(), n: Math.max(0, localToday() + delta)})); }catch(e){}
+  if(_cache.dc){ _cache.dc.today = Math.max(0, _cache.dc.today + delta); _cache.dc.t = Date.now(); }
 };
+const bumpToday = ok => { if(ok) adjustToday(1); };
+// Nachträgliche Korrekturen („War doch richtig/falsch“) verschieben den Tageswert um 1
+['_applyFlashCorrection', 'courseCorrectAnswer'].forEach(n => {
+  const f = window[n];
+  if(typeof f === 'function') window[n] = function(a, toOk){
+    adjustToday(toOk ? 1 : -1);
+    return f.apply(this, arguments);
+  };
+});
 if(_srsAnswer) window.srsAnswer = function(v, ok){ vibe(ok); bumpToday(ok); return _srsAnswer.apply(this, arguments); };
 const _courseExAnswer = window.courseExAnswer;
 if(_courseExAnswer) window.courseExAnswer = function(ex, ok){ vibe(ok); bumpToday(ok); return _courseExAnswer.apply(this, arguments); };
