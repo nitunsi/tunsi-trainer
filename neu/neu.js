@@ -245,7 +245,7 @@ async function loadDayCounts(){
     for(let i = 1; i <= n; i++){ const d = new Date(now); d.setDate(d.getDate() - i); sum += keep[berlin(d)] || 0; }
     avgs[n] = sum / n;
   });
-  _cache.dc = {t: Date.now(), today, avgs};
+  _cache.dc = {t: Date.now(), today, avgs, days: keep};
   return _cache.dc;
 }
 // Immer das höchste übertroffene Fenster zeigen (90 vor 30 vor 14 vor 7)
@@ -287,10 +287,10 @@ function goHome(){
   const empty = total === 0;
   c.innerHTML = '<div class="neu-wrap neu-home">'
     + lessonFilterChip()
-    + '<div class="neu-card" style="display:flex;align-items:center;gap:.9rem;padding:.8rem 1rem">'
+    + '<div class="neu-card" style="padding:.8rem 1rem"><div style="display:flex;align-items:center;gap:.9rem">'
     +   '<div id="neu-ring">'+ring(0, 76, 8, 'var(--gold)', '…')+'</div>'
     +   '<div style="flex:1;min-width:0"><div class="neu-sub">Tagesziel (richtige Antworten)</div><div id="neu-goal-t" style="font-size:1.15rem;font-weight:700;margin:1px 0">… von '+goal+'</div><div id="neu-streak" class="neu-sub">&nbsp;</div></div>'
-    + '</div>'
+    + '</div><div id="neu-week" class="neu-week"></div></div>'
     + '<div id="neu-motiv"></div>'
     + '<div id="neu-new">'+newStuffHint()+'</div>'
     + (empty
@@ -314,6 +314,7 @@ function goHome(){
     const p = dc.today / goal;
     r.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', Math.min(999, Math.round(p*100)) + ' %');
     $('neu-goal-t').textContent = fmtN(dc.today) + ' von ' + fmtN(goal);
+    const wk = $('neu-week'); if(wk) wk.innerHTML = weekHtml(dc, goal);
     $('neu-streak').textContent = a.streak ? a.streak + ' Tag' + (a.streak===1?'':'e') + ' in Folge' : 'Noch keine Serie';
   }).catch(() => { const s = $('neu-streak'); if(s) s.textContent = ''; });
   // Motivation: zählt nur, was heute tatsächlich geschafft (richtig beantwortet) ist — nicht, was noch geplant/fällig ist
@@ -323,6 +324,20 @@ function goHome(){
     if(dng && nw) nw.innerHTML = dng;
     const el = $('neu-motiv'); if(el) el.innerHTML = motivationHtml(dc, goal);
   }).catch(() => {});
+}
+// Wochenstreifen: die letzten 6 Tage und heute; voll = Tagesziel erreicht, halb = etwas geschafft, leer = nichts
+function weekHtml(dc, goal){
+  const berlin = d => d.toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
+  const wd = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+  let out = '';
+  for(let i = 6; i >= 0; i--){
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const n = i === 0 ? dc.today : ((dc.days || {})[berlin(d)] || 0);
+    const cls = n >= goal ? 'full' : n > 0 ? 'part' : '';
+    const lab = wd[new Date(berlin(d) + 'T12:00:00Z').getUTCDay()];
+    out += '<div class="neu-wd'+(i === 0 ? ' today' : '')+'" title="'+fmtN(n)+' richtig"><span class="neu-wdot '+cls+'">'+(n >= goal ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.500 4.500 4.500L19 7.500"/></svg>' : '')+'</span><span>'+(i === 0 ? 'Heute' : lab)+'</span></div>';
+  }
+  return out;
 }
 // Meldung zum Durchschnitt (Startseite und Abschlussseite)
 function motivationHtml(dc, goal){
