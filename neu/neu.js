@@ -228,7 +228,7 @@ async function loadDayCounts(){
   }
   const lowest = saved && saved.upTo ? saved.upTo : '';
   Object.keys(fresh).forEach(k => { if(k > lowest) counts[k] = fresh[k]; });
-  const today = counts[todayKey] || 0;
+  const today = Math.max(counts[todayKey] || 0, window.neuLocalToday ? window.neuLocalToday() : 0);
   // nur erledigte Tage (bis gestern) und höchstens 100 Tage merken
   const keep = {};
   const limit = new Date(now.getTime() - 100*86400000);
@@ -410,7 +410,16 @@ window.neuLesson = function(v){ const s = $('lesson-select'); if(s) s.value = v;
 /* Vibration (Android), standardmäßig aus */
 function vibe(ok){ if(LS.get('neu-vib','0') === '1' && navigator.vibrate) navigator.vibrate(ok ? 15 : [40,40,40]); }
 const _srsAnswer = window.srsAnswer;
-const bumpToday = ok => { if(ok && _cache.dc){ _cache.dc.today++; _cache.dc.t = Date.now(); } };
+// Heute richtig beantwortet: lokal mitgezählt (Gerätespeicher), damit eine zu frühe Abfrage der Datenbank
+// (Antworten sind noch unterwegs) den Tageswert nicht nach unten drückt. Zählt der Server mehr, gilt der Server.
+const berlinKey = () => new Date().toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
+const localToday = () => { try{ const o = JSON.parse(LS.get('neu-today','null')); return o && o.k === berlinKey() ? (o.n||0) : 0; }catch(e){ return 0; } };
+window.neuLocalToday = localToday;
+const bumpToday = ok => {
+  if(!ok) return;
+  try{ LS.set('neu-today', JSON.stringify({k: berlinKey(), n: localToday() + 1})); }catch(e){}
+  if(_cache.dc){ _cache.dc.today = Math.max(_cache.dc.today + 1, localToday()); _cache.dc.t = Date.now(); }
+};
 if(_srsAnswer) window.srsAnswer = function(v, ok){ vibe(ok); bumpToday(ok); return _srsAnswer.apply(this, arguments); };
 const _courseExAnswer = window.courseExAnswer;
 if(_courseExAnswer) window.courseExAnswer = function(ex, ok){ vibe(ok); bumpToday(ok); return _courseExAnswer.apply(this, arguments); };
