@@ -414,3 +414,10 @@ html[data-theme="light"] [style*="color:#0e0c0a"]{color:#fff!important}
 html[data-theme="light"] .sh-save,html[data-theme="light"] .neu-audioq,html[data-theme="light"] .partner-reload-btn{color:#fff!important}
 #result-screen .neu-res .rows small{display:block;font-size:.8rem;color:var(--muted);margin-top:2px}
 #result-screen .neu-res .rows div{align-items:center}
+
+/* Kurs-Lösung gegliedert */
+.neu-sol{display:block}
+.neu-sol .l{display:block;font-size:.8rem;color:var(--muted);margin:.5rem 0 .1rem}
+.neu-sol .l:first-child{margin-top:0}
+.neu-sol .tn{display:block;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:1.1rem;font-weight:600;color:var(--gold2);line-height:1.45}
+.neu-sol .de{display:block;font-size:1rem;color:var(--text);line-height:1.45}
