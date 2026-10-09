@@ -1222,3 +1222,32 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     return r;
   };
 })();
+
+
+/* ---------- Kurs: Lösung gegliedert statt als Fließtext („Tounsi — Deutsch“ -> Tounsi / Deutsch) ---------- */
+(function(){
+  const TYPES = ['translate_de_tn','fill_blank','build_dialog','answer_pattern'];
+  const PAREN = /^(.*?)\s*\(([^—]+)—\s*(.*)\)\s*$/;
+  // html = bereits maskierte Lösung (ggf. mit Hervorhebungen im Tounsi-Teil)
+  function format(html, ex){
+    if(!ex || !TYPES.includes(ex.exercise_type) || !html) return null;
+    if(ex.exercise_type === 'answer_pattern' && PAREN.test(ex.solution || '')) return null;   // schon in drei Zeilen gegliedert
+    let tn, de;
+    const i = html.indexOf(' — ');
+    if(i > 0){ tn = html.slice(0, i); de = html.slice(i + 3); }
+    else { const m = html.match(/^(.*?) – (?=[A-ZÄÖÜ])(.*)$/); if(!m) return null; tn = m[1]; de = m[2]; }
+    tn = tn.replace(/\? – /g, '?<br>');             // Frage und Antwort auf Tounsi untereinander
+    de = de.replace(/ – (?=[A-ZÄÖÜ])/g, '<br>');   // z. B. Frage und Antwort auf Deutsch untereinander
+    return '<span class="neu-sol"><span class="l">Tounsi</span><span class="tn">'+tn+'</span><span class="l">Deutsch</span><span class="de">'+de+'</span></span>';
+  }
+  const _sol = window.courseSolutionHtml;
+  if(typeof _sol === 'function') window.courseSolutionHtml = function(ex){
+    const html = _sol.apply(this, arguments);
+    return format(html, ex) || (ex && ex.exercise_type === 'answer_pattern' && PAREN.test(ex.solution || '') && typeof courseExSolutionHtml === 'function' ? courseExSolutionHtml(ex) : html);
+  };
+  const _ex = window.courseExSolutionHtml;
+  if(typeof _ex === 'function') window.courseExSolutionHtml = function(ex){
+    const f = ex && ex.exercise_type !== 'answer_pattern' ? format(escHtml(ex.solution || ''), ex) : (ex && !PAREN.test(ex.solution || '') ? format(escHtml(ex.solution || ''), ex) : null);
+    return f ? f + (typeof courseMetaGermanHtml === 'function' ? courseMetaGermanHtml(ex) : '') : _ex.apply(this, arguments);
+  };
+})();
