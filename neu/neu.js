@@ -1701,8 +1701,7 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     const p = document.querySelector('.partner-progress');
     if(p && !existing){
       const line = document.createElement('div'); line.className = 'neu-ptoday';
-      const open = window._pOpenCount;
-      const paint = n => { line.textContent = (n ? 'Heute schon '+n+' geprüft' : 'Heute noch nichts geprüft') + (open ? ' · noch '+open.toLocaleString('de-DE')+' offen' : ''); };
+      const paint = n => { line.textContent = n ? 'Heute schon '+n+' geprüft' : 'Los geht’s — der erste Block wartet'; };
       paint(today ? today.n : 0);
       p.insertAdjacentElement('afterend', line);
       loadToday().then(paint);
