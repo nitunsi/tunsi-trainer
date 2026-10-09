@@ -1920,6 +1920,7 @@ async function partnerInit(containerId){
   const nullRows = await sbApiPaged('vocabulary?partner_status=is.null&or=(external_confirmed.is.null,external_confirmed.eq.false)&select='+cols+'&order=id.asc', 1000);
   (nullRows||[]).forEach(v=>{ if(!pool.has(v.id)) pool.set(v.id,v); });
   const cand = [...pool.values()];
+  window._pOpenCount = cand.length;
   cand.forEach(v=>{
     const d = progMap.get(v.id) || null;
     v._nextReview = d; v._due = !!d; v._rnd = Math.random();  // _due = hat ein Fälligkeitsdatum (ja/nein)
