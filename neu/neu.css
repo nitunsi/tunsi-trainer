@@ -482,3 +482,10 @@ html[data-arf="kufi"]{--arf:"Noto Kufi Arabic","Noto Naskh Arabic",sans-serif}
 html[data-theme="dark"] .neu-spkline.s1{--spk:#6fa0e0}
 html[data-theme="dark"] .neu-spkline.s2{--spk:#5cbf86}
 html[data-theme="dark"] .neu-spkline.s3{--spk:#c58bbb}
+
+/* Vokabelliste: Treffer, A–Z-Leiste */
+.neu-hit{background:rgba(201,168,76,.45);color:inherit;border-radius:3px;padding:0 1px}
+.neu-azwrap{position:sticky;top:30vh;height:0;z-index:20;display:flex;justify-content:flex-end;pointer-events:none}
+.neu-az{pointer-events:auto;display:flex;flex-direction:column;align-items:center;padding:.25rem .15rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:.62rem;line-height:1.05;color:var(--gold2);font-weight:700;max-height:60vh;touch-action:none}
+.neu-az span{padding:.12rem .3rem;cursor:pointer}
+.neu-azon .neu-vlist{margin-right:1.6rem}
