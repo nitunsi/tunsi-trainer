@@ -214,7 +214,7 @@ body.neu-tabs.neu-nohdr main{padding-bottom:calc(var(--tabh) + .6rem + env(safe-
   .neu-home .neu-chips{display:none}
   .neu-home .neu-row2 .neu-btn small{display:none}
 }
-.neu-node.cur{border-left:3px solid var(--gold);padding-left:.6rem}
+.neu-node.cur{background:rgba(201,168,76,.1);border-radius:12px;padding-left:.7rem;padding-right:.7rem;margin:0 -.5rem;border-bottom-color:transparent}
 
 /* --- Tastatur: Fenster und Sheets folgen dem sichtbaren Bereich --- */
 .neu-sheet{bottom:var(--kb,0px)!important;max-height:calc(var(--vvh,100vh) - 10px)!important}
@@ -470,3 +470,15 @@ html[data-arf="kufi"]{--arf:"Noto Kufi Arabic","Noto Naskh Arabic",sans-serif}
 .neu-mile-b.on .neu-ic{fill:var(--gold)}
 .neu-mbar{height:6px;border-radius:3px;background:var(--surface2);margin:.35rem 0 .25rem;overflow:hidden}
 .neu-mbar i{display:block;height:100%;background:var(--gold);border-radius:3px}
+
+/* Dialoge */
+.neu-dlg{background:var(--surface2);border-radius:12px;padding:.4rem .6rem;margin-bottom:.6rem}
+.neu-spkline{margin:.35rem 0;padding:.35rem .6rem;border-left:3px solid var(--spk,var(--gold));border-radius:0 8px 8px 0;background:var(--surface)}
+.neu-spkline .neu-spk{font-weight:700;color:var(--spk,var(--gold2))}
+.neu-spkline.s0{--spk:var(--gold2)}
+.neu-spkline.s1{--spk:#2f6fb8}
+.neu-spkline.s2{--spk:#2b8650}
+.neu-spkline.s3{--spk:#9a4a8c}
+html[data-theme="dark"] .neu-spkline.s1{--spk:#6fa0e0}
+html[data-theme="dark"] .neu-spkline.s2{--spk:#5cbf86}
+html[data-theme="dark"] .neu-spkline.s3{--spk:#c58bbb}

@@ -612,8 +612,9 @@ window.renderCourseOverview = function(){
   }).join('');
   c.innerHTML = '<div class="neu-wrap">'
     + '<div style="font-size:1.5rem;font-weight:700;margin:.2rem 0 .6rem">Kurs</div>'
+    + (curId !== null ? '<button class="neu-btn" style="margin:0 0 .7rem" onclick="showCourseLesson('+curId+')">Weiter mit Lektion '+(COURSE_LESSONS.find(l => l.id === curId) || {}).course_number+'</button>' : '')
     + '<div class="neu-card"><div class="neu-cap">Gesamt</div>'+line('Vokabeln', vocStat([...allV.values()]))+line('Übungen', exStat(allItems))+'</div>'
-    + '<div class="neu-card" style="padding:.2rem .9rem">'+nodes+'</div>'
+    + '<div class="neu-card neu-path" style="padding:.2rem .9rem">'+nodes+'</div>'
     + '</div>';
 };
 
@@ -1520,4 +1521,24 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
   };
   apply();
   if(!on()) document.addEventListener('DOMContentLoaded', () => strip(document.body));
+})();
+
+/* ===== Dialoge: Sprecher farblich getrennt ===== */
+(function(){
+  const orig = window.mdLite; if(typeof orig !== 'function') return;
+  const SPK = '<span style="color:var(--gold2);font-weight:700">';
+  window.mdLite = function(s, isDialog){
+    let html = orig(s, isDialog);
+    if(!isDialog || html.indexOf(SPK) < 0) return html;
+    // pro Dialogfeld (Sprechblock) werden Sprecher in der Reihenfolge ihres Auftretens nummeriert
+    return html.split('<div style="background:var(--surface2);border-radius:6px;padding:.5rem .65rem;margin-bottom:.5rem">').map((part, i) => {
+      if(i === 0) return part;
+      const names = [];
+      part = part.replace(/<div style="margin-bottom:\.3rem"><span style="color:var\(--gold2\);font-weight:700">([^<]*?):<\/span>/g, (m, n) => {
+        let k = names.indexOf(n); if(k < 0){ names.push(n); k = names.length - 1; }
+        return '<div class="neu-spkline s'+(k % 4)+'"><span class="neu-spk">'+n+':</span>';
+      });
+      return '<div class="neu-dlg">' + part;
+    }).join('');
+  };
 })();
