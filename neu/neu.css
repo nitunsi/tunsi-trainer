@@ -502,3 +502,33 @@ html[data-theme="dark"] .neu-spkline.s3{--spk:#c58bbb}
 .neu-art{width:150px;max-width:60%;margin:.2rem auto .5rem;color:var(--gold2)}
 .neu-art svg{width:100%;height:auto;display:block}
 .neu-res .neu-art{width:120px;margin:.6rem auto 0}
+
+/* Partner-Check: Motivation */
+.neu-ptoday{text-align:center;color:var(--muted);font-size:.9rem;margin:-.2rem 0 .8rem}
+.partner-art{width:170px!important;margin:.4rem auto .6rem!important}
+.neu-pmsg{color:var(--text);font-size:1.05rem;margin:.3rem auto .6rem;max-width:22rem;line-height:1.4}
+
+/* Platzhalter beim Laden */
+@keyframes neu-shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+.neu-skel{display:inline-block;vertical-align:middle;border-radius:6px;background:linear-gradient(90deg,var(--surface2) 25%,var(--border) 50%,var(--surface2) 75%);background-size:200% 100%;animation:neu-shimmer 1.4s linear infinite;color:transparent}
+.neu-wdot.neu-skel{border:none}
+.neu-skbars{display:flex;align-items:flex-end;gap:.4rem;height:90px;padding:.4rem 0}
+.neu-skbars i{flex:1;border-radius:6px;background:linear-gradient(90deg,var(--surface2) 25%,var(--border) 50%,var(--surface2) 75%);background-size:200% 100%;animation:neu-shimmer 1.4s linear infinite}
+.neu-skbars i:nth-child(1){height:45%}.neu-skbars i:nth-child(2){height:80%}.neu-skbars i:nth-child(3){height:60%}.neu-skbars i:nth-child(4){height:90%}.neu-skbars i:nth-child(5){height:55%}.neu-skbars i:nth-child(6){height:70%}.neu-skbars i:nth-child(7){height:35%}
+
+/* Serien-Flamme */
+.neu-flame{width:1.05em;height:1.05em;vertical-align:-.15em;margin-right:.15em}
+
+/* Antwort blendet weich ein (nur Deckkraft, damit nichts springt) */
+@keyframes neu-fade{from{opacity:0}to{opacity:1}}
+.feedback.show,#course-solution-box,.neu-sol{animation:neu-fade .22s ease-out both}
+
+/* Ton-Knopf auf der Karte größer */
+button[title="Aussprache abspielen"]{min-width:48px!important;min-height:48px!important;font-size:1.25rem!important;border-radius:12px!important;padding:.2rem .5rem!important;display:inline-flex;align-items:center;justify-content:center}
+
+/* Meilenstein-Feier */
+#neu-celeb{position:fixed;inset:0;z-index:9999;background:rgba(14,12,10,.55);display:flex;align-items:center;justify-content:center;padding:1.2rem}
+.neu-celeb-box{background:var(--surface);border:1px solid var(--gold);border-radius:18px;padding:1.4rem 1.2rem 1.2rem;text-align:center;max-width:22rem;width:100%;animation:neu-pop .32s cubic-bezier(.2,.9,.3,1.2) both}
+.neu-celeb-h{font-size:1.3rem;font-weight:700;color:var(--gold2)}
+.neu-celeb-t{font-size:1.1rem;margin-top:.3rem}
+@keyframes neu-pop{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:none}}

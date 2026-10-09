@@ -145,9 +145,13 @@ const ART = {
   tea: '<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="80" cy="88" rx="60" ry="7"/><path d="M62 44h36l-3.500 38a6 6 0 0 1-6 5H71.500a6 6 0 0 1-6-5z"/><path d="M64.500 56h31l-2.200 26a5 5 0 0 1-5 4H71.700a5 5 0 0 1-5-4z" fill="rgba(201,168,76,.35)" stroke="none"/><path d="M80 40c-7-5 3-11-2-18M90 40c5-5-3-10 2-16" opacity=".55"/><path d="M82 46c1-10 8-16 15-15 0 9-6 15-15 15z" fill="var(--green)" stroke="var(--green)" opacity=".9"/><path d="M78 46c-1-10-8-16-15-15 0 9 6 15 15 15z" fill="var(--green)" stroke="var(--green)" opacity=".9"/><path d="M80 48V36" stroke="var(--green)"/></svg>',
   cat: '<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 92V62h140v30"/><path d="M10 62h140"/><path d="M30 92V78a14 14 0 0 1 28 0v14M102 92V78a14 14 0 0 1 28 0v14" stroke="var(--blue)"/><path d="M62 62c-4-18 4-30 18-30s20 8 16 30" fill="var(--surface2)"/><circle cx="80" cy="24" r="12" fill="var(--surface2)"/><path d="M70 15l-2-10 9 5M90 15l2-10-9 5"/><path d="M96 60c14 0 22-8 20-20" /><circle cx="76" cy="23" r="1.3" fill="currentColor"/><circle cx="85" cy="23" r="1.3" fill="currentColor"/></svg>',
   jasmin: '<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 92C50 80 70 60 90 36S130 14 146 12"/><path d="M52 78c-2-14 6-22 16-24-1 12-6 20-16 24zM96 54c4-12 14-16 24-14-3 12-12 18-24 14z" fill="var(--green)" stroke="var(--green)" opacity=".8"/><g fill="var(--surface)" stroke="var(--gold)"><path d="M86 30c-2-8 6-12 8-6 6-4 12 4 6 8 6 2 4 10-3 8-2 6-10 4-9-3-7 0-8-8-2-7z"/><path d="M124 16c-1-6 5-9 7-4 5-3 9 3 4 6 5 2 3 8-2 6-2 5-8 3-8-2-5 0-6-6-1-6z"/><path d="M56 70c-1-6 5-9 7-4 5-3 9 3 4 6 5 2 3 8-2 6-2 5-8 3-8-2-5 0-6-6-1-6z"/></g></svg>',
-  sun: '<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 78h140"/><path d="M50 78a30 30 0 0 1 60 0" fill="rgba(201,168,76,.25)" stroke="var(--gold)"/><path d="M80 34v-12M44 44l-8-8M116 44l8-8M26 62h-12M146 62h-12" stroke="var(--gold)"/><path d="M30 90h100" opacity=".5"/></svg>'
+  sun: '<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 78h140"/><path d="M50 78a30 30 0 0 1 60 0" fill="rgba(201,168,76,.25)" stroke="var(--gold)"/><path d="M80 34v-12M44 44l-8-8M116 44l8-8M26 62h-12M146 62h-12" stroke="var(--gold)"/><path d="M30 90h100" opacity=".5"/></svg>',
+  moon: '<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 90V66h140v24"/><path d="M96 20a28 28 0 1 0 22 44 24 24 0 0 1-22-44z" fill="rgba(201,168,76,.25)" stroke="var(--gold)"/><path d="M40 28l2 5 5 2-5 2-2 5-2-5-5-2 5-2zM130 36l1.500 3.500 3.500 1.500-3.500 1.500-1.500 3.500-1.500-3.500-3.500-1.500 3.500-1.500z" stroke="var(--gold)"/><path d="M30 90V76a12 12 0 0 1 24 0v14M106 90V76a12 12 0 0 1 24 0v14" stroke="var(--blue)"/></svg>',
+  olive: '<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 80C46 74 84 60 148 26"/><g fill="var(--green)" stroke="var(--green)" opacity=".85"><path d="M34 76c-2-12 4-20 14-22 1 10-4 18-14 22zM58 68c-4-11 0-20 9-24 3 10-1 19-9 24zM84 58c-3-11 2-19 11-22 2 10-3 18-11 22zM110 44c-2-10 3-18 12-20 1 10-4 17-12 20zM46 80c8 2 16-2 20-10-9-2-17 2-20 10zM74 70c8 1 15-3 19-11-9-2-16 3-19 11zM100 58c7 1 14-3 17-10-8-2-14 2-17 10z"/></g><g fill="#2a2a1c" stroke="none"><ellipse cx="56" cy="58" rx="3.500" ry="5"/><ellipse cx="92" cy="44" rx="3.500" ry="5"/></g></svg>',
+  sea: '<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 74c10-6 20-6 30 0s20 6 30 0 20-6 30 0 20 6 30 0 10-3 10-3" stroke="var(--blue)"/><path d="M10 88c10-6 20-6 30 0s20 6 30 0 20-6 30 0 20 6 30 0" stroke="var(--blue)" opacity=".5"/><path d="M60 62h42l-6 10H66z"/><path d="M80 62V22l22 34H80M76 58 62 40l14-2" fill="var(--surface2)"/><circle cx="132" cy="24" r="10" stroke="var(--gold)" fill="rgba(201,168,76,.25)"/></svg>'
 };
 const artHtml = k => '<div class="neu-art" aria-hidden="true">'+ART[k]+'</div>';
+window.neuArt = ART; window.neuArtHtml = artHtml;
 /* ---------- Startseite „Heute“ ---------- */
 const _cache = {};
 async function loadActivity(){
@@ -297,9 +301,9 @@ function goHome(){
   c.innerHTML = '<div class="neu-wrap neu-home">'
     + lessonFilterChip()
     + '<div class="neu-card" style="padding:.8rem 1rem"><div style="display:flex;align-items:center;gap:.9rem">'
-    +   '<div id="neu-ring">'+ring(0, 76, 8, 'var(--gold)', '…')+'</div>'
-    +   '<div style="flex:1;min-width:0"><div class="neu-sub">Tagesziel (richtige Antworten)</div><div id="neu-goal-t" style="font-size:1.15rem;font-weight:700;margin:1px 0">… von '+goal+'</div><div id="neu-streak" class="neu-sub">&nbsp;</div></div>'
-    + '</div><div id="neu-week" class="neu-week"></div></div>'
+    +   '<div id="neu-ring">'+ring(0, 76, 8, 'var(--gold)', '')+'</div>'
+    +   '<div style="flex:1;min-width:0"><div class="neu-sub">Tagesziel (richtige Antworten)</div><div id="neu-goal-t" style="font-size:1.15rem;font-weight:700;margin:1px 0"><span class="neu-skel" style="width:2.2rem;height:1.1rem"></span> von '+goal+'</div><div id="neu-streak" class="neu-sub">&nbsp;</div></div>'
+    + '</div><div id="neu-week" class="neu-week">'+Array(7).fill('<div class="neu-wd"><span class="neu-wdot neu-skel"></span><span class="neu-skel" style="width:1.4rem;height:.6rem"></span></div>').join('')+'</div></div>'
     + '<div id="neu-motiv"></div>'
     + '<div id="neu-new">'+newStuffHint()+'</div>'
     + (empty
@@ -309,7 +313,7 @@ function goHome(){
     +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem" '+(d.voc?'':'disabled')+' onclick="setMode(\'flash\')"><span class="neu-sub">Vokabeln</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.voc)+'</span><small>fällig'+(d.blocked?' · '+fmtN(d.blocked)+' gesperrt':'')+'</small></button>'
     +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem;border-color:#3b4f7a" '+(d.course?'':'disabled')+' onclick="setMode(\'coursesrs\')"><span class="neu-sub" style="color:var(--blue)">Kurs</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.course)+'</span><small>fällig</small></button>'
     + '</div>'
-    + '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer;padding:.7rem 1rem" onclick="setMode(\'partnerqueue\')"><div class="neu-sub">Partner wird geladen …</div></div>'
+    + '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer;padding:.7rem 1rem" onclick="setMode(\'partnerqueue\')"><div style="flex:1"><span class="neu-skel" style="width:60%;height:1.1rem"></span><div style="height:.4rem"></div><span class="neu-skel" style="width:40%;height:.8rem"></span></div></div>'
     + '<div class="neu-chips" style="padding-bottom:0">'
     +   '<span class="neu-chip" onclick="openActivateDialog()">Vokabeln fällig setzen</span>'
     +   '<span class="neu-chip" onclick="statsUnlockNextChunk()">Nächster Abschnitt</span>'
@@ -324,7 +328,8 @@ function goHome(){
     r.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', Math.min(999, Math.round(p*100)) + ' %');
     $('neu-goal-t').textContent = fmtN(dc.today) + ' von ' + fmtN(goal);
     const wk = $('neu-week'); if(wk) wk.innerHTML = weekHtml(dc, goal);
-    $('neu-streak').textContent = a.streak ? a.streak + ' Tag' + (a.streak===1?'':'e') + ' in Folge' : 'Noch keine Serie';
+    setTimeout(() => { try{ milesCheck(a.streak || 0); }catch(e){} }, 600);
+    $('neu-streak').innerHTML = a.streak ? flame(a.streak) + a.streak + ' Tag' + (a.streak===1?'':'e') + ' in Folge' : 'Noch keine Serie';
   }).catch(() => { const s = $('neu-streak'); if(s) s.textContent = ''; });
   // Motivation: zählt nur, was heute tatsächlich geschafft (richtig beantwortet) ist — nicht, was noch geplant/fällig ist
   loadDayCounts().then(dc => {
@@ -333,6 +338,11 @@ function goHome(){
     if(dng && nw) nw.innerHTML = dng;
     const el = $('neu-motiv'); if(el) el.innerHTML = motivationHtml(dc, goal);
   }).catch(() => {});
+}
+// Serien-Flamme: ab 7, 30 und 100 Tagen in anderer Farbe
+function flame(n){
+  const col = n >= 100 ? 'var(--red)' : n >= 30 ? '#d9822b' : n >= 7 ? 'var(--gold)' : 'var(--muted)';
+  return '<svg class="neu-ic neu-flame" viewBox="0 0 24 24" fill="'+col+'" fill-opacity=".25" stroke="'+col+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3.500 5 5.500 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 .2 1.500 1 2 1.500 2C10 8 11 5 12 3z"/></svg> ';
 }
 // Meilensteine: je Kategorie die höchste erreichte Marke und wie weit es bis zur nächsten ist
 const MILES = [
@@ -351,6 +361,37 @@ function milesHtml(vals){
       + '<div class="neu-sub" style="font-size:.78rem">'+(got.length ? 'Erreicht: '+fmtN(last)+(nxt ? ' · noch '+fmtN(nxt - v)+' bis '+fmtN(nxt) : ' · alle Marken erreicht') : 'Noch '+fmtN(nxt - v)+' bis zur ersten Marke ('+fmtN(nxt)+')')+'</div></div></div>';
   }).join('');
 }
+// Feier bei neuer Marke: Stand pro Kategorie merken; beim allerersten Mal nur merken, nicht feiern
+function milesNow(streak){
+  let v = 0, p = 0;
+  ALL_VOCAB.forEach(x => { const q = srsProgress[x.id]; if(q && q.next_review){ v++; if((q.level || 0) >= 5) p++; } });
+  return {v, p, s: streak};
+}
+function milesCheck(streak){
+  if(!currentUser || !ALL_VOCAB.length) return;
+  const now = milesNow(streak);
+  let seen = null; try{ seen = JSON.parse(LS.get('neu-mseen', 'null')); }catch(e){}
+  const reached = {}, fresh = [];
+  MILES.forEach(m => {
+    const val = now[m.key]; if(val == null) return;
+    const mark = m.marks.filter(x => val >= x).pop() || 0;
+    reached[m.key] = mark;
+    if(seen && mark > (seen[m.key] || 0)) fresh.push({m, mark});
+  });
+  const merged = Object.assign({}, seen || {}, reached);
+  LS.set('neu-mseen', JSON.stringify(merged));
+  if(fresh.length) showCelebration(fresh[fresh.length - 1].m, fresh[fresh.length - 1].mark);
+}
+function showCelebration(m, mark){
+  if($('neu-celeb')) return;
+  const what = m.key === 'v' ? fmtN(mark)+' Vokabeln gestartet' : m.key === 'p' ? fmtN(mark)+' Profi-Vokabeln' : fmtN(mark)+' Tage in Folge';
+  const o = document.createElement('div'); o.id = 'neu-celeb';
+  o.innerHTML = '<div class="neu-celeb-box"><div class="neu-art">'+ART.sun+'</div><div class="neu-celeb-h">Neuer Meilenstein!</div><div class="neu-celeb-t">'+what+'</div><div class="neu-sub" style="margin:.3rem 0 1rem">Ya3tik es-sa77a — weiter so.</div><button class="neu-btn" onclick="document.getElementById(\'neu-celeb\').remove()">Weiter</button></div>';
+  o.addEventListener('click', e => { if(e.target === o) o.remove(); });
+  document.body.appendChild(o);
+  try{ if(LS.get('neu-vib','0') === '1' && navigator.vibrate) navigator.vibrate([30, 40, 60]); }catch(e){}
+}
+window.neuMilesCheck = milesCheck;
 // Tempo: wie viele Vokabeln wurden in den letzten 30 Tagen neu gestartet (erste Antwort im Zeitraum)? Pro Tag einmal berechnet.
 async function loadPace(){
   const day = new Date().toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
@@ -511,7 +552,7 @@ if(_courseExAnswer) window.courseExAnswer = function(ex, ok){ vibe(ok); bumpToda
 window.neuPickDir = function(v, lvl){
   const base = lvl >= 3 ? 'de2ar' : (Math.random() > .5 ? 'ar2de' : 'de2ar');
   if(!audioAutoplay || LS.get('neu-listen','1') !== '1' || !v.au) return base;
-  return Math.random() < (lvl >= 3 ? 0.15 : 0.34) ? 'au2de' : base;
+  return Math.random() < (lvl >= 3 ? 0.3 : 0.5) ? 'au2de' : base;
 };
 window.neuToggleListen = function(){ LS.set('neu-listen', LS.get('neu-listen','1') === '1' ? '0' : '1'); showMore(); };
 
@@ -572,6 +613,7 @@ window.showRes = function(){
     const goal = parseInt(LS.get('neu-goal','100'), 10) || 100;
     el.innerHTML = motivationHtml(dc, goal) || dangerHtml(dc, goal, left) || newStuffHint();
   }).catch(() => {});
+  loadActivity().then(a => setTimeout(() => { try{ milesCheck(a.streak || 0); }catch(e){} }, 900)).catch(() => {});
 };
 
 /* ---------- Kurs als Lernpfad ---------- */
@@ -1067,7 +1109,7 @@ function renderActivityCard(){
   const el = $('neu-act-body'); if(!el) return;
   const N = activityWindow;
   $('neu-act-chips').innerHTML = winChips(N, 'neuSetAct');
-  el.innerHTML = '<div class="neu-sub" style="padding:1.2rem 0;text-align:center">Lade …</div>';
+  el.innerHTML = '<div class="neu-skbars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>';
   loadActivityBars(N).then(full => {
     if(!$('neu-act-body') || N !== activityWindow) return;
     // full = N volle Tage vor heute + heute; der Durchschnitt zählt nur volle Tage (heute ist noch nicht vorbei)
@@ -1157,8 +1199,8 @@ window.showStats = function(){
     + (all ? '' : '<div style="margin-bottom:.6rem"><span class="neu-chip on" onclick="neuFilterOffStats()">Filter: '+escHtml(cLesson==='COURSEVOCAB'?'Kurs-Lektion':cLesson)+' ✕</span></div>')
     + '<div class="neu-row2" style="margin-bottom:.7rem">'
     +   '<div class="neu-card" style="margin:0;padding:.7rem .9rem"><div class="neu-sub">Fällig</div><div class="neu-kpi" style="font-size:1.6rem">'+fmtN(d.voc + (all ? d.course : 0))+'</div></div>'
-    +   '<div class="neu-card" style="margin:0;padding:.7rem .9rem"><div class="neu-sub">Erledigt</div><div class="neu-kpi" id="neu-st-today" style="font-size:1.6rem">…</div></div>'
-    +   '<div class="neu-card" style="margin:0;padding:.7rem .9rem"><div class="neu-sub">Serie</div><div class="neu-kpi" id="neu-st-streak" style="font-size:1.6rem">…</div></div>'
+    +   '<div class="neu-card" style="margin:0;padding:.7rem .9rem"><div class="neu-sub">Erledigt</div><div class="neu-kpi" id="neu-st-today" style="font-size:1.6rem"><span class="neu-skel" style="width:2.4rem;height:1.3rem"></span></div></div>'
+    +   '<div class="neu-card" style="margin:0;padding:.7rem .9rem"><div class="neu-sub">Serie</div><div class="neu-kpi" id="neu-st-streak" style="font-size:1.6rem"><span class="neu-skel" style="width:2rem;height:1.3rem"></span></div></div>'
     + '</div>'
     + (all ? newStuffHint() : '')
     + '<div class="neu-card"><div class="neu-ch">Fortschritt</div>'
@@ -1182,7 +1224,7 @@ window.showStats = function(){
     + '</div>';
   if(all){ loadPartnerLine(); renderActivityCard(); }
   renderMilestones(vStarted, vTotal, vp[3]);
-  Promise.all([loadActivity(), loadDayCounts()]).then(([a, dc]) => { const t = $('neu-st-today'), s = $('neu-st-streak'); if(t) t.textContent = fmtN(dc.today); if(s) s.textContent = a.streak ? a.streak + ' T' : '–'; }).catch(() => {});
+  Promise.all([loadActivity(), loadDayCounts()]).then(([a, dc]) => { const t = $('neu-st-today'), s = $('neu-st-streak'); if(t) t.textContent = fmtN(dc.today); if(s) s.innerHTML = a.streak ? flame(a.streak) + a.streak + ' T' : '–'; }).catch(() => {});
 };
 
 /* ---------- Erster Einstieg: nach dem Laden auf die Startseite ---------- */
@@ -1611,5 +1653,75 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
       });
       return '<div class="neu-dlg">' + part;
     }).join('');
+  };
+})();
+
+/* ===== Partner-Check: Motivation und Bilder für Semia ===== */
+(function(){
+  const berlinKey = d => d.toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
+  function berlinMidnightISO(){
+    const key = berlinKey(new Date()), u = new Date(key + 'T00:00:00Z');
+    const wall = u.toLocaleString('sv-SE', {timeZone:'Europe/Berlin'});          // Berliner Uhrzeit zu diesem UTC-Zeitpunkt
+    const off = Date.parse(wall.replace(' ', 'T') + 'Z') - u.getTime();
+    return new Date(u.getTime() - off).toISOString();
+  }
+  let today = null;   // {day, n}: heute geprüfte Wörter (ohne „Übersprungen“)
+  async function loadToday(){
+    const day = berlinKey(new Date());
+    if(today && today.day === day) return today.n;
+    let n = 0;
+    try{ n = await sbApiCount('vocabulary?partner_status=in.(approved,rejected,unknown)&status_updated_at=gte.'+berlinMidnightISO()+'&select=id'); }catch(e){}
+    today = {day, n: n || 0};
+    return today.n;
+  }
+  // Bilder: die Sonne öfter, die anderen abwechselnd
+  const POOL = ['sun','sun','sun','jasmin','tea','cat','moon','olive','sea'];
+  let lastArt = null;
+  function pickArt(){ let k; do{ k = POOL[Math.floor(Math.random() * POOL.length)]; }while(k === lastArt && POOL.length > 1); lastArt = k; return k; }
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  function message(n, block){
+    if(n >= 100) return pick(['Über 100 Wörter heute — das ist wirklich stark. Ya3tik es-sa77a!', 'Hundert und mehr! Danke, dass du dir so viel Zeit nimmst.']);
+    if(n >= 50) return pick(['Schon über 50 Wörter heute. Das hilft dem Trainer sehr.', 'Halbe Hundert geschafft — bravo!']);
+    if(n >= 30) return pick(['Drei Blöcke und mehr heute — danke, das ist eine große Hilfe.', 'Du bist richtig im Fluss. Weiter so!']);
+    if(n > block) return pick(['Schön, dass du weitermachst. Jedes geprüfte Wort zählt.', 'Noch ein Block geschafft. Danke dir!', 'Yalla, das läuft gut!']);
+    return pick(['Danke! Mit jedem geprüften Wort wird der Trainer besser.', 'Schön, dass du dabei bist. Ya3tik es-sa77a!', 'Gut gemacht — das hilft uns beiden beim Lernen.']);
+  }
+  const _init = window.partnerInit;
+  window.partnerInit = function(){ loadToday(); return _init.apply(this, arguments); };
+  const _act = window.partnerAct;
+  window.partnerAct = async function(status){
+    const r = await _act.apply(this, arguments);
+    if(today && /^(approved|rejected|unknown)$/.test(status)) today.n++;
+    return r;
+  };
+  // Karte: Zeile „Heute schon N geprüft · noch M offen“
+  const _card = window.partnerRenderCard;
+  window.partnerRenderCard = function(v, existing){
+    const r = _card.apply(this, arguments);
+    const p = document.querySelector('.partner-progress');
+    if(p && !existing){
+      const line = document.createElement('div'); line.className = 'neu-ptoday';
+      const open = window._pOpenCount;
+      const paint = n => { line.textContent = (n ? 'Heute schon '+n+' geprüft' : 'Heute noch nichts geprüft') + (open ? ' · noch '+open.toLocaleString('de-DE')+' offen' : ''); };
+      paint(today ? today.n : 0);
+      p.insertAdjacentElement('afterend', line);
+      loadToday().then(paint);
+    }
+    return r;
+  };
+  // Zusammenfassung: Bild und Nachricht statt Party-Emoji
+  const _sum = window.partnerRenderSummary;
+  window.partnerRenderSummary = function(){
+    const r = _sum.apply(this, arguments);
+    const icon = document.querySelector('.partner-done-icon');
+    if(icon && window.neuArt){
+      const block = (typeof _pResults !== 'undefined' && _pResults.length) || 10;
+      icon.outerHTML = '<div class="neu-art partner-art" aria-hidden="true">'+window.neuArt[pickArt()]+'</div>';
+      const t = document.querySelector('.partner-done-text');
+      const m = document.createElement('div'); m.className = 'neu-pmsg'; m.textContent = '…';
+      if(t) t.insertAdjacentElement('afterend', m);
+      loadToday().then(n => { m.textContent = message(n, block) + ' Heute: ' + n + ' geprüft.'; });
+    }
+    return r;
   };
 })();
