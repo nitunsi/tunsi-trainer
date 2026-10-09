@@ -439,3 +439,7 @@ html[data-theme="light"] #act-overlay{background:rgba(40,30,15,.45)}
 .act-row .src{font-size:.72rem;color:var(--muted);white-space:nowrap}
 .act-foot{display:flex;gap:.5rem;padding:.7rem 1rem calc(.7rem + env(safe-area-inset-bottom,0px));border-top:1px solid var(--border);flex:none}
 .act-row input[type=checkbox]{accent-color:var(--gold)}
+
+/* Linien-Symbole */
+.neu-ic{width:1.1em;height:1.1em;vertical-align:-.17em;display:inline-block;flex:none}
+.neu-dot{width:.7em;height:.7em;border-radius:50%;vertical-align:.02em;margin:0 .1em}

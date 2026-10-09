@@ -1324,3 +1324,90 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
   };
   window.statsActivateVocab = () => window.openActivateDialog();
 })();
+
+/* ===== Einheitliche Linien-Symbole: ersetzt Emojis im sichtbaren Text durch SVG ===== */
+(function(){
+  const P = {
+    volume:'<path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>',
+    mute:'<path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="m16 9 5 6M21 9l-5 6"/>',
+    calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+    search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+    book:'<path d="M12 6c-2-1.5-5-2-9-2v14c4 0 7 .5 9 2 2-1.5 5-2 9-2V4c-4 0-7 .5-9 2zM12 6v14"/>',
+    books:'<path d="M4 4h4v16H4zM10 4h4v16h-4z"/><path d="m16 6 4-1 3 14-4 1z" transform="translate(-2 0)"/>',
+    cap:'<path d="m2 9 10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.500 6-3v-4.500"/>',
+    link:'<path d="M10 14a4 4 0 0 0 5.700 0l3-3a4 4 0 0 0-5.700-5.700l-1 1"/><path d="M14 10a4 4 0 0 0-5.700 0l-3 3a4 4 0 0 0 5.700 5.700l1-1"/>',
+    warn:'<path d="M12 3 2 20h20z"/><path d="M12 10v5M12 17.500v.5"/>',
+    hourglass:'<path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/>',
+    bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.500 10.900c.7.600 1 1.300 1 2.100h5c0-.8.300-1.500 1-2.100A6 6 0 0 0 12 3z"/>',
+    flag:'<path d="M5 21V4M5 4h12l-2 4 2 4H5"/>',
+    repeat:'<path d="m17 2 4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>',
+    bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+    plus:'<path d="M12 5v14M5 12h14"/>',
+    chat:'<path d="M21 12a8 8 0 0 1-11.600 7.100L4 20l1-4.500A8 8 0 1 1 21 12z"/>',
+    sparkle:'<path d="M12 3l1.800 5.200L19 10l-5.200 1.800L12 17l-1.800-5.200L5 10l5.200-1.800z"/><path d="M19 17v4M17 19h4"/>',
+    pencil:'<path d="M4 20l1-4L16.500 4.500a2.100 2.100 0 0 1 3 3L8 19z"/><path d="m14 7 3 3"/>',
+    aa:'<path d="M3 18 8 6l5 12M5 14h6M15 18l3.500-8 3 8M16.500 15.500h4"/>',
+    check:'<path d="m5 12.500 4.500 4.500L19 7.500"/>',
+    checkc:'<circle cx="12" cy="12" r="9"/><path d="m8 12.500 3 3 5-6"/>',
+    xc:'<circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/>',
+    x:'<path d="m6 6 12 12M18 6 6 18"/>',
+    help:'<circle cx="12" cy="12" r="9"/><path d="M9.500 9.500a2.500 2.500 0 1 1 3.500 2.300c-.7.400-1 1-1 1.700M12 17v.5"/>',
+    dice:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.500 8.500h.01M15.500 8.500h.01M12 12h.01M8.500 15.500h.01M15.500 15.500h.01"/>',
+    mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+    shuffle:'<path d="M3 6h3c6 0 6 12 12 12h3M3 18h3c2 0 3.500-1 4.700-2.500M21 6h-3c-2 0-3.500 1-4.700 2.500M18 3l3 3-3 3M18 15l3 3-3 3"/>',
+    lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+    bars:'<path d="M5 21V11M12 21V4M19 21v-7"/>',
+    hand:'<path d="M8 12V5.500a1.500 1.500 0 0 1 3 0V11M11 10V4a1.500 1.500 0 0 1 3 0v6M14 10V5.500a1.500 1.500 0 0 1 3 0V13a7 7 0 0 1-7 7c-3 0-4.500-1.500-6-4l-1-2a1.500 1.500 0 0 1 2.500-1.500L8 14"/>',
+    compass:'<circle cx="12" cy="12" r="9"/><path d="m15.500 8.500-2 5-5 2 2-5z"/>',
+    save:'<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>',
+    target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    flame:'<path d="M12 3c1 3.500 5 5.500 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 .200 1.500 1 2 1.500 2C10 8 11 5 12 3z"/>',
+    brain:'<path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 4 3 3 0 0 0 1.500 5A3 3 0 0 0 9 20V4zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 4 3 3 0 0 1-1.500 5A3 3 0 0 1 15 20V4z"/>',
+    file:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/>',
+    box:'<path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
+    archive:'<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10h14V9M10 13h4"/>',
+    clip:'<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/>',
+    puzzle:'<path d="M10 4a2 2 0 1 1 4 0v2h4v4h-2a2 2 0 1 0 0 4h2v4h-4v-2a2 2 0 1 0-4 0v2H6v-4h2a2 2 0 1 0 0-4H6V6h4z"/>',
+    ruler:'<path d="m4 16 12-12 4 4L8 20z"/><path d="m8 12 2 2M11 9l2 2M14 6l2 2"/>',
+    cart:'<circle cx="9" cy="20" r="1.200"/><circle cx="18" cy="20" r="1.200"/><path d="M3 4h3l2.500 11h10l2-8H7"/>',
+    eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    inbox:'<path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1 3h6l1-3h5"/>',
+    skip:'<path d="m5 5 8 7-8 7zM16 5v14"/>'
+  };
+  const M = {'🔊':'volume','🔇':'mute','📅':'calendar','⭐':'star','🌟':'star','🔍':'search','📖':'book','📚':'books','🎓':'cap','🔗':'link','⚠️':'warn','⚠':'warn','⏳':'hourglass','💡':'bulb','🚩':'flag','🏳️':'flag','🔁':'repeat','⚡':'bolt','➕':'plus','💬':'chat','🎉':'sparkle','👏':'sparkle','✏️':'pencil','✎':'pencil','🔤':'aa','🔠':'aa','✅':'checkc','✔️':'check','❌':'xc','✖️':'x','❓':'help','🎲':'dice','📬':'mail','🔀':'shuffle','🔒':'lock','📊':'bars','🙋':'hand','🧭':'compass','💾':'save','🎯':'target','💪':'flame','🧠':'brain','📄':'file','📦':'box','🗄':'archive','📋':'clip','🧩':'puzzle','📐':'ruler','🛒':'cart','👁':'eye','📭':'inbox','⏭':'skip'};
+  const SM = {}; Object.keys(M).forEach(k => { SM[k.replace(/\uFE0F/g,'')] = M[k]; }); Object.keys(SM).forEach(k => { M[k] = SM[k]; });
+  const DOT = {'🟡':'var(--gold)','🔴':'#c0392b','🟠':'#d9822b','🔵':'#3a7bc8','⚪':'var(--muted)'};
+  const keys = Object.keys(M).map(k=>k.replace(/\uFE0F/g,'')).filter((k,i,a)=>a.indexOf(k)===i).concat(Object.keys(DOT)).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+  const RE = new RegExp('('+keys.join('|')+')\\uFE0F?','g');
+  const SKIP = {SCRIPT:1,STYLE:1,TEXTAREA:1,INPUT:1,OPTION:1,SELECT:1,TITLE:1};
+  function svg(name){ return '<svg class="neu-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+P[name]+'</svg>'; }
+  function html(sym){
+    if(DOT[sym]) return '<span class="neu-ic neu-dot" style="background:'+DOT[sym]+'"></span>';
+    return svg(M[sym]);
+  }
+  function fix(root){
+    if(!root || root.nodeType === 8) return;
+    if(root.nodeType === 3){ root = root.parentNode; if(!root) return; }
+    if(root.nodeType !== 1 || SKIP[root.tagName] || root.closest('option,select,textarea,[data-noicon]')) return;
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode(n){
+      const p = n.parentNode; if(!p || SKIP[p.tagName]) return NodeFilter.FILTER_REJECT;
+      RE.lastIndex = 0; return RE.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT; }});
+    const list = []; while(w.nextNode()) list.push(w.currentNode);
+    list.forEach(n => {
+      const p = n.parentNode; if(!p || p.closest('option,select,textarea,[data-noicon]')) return;
+      const tmp = document.createElement('span');
+      tmp.innerHTML = n.nodeValue.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(RE, m => html(m.replace(/️$/,'').length ? m.replace(/️$/,'') : m));
+      const frag = document.createDocumentFragment(); while(tmp.firstChild) frag.appendChild(tmp.firstChild);
+      p.replaceChild(frag, n);
+    });
+  }
+  let busy = false;
+  const mo = new MutationObserver(muts => {
+    if(busy) return; busy = true;
+    try{ muts.forEach(m => { m.addedNodes.forEach(n => fix(n)); if(m.type === 'characterData') fix(m.target); }); }finally{ busy = false; }
+  });
+  function start(){ fix(document.body); mo.observe(document.body, {childList:true, subtree:true, characterData:true}); }
+  if(document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+  window.neuIcons = fix;
+})();
