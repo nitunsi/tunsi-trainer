@@ -3347,6 +3347,26 @@ async function statsUnlockNextChunk(){
   showToast('✓ Freigeschaltet: '+txt,'ok');
   showStats();
 }
+// Schreibt die Fälligkeit „jetzt“ für die übergebenen Vokabeln ([{id, src}]); Rückfrage und Neuzeichnen machen die Aufrufer.
+async function statsActivateApply(picked){
+  const now = new Date().toISOString();
+  const fresh = [], existing = [];
+  picked.forEach(x => { const p = srsProgress[x.id]; if(p && p.id) existing.push(x.id); else fresh.push(x.id); });
+  for(const id of existing) await sbApi('progress?id=eq.'+srsProgress[id].id, 'PATCH', { next_review: now });
+  if(fresh.length){
+    const rows = fresh.map(id => ({user_id:currentUser.id, vocabulary_id:id, correct_count:0, wrong_count:0, review_count:0, next_review: now}));
+    const res = await sbApi('progress?on_conflict=user_id,vocabulary_id', 'POST', rows, 'resolution=ignore-duplicates,return=representation');
+    const got = new Map((res||[]).map(r => [r.vocabulary_id, r.id]));
+    for(const id of fresh){
+      if(got.has(id)){ srsProgress[id] = Object.assign(srsProgress[id]||{level:0,correct_count:0,review_count:0}, {id:got.get(id)}); continue; }
+      // Zeile existierte schon (Konflikt ignoriert): Id holen, dann Fälligkeit setzen
+      const f = await sbApi('progress?user_id=eq.'+currentUser.id+'&vocabulary_id=eq.'+id+'&select=id');
+      if(f && f[0]){ await sbApi('progress?id=eq.'+f[0].id, 'PATCH', { next_review: now }); srsProgress[id] = Object.assign(srsProgress[id]||{level:0,correct_count:0,review_count:0}, {id:f[0].id}); }
+    }
+  }
+  const nowDate = new Date(now);
+  picked.forEach(x => { if(!srsProgress[x.id]) srsProgress[x.id] = {level:0,correct_count:0,review_count:0}; srsProgress[x.id].next_review = nowDate; });
+}
 async function statsActivateVocab(n){
   if(!currentUser){ showToast('Fehler: nicht eingeloggt','err'); return; }
   let picked;
@@ -3354,24 +3374,8 @@ async function statsActivateVocab(n){
   if(!picked.length){ showToast('Keine passenden Vokabeln ohne Fälligkeit gefunden','warn'); return; }
   const list = picked.map(x => VOCAB_BY_ID[x.id].tr+' ('+x.src+')').join('\n');
   if(!confirm(picked.length+' Vokabeln fällig setzen?\n\n'+list)) return;
-  const now = new Date().toISOString();
   try{
-    const fresh = [], existing = [];
-    picked.forEach(x => { const p = srsProgress[x.id]; if(p && p.id) existing.push(x.id); else fresh.push(x.id); });
-    for(const id of existing) await sbApi('progress?id=eq.'+srsProgress[id].id, 'PATCH', { next_review: now });
-    if(fresh.length){
-      const rows = fresh.map(id => ({user_id:currentUser.id, vocabulary_id:id, correct_count:0, wrong_count:0, review_count:0, next_review: now}));
-      const res = await sbApi('progress?on_conflict=user_id,vocabulary_id', 'POST', rows, 'resolution=ignore-duplicates,return=representation');
-      const got = new Map((res||[]).map(r => [r.vocabulary_id, r.id]));
-      for(const id of fresh){
-        if(got.has(id)){ srsProgress[id] = Object.assign(srsProgress[id]||{level:0,correct_count:0,review_count:0}, {id:got.get(id)}); continue; }
-        // Zeile existierte schon (Konflikt ignoriert): Id holen, dann Fälligkeit setzen
-        const f = await sbApi('progress?user_id=eq.'+currentUser.id+'&vocabulary_id=eq.'+id+'&select=id');
-        if(f && f[0]){ await sbApi('progress?id=eq.'+f[0].id, 'PATCH', { next_review: now }); srsProgress[id] = Object.assign(srsProgress[id]||{level:0,correct_count:0,review_count:0}, {id:f[0].id}); }
-      }
-    }
-    const nowDate = new Date(now);
-    picked.forEach(x => { if(!srsProgress[x.id]) srsProgress[x.id] = {level:0,correct_count:0,review_count:0}; srsProgress[x.id].next_review = nowDate; });
+    await statsActivateApply(picked);
     showToast('✓ '+picked.length+' Vokabeln fällig gesetzt','ok');
   }catch(e){
     showToast('Fehler: '+e.message,'err');

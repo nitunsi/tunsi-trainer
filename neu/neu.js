@@ -302,7 +302,7 @@ function goHome(){
     + '</div>'
     + '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer;padding:.7rem 1rem" onclick="setMode(\'partnerqueue\')"><div class="neu-sub">Partner wird geladen …</div></div>'
     + '<div class="neu-chips" style="padding-bottom:0">'
-    +   '<span class="neu-chip" onclick="statsActivateVocab(10)">10 Vokabeln neu</span>'
+    +   '<span class="neu-chip" onclick="openActivateDialog()">Vokabeln fällig setzen</span>'
     +   '<span class="neu-chip" onclick="statsUnlockNextChunk()">Nächster Abschnitt</span>'
     +   '<span class="neu-chip" onclick="openPullForward()">Vorziehen</span>'
     +   '<span class="neu-chip" onclick="setMode(\'listen\')">Höraufgabe</span>'
@@ -451,7 +451,7 @@ function nothingDue(){
   if(d.voc > 0 && cMode !== 'flash') go.push('<button class="neu-btn" onclick="setMode(\'flash\')">Weiter mit Vokabeln · '+fmtN(d.voc)+' fällig</button>');
   if(d.course > 0 && cMode !== 'coursesrs') go.push('<button class="neu-btn blue" onclick="setMode(\'coursesrs\')">Weiter mit Kurs · '+fmtN(d.course)+' fällig</button>');
   const part = cMode === 'coursesrs' ? 'Kurs' : cMode === 'flash' ? 'Vokabeln' : 'Hier';
-  const rest = '<button class="neu-btn '+(go.length?'ghost':'')+'" onclick="statsActivateVocab(10)">10 Vokabeln fällig setzen</button>'
+  const rest = '<button class="neu-btn '+(go.length?'ghost':'')+'" onclick="openActivateDialog()">Vokabeln fällig setzen</button>'
     + '<button class="neu-btn '+(go.length?'ghost':'blue')+'" onclick="statsUnlockNextChunk()">Nächsten Kurs-Abschnitt freischalten</button>'
     + '<button class="neu-btn line" onclick="openPullForward()">Vorziehen</button>'
     + '<button class="neu-btn ghost" onclick="neuGoHome()">Zur Startseite</button>';
@@ -1014,7 +1014,7 @@ window.showStats = function(){
   const fcItems = fc.map((v,i) => { const dd = new Date(todayD); dd.setDate(dd.getDate()+i);
     const dm = dd.getDate()+'.'+(dd.getMonth()+1)+'.';
     const label = N <= 7 ? (i===0 ? 'Heute' : i===1 ? 'Morgen' : WD[dd.getDay()]) : '';
-    return {v, label, hot:i===0, act: N <= 7 && i===0 ? 'openPullForward()' : '', ax: i===0 ? 'Heute' : dm,
+    return {v, label, hot:i===0, act: '', ax: i===0 ? 'Heute' : dm,
       tip: (i===0 ? 'Heute' : WD[dd.getDay()]+' '+dm)+': '+fmtN(v)+' fällig'}; });
   const fcTotal = fc.reduce((a,x)=>a+x,0), fcMax = Math.max(0, ...fc);
   const fcSum = [['Gesamt', fmtN(fcTotal)], ['Ø pro Tag', fmtN(Math.round(fcTotal / N))], ['Spitze', fmtN(fcMax)]];
@@ -1032,10 +1032,10 @@ window.showStats = function(){
     + '</div>'
     + (all ? newStuffHint() : '')
     + '<div class="neu-card"><div class="neu-ch">Fortschritt</div>'
-    +   prog('Vokabeln', vStarted, vTotal, vp, all ? 'statsActivateVocab(10)' : '', '10 Vokabeln fällig setzen: erst mit Kursbezug ('+fmtN(courseVocabLeft)+' offen), danach aus dem Quellenabgleich')
-    +   (all ? '<div style="height:1px;background:var(--border);margin:1rem 0"></div>'+prog('Übungen', cActive, cTotal, cp, nextChunk ? 'statsUnlockNextChunk()' : '', nextChunk ? 'Nächsten Kurs-Abschnitt freischalten: K'+nextChunk.lesson.course_number+' · '+(nextChunk.chunkLabel||nextChunk.chunkKey) : '') : '')
+    +   prog('Vokabeln', vStarted, vTotal, vp, '', '')
+    +   (all ? '<div style="height:1px;background:var(--border);margin:1rem 0"></div>'+prog('Übungen', cActive, cTotal, cp, '', '') : '')
     + '</div>'
-    + '<div class="neu-card"><div class="neu-ch" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem"><span>Fällig</span><span style="display:flex;gap:.5rem;align-items:center"><span class="neu-chip" style="min-height:32px;padding:0 .7rem" onclick="openPullForward()">Vorziehen</span></span></div>'
+    + '<div class="neu-card"><div class="neu-ch" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem"><span>Fällig</span></div>'
     +   '<div style="margin:.2rem 0 .7rem">'+winChips(N, 'neuSetFc')+'</div>'
     +   barChart(fcItems, {sum: fcSum, avg: fcTotal / N, def: 'Balken antippen: fällig an dem Tag'}) + (fcBlocked ? '<div class="neu-sub" style="margin-top:.5rem">'+fmtN(fcBlocked)+' in der Partner-Queue gesperrt</div>' : '')
     + '</div>'
@@ -1258,4 +1258,69 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     const f = ex && ex.exercise_type !== 'answer_pattern' ? format(escHtml(ex.solution || ''), ex) : (ex && !PAREN.test(ex.solution || '') ? format(escHtml(ex.solution || ''), ex) : null);
     return f ? f + (typeof courseMetaGermanHtml === 'function' ? courseMetaGermanHtml(ex) : '') : _ex.apply(this, arguments);
   };
+})();
+
+
+/* ---------- Vokabeln fällig setzen: Anzahl wählbar, Vorschlag bearbeitbar (Haken pro Vokabel) ---------- */
+(function(){
+  let st = null;
+  const LSK = 'act-n';
+  const close = () => { const o = document.getElementById('act-overlay'); if(o) o.remove(); st = null; };
+  function rows(){
+    if(!st) return '';
+    if(st.loading) return '<div class="neu-sub" style="text-align:center;padding:1.2rem">Lade Vorschlag …</div>';
+    if(!st.picked.length) return '<div class="neu-sub" style="text-align:center;padding:1.2rem">Keine passenden Vokabeln ohne Fälligkeit gefunden.</div>';
+    return st.picked.map(x => {
+      const v = VOCAB_BY_ID[x.id] || {}, off = st.excluded.has(x.id);
+      return '<label class="act-row'+(off?' off':'')+'"><input type="checkbox" '+(off?'':'checked')+' data-id="'+x.id+'">'
+        + '<span class="ar">'+escHtml(v.ar||'')+'</span><span class="mid"><b>'+escHtml(v.en||'')+'</b><i>'+escHtml(v.tr||'')+'</i></span><span class="src">'+escHtml(x.src||'')+'</span></label>';
+    }).join('');
+  }
+  function paint(){
+    const o = document.getElementById('act-overlay'); if(!o || !st) return;
+    const sel = st.picked.filter(x => !st.excluded.has(x.id)).length;
+    o.querySelector('.act-list').innerHTML = rows();
+    o.querySelector('.act-count').textContent = st.loading ? '' : sel+' von '+st.picked.length+' ausgewählt';
+    const go = o.querySelector('.act-go'); go.textContent = 'Fällig setzen ('+sel+')'; go.disabled = st.loading || !sel;
+    o.querySelectorAll('.act-list input').forEach(cb => cb.onchange = () => { const id = parseInt(cb.dataset.id, 10); if(cb.checked) st.excluded.delete(id); else st.excluded.add(id); paint(); });
+  }
+  async function load(){
+    st.loading = true; paint();
+    try{ st.picked = await statsPickVocab(st.n); }catch(e){ st.picked = []; showToast('Fehler: '+e.message, 'err'); }
+    st.loading = false; paint();
+  }
+  window.openActivateDialog = function(){
+    if(!currentUser){ showToast('Fehler: nicht eingeloggt', 'err'); return; }
+    close();
+    let n = 10; try{ n = parseInt(localStorage.getItem(LSK), 10) || 10; }catch(e){}
+    st = {n, picked: [], excluded: new Set(), loading: true};
+    const o = document.createElement('div'); o.id = 'act-overlay';
+    o.innerHTML = '<div class="act-box"><div class="act-head"><div style="font-size:1.1rem;font-weight:700;color:var(--gold2)">Vokabeln fällig setzen</div>'
+      + '<div class="neu-sub" style="margin:.1rem 0 .5rem">Erst Vokabeln mit Kursbezug, danach aus dem Quellenabgleich. Haken raus = nicht fällig setzen.</div>'
+      + '<div style="display:flex;gap:.5rem;align-items:center"><span class="neu-sub" style="white-space:nowrap">Anzahl</span><input class="act-n" type="number" inputmode="numeric" min="1" max="200" value="'+n+'"><button class="neu-btn ghost act-reload" style="min-height:44px;width:auto;padding:0 .9rem">Vorschlag laden</button></div>'
+      + '<div class="act-count neu-sub" style="margin-top:.5rem"></div></div>'
+      + '<div class="act-list"></div>'
+      + '<div class="act-foot"><button class="neu-btn ghost act-cancel" style="flex:1">Abbrechen</button><button class="neu-btn act-go" style="flex:1.4" disabled>Fällig setzen</button></div></div>';
+    document.body.appendChild(o);
+    const inp = o.querySelector('.act-n');
+    const reload = () => { const v = Math.max(1, Math.min(200, parseInt(inp.value, 10) || 10)); inp.value = v; try{ localStorage.setItem(LSK, String(v)); }catch(e){} st.n = v; load(); };
+    o.querySelector('.act-reload').onclick = reload;
+    inp.addEventListener('keydown', e => { if(e.key === 'Enter'){ inp.blur(); reload(); } });
+    inp.addEventListener('change', reload);
+    o.querySelector('.act-cancel').onclick = close;
+    o.addEventListener('click', e => { if(e.target === o) close(); });
+    o.querySelector('.act-go').onclick = async () => {
+      const sel = st.picked.filter(x => !st.excluded.has(x.id));
+      if(!sel.length) return;
+      const go = o.querySelector('.act-go'); go.disabled = true; go.textContent = 'Schreibe …';
+      try{
+        await statsActivateApply(sel);
+        showToast('✓ '+sel.length+' Vokabeln fällig gesetzt', 'ok');
+      }catch(e){ showToast('Fehler: '+e.message, 'err'); }
+      close();
+      if(cMode === 'home') goHome(); else if(cMode === 'stats') showStats();
+    };
+    load();
+  };
+  window.statsActivateVocab = () => window.openActivateDialog();
 })();

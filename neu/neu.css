@@ -421,3 +421,21 @@ html[data-theme="light"] .sh-save,html[data-theme="light"] .neu-audioq,html[data
 .neu-sol .l:first-child{margin-top:0}
 .neu-sol .tn{display:block;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:1.1rem;font-weight:600;color:var(--gold2);line-height:1.45}
 .neu-sol .de{display:block;font-size:1rem;color:var(--text);line-height:1.45}
+
+/* ---------- Dialog „Vokabeln fällig setzen“ ---------- */
+#act-overlay{position:fixed;left:0;right:0;top:var(--vvt,0px);height:var(--vvh,100%);z-index:9999;background:rgba(0,0,0,.65);display:flex;align-items:flex-start;justify-content:center;padding:.6rem}
+html[data-theme="light"] #act-overlay{background:rgba(40,30,15,.45)}
+.act-box{background:var(--surface);border:1px solid var(--gold-d);border-radius:16px;width:100%;max-width:440px;max-height:100%;display:flex;flex-direction:column;overflow:hidden}
+.act-head{padding:.9rem 1rem .6rem;border-bottom:1px solid var(--border);flex:none}
+.act-n{width:84px;min-height:44px;text-align:center;font-size:1.1rem;background:var(--bg);border:1px solid var(--gold-d);color:var(--text);border-radius:10px}
+.act-list{overflow-y:auto;flex:1;min-height:80px}
+.act-row{display:flex;align-items:center;gap:.6rem;padding:.55rem 1rem;border-bottom:1px solid var(--border);cursor:pointer}
+.act-row.off{opacity:.45}
+.act-row input{width:22px;height:22px;flex:none}
+.act-row .ar{font-family:"Noto Naskh Arabic","Amiri",serif;font-size:1.3rem;color:var(--gold2);min-width:3.6rem;max-width:26%;text-align:right;direction:rtl;line-height:1.3}
+.act-row .mid{flex:1;min-width:0;display:flex;flex-direction:column}
+.act-row .mid b{font-weight:600;font-size:.95rem;line-height:1.25}
+.act-row .mid i{font-style:normal;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:.8rem;color:var(--muted)}
+.act-row .src{font-size:.72rem;color:var(--muted);white-space:nowrap}
+.act-foot{display:flex;gap:.5rem;padding:.7rem 1rem calc(.7rem + env(safe-area-inset-bottom,0px));border-top:1px solid var(--border);flex:none}
+.act-row input[type=checkbox]{accent-color:var(--gold)}
