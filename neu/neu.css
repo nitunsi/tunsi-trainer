@@ -460,3 +460,13 @@ html[data-arf="amiri"]{--arf:"Amiri","Noto Naskh Arabic",serif}
 html[data-arf="schehe"]{--arf:"Scheherazade New","Noto Naskh Arabic",serif}
 html[data-arf="kufi"]{--arf:"Noto Kufi Arabic","Noto Naskh Arabic",sans-serif}
 .neu-arprev{font-family:var(--arf);font-size:calc(2rem*var(--ars));direction:rtl;text-align:center;color:var(--gold2);margin-top:.8rem;line-height:1.6}
+
+/* Meilensteine */
+.neu-mile{display:flex;gap:.75rem;align-items:center;padding:.5rem 0}
+.neu-mile + .neu-mile{border-top:1px solid var(--border)}
+.neu-mile-b{width:2.4rem;height:2.4rem;border-radius:50%;border:2px solid var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;flex:none}
+.neu-mile-b .neu-ic{width:1.2rem;height:1.2rem}
+.neu-mile-b.on{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.12)}
+.neu-mile-b.on .neu-ic{fill:var(--gold)}
+.neu-mbar{height:6px;border-radius:3px;background:var(--surface2);margin:.35rem 0 .25rem;overflow:hidden}
+.neu-mbar i{display:block;height:100%;background:var(--gold);border-radius:3px}

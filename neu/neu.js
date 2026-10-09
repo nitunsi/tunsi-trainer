@@ -325,6 +325,52 @@ function goHome(){
     const el = $('neu-motiv'); if(el) el.innerHTML = motivationHtml(dc, goal);
   }).catch(() => {});
 }
+// Meilensteine: je Kategorie die höchste erreichte Marke und wie weit es bis zur nächsten ist
+const MILES = [
+  {key:'v', name:'Vokabeln gestartet', marks:[100,250,500,1000,1500,2000,3000,4000,5000]},
+  {key:'p', name:'Profi-Vokabeln', marks:[50,100,250,500,1000,1500,2000,3000]},
+  {key:'s', name:'Tage in Folge', marks:[3,7,14,30,60,100,200,365]}
+];
+function milesHtml(vals){
+  return MILES.map(m => {
+    const v = vals[m.key]; if(v == null) return '';
+    const got = m.marks.filter(x => v >= x), nxt = m.marks.find(x => v < x), last = got.length ? got[got.length - 1] : 0;
+    const pct = nxt ? Math.round((v - last) / (nxt - last) * 100) : 100;
+    return '<div class="neu-mile"><div class="neu-mile-b'+(got.length ? ' on' : '')+'"><svg class="neu-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></div>'
+      + '<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:.5rem"><b>'+m.name+'</b><span class="neu-sub">'+fmtN(v)+(nxt ? ' / '+fmtN(nxt) : '')+'</span></div>'
+      + '<div class="neu-mbar"><i style="width:'+pct+'%"></i></div>'
+      + '<div class="neu-sub" style="font-size:.78rem">'+(got.length ? 'Erreicht: '+fmtN(last)+(nxt ? ' · noch '+fmtN(nxt - v)+' bis '+fmtN(nxt) : ' · alle Marken erreicht') : 'Noch '+fmtN(nxt - v)+' bis zur ersten Marke ('+fmtN(nxt)+')')+'</div></div></div>';
+  }).join('');
+}
+// Tempo: wie viele Vokabeln wurden in den letzten 30 Tagen neu gestartet (erste Antwort im Zeitraum)? Pro Tag einmal berechnet.
+async function loadPace(){
+  const day = new Date().toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
+  try{ const c = JSON.parse(LS.get('neu-pace', 'null')); if(c && c.day === day) return c.n; }catch(e){}
+  const since = new Date(Date.now() - 30*86400000).toISOString();
+  const cnt = {};
+  for(let page = 0; page < 20; page++){
+    const r = await sbApi('review_log?user_id=eq.'+currentUser.id+'&vocabulary_id=not.is.null&select=vocabulary_id&created_at=gte.'+since+'&order=id.desc&limit=1000&offset='+(page*1000));
+    (r || []).forEach(x => { cnt[x.vocabulary_id] = (cnt[x.vocabulary_id] || 0) + 1; });
+    if(!r || r.length < 1000) break;
+  }
+  let n = 0;
+  Object.keys(cnt).forEach(id => { const p = srsProgress[id]; if(p && (p.review_count || 0) <= cnt[id]) n++; });
+  LS.set('neu-pace', JSON.stringify({day, n}));
+  return n;
+}
+function renderMilestones(vStarted, vTotal, vProfi){
+  const el = $('neu-miles'); if(!el) return;
+  el.innerHTML = milesHtml({v:vStarted, p:vProfi});
+  loadActivity().then(a => { const e = $('neu-miles'); if(e && cMode === 'stats') e.innerHTML = milesHtml({v:vStarted, p:vProfi, s:a.streak || 0}); }).catch(() => {});
+  loadPace().then(n => {
+    const f = $('neu-forecast'); if(!f || cMode !== 'stats') return;
+    const left = vTotal - vStarted;
+    if(left <= 0){ f.textContent = 'Alle Vokabeln sind gestartet.'; return; }
+    if(n < 5){ f.textContent = ''; return; }
+    const perWeek = n / 30 * 7, weeks = Math.ceil(left / perWeek);
+    f.innerHTML = 'Noch <b style="color:var(--text)">'+fmtN(left)+'</b> Vokabeln nicht gestartet. In den letzten 30 Tagen waren es etwa <b style="color:var(--text)">'+fmtN(Math.round(perWeek))+'</b> neue pro Woche — bei diesem Tempo sind alle in etwa <b style="color:var(--text)">'+(weeks > 104 ? 'mehr als 2 Jahren' : weeks > 12 ? Math.round(weeks / 4.3)+' Monaten' : weeks+' Woche'+(weeks === 1 ? '' : 'n'))+'</b> gestartet.';
+  }).catch(() => {});
+}
 // Wochenstreifen: die letzten 6 Tage und heute; voll = Tagesziel erreicht, halb = etwas geschafft, leer = nichts
 function weekHtml(dc, goal){
   const berlin = d => d.toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
@@ -1054,6 +1100,7 @@ window.showStats = function(){
     +   prog('Vokabeln', vStarted, vTotal, vp, '', '')
     +   (all ? '<div style="height:1px;background:var(--border);margin:1rem 0"></div>'+prog('Übungen', cActive, cTotal, cp, '', '') : '')
     + '</div>'
+    + '<div class="neu-card"><div class="neu-ch">Meilensteine</div><div id="neu-miles"></div><div id="neu-forecast" class="neu-sub" style="margin-top:.7rem"></div></div>'
     + '<div class="neu-card"><div class="neu-ch" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem"><span>Fällig</span></div>'
     +   '<div style="margin:.2rem 0 .7rem">'+winChips(N, 'neuSetFc')+'</div>'
     +   barChart(fcItems, {sum: fcSum, avg: fcTotal / N, def: 'Balken antippen: fällig an dem Tag'}) + (fcBlocked ? '<div class="neu-sub" style="margin-top:.5rem">'+fmtN(fcBlocked)+' in der Partner-Queue gesperrt</div>' : '')
@@ -1069,6 +1116,7 @@ window.showStats = function(){
     + '</div><div id="smooth-result" style="font-size:.85rem;color:var(--muted)"></div></details>'
     + '</div>';
   if(all){ loadPartnerLine(); renderActivityCard(); }
+  renderMilestones(vStarted, vTotal, vp[3]);
   Promise.all([loadActivity(), loadDayCounts()]).then(([a, dc]) => { const t = $('neu-st-today'), s = $('neu-st-streak'); if(t) t.textContent = fmtN(dc.today); if(s) s.textContent = a.streak ? a.streak + ' T' : '–'; }).catch(() => {});
 };
 
