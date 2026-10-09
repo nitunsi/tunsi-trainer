@@ -139,6 +139,15 @@ function ring(p, size, w, color, txt){
     + '<text x="50%" y="50%" dy=".35em" text-anchor="middle" fill="var(--text)" font-size="'+Math.round(size*0.24)+'" font-weight="700" font-family="inherit">'+(txt||'')+'</text></svg>';
 }
 
+
+/* ---------- Bilder für leere Zustände ---------- */
+const ART = {
+  tea: '<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="80" cy="88" rx="60" ry="7"/><path d="M62 44h36l-3.500 38a6 6 0 0 1-6 5H71.500a6 6 0 0 1-6-5z"/><path d="M64.500 56h31l-2.200 26a5 5 0 0 1-5 4H71.700a5 5 0 0 1-5-4z" fill="rgba(201,168,76,.35)" stroke="none"/><path d="M80 40c-7-5 3-11-2-18M90 40c5-5-3-10 2-16" opacity=".55"/><path d="M82 46c1-10 8-16 15-15 0 9-6 15-15 15z" fill="var(--green)" stroke="var(--green)" opacity=".9"/><path d="M78 46c-1-10-8-16-15-15 0 9 6 15 15 15z" fill="var(--green)" stroke="var(--green)" opacity=".9"/><path d="M80 48V36" stroke="var(--green)"/></svg>',
+  cat: '<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 92V62h140v30"/><path d="M10 62h140"/><path d="M30 92V78a14 14 0 0 1 28 0v14M102 92V78a14 14 0 0 1 28 0v14" stroke="var(--blue)"/><path d="M62 62c-4-18 4-30 18-30s20 8 16 30" fill="var(--surface2)"/><circle cx="80" cy="24" r="12" fill="var(--surface2)"/><path d="M70 15l-2-10 9 5M90 15l2-10-9 5"/><path d="M96 60c14 0 22-8 20-20" /><circle cx="76" cy="23" r="1.3" fill="currentColor"/><circle cx="85" cy="23" r="1.3" fill="currentColor"/></svg>',
+  jasmin: '<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 92C50 80 70 60 90 36S130 14 146 12"/><path d="M52 78c-2-14 6-22 16-24-1 12-6 20-16 24zM96 54c4-12 14-16 24-14-3 12-12 18-24 14z" fill="var(--green)" stroke="var(--green)" opacity=".8"/><g fill="var(--surface)" stroke="var(--gold)"><path d="M86 30c-2-8 6-12 8-6 6-4 12 4 6 8 6 2 4 10-3 8-2 6-10 4-9-3-7 0-8-8-2-7z"/><path d="M124 16c-1-6 5-9 7-4 5-3 9 3 4 6 5 2 3 8-2 6-2 5-8 3-8-2-5 0-6-6-1-6z"/><path d="M56 70c-1-6 5-9 7-4 5-3 9 3 4 6 5 2 3 8-2 6-2 5-8 3-8-2-5 0-6-6-1-6z"/></g></svg>',
+  sun: '<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 78h140"/><path d="M50 78a30 30 0 0 1 60 0" fill="rgba(201,168,76,.25)" stroke="var(--gold)"/><path d="M80 34v-12M44 44l-8-8M116 44l8-8M26 62h-12M146 62h-12" stroke="var(--gold)"/><path d="M30 90h100" opacity=".5"/></svg>'
+};
+const artHtml = k => '<div class="neu-art" aria-hidden="true">'+ART[k]+'</div>';
 /* ---------- Startseite „Heute“ ---------- */
 const _cache = {};
 async function loadActivity(){
@@ -294,7 +303,7 @@ function goHome(){
     + '<div id="neu-motiv"></div>'
     + '<div id="neu-new">'+newStuffHint()+'</div>'
     + (empty
-      ? '<div class="neu-card" style="text-align:center;padding:.8rem"><div style="font-size:1.15rem;font-weight:700;color:var(--gold2)">Alles erledigt</div><div class="neu-sub" style="margin-top:.2rem">Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b></div></div>'
+      ? '<div class="neu-card" style="text-align:center;padding:.8rem">'+artHtml('tea')+'<div style="font-size:1.15rem;font-weight:700;color:var(--gold2)">Alles erledigt</div><div class="neu-sub" style="margin-top:.2rem">Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b></div></div>'
       : '<button class="neu-btn" style="min-height:56px;font-size:1.1rem;margin:0 0 .6rem" onclick="setMode(\'mix\')">Los geht’s · '+fmtN(total)+' fällig</button>')
     + '<div class="neu-row2" style="margin-bottom:.6rem">'
     +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem" '+(d.voc?'':'disabled')+' onclick="setMode(\'flash\')"><span class="neu-sub">Vokabeln</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.voc)+'</span><small>fällig'+(d.blocked?' · '+fmtN(d.blocked)+' gesperrt':'')+'</small></button>'
@@ -521,6 +530,7 @@ function nothingDue(){
     + '<button class="neu-btn line" onclick="openPullForward()">Vorziehen</button>'
     + '<button class="neu-btn ghost" onclick="neuGoHome()">Zur Startseite</button>';
   c.innerHTML = '<div class="neu-wrap" style="text-align:center;padding-top:2rem">'
+    + artHtml(go.length ? 'sun' : 'cat')
     + '<div style="font-size:1.5rem;font-weight:700;color:var(--gold2)">'+(go.length ? part+' erledigt' : 'Alles erledigt')+'</div>'
     + '<div class="neu-sub" style="margin:.5rem 0 1.4rem">'+(go.length ? 'Im anderen Bereich ist noch etwas fällig.' : 'Nichts fällig. Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b>')+'</div>'
     + '<div style="display:flex;flex-direction:column;gap:.7rem;text-align:left">'
@@ -548,6 +558,7 @@ window.showRes = function(){
     : '<div class="rows"><div><span>Heute noch fällig</span><b style="color:var(--green)">nichts mehr</b></div></div>';
   r.innerHTML = '<div class="neu-res">'
     + ring(pct/100, 150, 12, pct >= 70 ? 'var(--green)' : 'var(--gold)', score.c + ' / ' + score.t)
+    + artHtml(pct >= 70 ? 'jasmin' : 'sun')
     + '<div class="msg">'+(pct>=70?'Gut gemacht':'Weiter üben')+'</div>'
     + '<div class="sub">'+msgs[Math.floor(Math.random()*msgs.length)]+'</div>'
     + '<div id="neu-res-msg" style="width:100%"></div>'

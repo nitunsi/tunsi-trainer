@@ -500,3 +500,8 @@ html[data-theme="dark"] .neu-spkline.s3{--spk:#c58bbb}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
 }
+
+/* Bilder für leere Zustände */
+.neu-art{width:150px;max-width:60%;margin:.2rem auto .5rem;color:var(--gold2)}
+.neu-art svg{width:100%;height:auto;display:block}
+.neu-res .neu-art{width:120px;margin:.6rem auto 0}
