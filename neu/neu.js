@@ -630,10 +630,10 @@ window.renderCourseOverview = function(){
 };
 
 /* ---------- Vokabelliste als Karten ---------- */
-const NEUF = {due:false, neu:false, audio:false, flag:false, select:false, az:false};
+const NEUF = {due:false, neu:false, audio:false, flag:false, select:false};
 window.neuChipsHtml = function(){
   const c = (k, l) => '<span class="neu-chip'+(NEUF[k]?' on':'')+'" data-k="'+k+'" onclick="neuVChip(\''+k+'\')">'+l+'</span>';
-  return '<div class="neu-chips" id="neu-vchips">'+c('due','Fällig')+c('neu','Ohne Fälligkeit')+c('audio','Mit Audio')+c('flag','Markiert')+c('az','A–Z')+'<span id="neu-vreset" class="neu-chip" style="display:none" onclick="neuVReset()">Filter zurücksetzen</span></div>';
+  return '<div class="neu-chips" id="neu-vchips">'+c('due','Fällig')+c('neu','Ohne Fälligkeit')+c('audio','Mit Audio')+c('flag','Markiert')+'<span id="neu-vreset" class="neu-chip" style="display:none" onclick="neuVReset()">Filter zurücksetzen</span></div>';
 };
 window.neuVChip = function(k){
   NEUF[k] = !NEUF[k];
@@ -655,23 +655,20 @@ window.neuRowTap = function(ev, id, i){
   if(ev.target.closest('button,input')) return;
   openVocabEdit(id, i);
 };
-const azKey = v => normalize(String(v.tr || '')).replace(/^[^a-z0-9]+/, '') || '~';
-const azLetter = v => { const c = azKey(v).charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : '#'; };
 function applyChips(vocab){
   if(NEUF.due) vocab = vocab.filter(v => srsIsDue(v));
   if(NEUF.neu) vocab = vocab.filter(v => { const p = srsProgress[v.id]; return !(p && p.next_review); });
   if(NEUF.audio) vocab = vocab.filter(v => !!v.au);
   if(NEUF.flag) vocab = vocab.filter(v => flaggedVocab.has(v.tr));
-  if(NEUF.az) vocab = vocab.slice().sort((a, b) => azKey(a).localeCompare(azKey(b)));
   return vocab;
 }
 const _rvt = window.renderVocabTable;
 window.renderVocabTable = function(vocab){ return _rvt.call(this, applyChips(vocab)); };
 const _svl = window.showVocabList;
 window.showVocabList = function(){
-  NEUF.due = NEUF.neu = NEUF.audio = NEUF.flag = NEUF.select = NEUF.az = false;
+  NEUF.due = NEUF.neu = NEUF.audio = NEUF.flag = NEUF.select = false;
   let sv = null; try{ sv = JSON.parse(LS.get('neu-vfilter', 'null')); }catch(e){}
-  if(sv){ ['due','neu','audio','flag','az'].forEach(k => { NEUF[k] = !!(sv.chips && sv.chips[k]); }); }
+  if(sv){ ['due','neu','audio','flag'].forEach(k => { NEUF[k] = !!(sv.chips && sv.chips[k]); }); }
   const r = _svl.apply(this, arguments);
   if(sv && cLesson !== 'COURSEVOCAB'){
     try{
@@ -691,7 +688,7 @@ window.showVocabList = function(){
 };
 function vState(){
   const g = id => { const e = $(id); return e ? e.value : 'all'; };
-  return {q: ($('vocab-search') || {}).value || '', chips: {due:NEUF.due, neu:NEUF.neu, audio:NEUF.audio, flag:NEUF.flag, az:NEUF.az},
+  return {q: ($('vocab-search') || {}).value || '', chips: {due:NEUF.due, neu:NEUF.neu, audio:NEUF.audio, flag:NEUF.flag},
     lvl: vocabLevelFilter, tp: g('vl-topic-filter'), ls: g('vl-ls-filter'), ps: g('vl-ps-filter'), au: g('vl-audio-filter')};
 }
 function vActive(st){ return !!(st.q || Object.values(st.chips).some(Boolean) || st.lvl !== 'all' || ['tp','ls','ps','au'].some(k => st[k] && st[k] !== 'all')); }
@@ -703,7 +700,7 @@ window.filterVocabList = function(){
   return r;
 };
 window.neuVReset = function(){
-  NEUF.due = NEUF.neu = NEUF.audio = NEUF.flag = NEUF.az = false;
+  NEUF.due = NEUF.neu = NEUF.audio = NEUF.flag = false;
   vocabLevelFilter = 'all'; vocabTopicFilter = vocabLsFilter = vocabPsFilter = vocabAudioFilter = 'all';
   ['lvl-filter-select','vl-topic-filter','vl-ls-filter','vl-ps-filter','vl-audio-filter'].forEach(id => { const e = $(id); if(e) e.value = 'all'; });
   const q = $('vocab-search'); if(q) q.value = '';
@@ -720,32 +717,12 @@ function hl(text, q, raw){
   if(i < 0) return esc(text);
   return esc(text.slice(0, i)) + '<mark class="neu-hit">' + esc(text.slice(i, i + q.length)) + '</mark>' + esc(text.slice(i + q.length));
 }
-// Buchstabenleiste (nur bei A–Z)
-window.neuAzJump = function(letter){
-  const i = vocabFilteredFull.findIndex(v => azLetter(v) === letter);
-  if(i < 0) return;
-  if(i >= vocabVisibleCount) vocabVisibleCount = i + 40;
-  renderVocabTableRows();
-  const row = document.querySelector('#vocab-table .neu-vlist').children[i];
-  if(row) row.scrollIntoView({block:'start'});
-  window.scrollBy(0, -70);
-};
-function azBar(){
-  const set = new Set(vocabFilteredFull.map(azLetter));
-  const letters = [...set].sort((a, b) => a === '#' ? 1 : b === '#' ? -1 : a.localeCompare(b));
-  return '<div class="neu-azwrap"><div class="neu-az" ontouchmove="neuAzTouch(event)">'+letters.map(l => '<span data-l="'+l+'" onclick="neuAzJump(\''+l+'\')">'+l+'</span>').join('')+'</div></div>';
-}
-window.neuAzTouch = function(e){
-  const t = e.touches[0], el = document.elementFromPoint(t.clientX, t.clientY);
-  if(el && el.dataset && el.dataset.l){ if(window._azLast !== el.dataset.l){ window._azLast = el.dataset.l; neuAzJump(el.dataset.l); } }
-};
 
 
 window.renderVocabTableRows = function(){
   const vocabFull = vocabFilteredFull;
   const el = $('vocab-table'); if(!el) return;
   el.classList.toggle('neu-sel', NEUF.select);
-  el.classList.toggle('neu-azon', NEUF.az);
   const hq = (($('vocab-search') || {}).value || '').trim().toLowerCase();
   const top = '<div style="display:flex;justify-content:space-between;align-items:center;margin:.1rem 0 .6rem;min-height:40px;font-size:.9rem;color:var(--muted)">'
     + (NEUF.select ? '<label style="display:flex;align-items:center;gap:.5rem;cursor:pointer"><input type="checkbox" id="vl-check-all" onchange="toggleSelectAll(this)" style="width:20px;height:20px"> Alle</label>' : '<span>'+fmtN(vocabFull.length)+(hq ? (vocabFull.length === 1 ? ' Treffer für „' : ' Treffer für „')+escHtml(hq)+'“' : (vocabFull.length === 1 ? ' Vokabel' : ' Vokabeln'))+'</span>')
@@ -753,7 +730,7 @@ window.renderVocabTableRows = function(){
   if(!vocabFull.length){ el.innerHTML = top + '<div style="text-align:center;color:var(--muted);padding:2rem">Keine Vokabeln gefunden</div>'; vocabTableRenderedIds = []; return; }
   const vocab = vocabFull.slice(0, vocabVisibleCount);
   vocabTableRenderedIds = vocab.map(v => v.id);
-  let h = top + (NEUF.az ? azBar() : '') + '<div class="neu-vlist">';
+  let h = top + '<div class="neu-vlist">';
   vocab.forEach((v,i) => {
     const p = v.id ? srsProgress[v.id] : null;
     const level = p ? (p.level||0) : 0;
@@ -1398,7 +1375,14 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     let tn, de;
     const i = html.indexOf(' — ');
     if(i > 0){ tn = html.slice(0, i); de = html.slice(i + 3); }
-    else { const m = html.match(/^(.*?) – (?=[A-ZÄÖÜ])(.*)$/); if(!m) return null; tn = m[1]; de = m[2]; }
+    else {
+      const m = html.match(/^(.*?) – (?=[A-ZÄÖÜ])(.*)$/);
+      // „Tounsi (Deutsch)“ ohne Strich: die Klammer am Ende ist die deutsche Übersetzung
+      const p = !m && html.match(/^(.+?)\s+\(([A-ZÄÖÜ][^()]*)\)(<\/mark>)?\s*$/);
+      if(!m && !p) return null;
+      if(m){ tn = m[1]; de = m[2]; } else { tn = p[1] + (p[3] ? '</mark>' : ''); de = p[2]; }
+    }
+    if(ex.exercise_type === 'answer_pattern') tn = tn.replace(/ \/ /g, '<br>');   // mehrere mögliche Antworten untereinander
     tn = tn.replace(/\? – /g, '?<br>');             // Frage und Antwort auf Tounsi untereinander
     de = de.replace(/ – (?=[A-ZÄÖÜ])/g, '<br>');   // z. B. Frage und Antwort auf Deutsch untereinander
     return '<span class="neu-sol"><span class="l">Tounsi</span><span class="tn">'+tn+'</span><span class="l">Deutsch</span><span class="de">'+de+'</span></span>';
