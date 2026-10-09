@@ -139,6 +139,15 @@ function ring(p, size, w, color, txt){
     + '<text x="50%" y="50%" dy=".35em" text-anchor="middle" fill="var(--text)" font-size="'+Math.round(size*0.24)+'" font-weight="700" font-family="inherit">'+(txt||'')+'</text></svg>';
 }
 
+
+/* ---------- Bilder für leere Zustände ---------- */
+const ART = {
+  tea: '<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="80" cy="88" rx="60" ry="7"/><path d="M62 44h36l-3.500 38a6 6 0 0 1-6 5H71.500a6 6 0 0 1-6-5z"/><path d="M64.500 56h31l-2.200 26a5 5 0 0 1-5 4H71.700a5 5 0 0 1-5-4z" fill="rgba(201,168,76,.35)" stroke="none"/><path d="M80 40c-7-5 3-11-2-18M90 40c5-5-3-10 2-16" opacity=".55"/><path d="M82 46c1-10 8-16 15-15 0 9-6 15-15 15z" fill="var(--green)" stroke="var(--green)" opacity=".9"/><path d="M78 46c-1-10-8-16-15-15 0 9 6 15 15 15z" fill="var(--green)" stroke="var(--green)" opacity=".9"/><path d="M80 48V36" stroke="var(--green)"/></svg>',
+  cat: '<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 92V62h140v30"/><path d="M10 62h140"/><path d="M30 92V78a14 14 0 0 1 28 0v14M102 92V78a14 14 0 0 1 28 0v14" stroke="var(--blue)"/><path d="M62 62c-4-18 4-30 18-30s20 8 16 30" fill="var(--surface2)"/><circle cx="80" cy="24" r="12" fill="var(--surface2)"/><path d="M70 15l-2-10 9 5M90 15l2-10-9 5"/><path d="M96 60c14 0 22-8 20-20" /><circle cx="76" cy="23" r="1.3" fill="currentColor"/><circle cx="85" cy="23" r="1.3" fill="currentColor"/></svg>',
+  jasmin: '<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 92C50 80 70 60 90 36S130 14 146 12"/><path d="M52 78c-2-14 6-22 16-24-1 12-6 20-16 24zM96 54c4-12 14-16 24-14-3 12-12 18-24 14z" fill="var(--green)" stroke="var(--green)" opacity=".8"/><g fill="var(--surface)" stroke="var(--gold)"><path d="M86 30c-2-8 6-12 8-6 6-4 12 4 6 8 6 2 4 10-3 8-2 6-10 4-9-3-7 0-8-8-2-7z"/><path d="M124 16c-1-6 5-9 7-4 5-3 9 3 4 6 5 2 3 8-2 6-2 5-8 3-8-2-5 0-6-6-1-6z"/><path d="M56 70c-1-6 5-9 7-4 5-3 9 3 4 6 5 2 3 8-2 6-2 5-8 3-8-2-5 0-6-6-1-6z"/></g></svg>',
+  sun: '<svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 78h140"/><path d="M50 78a30 30 0 0 1 60 0" fill="rgba(201,168,76,.25)" stroke="var(--gold)"/><path d="M80 34v-12M44 44l-8-8M116 44l8-8M26 62h-12M146 62h-12" stroke="var(--gold)"/><path d="M30 90h100" opacity=".5"/></svg>'
+};
+const artHtml = k => '<div class="neu-art" aria-hidden="true">'+ART[k]+'</div>';
 /* ---------- Startseite „Heute“ ---------- */
 const _cache = {};
 async function loadActivity(){
@@ -245,7 +254,7 @@ async function loadDayCounts(){
     for(let i = 1; i <= n; i++){ const d = new Date(now); d.setDate(d.getDate() - i); sum += keep[berlin(d)] || 0; }
     avgs[n] = sum / n;
   });
-  _cache.dc = {t: Date.now(), today, avgs};
+  _cache.dc = {t: Date.now(), today, avgs, days: keep};
   return _cache.dc;
 }
 // Immer das höchste übertroffene Fenster zeigen (90 vor 30 vor 14 vor 7)
@@ -287,14 +296,14 @@ function goHome(){
   const empty = total === 0;
   c.innerHTML = '<div class="neu-wrap neu-home">'
     + lessonFilterChip()
-    + '<div class="neu-card" style="display:flex;align-items:center;gap:.9rem;padding:.8rem 1rem">'
+    + '<div class="neu-card" style="padding:.8rem 1rem"><div style="display:flex;align-items:center;gap:.9rem">'
     +   '<div id="neu-ring">'+ring(0, 76, 8, 'var(--gold)', '…')+'</div>'
     +   '<div style="flex:1;min-width:0"><div class="neu-sub">Tagesziel (richtige Antworten)</div><div id="neu-goal-t" style="font-size:1.15rem;font-weight:700;margin:1px 0">… von '+goal+'</div><div id="neu-streak" class="neu-sub">&nbsp;</div></div>'
-    + '</div>'
+    + '</div><div id="neu-week" class="neu-week"></div></div>'
     + '<div id="neu-motiv"></div>'
     + '<div id="neu-new">'+newStuffHint()+'</div>'
     + (empty
-      ? '<div class="neu-card" style="text-align:center;padding:.8rem"><div style="font-size:1.15rem;font-weight:700;color:var(--gold2)">Alles erledigt</div><div class="neu-sub" style="margin-top:.2rem">Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b></div></div>'
+      ? '<div class="neu-card" style="text-align:center;padding:.8rem">'+artHtml('tea')+'<div style="font-size:1.15rem;font-weight:700;color:var(--gold2)">Alles erledigt</div><div class="neu-sub" style="margin-top:.2rem">Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b></div></div>'
       : '<button class="neu-btn" style="min-height:56px;font-size:1.1rem;margin:0 0 .6rem" onclick="setMode(\'mix\')">Los geht’s · '+fmtN(total)+' fällig</button>')
     + '<div class="neu-row2" style="margin-bottom:.6rem">'
     +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem" '+(d.voc?'':'disabled')+' onclick="setMode(\'flash\')"><span class="neu-sub">Vokabeln</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.voc)+'</span><small>fällig'+(d.blocked?' · '+fmtN(d.blocked)+' gesperrt':'')+'</small></button>'
@@ -314,6 +323,7 @@ function goHome(){
     const p = dc.today / goal;
     r.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', Math.min(999, Math.round(p*100)) + ' %');
     $('neu-goal-t').textContent = fmtN(dc.today) + ' von ' + fmtN(goal);
+    const wk = $('neu-week'); if(wk) wk.innerHTML = weekHtml(dc, goal);
     $('neu-streak').textContent = a.streak ? a.streak + ' Tag' + (a.streak===1?'':'e') + ' in Folge' : 'Noch keine Serie';
   }).catch(() => { const s = $('neu-streak'); if(s) s.textContent = ''; });
   // Motivation: zählt nur, was heute tatsächlich geschafft (richtig beantwortet) ist — nicht, was noch geplant/fällig ist
@@ -323,6 +333,66 @@ function goHome(){
     if(dng && nw) nw.innerHTML = dng;
     const el = $('neu-motiv'); if(el) el.innerHTML = motivationHtml(dc, goal);
   }).catch(() => {});
+}
+// Meilensteine: je Kategorie die höchste erreichte Marke und wie weit es bis zur nächsten ist
+const MILES = [
+  {key:'v', name:'Vokabeln gestartet', marks:[100,250,500,1000,1500,2000,3000,4000,5000]},
+  {key:'p', name:'Profi-Vokabeln', marks:[50,100,250,500,1000,1500,2000,3000]},
+  {key:'s', name:'Tage in Folge', marks:[3,7,14,30,60,100,200,365]}
+];
+function milesHtml(vals){
+  return MILES.map(m => {
+    const v = vals[m.key]; if(v == null) return '';
+    const got = m.marks.filter(x => v >= x), nxt = m.marks.find(x => v < x), last = got.length ? got[got.length - 1] : 0;
+    const pct = nxt ? Math.round((v - last) / (nxt - last) * 100) : 100;
+    return '<div class="neu-mile"><div class="neu-mile-b'+(got.length ? ' on' : '')+'"><svg class="neu-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></div>'
+      + '<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:.5rem"><b>'+m.name+'</b><span class="neu-sub">'+fmtN(v)+(nxt ? ' / '+fmtN(nxt) : '')+'</span></div>'
+      + '<div class="neu-mbar"><i style="width:'+pct+'%"></i></div>'
+      + '<div class="neu-sub" style="font-size:.78rem">'+(got.length ? 'Erreicht: '+fmtN(last)+(nxt ? ' · noch '+fmtN(nxt - v)+' bis '+fmtN(nxt) : ' · alle Marken erreicht') : 'Noch '+fmtN(nxt - v)+' bis zur ersten Marke ('+fmtN(nxt)+')')+'</div></div></div>';
+  }).join('');
+}
+// Tempo: wie viele Vokabeln wurden in den letzten 30 Tagen neu gestartet (erste Antwort im Zeitraum)? Pro Tag einmal berechnet.
+async function loadPace(){
+  const day = new Date().toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
+  try{ const c = JSON.parse(LS.get('neu-pace', 'null')); if(c && c.day === day) return c.n; }catch(e){}
+  const since = new Date(Date.now() - 30*86400000).toISOString();
+  const cnt = {};
+  for(let page = 0; page < 20; page++){
+    const r = await sbApi('review_log?user_id=eq.'+currentUser.id+'&vocabulary_id=not.is.null&select=vocabulary_id&created_at=gte.'+since+'&order=id.desc&limit=1000&offset='+(page*1000));
+    (r || []).forEach(x => { cnt[x.vocabulary_id] = (cnt[x.vocabulary_id] || 0) + 1; });
+    if(!r || r.length < 1000) break;
+  }
+  let n = 0;
+  Object.keys(cnt).forEach(id => { const p = srsProgress[id]; if(p && (p.review_count || 0) <= cnt[id]) n++; });
+  LS.set('neu-pace', JSON.stringify({day, n}));
+  return n;
+}
+function renderMilestones(vStarted, vTotal, vProfi){
+  const el = $('neu-miles'); if(!el) return;
+  el.innerHTML = milesHtml({v:vStarted, p:vProfi});
+  loadActivity().then(a => { const e = $('neu-miles'); if(e && cMode === 'stats') e.innerHTML = milesHtml({v:vStarted, p:vProfi, s:a.streak || 0}); }).catch(() => {});
+  loadPace().then(n => {
+    const f = $('neu-forecast'); if(!f || cMode !== 'stats') return;
+    const left = vTotal - vStarted;
+    if(left <= 0){ f.textContent = 'Alle Vokabeln sind gestartet.'; return; }
+    if(n < 5){ f.textContent = ''; return; }
+    const perWeek = n / 30 * 7, weeks = Math.ceil(left / perWeek);
+    f.innerHTML = 'Noch <b style="color:var(--text)">'+fmtN(left)+'</b> Vokabeln nicht gestartet. In den letzten 30 Tagen waren es etwa <b style="color:var(--text)">'+fmtN(Math.round(perWeek))+'</b> neue pro Woche — bei diesem Tempo sind alle in etwa <b style="color:var(--text)">'+(weeks > 104 ? 'mehr als 2 Jahren' : weeks > 12 ? Math.round(weeks / 4.3)+' Monaten' : weeks+' Woche'+(weeks === 1 ? '' : 'n'))+'</b> gestartet.';
+  }).catch(() => {});
+}
+// Wochenstreifen: die letzten 6 Tage und heute; voll = Tagesziel erreicht, halb = etwas geschafft, leer = nichts
+function weekHtml(dc, goal){
+  const berlin = d => d.toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
+  const wd = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+  let out = '';
+  for(let i = 6; i >= 0; i--){
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const n = i === 0 ? dc.today : ((dc.days || {})[berlin(d)] || 0);
+    const cls = n >= goal ? 'full' : n > 0 ? 'part' : '';
+    const lab = wd[new Date(berlin(d) + 'T12:00:00Z').getUTCDay()];
+    out += '<div class="neu-wd'+(i === 0 ? ' today' : '')+'" title="'+fmtN(n)+' richtig"><span class="neu-wdot '+cls+'">'+(n >= goal ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.500 4.500 4.500L19 7.500"/></svg>' : '')+'</span><span>'+(i === 0 ? 'Heute' : lab)+'</span></div>';
+  }
+  return out;
 }
 // Meldung zum Durchschnitt (Startseite und Abschlussseite)
 function motivationHtml(dc, goal){
@@ -377,6 +447,10 @@ function showMore(){
     + '<div class="neu-h">Darstellung und Lernen</div><div class="neu-card">'
     +   '<div class="neu-cap">Farbschema</div>'+seg([['auto','Automatisch'],['light','Hell'],['dark','Dunkel']], LS.get('neu-theme','light'), "neuSetTheme('%v')")
     +   '<div class="neu-cap" style="margin-top:1rem">Schriftgröße</div>'+seg([['S','Klein'],['M','Mittel'],['L','Groß']], font, "neuSetFont('%v')")
+    +   '<div class="neu-cap" style="margin-top:1rem">Arabische Schrift</div>'+seg([['naskh','Naskh'],['amiri','Amiri'],['schehe','Scheherazade'],['kufi','Kufi']], LS.get('neu-arf','naskh'), "neuSetArf('%v')")
+    +   '<div style="height:.5rem"></div>'+seg([['0.85','Klein'],['1','Mittel'],['1.2','Groß'],['1.4','Sehr groß']], LS.get('neu-ars','1'), "neuSetArs('%v')")
+    +   '<div class="neu-list" style="margin-top:.4rem"><div class="li"><span class="sp">Vokalzeichen anzeigen</span>'+sw(LS.get('neu-arv','1') === '1', "neuToggleArv()")+'</div></div>'
+    +   '<div class="neu-arprev" id="neu-arprev">'+arPrev()+'</div>'
     +   '<div class="neu-cap" style="margin-top:1rem">Tagesziel (richtige Antworten pro Tag)</div>'+seg([[50,'50'],[100,'100'],[150,'150'],[200,'200']], goal, "neuSetGoal(%v)")
     +   '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Audio beim Aufdecken abspielen</span>'+sw(audioAutoplay, "toggleAudioAutoplay();showMore()")+'</div>'
     +   '<div class="li"><span class="sp">Vibration bei Richtig und Falsch</span>'+sw(vib, "neuToggleVib()")+'</div></div>'
@@ -456,6 +530,7 @@ function nothingDue(){
     + '<button class="neu-btn line" onclick="openPullForward()">Vorziehen</button>'
     + '<button class="neu-btn ghost" onclick="neuGoHome()">Zur Startseite</button>';
   c.innerHTML = '<div class="neu-wrap" style="text-align:center;padding-top:2rem">'
+    + artHtml(go.length ? 'sun' : 'cat')
     + '<div style="font-size:1.5rem;font-weight:700;color:var(--gold2)">'+(go.length ? part+' erledigt' : 'Alles erledigt')+'</div>'
     + '<div class="neu-sub" style="margin:.5rem 0 1.4rem">'+(go.length ? 'Im anderen Bereich ist noch etwas fällig.' : 'Nichts fällig. Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b>')+'</div>'
     + '<div style="display:flex;flex-direction:column;gap:.7rem;text-align:left">'
@@ -483,6 +558,7 @@ window.showRes = function(){
     : '<div class="rows"><div><span>Heute noch fällig</span><b style="color:var(--green)">nichts mehr</b></div></div>';
   r.innerHTML = '<div class="neu-res">'
     + ring(pct/100, 150, 12, pct >= 70 ? 'var(--green)' : 'var(--gold)', score.c + ' / ' + score.t)
+    + artHtml(pct >= 70 ? 'jasmin' : 'sun')
     + '<div class="msg">'+(pct>=70?'Gut gemacht':'Weiter üben')+'</div>'
     + '<div class="sub">'+msgs[Math.floor(Math.random()*msgs.length)]+'</div>'
     + '<div id="neu-res-msg" style="width:100%"></div>'
@@ -547,16 +623,17 @@ window.renderCourseOverview = function(){
   }).join('');
   c.innerHTML = '<div class="neu-wrap">'
     + '<div style="font-size:1.5rem;font-weight:700;margin:.2rem 0 .6rem">Kurs</div>'
+    + (curId !== null ? '<button class="neu-btn" style="margin:0 0 .7rem" onclick="showCourseLesson('+curId+')">Weiter mit Lektion '+(COURSE_LESSONS.find(l => l.id === curId) || {}).course_number+'</button>' : '')
     + '<div class="neu-card"><div class="neu-cap">Gesamt</div>'+line('Vokabeln', vocStat([...allV.values()]))+line('Übungen', exStat(allItems))+'</div>'
-    + '<div class="neu-card" style="padding:.2rem .9rem">'+nodes+'</div>'
+    + '<div class="neu-card neu-path" style="padding:.2rem .9rem">'+nodes+'</div>'
     + '</div>';
 };
 
 /* ---------- Vokabelliste als Karten ---------- */
-const NEUF = {due:false, neu:false, audio:false, flag:false, select:false};
+const NEUF = {due:false, neu:false, audio:false, flag:false, select:false, az:false};
 window.neuChipsHtml = function(){
   const c = (k, l) => '<span class="neu-chip'+(NEUF[k]?' on':'')+'" data-k="'+k+'" onclick="neuVChip(\''+k+'\')">'+l+'</span>';
-  return '<div class="neu-chips" id="neu-vchips">'+c('due','Fällig')+c('neu','Ohne Fälligkeit')+c('audio','Mit Audio')+c('flag','Markiert')+'</div>';
+  return '<div class="neu-chips" id="neu-vchips">'+c('due','Fällig')+c('neu','Ohne Fälligkeit')+c('audio','Mit Audio')+c('flag','Markiert')+c('az','A–Z')+'<span id="neu-vreset" class="neu-chip" style="display:none" onclick="neuVReset()">Filter zurücksetzen</span></div>';
 };
 window.neuVChip = function(k){
   NEUF[k] = !NEUF[k];
@@ -578,29 +655,105 @@ window.neuRowTap = function(ev, id, i){
   if(ev.target.closest('button,input')) return;
   openVocabEdit(id, i);
 };
+const azKey = v => normalize(String(v.tr || '')).replace(/^[^a-z0-9]+/, '') || '~';
+const azLetter = v => { const c = azKey(v).charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : '#'; };
 function applyChips(vocab){
   if(NEUF.due) vocab = vocab.filter(v => srsIsDue(v));
   if(NEUF.neu) vocab = vocab.filter(v => { const p = srsProgress[v.id]; return !(p && p.next_review); });
   if(NEUF.audio) vocab = vocab.filter(v => !!v.au);
   if(NEUF.flag) vocab = vocab.filter(v => flaggedVocab.has(v.tr));
+  if(NEUF.az) vocab = vocab.slice().sort((a, b) => azKey(a).localeCompare(azKey(b)));
   return vocab;
 }
 const _rvt = window.renderVocabTable;
 window.renderVocabTable = function(vocab){ return _rvt.call(this, applyChips(vocab)); };
 const _svl = window.showVocabList;
-window.showVocabList = function(){ NEUF.due = NEUF.neu = NEUF.audio = NEUF.flag = NEUF.select = false; return _svl.apply(this, arguments); };
+window.showVocabList = function(){
+  NEUF.due = NEUF.neu = NEUF.audio = NEUF.flag = NEUF.select = NEUF.az = false;
+  let sv = null; try{ sv = JSON.parse(LS.get('neu-vfilter', 'null')); }catch(e){}
+  if(sv){ ['due','neu','audio','flag','az'].forEach(k => { NEUF[k] = !!(sv.chips && sv.chips[k]); }); }
+  const r = _svl.apply(this, arguments);
+  if(sv && cLesson !== 'COURSEVOCAB'){
+    try{
+      const set = (id, val, apply) => { const e = $(id); if(e && val != null && val !== 'all'){ e.value = val; apply(); } };
+      if(sv.lvl != null && sv.lvl !== 'all'){ vocabLevelFilter = sv.lvl; const e = $('lvl-filter-select'); if(e) e.value = String(sv.lvl); }
+      set('vl-topic-filter', sv.tp, () => { vocabTopicFilter = $('vl-topic-filter').value; });
+      set('vl-ls-filter', sv.ls, () => { vocabLsFilter = $('vl-ls-filter').value; });
+      set('vl-ps-filter', sv.ps, () => { vocabPsFilter = $('vl-ps-filter').value; });
+      set('vl-audio-filter', sv.au, () => { vocabAudioFilter = $('vl-audio-filter').value; });
+      const q = $('vocab-search'); if(q && sv.q) q.value = sv.q;
+      document.querySelectorAll('#neu-vchips .neu-chip[data-k]').forEach(e => e.classList.toggle('on', !!NEUF[e.dataset.k]));
+      filterVocabList();
+    }catch(e){}
+  }
+  updVReset();
+  return r;
+};
+function vState(){
+  const g = id => { const e = $(id); return e ? e.value : 'all'; };
+  return {q: ($('vocab-search') || {}).value || '', chips: {due:NEUF.due, neu:NEUF.neu, audio:NEUF.audio, flag:NEUF.flag, az:NEUF.az},
+    lvl: vocabLevelFilter, tp: g('vl-topic-filter'), ls: g('vl-ls-filter'), ps: g('vl-ps-filter'), au: g('vl-audio-filter')};
+}
+function vActive(st){ return !!(st.q || Object.values(st.chips).some(Boolean) || st.lvl !== 'all' || ['tp','ls','ps','au'].some(k => st[k] && st[k] !== 'all')); }
+function updVReset(){ const b = $('neu-vreset'); if(b) b.style.display = vActive(vState()) ? '' : 'none'; }
+const _fvl = window.filterVocabList;
+window.filterVocabList = function(){
+  const r = _fvl.apply(this, arguments);
+  if(cMode === 'vocab' && $('vocab-search')){ LS.set('neu-vfilter', JSON.stringify(vState())); updVReset(); }
+  return r;
+};
+window.neuVReset = function(){
+  NEUF.due = NEUF.neu = NEUF.audio = NEUF.flag = NEUF.az = false;
+  vocabLevelFilter = 'all'; vocabTopicFilter = vocabLsFilter = vocabPsFilter = vocabAudioFilter = 'all';
+  ['lvl-filter-select','vl-topic-filter','vl-ls-filter','vl-ps-filter','vl-audio-filter'].forEach(id => { const e = $(id); if(e) e.value = 'all'; });
+  const q = $('vocab-search'); if(q) q.value = '';
+  const d = $('due-until-filter'); if(d) d.value = '';
+  document.querySelectorAll('#neu-vchips .neu-chip[data-k]').forEach(e => e.classList.remove('on'));
+  filterVocabList();
+};
+// Trefferhervorhebung
+function hl(text, q, raw){
+  text = String(text == null ? '' : text);
+  const esc = raw ? (x => x) : escHtml;
+  if(!q) return esc(text);
+  const i = text.toLowerCase().indexOf(q);
+  if(i < 0) return esc(text);
+  return esc(text.slice(0, i)) + '<mark class="neu-hit">' + esc(text.slice(i, i + q.length)) + '</mark>' + esc(text.slice(i + q.length));
+}
+// Buchstabenleiste (nur bei A–Z)
+window.neuAzJump = function(letter){
+  const i = vocabFilteredFull.findIndex(v => azLetter(v) === letter);
+  if(i < 0) return;
+  if(i >= vocabVisibleCount) vocabVisibleCount = i + 40;
+  renderVocabTableRows();
+  const row = document.querySelector('#vocab-table .neu-vlist').children[i];
+  if(row) row.scrollIntoView({block:'start'});
+  window.scrollBy(0, -70);
+};
+function azBar(){
+  const set = new Set(vocabFilteredFull.map(azLetter));
+  const letters = [...set].sort((a, b) => a === '#' ? 1 : b === '#' ? -1 : a.localeCompare(b));
+  return '<div class="neu-azwrap"><div class="neu-az" ontouchmove="neuAzTouch(event)">'+letters.map(l => '<span data-l="'+l+'" onclick="neuAzJump(\''+l+'\')">'+l+'</span>').join('')+'</div></div>';
+}
+window.neuAzTouch = function(e){
+  const t = e.touches[0], el = document.elementFromPoint(t.clientX, t.clientY);
+  if(el && el.dataset && el.dataset.l){ if(window._azLast !== el.dataset.l){ window._azLast = el.dataset.l; neuAzJump(el.dataset.l); } }
+};
+
 
 window.renderVocabTableRows = function(){
   const vocabFull = vocabFilteredFull;
   const el = $('vocab-table'); if(!el) return;
   el.classList.toggle('neu-sel', NEUF.select);
+  el.classList.toggle('neu-azon', NEUF.az);
+  const hq = (($('vocab-search') || {}).value || '').trim().toLowerCase();
   const top = '<div style="display:flex;justify-content:space-between;align-items:center;margin:.1rem 0 .6rem;min-height:40px;font-size:.9rem;color:var(--muted)">'
-    + (NEUF.select ? '<label style="display:flex;align-items:center;gap:.5rem;cursor:pointer"><input type="checkbox" id="vl-check-all" onchange="toggleSelectAll(this)" style="width:20px;height:20px"> Alle</label>' : '<span>'+fmtN(vocabFull.length)+(vocabFull.length === 1 ? ' Vokabel' : ' Vokabeln')+'</span>')
+    + (NEUF.select ? '<label style="display:flex;align-items:center;gap:.5rem;cursor:pointer"><input type="checkbox" id="vl-check-all" onchange="toggleSelectAll(this)" style="width:20px;height:20px"> Alle</label>' : '<span>'+fmtN(vocabFull.length)+(hq ? (vocabFull.length === 1 ? ' Treffer für „' : ' Treffer für „')+escHtml(hq)+'“' : (vocabFull.length === 1 ? ' Vokabel' : ' Vokabeln'))+'</span>')
     + '<span class="neu-chip'+(NEUF.select?' on':'')+'" onclick="neuToggleSelect()">'+(NEUF.select?'Fertig':'Auswählen')+'</span></div>';
   if(!vocabFull.length){ el.innerHTML = top + '<div style="text-align:center;color:var(--muted);padding:2rem">Keine Vokabeln gefunden</div>'; vocabTableRenderedIds = []; return; }
   const vocab = vocabFull.slice(0, vocabVisibleCount);
   vocabTableRenderedIds = vocab.map(v => v.id);
-  let h = top + '<div class="neu-vlist">';
+  let h = top + (NEUF.az ? azBar() : '') + '<div class="neu-vlist">';
   vocab.forEach((v,i) => {
     const p = v.id ? srsProgress[v.id] : null;
     const level = p ? (p.level||0) : 0;
@@ -614,8 +767,8 @@ window.renderVocabTableRows = function(){
     const psIcon = ps==='approved'?'✅' : ps==='rejected'?'❌' : ps==='unknown'?'❓' : ps==='pending'?'⏳' : ps==='skipped'?'⏭' : ps==='suggested'?'💡' : '';
     const audio = v.au ? '<button class="ib" onclick="event.stopPropagation();playVocabAudio(\''+v.au.replace(/'/g,"\\'")+'\',event,'+(v.aus||0)+','+(v.aue||0)+')" title="Aussprache" aria-label="Aussprache">🔊</button>' : '';
     h += '<div class="neu-vrow" onclick="neuRowTap(event,'+(v.id||0)+','+i+')"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)"'+(selectedVocabIds.has(v.id)?' checked':'')+'/>'
-      + '<div class="ar">'+v.ar+'</div>'
-      + '<div class="mid"><div class="t1">'+escHtml(v.en)+'</div><div class="t2 neu-mono">'+escHtml(v.tr)+conj+'</div><div class="t2">'+v.ls+flag+(psIcon?' · '+psIcon:'')+'</div></div>'
+      + '<div class="ar">'+hl(v.ar, hq, true)+'</div>'
+      + '<div class="mid"><div class="t1">'+hl(v.en, hq)+'</div><div class="t2 neu-mono">'+hl(v.tr, hq)+conj+'</div><div class="t2">'+v.ls+flag+(psIcon?' · '+psIcon:'')+'</div></div>'
       + '<div class="rt"><div class="lv"><span class="dot" style="background:'+col+'"></span>'+(started?'Stufe '+level:'Neu')+'</div><div class="t2" style="'+(isDueNow?'color:var(--red)':'')+'">'+(started?due:'—')+'</div>'+(audio?'<div style="margin-top:.3rem">'+audio+'</div>':'')+'</div></div>';
   });
   h += '</div>';
@@ -1035,6 +1188,7 @@ window.showStats = function(){
     +   prog('Vokabeln', vStarted, vTotal, vp, '', '')
     +   (all ? '<div style="height:1px;background:var(--border);margin:1rem 0"></div>'+prog('Übungen', cActive, cTotal, cp, '', '') : '')
     + '</div>'
+    + '<div class="neu-card"><div class="neu-ch">Meilensteine</div><div id="neu-miles"></div><div id="neu-forecast" class="neu-sub" style="margin-top:.7rem"></div></div>'
     + '<div class="neu-card"><div class="neu-ch" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem"><span>Fällig</span></div>'
     +   '<div style="margin:.2rem 0 .7rem">'+winChips(N, 'neuSetFc')+'</div>'
     +   barChart(fcItems, {sum: fcSum, avg: fcTotal / N, def: 'Balken antippen: fällig an dem Tag'}) + (fcBlocked ? '<div class="neu-sub" style="margin-top:.5rem">'+fmtN(fcBlocked)+' in der Partner-Queue gesperrt</div>' : '')
@@ -1050,6 +1204,7 @@ window.showStats = function(){
     + '</div><div id="smooth-result" style="font-size:.85rem;color:var(--muted)"></div></details>'
     + '</div>';
   if(all){ loadPartnerLine(); renderActivityCard(); }
+  renderMilestones(vStarted, vTotal, vp[3]);
   Promise.all([loadActivity(), loadDayCounts()]).then(([a, dc]) => { const t = $('neu-st-today'), s = $('neu-st-streak'); if(t) t.textContent = fmtN(dc.today); if(s) s.textContent = a.streak ? a.streak + ' T' : '–'; }).catch(() => {});
 };
 
@@ -1323,4 +1478,154 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     load();
   };
   window.statsActivateVocab = () => window.openActivateDialog();
+})();
+
+/* ===== Einheitliche Linien-Symbole: ersetzt Emojis im sichtbaren Text durch SVG ===== */
+(function(){
+  const P = {
+    volume:'<path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>',
+    mute:'<path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="m16 9 5 6M21 9l-5 6"/>',
+    calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+    search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+    book:'<path d="M12 6c-2-1.5-5-2-9-2v14c4 0 7 .5 9 2 2-1.5 5-2 9-2V4c-4 0-7 .5-9 2zM12 6v14"/>',
+    books:'<path d="M4 4h4v16H4zM10 4h4v16h-4z"/><path d="m16 6 4-1 3 14-4 1z" transform="translate(-2 0)"/>',
+    cap:'<path d="m2 9 10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.500 6-3v-4.500"/>',
+    link:'<path d="M10 14a4 4 0 0 0 5.700 0l3-3a4 4 0 0 0-5.700-5.700l-1 1"/><path d="M14 10a4 4 0 0 0-5.700 0l-3 3a4 4 0 0 0 5.700 5.700l1-1"/>',
+    warn:'<path d="M12 3 2 20h20z"/><path d="M12 10v5M12 17.500v.5"/>',
+    hourglass:'<path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/>',
+    bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.500 10.900c.7.600 1 1.300 1 2.100h5c0-.8.300-1.500 1-2.100A6 6 0 0 0 12 3z"/>',
+    flag:'<path d="M5 21V4M5 4h12l-2 4 2 4H5"/>',
+    repeat:'<path d="m17 2 4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>',
+    bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+    plus:'<path d="M12 5v14M5 12h14"/>',
+    chat:'<path d="M21 12a8 8 0 0 1-11.600 7.100L4 20l1-4.500A8 8 0 1 1 21 12z"/>',
+    sparkle:'<path d="M12 3l1.800 5.200L19 10l-5.200 1.800L12 17l-1.800-5.200L5 10l5.200-1.800z"/><path d="M19 17v4M17 19h4"/>',
+    pencil:'<path d="M4 20l1-4L16.500 4.500a2.100 2.100 0 0 1 3 3L8 19z"/><path d="m14 7 3 3"/>',
+    aa:'<path d="M3 18 8 6l5 12M5 14h6M15 18l3.500-8 3 8M16.500 15.500h4"/>',
+    check:'<path d="m5 12.500 4.500 4.500L19 7.500"/>',
+    checkc:'<circle cx="12" cy="12" r="9"/><path d="m8 12.500 3 3 5-6"/>',
+    xc:'<circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/>',
+    x:'<path d="m6 6 12 12M18 6 6 18"/>',
+    help:'<circle cx="12" cy="12" r="9"/><path d="M9.500 9.500a2.500 2.500 0 1 1 3.500 2.300c-.7.400-1 1-1 1.700M12 17v.5"/>',
+    dice:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.500 8.500h.01M15.500 8.500h.01M12 12h.01M8.500 15.500h.01M15.500 15.500h.01"/>',
+    mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+    shuffle:'<path d="M3 6h3c6 0 6 12 12 12h3M3 18h3c2 0 3.500-1 4.700-2.500M21 6h-3c-2 0-3.500 1-4.700 2.500M18 3l3 3-3 3M18 15l3 3-3 3"/>',
+    lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+    bars:'<path d="M5 21V11M12 21V4M19 21v-7"/>',
+    hand:'<path d="M8 12V5.500a1.500 1.500 0 0 1 3 0V11M11 10V4a1.500 1.500 0 0 1 3 0v6M14 10V5.500a1.500 1.500 0 0 1 3 0V13a7 7 0 0 1-7 7c-3 0-4.500-1.500-6-4l-1-2a1.500 1.500 0 0 1 2.500-1.500L8 14"/>',
+    compass:'<circle cx="12" cy="12" r="9"/><path d="m15.500 8.500-2 5-5 2 2-5z"/>',
+    save:'<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>',
+    target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    flame:'<path d="M12 3c1 3.500 5 5.500 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 .200 1.500 1 2 1.500 2C10 8 11 5 12 3z"/>',
+    brain:'<path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 4 3 3 0 0 0 1.500 5A3 3 0 0 0 9 20V4zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 4 3 3 0 0 1-1.500 5A3 3 0 0 1 15 20V4z"/>',
+    file:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/>',
+    box:'<path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
+    archive:'<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10h14V9M10 13h4"/>',
+    clip:'<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/>',
+    puzzle:'<path d="M10 4a2 2 0 1 1 4 0v2h4v4h-2a2 2 0 1 0 0 4h2v4h-4v-2a2 2 0 1 0-4 0v2H6v-4h2a2 2 0 1 0 0-4H6V6h4z"/>',
+    ruler:'<path d="m4 16 12-12 4 4L8 20z"/><path d="m8 12 2 2M11 9l2 2M14 6l2 2"/>',
+    cart:'<circle cx="9" cy="20" r="1.200"/><circle cx="18" cy="20" r="1.200"/><path d="M3 4h3l2.500 11h10l2-8H7"/>',
+    eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    inbox:'<path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1 3h6l1-3h5"/>',
+    skip:'<path d="m5 5 8 7-8 7zM16 5v14"/>'
+  };
+  const M = {'🔊':'volume','🔇':'mute','📅':'calendar','⭐':'star','🌟':'star','🔍':'search','📖':'book','📚':'books','🎓':'cap','🔗':'link','⚠️':'warn','⚠':'warn','⏳':'hourglass','💡':'bulb','🚩':'flag','🏳️':'flag','🔁':'repeat','⚡':'bolt','➕':'plus','💬':'chat','🎉':'sparkle','👏':'sparkle','✏️':'pencil','✎':'pencil','🔤':'aa','🔠':'aa','✅':'checkc','✔️':'check','❌':'xc','✖️':'x','❓':'help','🎲':'dice','📬':'mail','🔀':'shuffle','🔒':'lock','📊':'bars','🙋':'hand','🧭':'compass','💾':'save','🎯':'target','💪':'flame','🧠':'brain','📄':'file','📦':'box','🗄':'archive','📋':'clip','🧩':'puzzle','📐':'ruler','🛒':'cart','👁':'eye','📭':'inbox','⏭':'skip'};
+  const SM = {}; Object.keys(M).forEach(k => { SM[k.replace(/\uFE0F/g,'')] = M[k]; }); Object.keys(SM).forEach(k => { M[k] = SM[k]; });
+  const DOT = {'🟡':'var(--gold)','🔴':'#c0392b','🟠':'#d9822b','🔵':'#3a7bc8','⚪':'var(--muted)'};
+  const keys = Object.keys(M).map(k=>k.replace(/\uFE0F/g,'')).filter((k,i,a)=>a.indexOf(k)===i).concat(Object.keys(DOT)).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+  const RE = new RegExp('('+keys.join('|')+')\\uFE0F?','g');
+  const SKIP = {SCRIPT:1,STYLE:1,TEXTAREA:1,INPUT:1,OPTION:1,SELECT:1,TITLE:1};
+  function svg(name){ return '<svg class="neu-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+P[name]+'</svg>'; }
+  function html(sym){
+    if(DOT[sym]) return '<span class="neu-ic neu-dot" style="background:'+DOT[sym]+'"></span>';
+    return svg(M[sym]);
+  }
+  function fix(root){
+    if(!root || root.nodeType === 8) return;
+    if(root.nodeType === 3){ root = root.parentNode; if(!root) return; }
+    if(root.nodeType !== 1 || SKIP[root.tagName] || root.closest('option,select,textarea,[data-noicon]')) return;
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode(n){
+      const p = n.parentNode; if(!p || SKIP[p.tagName]) return NodeFilter.FILTER_REJECT;
+      RE.lastIndex = 0; return RE.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT; }});
+    const list = []; while(w.nextNode()) list.push(w.currentNode);
+    list.forEach(n => {
+      const p = n.parentNode; if(!p || p.closest('option,select,textarea,[data-noicon]')) return;
+      const tmp = document.createElement('span');
+      tmp.innerHTML = n.nodeValue.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(RE, m => html(m.replace(/️$/,'').length ? m.replace(/️$/,'') : m));
+      const frag = document.createDocumentFragment(); while(tmp.firstChild) frag.appendChild(tmp.firstChild);
+      p.replaceChild(frag, n);
+    });
+  }
+  let busy = false;
+  const mo = new MutationObserver(muts => {
+    if(busy) return; busy = true;
+    try{ muts.forEach(m => { m.addedNodes.forEach(n => fix(n)); if(m.type === 'characterData') fix(m.target); }); }finally{ busy = false; }
+  });
+  function start(){ fix(document.body); mo.observe(document.body, {childList:true, subtree:true, characterData:true}); }
+  if(document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+  window.neuIcons = fix;
+})();
+
+
+/* ===== Arabische Schrift: Schriftart, Größe, Vokalzeichen ===== */
+(function(){
+  const LS = { get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : v; }catch(e){ return d; } }, set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} } };
+  const HARAKAT = /[\u064B-\u065F\u0670\u06D6-\u06ED]/g;
+  const HAS = /[\u064B-\u065F\u0670\u06D6-\u06ED]/;
+  const orig = new Map();   // Textknoten -> Originaltext, solange Vokalzeichen ausgeblendet sind
+  const on = () => LS.get('neu-arv', '1') === '1';
+  const SKIP = {SCRIPT:1, STYLE:1, TEXTAREA:1, INPUT:1, OPTION:1, SELECT:1};
+  function apply(){
+    const r = document.documentElement;
+    const f = LS.get('neu-arf', 'naskh'); if(f === 'naskh') r.removeAttribute('data-arf'); else r.setAttribute('data-arf', f);
+    r.style.setProperty('--ars', LS.get('neu-ars', '1'));
+  }
+  function strip(root){
+    if(on()) return;
+    if(root && root.nodeType === 3) root = root.parentNode;
+    if(!root || root.nodeType !== 1 || SKIP[root.tagName] || root.closest('textarea,input,[contenteditable],[data-noicon]')) return;
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode(n){
+      const p = n.parentNode; if(!p || SKIP[p.tagName]) return NodeFilter.FILTER_REJECT;
+      return HAS.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT; }});
+    const list = []; while(w.nextNode()) list.push(w.currentNode);
+    list.forEach(n => { orig.set(n, n.nodeValue); n.nodeValue = n.nodeValue.replace(HARAKAT, ''); });
+  }
+  function restore(){ orig.forEach((v, n) => { if(n.isConnected) n.nodeValue = v; }); orig.clear(); }
+  let busy = false;
+  new MutationObserver(muts => {
+    if(busy || on()) return; busy = true;
+    try{ muts.forEach(m => m.addedNodes.forEach(n => strip(n))); }finally{ busy = false; }
+  }).observe(document.documentElement, {childList:true, subtree:true});
+  window.arPrev = function(){ const t = 'مَرْحَبًا بِكُمْ'; return on() ? t : t.replace(HARAKAT, ''); };
+  const prev = () => { const e = document.getElementById('neu-arprev'); if(e) e.textContent = window.arPrev(); };
+  window.neuSetArf = function(v){ LS.set('neu-arf', v); apply(); setMode('more'); };
+  window.neuSetArs = function(v){ LS.set('neu-ars', v); apply(); setMode('more'); };
+  window.neuToggleArv = function(){
+    LS.set('neu-arv', on() ? '0' : '1');
+    if(on()) restore(); else strip(document.body);
+    setMode('more');
+  };
+  apply();
+  if(!on()) document.addEventListener('DOMContentLoaded', () => strip(document.body));
+})();
+
+/* ===== Dialoge: Sprecher farblich getrennt ===== */
+(function(){
+  const orig = window.mdLite; if(typeof orig !== 'function') return;
+  const SPK = '<span style="color:var(--gold2);font-weight:700">';
+  window.mdLite = function(s, isDialog){
+    let html = orig(s, isDialog);
+    if(!isDialog || html.indexOf(SPK) < 0) return html;
+    // pro Dialogfeld (Sprechblock) werden Sprecher in der Reihenfolge ihres Auftretens nummeriert
+    return html.split('<div style="background:var(--surface2);border-radius:6px;padding:.5rem .65rem;margin-bottom:.5rem">').map((part, i) => {
+      if(i === 0) return part;
+      const names = [];
+      part = part.replace(/<div style="margin-bottom:\.3rem"><span style="color:var\(--gold2\);font-weight:700">([^<]*?):<\/span>/g, (m, n) => {
+        let k = names.indexOf(n); if(k < 0){ names.push(n); k = names.length - 1; }
+        return '<div class="neu-spkline s'+(k % 4)+'"><span class="neu-spk">'+n+':</span>';
+      });
+      return '<div class="neu-dlg">' + part;
+    }).join('');
+  };
 })();
