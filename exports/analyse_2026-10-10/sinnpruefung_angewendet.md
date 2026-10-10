@@ -15,7 +15,7 @@ Unauffällig: keine leeren Lösungen (außer freie Dialog-Aufgaben ohne Musteran
 Nicht geändert: "kan zit" (1663) steht so im Skript.
 
 ## Nachtrag: vollständige Durchsicht aller Übungstypen
-Alle 2.163 Übungen wurden gelesen (translate_de_tn, fill_blank, fixed_response, answer_pattern, grammar_drill, build_dialog, grammar_card, pronunciation). Weitere Korrekturen:
+Alle 2.092 Übungen wurden gelesen (translate_de_tn, fill_blank, fixed_response, answer_pattern, grammar_drill, build_dialog, grammar_card, pronunciation). Weitere Korrekturen:
 - 1861 (3am schwimmen): sam -> 3am, 3umt usw. (Skript-Tippfehler s statt 3)
 - 1550: ma-zad-sh -> ma-3ad-sh
 - 1655: yasmlu -> ya3mlu

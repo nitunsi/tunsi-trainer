@@ -5684,6 +5684,17 @@ function courseMetaGermanHtml(exercise){
   const line = (label, val) => val ? '<div style="margin-top:.35rem"><span style="font-size:.62rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">'+label+'</span><div style="font-size:.85rem;color:var(--text)">'+escHtml(val)+'</div></div>' : '';
   return '<div style="margin-top:.6rem;padding-top:.5rem;border-top:1px solid var(--border)">'+line('Frage auf Deutsch', md.prompt_de)+line('Antwort auf Deutsch', md.solution_de)+'</div>';
 }
+const COURSE_BELEG = {
+  skript:    {ic:'🟢', t:'Skript',     tip:'Original-Übung oder Satz steht wörtlich im Uni-Wien-Skript', c:'var(--green)'},
+  belegt:    {ic:'🔵', t:'Belegt',     tip:'Alle Wörter stehen im Skript oder in den Vokabeln; der Satz ist selbst gebaut', c:'var(--blue)'},
+  abgeleitet:{ic:'🟡', t:'Abgeleitet', tip:'Enthält regelmäßig abgeleitete Formen (z.B. Verbtabellen), die nicht direkt belegt sind', c:'var(--gold)'},
+  unsicher:  {ic:'🔴', t:'Unsicher',   tip:'Ein Wort wurde nicht gefunden oder die Form ist noch offen', c:'var(--red)'}
+};
+function courseBelegHtml(ex){
+  const b = ex && ex.meta && COURSE_BELEG[ex.meta.beleg];
+  if(!b) return '';
+  return '<div style="margin-top:.6rem;font-size:.68rem;color:var(--muted)" title="'+b.tip+'"><span style="color:'+b.c+'">'+b.ic+' '+b.t+'</span> — '+b.tip+'</div>';
+}
 function courseExSolutionHtml(exercise){
   let solHtml = null;
   if(exercise.exercise_type==='answer_pattern'){
@@ -5698,7 +5709,7 @@ function courseExSolutionHtml(exercise){
     const drillRows = exercise.exercise_type==='grammar_drill' ? parseGrammarDrillSolution(exercise.solution) : null;
     solHtml = drillRows ? renderGrammarDrillGrid(drillRows,true) : escHtml(exercise.solution||'—');
   }
-  return solHtml + courseMetaGermanHtml(exercise);
+  return solHtml + courseMetaGermanHtml(exercise) + courseBelegHtml(exercise);
 }
 
 // Karten, deren Prompt schon die Tounsi-Wörter der Antwort enthält ("amriki – almani"), während die
@@ -6080,6 +6091,9 @@ function renderCourseOverview(){
     h += '<div style="flex:1;min-width:0">';
     h += '<div style="font-size:1rem;color:var(--text)">'+icon+' L'+l.course_number+' <span style="color:var(--gold2)">'+escHtml(l.title||'')+'</span></div>';
     h += '<div style="font-size:.85rem;color:var(--muted);margin-top:.2rem">'+statusTxt+'</div>';
+    const bc = {}; lessonItems.forEach(e=>{ const k = e.meta && e.meta.beleg; if(COURSE_BELEG[k]) bc[k]=(bc[k]||0)+1; });
+    const bl = Object.keys(COURSE_BELEG).filter(k=>bc[k]).map(k=>'<span title="'+COURSE_BELEG[k].t+': '+COURSE_BELEG[k].tip+'">'+COURSE_BELEG[k].ic+' '+bc[k]+'</span>').join(' · ');
+    if(bl) h += '<div style="font-size:.78rem;color:var(--muted);margin-top:.25rem">Beleg: '+bl+'</div>';
     h += '</div>';
     h += '<button onclick="showCourseLesson('+l.id+')" style="padding:.5rem .9rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.85rem;font-weight:700;cursor:pointer;border-radius:4px;white-space:nowrap">Öffnen</button>';
     h += '</div>';
@@ -6318,9 +6332,9 @@ function renderCourseTestTab(tc, l){
     }
     if(!solHtml && drillRows) solHtml = renderGrammarDrillGrid(drillRows, true);
     if(!solHtml) solHtml = escHtml(ex.solution||'—');
-    solHtml += courseMetaGermanHtml(ex);
+    solHtml += courseMetaGermanHtml(ex) + courseBelegHtml(ex);
     h += '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2);margin-bottom:.8rem">'+solHtml+'</div>';
-    if(ex.partner_status===null || ex.partner_status===undefined){
+    if((ex.partner_status===null || ex.partner_status===undefined) && !(ex.meta && ex.meta.beleg)){
       h += '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.6rem">⚠️ ungeprüft — wartet auf Semias Prüfung</div>';
     }
     h += '<div style="display:flex;gap:.5rem">';
