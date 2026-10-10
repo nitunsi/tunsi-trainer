@@ -15,6 +15,7 @@
   --neu-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --tabh:64px;
   --gold-d:#b0913f;
+  --muted:#9a8d78;--red:#dc6464;
   --lv0:#6f6246;--lv1:#8c7536;--lv2:#a68a3a;--lv3:#c4a449;--lv4:#d6b755;--lv5:#e8c96a;--lv6:#f6de8e;
 }
 
@@ -396,8 +397,8 @@ body.neu-kb .neu-cq{height:8.6rem}
 html[data-theme="light"]{
   color-scheme:light;
   --bg:#f6f1e7;--surface:#fffdf8;--surface2:#efe8d9;--border:#d8ccb3;
-  --gold:#8c6510;--gold2:#6f4e08;--gold-d:#a47c22;
-  --red:#b83a3a;--green:#2b8650;--blue:#2f5fb8;
+  --gold:#80590a;--gold2:#6f4e08;--gold-d:#a47c22;
+  --red:#b83a3a;--green:#217544;--blue:#2f5fb8;
   --text:#2a2218;--muted:#6b604d;
   --lvn:#d9cfba;--lv0:#cdbf9c;--lv1:#c3ad72;--lv2:#b99a48;--lv3:#a8832a;--lv4:#946f1c;--lv5:#7d5c12;--lv6:#654708;
   --bar:#c9b583;--bar2:#e6d9b6;
@@ -595,3 +596,17 @@ body.neu-kb .neu-micbtn{width:46px;height:46px}
 .neu-pill.busy{color:var(--muted)}
 .neu-pill.upd{border-color:var(--gold);top:calc(env(safe-area-inset-top,0px) + 36px)}
 .neu-pill button{background:none;border:none;color:var(--gold);font:inherit;font-weight:700;text-decoration:underline;padding:0 .2rem;cursor:pointer}
+
+/* Gruß nach Tageszeit */
+.neu-greet{display:flex;align-items:center;gap:.8rem;margin:.1rem 0 .6rem}
+.neu-greet .neu-art{width:58px;max-width:58px;margin:0;flex:none}
+.neu-greet .g1{font-size:1.25rem;font-weight:700;color:var(--gold2);line-height:1.2}
+/* Tagesziel erreicht: Ring pulsiert einmal grün */
+@keyframes neu-ringpop{0%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(43,134,80,0))}40%{transform:scale(1.12);filter:drop-shadow(0 0 10px rgba(43,134,80,.55))}100%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(43,134,80,0))}}
+.neu-ring-hit svg{animation:neu-ringpop .9s ease-out}
+/* Rundenfortschritt als Segmente: richtig = gold, falsch = rot umrandet, aktuelle = gold umrandet */
+#neu-progline i.segs{flex:1;display:flex;gap:3px;height:auto;background:none;overflow:visible}
+#neu-progline i.segs s{flex:1;height:8px;border-radius:4px;background:var(--surface2);display:block;text-decoration:none}
+#neu-progline i.segs s.ok{background:var(--gold)}
+#neu-progline i.segs s.bad{background:transparent;box-shadow:inset 0 0 0 1.5px var(--red)}
+#neu-progline i.segs s.cur{background:transparent;box-shadow:inset 0 0 0 1.5px var(--gold)}

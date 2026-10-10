@@ -95,6 +95,7 @@ function reset(m){
 /* ---------- setMode: home/more selbst, alles andere wie bisher ---------- */
 const _setMode = window.setMode;
 window.setMode = function(m, el){
+  if(window.neuPlReset) window.neuPlReset();
   if(m === 'home'){ goHome(); return; }
   if(m === 'more'){ showMore(); return; }
   if(m === 'listen'){ startListen(); return; }
@@ -307,6 +308,52 @@ function newStuffHint(){
   return '';
 }
 
+// Ring füllt sich weich vom zuletzt gezeigten Stand des Tages; beim ersten Erreichen des Tagesziels kurz feiern
+function animateRing(host, p, today, goal){
+  let last = null; try{ last = JSON.parse(LS.get('neu-ringlast', 'null')); }catch(e){}
+  const day = berlinDay(new Date());
+  const same = last && last.day === day;
+  const fromP = same ? last.p : 0, fromT = same ? last.today : 0;
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const goalEl = $('neu-goal-t');
+  const setTexts = (pp, t) => { const tx = host.querySelector('text'); if(tx) tx.textContent = Math.min(999, Math.round(pp*100)) + ' %'; if(goalEl) goalEl.textContent = fmtN(Math.round(t)) + ' von ' + fmtN(goal); };
+  const hit = p >= 1 && !(same && last.p >= 1);
+  LS.set('neu-ringlast', JSON.stringify({day, p, today}));
+  if(reduce || (Math.abs(fromP - p) < 0.005 && fromT === today)){
+    host.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', Math.min(999, Math.round(p*100)) + ' %');
+    if(goalEl) goalEl.textContent = fmtN(today) + ' von ' + fmtN(goal);
+    return;
+  }
+  host.innerHTML = ring(fromP, 76, 8, fromP >= 1 ? 'var(--green)' : 'var(--gold)', Math.round(fromP*100) + ' %');
+  const arc = host.querySelectorAll('circle')[1];
+  const circ = 2 * Math.PI * (76 - 8) / 2;
+  if(arc){
+    arc.style.transition = 'stroke-dasharray .9s cubic-bezier(.2,.8,.2,1), stroke .3s .6s';
+    requestAnimationFrame(() => requestAnimationFrame(() => { arc.setAttribute('stroke-dasharray', (circ * Math.max(0, Math.min(1, p))).toFixed(1) + ' ' + circ.toFixed(1)); arc.setAttribute('stroke', p >= 1 ? 'var(--green)' : 'var(--gold)'); }));
+  }
+  const t0 = performance.now(), dur = 900;
+  const tick = now => {
+    const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    setTexts(fromP + (p - fromP) * e, fromT + (today - fromT) * e);
+    if(k < 1 && $('neu-ring') === host) requestAnimationFrame(tick); else setTexts(p, today);
+  };
+  requestAnimationFrame(tick);
+  if(hit){
+    setTimeout(() => { if($('neu-ring') === host){ host.classList.add('neu-ring-hit'); try{ if(LS.get('neu-vib','0') === '1' && navigator.vibrate) navigator.vibrate([30, 40, 60]); }catch(e){} } }, 700);
+  }
+}
+// Gruß nach Berliner Uhrzeit: Tounsi + Deutsch, mit Sonne oder Mond
+function greetingNow(){
+  const hr = parseInt(new Intl.DateTimeFormat('de-DE', {hour:'2-digit', hour12:false, timeZone:'Europe/Berlin'}).format(new Date()), 10) % 24;
+  if(hr >= 5 && hr < 12) return {art:'sun', tn:'Sbah el-khir', de:'Guten Morgen'};
+  if(hr >= 12 && hr < 18) return {art:'sun', tn:'Nhar-ek zin', de:'Einen schönen Tag'};
+  if(hr >= 18 && hr < 22) return {art:'moon', tn:'Msa el-khir', de:'Guten Abend'};
+  return {art:'moon', tn:'Tes7a 3la khir', de:'Gute Nacht'};
+}
+function greetHtml(){
+  const g = greetingNow(), name = currentUser && currentUser.username ? ', '+escHtml(currentUser.username) : '';
+  return '<div class="neu-greet">'+artHtml(g.art)+'<div><div class="g1">'+g.tn+name+'</div><div class="neu-sub">'+g.de+'</div></div></div>';
+}
 function goHome(){
   reset('home');
   const c = $('exercise-content'); if(!c) return;
@@ -314,6 +361,7 @@ function goHome(){
   const goal = parseInt(LS.get('neu-goal','100'), 10) || 100;
   const empty = total === 0;
   c.innerHTML = '<div class="neu-wrap neu-home">'
+    + greetHtml()
     + lessonFilterChip()
     + '<div class="neu-card" style="padding:.8rem 1rem"><div style="display:flex;align-items:center;gap:.9rem">'
     +   '<div id="neu-ring">'+ring(0, 76, 8, 'var(--gold)', '')+'</div>'
@@ -341,8 +389,8 @@ function goHome(){
   Promise.all([loadActivity(), loadDayCounts()]).then(([a, dc]) => {
     const r = $('neu-ring'); if(!r || cMode !== 'home') return;
     const p = dc.today / goal;
-    r.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', Math.min(999, Math.round(p*100)) + ' %');
-    $('neu-goal-t').textContent = fmtN(dc.today) + ' von ' + fmtN(goal);
+    try{ animateRing(r, p, dc.today, goal); }
+    catch(e){ console.error('animateRing', e); r.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', Math.min(999, Math.round(p*100)) + ' %'); $('neu-goal-t').textContent = fmtN(dc.today) + ' von ' + fmtN(goal); }
     const wk = $('neu-week'); if(wk) wk.innerHTML = weekHtml(dc, goal);
     setTimeout(() => { try{ milesCheck(a.streak || 0); }catch(e){} }, 600);
     $('neu-streak').innerHTML = a.streak ? flame(a.streak) + a.streak + ' Tag' + (a.streak===1?'':'e') + ' in Folge' : 'Noch keine Serie';
@@ -559,9 +607,9 @@ const bumpToday = ok => { if(ok) adjustToday(1); };
     return f.apply(this, arguments);
   };
 });
-if(_srsAnswer) window.srsAnswer = function(v, ok){ vibe(ok); bumpToday(ok); return _srsAnswer.apply(this, arguments); };
+if(_srsAnswer) window.srsAnswer = function(v, ok){ vibe(ok); bumpToday(ok); if(window.neuPlRes) window.neuPlRes(ok); return _srsAnswer.apply(this, arguments); };
 const _courseExAnswer = window.courseExAnswer;
-if(_courseExAnswer) window.courseExAnswer = function(ex, ok){ vibe(ok); bumpToday(ok); return _courseExAnswer.apply(this, arguments); };
+if(_courseExAnswer) window.courseExAnswer = function(ex, ok){ vibe(ok); bumpToday(ok); if(window.neuPlRes) window.neuPlRes(ok); return _courseExAnswer.apply(this, arguments); };
 
 /* ---------- Höraufgaben im normalen Lernen (Richtung „Audio → Deutsch“) ---------- */
 // Nur bei eingeschaltetem Ton (Lautsprecher-Schalter unten) und eingeschalteter Einstellung, nur für Vokabeln mit Audio.
@@ -801,7 +849,7 @@ window.renderVocabTableRows = function(){
     const ps = v.ps;
     const psIcon = ps==='approved'?'✅' : ps==='rejected'?'❌' : ps==='unknown'?'❓' : ps==='pending'?'⏳' : ps==='skipped'?'⏭' : ps==='suggested'?'💡' : '';
     const audio = v.au ? '<button class="ib" onclick="event.stopPropagation();playVocabAudio(\''+v.au.replace(/'/g,"\\'")+'\',event,'+(v.aus||0)+','+(v.aue||0)+')" title="Aussprache" aria-label="Aussprache">🔊</button>' : '';
-    h += '<div class="neu-vrow" onclick="neuRowTap(event,'+(v.id||0)+','+i+')"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)"'+(selectedVocabIds.has(v.id)?' checked':'')+'/>'
+    h += '<div class="neu-vrow" style="box-shadow:inset 4px 0 0 '+col+'" onclick="neuRowTap(event,'+(v.id||0)+','+i+')"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)"'+(selectedVocabIds.has(v.id)?' checked':'')+'/>'
       + '<div class="ar">'+hl(v.ar, hq, true)+'</div>'
       + '<div class="mid"><div class="t1">'+hl(v.en, hq)+'</div><div class="t2 neu-mono">'+hl(v.tr, hq)+conj+'</div><div class="t2">'+v.ls+flag+(psIcon?' · '+psIcon:'')+'</div></div>'
       + '<div class="rt"><div class="lv"><span class="dot" style="background:'+col+'"></span>'+(started?'Stufe '+level:'Neu')+'</div><div class="t2" style="'+(isDueNow?'color:var(--red)':'')+'">'+(started?due:'—')+'</div>'+(audio?'<div style="margin-top:.3rem">'+audio+'</div>':'')+'</div></div>';
@@ -867,7 +915,7 @@ window.neuListenPick = function(i){
   LQ.answered = true;
   const v = LQ.deck[LQ.i], ok = LQ.opts[i].id === v.id;
   score.t++; if(ok) score.c++; else score.w++;
-  vibe(ok);
+  vibe(ok); if(window.neuPlRes) window.neuPlRes(ok);
   LQ.opts.forEach((o,k) => { const b = $('neu-lo-'+k); b.style.pointerEvents = 'none'; if(o.id === v.id){ b.style.borderColor = 'var(--green)'; b.style.color = 'var(--green)'; } else if(k === i){ b.style.borderColor = 'var(--red)'; b.style.color = 'var(--red)'; } });
   $('neu-listen-rev').innerHTML = '<div style="font-size:2.2rem;color:var(--gold2);direction:rtl;font-family:\'Noto Naskh Arabic\',\'Amiri\',serif">'+v.ar+'</div><div class="neu-mono" style="font-size:1.1rem">'+escHtml(v.tr)+'</div>';
   const last = LQ.i >= LQ.deck.length - 1;
@@ -970,7 +1018,7 @@ function neuSpeakShow(alts){
     + '<div class="neu-mono" style="font-size:1.05rem">'+escHtml(v.tr)+'</div>'
     + '<div class="neu-sub" style="font-size:.75rem;margin-top:.4rem">Vergleich (Gerüst): erkannt „'+escHtml(arSkel(m.best || ''))+'“ · Ziel „'+escHtml(m.t || '')+'“ · Abstand '+(m.d === 99 ? '–' : m.d)+'</div>';
   const last = SQ.i >= SQ.deck.length - 1;
-  if(!SQ.counted){ SQ.counted = true; score.t++; if(m.ok) score.c++; else score.w++; vibe(m.ok); }
+  if(!SQ.counted){ SQ.counted = true; score.t++; if(m.ok) score.c++; else score.w++; vibe(m.ok); if(window.neuPlRes) window.neuPlRes(m.ok); }
   $('neu-speak-act').innerHTML =
     '<button class="neu-btn" onclick="neuSpeakNext()">'+(last ? 'Ergebnis' : 'Weiter')+'</button>'
     + '<div style="display:flex;gap:.5rem;flex-wrap:wrap">'
@@ -982,7 +1030,7 @@ function neuSpeakShow(alts){
 window.neuSpeakPlay = function(){ if(!SQ) return; const v = SQ.deck[SQ.i]; playVocabAudio(v.au, null, v.aus||0, v.aue||0); };
 window.neuSpeakOverride = function(){
   if(!SQ || !SQ.res || SQ.res.ok) return;
-  SQ.res.ok = true; score.w = Math.max(0, score.w - 1); score.c++;
+  SQ.res.ok = true; score.w = Math.max(0, score.w - 1); score.c++; if(window.neuPlRes) window.neuPlRes(true);
   if($('neu-speak-st')) $('neu-speak-st').textContent = 'Als richtig gewertet.';
   const b = [...document.querySelectorAll('#neu-speak-act button')].find(x => /Trotzdem/.test(x.textContent)); if(b) b.remove();
 };
@@ -1049,7 +1097,7 @@ window.neuSpeakState = () => SQ;
   };
 })();
 const _restart = window.restartExercise;
-window.restartExercise = function(){ if(cMode === 'speak'){ closeResult(); startSpeak(); return; } if(cMode === 'listen'){ closeResult(); startListen(); return; } return _restart.apply(this, arguments); };
+window.restartExercise = function(){ if(window.neuPlReset) window.neuPlReset(); if(cMode === 'speak'){ closeResult(); startSpeak(); return; } if(cMode === 'listen'){ closeResult(); startListen(); return; } return _restart.apply(this, arguments); };
 
 
 /* ---------- Tastatur: im Lernen immer Platz fürs Eingabefeld ----------
@@ -1931,6 +1979,24 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
 (function(){
   const X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>';
   let busy = false;
+  const RES = {};   // Nummer der Karte (0-basiert) → richtig (true) / falsch (false), nur für die laufende Runde
+  const ROUND = {n: 0};   // Größe der Runde (Lernen, Kurs-Wiederholung und Mix zählen „noch offen“, siehe pos())
+  // Position in der Runde: Lernen, Kurs-Wiederholung und Mix entfernen erledigte Karten aus der Liste („1 / 7“ heißt dort: noch 7 offen),
+  // Höraufgabe und Sprechen zählen echt hoch. Hier wird beides zu „k von N“.
+  function pos(){
+    const t = (((document.getElementById('ex-progress') || {}).textContent || '').trim()) || (((document.getElementById('neu-prog-n') || {}).textContent || '').trim());
+    const m = t.match(/^(\d+)\s*\/\s*(\d+)$/); if(!m) return null;
+    const cur = parseInt(m[1], 10), tot = parseInt(m[2], 10);
+    if(typeof cMode !== 'undefined' && (cMode === 'flash' || cMode === 'coursesrs' || cMode === 'mix')){
+      if(!ROUND.n || tot > ROUND.n) ROUND.n = tot;
+      return {idx: ROUND.n - tot + cur - 1, total: ROUND.n};
+    }
+    return {idx: cur - 1, total: tot};
+  }
+  function curIdx(){ const p = pos(); return p ? p.idx : null; }
+  window.neuPlRes = function(ok){ const i = curIdx(); if(i !== null) RES[i] = !!ok; try{ line(); }catch(e){} };
+  window.neuPlDump = () => JSON.stringify(RES);
+  window.neuPlReset = function(){ ROUND.n = 0; Object.keys(RES).forEach(k => delete RES[k]); const el = document.getElementById('neu-progline'); if(el) el.dataset.k = ''; };
   function levelChip(){
     try{
       const ex = (typeof exList !== 'undefined' && exList) ? exList[cIdx] : null; if(!ex) return '';
@@ -1950,13 +2016,16 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
       const c = document.getElementById('exercise-content'); if(!c) return;
       let el = document.getElementById('neu-progline');
       const sess = document.body.classList.contains('neu-session');
-      const txt = (((document.getElementById('ex-progress') || {}).textContent || '').trim()) || (((document.getElementById('neu-prog-n') || {}).textContent || '').trim());
-      const m = txt.match(/^(\d+)\s*\/\s*(\d+)$/);
-      if(!sess || !m){ if(el) el.remove(); return; }
-      const pct = Math.max(0, Math.min(100, Math.round(parseInt(m[1], 10) / parseInt(m[2], 10) * 100)));
-      const html = '<button type="button" class="neu-pl-x" onclick="neuLeave()" aria-label="Beenden">'+X+'</button><span>'+m[1]+' / '+m[2]+'</span><i><b style="width:'+pct+'%"></b></i><em></em>';
+      const ps = pos();
+      if(!sess || !ps){ if(el) el.remove(); return; }
+      const idx = ps.idx, total = Math.min(ps.total, 40);
+      const txt = (idx + 1) + ' / ' + ps.total;
+      let segs = '';
+      for(let i = 0; i < total; i++){ const r = RES[i]; segs += '<s class="'+(r === true ? 'ok' : r === false ? 'bad' : i === idx ? 'cur' : '')+'"></s>'; }
+      const key = txt + '|' + segs;
+      const html = '<button type="button" class="neu-pl-x" onclick="neuLeave()" aria-label="Beenden">'+X+'</button><span>'+txt+'</span><i class="segs">'+segs+'</i><em></em>';
       if(!el){ el = document.createElement('div'); el.id = 'neu-progline'; }
-      if(el.dataset.k !== txt){ el.innerHTML = html; el.dataset.k = txt; }
+      if(el.dataset.k !== key){ el.innerHTML = html; el.dataset.k = key; }
       const lv = levelChip(), slot = el.querySelector('em');
       if(slot && slot.dataset.k !== lv){ slot.innerHTML = lv; slot.dataset.k = lv; }
       if(c.firstChild !== el) c.insertBefore(el, c.firstChild);
