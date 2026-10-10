@@ -1441,7 +1441,11 @@ async function rcWrap(key, doFetch){
     if(hit){ rcMarkOffline(hit.t); return hit.v; }
     throw new Error('Offline – dafür gibt es noch keine gespeicherten Daten');
   }
-  if(_rcMode === 'cache' && hit && (Date.now() - hit.t) < RC_BOOT_MAX_AGE){ _rcBootHit = true; return hit.v; }
+  if(_rcMode === 'cache' && hit && !hit.stale && (Date.now() - hit.t) < RC_BOOT_MAX_AGE){ _rcBootHit = true; return hit.v; }
+  if(_rcMode === 'cache' && hit && hit.stale){   // nach eigenem Schreiben: kurz frisch versuchen, sonst alter Stand
+    try{ const v = await doFetch(3000); rcSet(key, v); return v; }
+    catch(e){ if(rcIsNetError(e)) rcMarkOffline(hit.t); return hit.v; }
+  }
   try{
     const v = await doFetch(hit ? 8000 : 20000);
     rcSet(key, v);                       // nicht abwarten
@@ -1452,8 +1456,29 @@ async function rcWrap(key, doFetch){
     throw e;
   }
 }
+// Nach einem erfolgreichen Schreiben ist der gespeicherte Lese-Stand dieser Tabelle veraltet: als veraltet markieren.
+// Die Daten bleiben (offline weiter nutzbar), aber der nächste Start versucht erst frisch zu laden (max. 3 s), statt den alten Stand zu nehmen.
+async function rcMarkStale(table){
+  try{
+    const db = await rcDb();
+    await new Promise((res) => {
+      const tx = db.transaction(RC_STORE, 'readwrite'), st = tx.objectStore(RC_STORE), rq = st.openCursor();
+      rq.onsuccess = () => {
+        const c = rq.result; if(!c) return;
+        if(typeof c.key === 'string' && (c.key.startsWith('G|'+table+'?') || c.key.startsWith('R|'+table+'?')) && c.value && !c.value.stale){ c.update({t: c.value.t, v: c.value.v, stale: true}); }
+        c.continue();
+      };
+      tx.oncomplete = () => res(); tx.onerror = () => res(); tx.onabort = () => res();
+    });
+  }catch(e){}
+}
 async function sbApi(path,method='GET',body=null,prefer=null){
-  if(method !== 'GET' || !rcCacheable(path)) return _sbApiNet(path,method,body,prefer);
+  if(method !== 'GET'){
+    const r = await _sbApiNet(path,method,body,prefer);
+    if(/^(progress|course_exercise_progress|course_progress|vocabulary|lessons|course_lessons|course_exercises)\?/.test(path)) rcMarkStale(path.split('?')[0]);
+    return r;
+  }
+  if(!rcCacheable(path)) return _sbApiNet(path,method,body,prefer);
   return rcWrap('G|'+path, ms => _sbApiNet(path,method,body,prefer,ms));
 }
 async function sbApiRangeFirst(basePath, batchSize){
