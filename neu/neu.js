@@ -1743,6 +1743,7 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
       if(!el){ el = document.createElement('div'); el.id = 'neu-progline'; }
       if(el.dataset.k !== txt){ el.innerHTML = html; el.dataset.k = txt; }
       if(c.firstChild !== el) c.insertBefore(el, c.firstChild);
+      document.body.classList.toggle('neu-mix', cMode === 'mix');
     } finally { busy = false; }
   }
   ['rFlash', 'rCourseEx'].forEach(n => {
