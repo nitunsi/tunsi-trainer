@@ -653,15 +653,24 @@ function loadOverlayShow(resetPhase=true){
   const o = document.getElementById('load-overlay');
   const alreadyVisible = o && o.style.display === 'flex';
   if(o){ o.style.display='flex'; }
+  if(!alreadyVisible) _loadShownAt = Date.now();
+  clearTimeout(_loadHideTimer);
   const r = document.getElementById('load-retry');
   if(r) r.style.display='none';
   // Bei Session-Restore ist das Overlay schon sichtbar und zeigt bereits einen
   // Zwischenstand (z.B. "Verbunden — synchronisiere…") → nicht auf 0% zurückspringen.
   if(resetPhase && !alreadyVisible) loadOverlayUpdate('Verbinde…', 0, '');
 }
-function loadOverlayHide(){
+// Mindestens 1 s sichtbar, damit der Ladebildschirm bei schnellem Start (Zwischenspeicher) nicht nur aufblitzt
+const LOAD_MIN_MS = 1000;
+let _loadShownAt = 0, _loadHideTimer = null;
+function loadOverlayHide(now){
   const o = document.getElementById('load-overlay');
-  if(o) o.style.display='none';
+  if(!o || o.style.display !== 'flex') return;
+  clearTimeout(_loadHideTimer);
+  const wait = now ? 0 : LOAD_MIN_MS - (Date.now() - _loadShownAt);
+  if(wait > 0){ _loadHideTimer = setTimeout(() => { o.style.display='none'; }, wait); }
+  else o.style.display='none';
 }
 function loadOverlayUpdate(phase, pct, detail){
   const p = document.getElementById('load-phase');
@@ -1963,7 +1972,7 @@ async function trySessionRestore(){
     const res = await sbApi('users?username=eq.'+encodeURIComponent(s.username)+'&select=id,username,is_admin,is_partner,created_at,last_active_at,last_reminder_sent_at');
     if(res.length===0){
       clearSession();
-      loadOverlayHide();
+      loadOverlayHide(true);
       if(ls) ls.style.display=''; // CSS-Default (flex) greift wieder
       return;
     }
@@ -1973,7 +1982,7 @@ async function trySessionRestore(){
     // Kein Netz o.ä. → zurück zum Login, Session bleibt für nächsten Versuch erhalten
     _rcMode = 'net';
     dbg('Session-Restore fehlgeschlagen: '+e.message, 'warn');
-    loadOverlayHide();
+    loadOverlayHide(true);
     if(ls) ls.style.display='';
   }
 }
