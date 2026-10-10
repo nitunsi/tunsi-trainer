@@ -35,13 +35,14 @@ const IC = {
   swap:   svg('<path d="M7 7h12l-3-3M17 17H5l3 3"/>'),
   bug:    svg('<path d="M8 9h8v6a4 4 0 0 1-8 0zM9 5l1 2M15 5l-1 2M4 12h4M16 12h4M5 18l3-2M19 18l-3-2"/>'),
   out:    svg('<path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/>'),
-  ear:    svg('<path d="M11 5 6 9H3v6h3l5 4zM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>')
+  ear:    svg('<path d="M11 5 6 9H3v6h3l5 4zM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>'),
+  mic:    svg('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/>')
 };
 const FONT = {S:16, M:18, L:20};
 function applyFont(){ document.documentElement.style.fontSize = (FONT[LS.get('neu-font','M')] || 18) + 'px'; }
 applyFont();
-const SESSION = ['flash','coursesrs','mix','pairs','listen'];
-const HASPROG = ['flash','coursesrs','mix','listen'];
+const SESSION = ['flash','coursesrs','mix','pairs','listen','speak'];
+const HASPROG = ['flash','coursesrs','mix','listen','speak'];
 const ADMIN = ['addvocab','activate','dupes','partnerqueue','partnercheck','quellen','translitregeln','export','lessons'];
 
 /* ---------- Rahmen: untere Leiste, Schließen, Fortschritt ---------- */
@@ -97,6 +98,7 @@ window.setMode = function(m, el){
   if(m === 'home'){ goHome(); return; }
   if(m === 'more'){ showMore(); return; }
   if(m === 'listen'){ startListen(); return; }
+  if(m === 'speak'){ startSpeak(); return; }
   if(HASPROG.includes(m) || m === 'pairs'){ /* Sitzung */ }
   _setMode(m, el || document.createElement('i'));
   chrome(m);
@@ -477,7 +479,7 @@ function showMore(){
   c.innerHTML = '<div class="neu-wrap">'
     + '<div style="font-size:1.5rem;font-weight:700;margin:.2rem 0 .4rem">Mehr</div>'
     + '<div class="neu-h">Lernen</div><div class="neu-card neu-list" style="padding:.3rem .9rem">'
-    +   li('cards','Vokabelkarten',"setMode('flash')") + li('ear','Höraufgabe (Audio)',"setMode('listen')") + li('repeat','Kurs-Wiederholung',"setMode('coursesrs')") + li('mix','Mix',"setMode('mix')") + li('pairs','Antwort-Paare',"setMode('pairs')")
+    +   li('cards','Vokabelkarten',"setMode('flash')") + li('ear','Höraufgabe (Audio)',"setMode('listen')") + li('mic','Sprechen (Test)',"setMode('speak')") + li('repeat','Kurs-Wiederholung',"setMode('coursesrs')") + li('mix','Mix',"setMode('mix')") + li('pairs','Antwort-Paare',"setMode('pairs')")
     + '</div>'
     + '<div class="neu-h">Vokabeln pflegen</div><div class="neu-card neu-list" style="padding:.3rem .9rem">'
     +   li('plus','Vokabel hinzufügen',"setMode('addvocab')") + li('bolt','Aktivierung',"setMode('activate')") + li('book','Lektionen',"setMode('lessons')")
@@ -858,8 +860,126 @@ window.neuListenPick = function(i){
 };
 window.neuListenState = () => LQ;
 window.neuListenNext = function(){ if(!LQ) return; LQ.i++; if(LQ.i >= LQ.deck.length){ showRes(); } else renderListen(); };
+
+/* ---------- Sprechen (Test): Wort auf Tounsi sagen, Spracherkennung des Browsers vergleicht mit der Vokabel ---------- */
+let SQ = null;
+const AR_FOLD = {'أ':'ا','إ':'ا','آ':'ا','ٱ':'ا','ى':'ي','ة':'ه','ؤ':'و','ئ':'ي','ڨ':'ق','ڤ':'ف','پ':'ب','چ':'ج','گ':'ق'};
+// Gerüst: ohne Vokalzeichen, Dehnungsbuchstaben und Wortgrenzen; Schreibvarianten vereinheitlicht
+function arSkel(t){
+  return String(t || '').replace(/[ً-ٰٟـ]/g, '').replace(/[أإآٱىةؤئڨڤپچگ]/g, c => AR_FOLD[c]).replace(/[^ء-ي]/g, '').replace(/^ال(?=..)/, '').replace(/[اويء]/g, '');
+}
+function lev(a, b){
+  const m = a.length, n = b.length; if(!m) return n; if(!n) return m;
+  let prev = Array.from({length:n+1}, (_, j) => j);
+  for(let i = 1; i <= m; i++){ const cur = [i]; for(let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j-1] + 1, prev[j-1] + (a[i-1] === b[j-1] ? 0 : 1)); prev = cur; }
+  return prev[n];
+}
+// passt, wenn eines der erkannten Ergebnisse (ganz oder ein Wort daraus) vom Gerüst her höchstens einen Buchstaben abweicht (bei kurzen Wörtern gar keinen)
+function speakMatch(target, alts){
+  const t = arSkel(target); if(!t) return {ok:false, best:null};
+  const tol = t.length >= 4 ? 1 : 0;
+  let best = {d:99, alt:null};
+  alts.forEach(alt => {
+    const cands = [alt].concat(String(alt).split(/\s+/));
+    cands.forEach(c => { const d = lev(arSkel(c), t); if(d < best.d) best = {d, alt}; });
+  });
+  return {ok: best.d <= tol, best: best.alt, d: best.d, t};
+}
+window.neuSpeakMatch = speakMatch;
+function startSpeak(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ showToast('Spracherkennung gibt es in diesem Browser nicht (Chrome auf Android verwenden)', 'warn'); return; }
+  const pool = ALL_VOCAB.filter(v => v.ar && v.en && v.au && !isQueueBlocked(v));
+  if(pool.length < 4){ showToast('Zu wenige Vokabeln mit Audio','warn'); return; }
+  reset('speak');
+  score = {c:0, w:0, t:0, st:0};
+  const started = pool.filter(v => srsProgress[v.id] && srsProgress[v.id].next_review);
+  const base = started.length >= 10 ? started : pool;
+  SQ = {deck: sh(base).slice(0, 10), i: 0, rec: null, state: 'idle', counted: false};
+  renderSpeak();
+}
+function renderSpeak(){
+  const c = $('exercise-content'); if(!c || !SQ) return;
+  const v = SQ.deck[SQ.i];
+  SQ.state = 'idle'; SQ.counted = false; SQ.res = null;
+  $('neu-prog-fill').style.width = Math.round(SQ.i / SQ.deck.length * 100) + '%';
+  $('neu-prog-n').textContent = (SQ.i + 1) + ' / ' + SQ.deck.length;
+  c.innerHTML = '<div class="neu-wrap">'
+    + '<div class="neu-card" style="text-align:center;padding:1.2rem"><div class="neu-sub">Sag das auf Tounsi</div>'
+    + '<div style="font-size:1.7rem;font-weight:700;margin:.5rem 0 .2rem">'+escHtml(v.en)+'</div>'
+    + '<button class="neu-btn neu-mic" id="neu-mic" style="width:112px;height:112px;min-height:0;border-radius:56px;margin:.9rem auto .3rem" onclick="neuSpeakStart()" aria-label="Sprechen">'+IC.mic.replace('<svg','<svg style="width:46px;height:46px;stroke:#17120a;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"')+'</button>'
+    + '<div class="neu-sub" id="neu-speak-st">Zum Sprechen tippen</div>'
+    + '<div id="neu-speak-res" style="min-height:3rem;margin-top:.8rem"></div></div>'
+    + '<div id="neu-speak-act" style="display:flex;flex-direction:column;gap:.6rem;margin-top:.8rem"></div>'
+    + '<div class="neu-sub" style="text-align:center;margin-top:1rem">Test · die Erkennung ist nur ein Anhaltspunkt, ohne Fortschrittswertung</div></div>';
+}
+window.neuSpeakStart = function(){
+  if(!SQ || SQ.state === 'listening') return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if(!SR) return;
+  const v = SQ.deck[SQ.i];
+  const rec = new SR(); SQ.rec = rec;
+  rec.lang = 'ar-TN'; rec.interimResults = false; rec.maxAlternatives = 5; rec.continuous = false;
+  SQ.state = 'listening';
+  const st = $('neu-speak-st'), mic = $('neu-mic');
+  if(st) st.textContent = 'Ich höre zu …'; if(mic) mic.classList.add('on');
+  let got = false;
+  rec.onresult = e => {
+    got = true;
+    const r = e.results[0], alts = []; for(let k = 0; k < r.length; k++) alts.push(r[k].transcript);
+    neuSpeakShow(alts);
+  };
+  rec.onerror = e => {
+    got = true; SQ.state = 'idle'; if(mic) mic.classList.remove('on');
+    const msg = e.error === 'not-allowed' || e.error === 'service-not-allowed' ? 'Mikrofon nicht erlaubt (in den Browser-Einstellungen freigeben).'
+      : e.error === 'no-speech' ? 'Nichts gehört. Nochmal versuchen.'
+      : e.error === 'network' ? 'Keine Verbindung zur Spracherkennung.'
+      : e.error === 'language-not-supported' ? 'Sprache ar-TN wird hier nicht unterstützt.'
+      : 'Fehler: '+e.error;
+    if($('neu-speak-st')) $('neu-speak-st').textContent = msg;
+  };
+  rec.onend = () => { if(mic) mic.classList.remove('on'); if(!got && SQ && SQ.state === 'listening'){ SQ.state = 'idle'; if($('neu-speak-st')) $('neu-speak-st').textContent = 'Nichts gehört. Nochmal versuchen.'; } };
+  try{ rec.start(); }catch(err){ SQ.state = 'idle'; if(st) st.textContent = 'Konnte nicht starten: '+err.message; }
+};
+function neuSpeakShow(alts){
+  if(!SQ) return;
+  const v = SQ.deck[SQ.i];
+  const m = speakMatch(v.ar, alts);
+  SQ.state = 'done'; SQ.res = m;
+  if($('neu-speak-st')) $('neu-speak-st').textContent = m.ok ? 'Passt!' : 'Nicht ganz.';
+  const color = m.ok ? 'var(--green)' : 'var(--red)';
+  $('neu-speak-res').innerHTML =
+    '<div style="font-size:1.5rem;direction:rtl;color:'+color+';font-family:var(--arf)">'+escHtml(alts[0] || '')+'</div>'
+    + (alts.length > 1 ? '<div class="neu-sub" style="direction:rtl;font-size:.85rem">'+alts.slice(1).map(escHtml).join(' · ')+'</div>' : '')
+    + '<div style="margin-top:.7rem;font-size:2rem;direction:rtl;color:var(--gold2);font-family:var(--arf)">'+escHtml(v.ar)+'</div>'
+    + '<div class="neu-mono" style="font-size:1.05rem">'+escHtml(v.tr)+'</div>'
+    + '<div class="neu-sub" style="font-size:.75rem;margin-top:.4rem">Vergleich (Gerüst): erkannt „'+escHtml(arSkel(m.best || ''))+'“ · Ziel „'+escHtml(m.t || '')+'“ · Abstand '+(m.d === 99 ? '–' : m.d)+'</div>';
+  const last = SQ.i >= SQ.deck.length - 1;
+  if(!SQ.counted){ SQ.counted = true; score.t++; if(m.ok) score.c++; else score.w++; vibe(m.ok); }
+  $('neu-speak-act').innerHTML =
+    '<button class="neu-btn" onclick="neuSpeakNext()">'+(last ? 'Ergebnis' : 'Weiter')+'</button>'
+    + '<div style="display:flex;gap:.5rem;flex-wrap:wrap">'
+    + '<button class="neu-btn ghost" style="flex:1;min-width:9rem" onclick="neuSpeakPlay()">Vorbild anhören</button>'
+    + '<button class="neu-btn ghost" style="flex:1;min-width:9rem" onclick="neuSpeakRetry()">Nochmal sprechen</button>'
+    + (m.ok ? '' : '<button class="neu-btn ghost" style="flex:1 1 100%" onclick="neuSpeakOverride()">Trotzdem richtig</button>')
+    + '</div>';
+}
+window.neuSpeakPlay = function(){ if(!SQ) return; const v = SQ.deck[SQ.i]; playVocabAudio(v.au, null, v.aus||0, v.aue||0); };
+window.neuSpeakOverride = function(){
+  if(!SQ || !SQ.res || SQ.res.ok) return;
+  SQ.res.ok = true; score.w = Math.max(0, score.w - 1); score.c++;
+  if($('neu-speak-st')) $('neu-speak-st').textContent = 'Als richtig gewertet.';
+  const b = [...document.querySelectorAll('#neu-speak-act button')].find(x => /Trotzdem/.test(x.textContent)); if(b) b.remove();
+};
+window.neuSpeakRetry = function(){
+  if(!SQ) return;
+  if(SQ.counted && SQ.res){ score.t--; if(SQ.res.ok) score.c--; else score.w--; SQ.counted = false; }
+  $('neu-speak-res').innerHTML = ''; $('neu-speak-act').innerHTML = ''; SQ.state = 'idle';
+  neuSpeakStart();
+};
+window.neuSpeakNext = function(){ if(!SQ) return; SQ.i++; if(SQ.i >= SQ.deck.length){ showRes(); } else renderSpeak(); };
+window.neuSpeakState = () => SQ;
 const _restart = window.restartExercise;
-window.restartExercise = function(){ if(cMode === 'listen'){ closeResult(); startListen(); return; } return _restart.apply(this, arguments); };
+window.restartExercise = function(){ if(cMode === 'speak'){ closeResult(); startSpeak(); return; } if(cMode === 'listen'){ closeResult(); startListen(); return; } return _restart.apply(this, arguments); };
 
 
 /* ---------- Tastatur: im Lernen immer Platz fürs Eingabefeld ----------
