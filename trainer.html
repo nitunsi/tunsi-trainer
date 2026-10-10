@@ -2040,6 +2040,7 @@ function _pMain(){ return document.getElementById(_pContainerId); }
 // Testen oder gemeinsamen Prüfen — schreibt in dieselben partner_status/
 // partner_comment-Felder wie Semias Prüfmodus).
 function showPartnerCheckMode(){
+  try{ document.getElementById('ex-type-label').textContent='✓ Partner-Check'; }catch(e){}
   const area = document.getElementById('exercise-screen');
   if(area) area.style.display = 'block';
   const actScr = document.getElementById('act-screen');
@@ -7011,6 +7012,7 @@ function jumpToPartnerQueue(filter){
 }
 
 async function showPartnerQueue(filter){
+  try{ document.getElementById('ex-type-label').textContent='📥 Partner-Queue'; }catch(e){}
   pqFilter = filter || 'all';
   const area = document.getElementById('exercise-screen');
   if(area) area.style.display = 'block';
@@ -7175,6 +7177,7 @@ function copyQueueEntry(vocabId, btnEl){
 let qcTab = 'dupes'; // Qualit\u00e4ts-Check-Tab: 'dupes' | 'translit'
 
 function showDupeCheck(){
+  try{ document.getElementById('ex-type-label').textContent='🔍 Prüfungen'; }catch(e){}
   const area = document.getElementById('exercise-screen');
   if(area) area.style.display = 'block';
   const actScr = document.getElementById('act-screen');
@@ -7959,6 +7962,7 @@ function _printSessionLog(){
 }
 
 function showActivate(){
+  try{ document.getElementById('ex-type-label').textContent='⚡ Aktivierung'; }catch(e){}
   // Verstecke exercise-screen, zeige act-screen
   document.getElementById('exercise-screen').style.display='none';
   const area = document.getElementById('act-screen');
