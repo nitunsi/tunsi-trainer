@@ -265,10 +265,11 @@ body.hide-latin .chat-opt .latin {
 <link rel="stylesheet" href="neu/neu.css">
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="neu-logo" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#8c6510"/><g transform="translate(256 256) scale(.88) translate(-256 -256)"><path d="M110 150a40 40 0 0 1 40-40h212a40 40 0 0 1 40 40v150a40 40 0 0 1-40 40H230l-80 70v-70a40 40 0 0 1-40-40z" fill="#f6f1e7"/><text x="256" y="252" font-size="240" text-anchor="middle" fill="#8c6510" font-family="Noto Naskh Arabic, Amiri, serif" font-weight="700">ع</text></g></symbol></svg>
 <div id="login-screen">
   <div class="login-box">
     <div class="login-flag">&#127481;&#127475;</div>
-    <div class="login-title">Tounsi Trainer</div>
+    <div class="login-title" aria-label="Tounsi Trainer"><span class="neu-brand big"><svg class="neu-brand-i" aria-hidden="true"><use href="#neu-logo"/></svg><span class="neu-wm">تونسي</span></span></div>
     <div class="login-sub">Tunesisches Arabisch &middot; <span id="login-version"></span></div>
     <div id="login-error" class="login-error" style="display:none"></div>
     <div class="login-label">Nutzername</div>
@@ -281,7 +282,7 @@ body.hide-latin .chat-opt .latin {
 </div>
 <div id="partner-screen">
 <div class="partner-header">
-  <div class="partner-logo">Tounsi <em style="color:var(--gold);font-style:italic">Trainer</em><small>Vokabel-Prüfung</small></div>
+  <div class="partner-logo" aria-label="Tounsi Trainer"><span class="neu-brand mid"><svg class="neu-brand-i" aria-hidden="true"><use href="#neu-logo"/></svg><span class="neu-wm">تونسي</span></span><small>Vokabel-Prüfung</small></div>
   <button class="logout-btn" onclick="doPartnerLogout()">Abmelden</button>
 </div>
 <div class="partner-main" id="partner-main">
@@ -290,7 +291,7 @@ body.hide-latin .chat-opt .latin {
 </div>
 <!-- ── Lade-Overlay (nach Login, während Daten geladen werden) ── -->
 <div id="load-overlay" style="display:none;position:fixed;inset:0;background:var(--bg,#111);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;padding:2rem">
-  <div style="font-family:'IBM Plex Mono',monospace;font-size:1.1rem;color:var(--gold,#c9a84c);letter-spacing:1px">Tounsi <em style="font-style:italic">Trainer</em></div>
+  <div aria-label="Tounsi Trainer"><span class="neu-brand big"><svg class="neu-brand-i" aria-hidden="true"><use href="#neu-logo"/></svg><span class="neu-wm">تونسي</span></span></div>
   <div id="load-phase" style="font-size:.85rem;color:var(--muted,#888)">Verbinde…</div>
   <div style="width:min(280px,80vw);height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden">
     <div id="load-bar" style="width:0%;height:100%;background:var(--gold,#c9a84c);border-radius:3px;transition:width .25s ease"></div>
@@ -302,7 +303,7 @@ body.hide-latin .chat-opt .latin {
 <!-- ── Kompakte Navigationsleiste ── -->
 <div class="nav-strip" id="nav-strip">
   <div class="nav-left">
-    <div class="nav-logo">Tounsi <em>Trainer</em></div>
+    <div class="nav-logo" aria-label="Tounsi Trainer"><span class="neu-brand "><svg class="neu-brand-i" aria-hidden="true"><use href="#neu-logo"/></svg><span class="neu-wm">تونسي</span></span></div>
   </div>
   <div class="nav-right">
     <button class="nav-toggle" id="nav-toggle-btn" onclick="toggleNav()">▼ Menü</button>
