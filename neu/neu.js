@@ -363,9 +363,9 @@ function goHome(){
   c.innerHTML = '<div class="neu-wrap neu-home">'
     + greetHtml()
     + lessonFilterChip()
-    + '<div class="neu-card" style="padding:.8rem 1rem"><div style="display:flex;align-items:center;gap:.9rem">'
+    + '<div class="neu-card neu-hero" style="padding:.8rem 1rem"><div class="neu-hero-in">'
     +   '<div id="neu-ring">'+ring(0, 76, 8, 'var(--gold)', '')+'</div>'
-    +   '<div style="flex:1;min-width:0"><div class="neu-sub">Tagesziel (richtige Antworten)</div><div id="neu-goal-t" style="font-size:1.15rem;font-weight:700;margin:1px 0"><span class="neu-skel" style="width:2.2rem;height:1.1rem"></span> von '+goal+'</div><div id="neu-streak" class="neu-sub">&nbsp;</div></div>'
+    +   '<div class="neu-hero-t"><div class="neu-sub">Tagesziel (richtige Antworten)</div><div id="neu-goal-t" style="font-size:1.15rem;font-weight:700;margin:1px 0"><span class="neu-skel" style="width:2.2rem;height:1.1rem"></span> von '+goal+'</div><div id="neu-streak" class="neu-sub">&nbsp;</div></div>'
     + '</div><div id="neu-week" class="neu-week">'+Array(7).fill('<div class="neu-wd"><span class="neu-wdot neu-skel"></span><span class="neu-skel" style="width:1.4rem;height:.6rem"></span></div>').join('')+'</div></div>'
     + '<div id="neu-motiv"></div>'
     + '<div id="neu-new">'+newStuffHint()+'</div>'
@@ -381,7 +381,6 @@ function goHome(){
     +   '<span class="neu-chip" onclick="openActivateDialog()">Vokabeln fällig setzen</span>'
     +   '<span class="neu-chip" onclick="statsUnlockNextChunk()">Nächster Abschnitt</span>'
     +   '<span class="neu-chip" onclick="openPullForward()">Vorziehen</span>'
-    +   '<span class="neu-chip" onclick="setMode(\'listen\')">Höraufgabe</span>'
     + '</div>'
     + '</div>';
   loadPartnerLine();
