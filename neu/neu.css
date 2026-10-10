@@ -713,3 +713,9 @@ body.neu-admin #exercise-content div[style*="border:1px solid var(--border)"]:no
 body.neu-admin #exercise-content div[style*="background:var(--surface)"]:not([style*="border-radius:50%"]){background:transparent!important}
 #act-batch-bar,#vl-bulk-bar{background:var(--bg)!important;border-top:0!important;box-shadow:0 -6px 18px rgba(0,0,0,.08)}
 #neu-progline i.segs s{background:var(--border)}
+
+/* Partner-Check / Partner-Seite: Wortkarte ohne Kasten, Kommentar nur mit Linie */
+.partner-card{background:transparent!important;border:0!important;box-shadow:none!important}
+.partner-comment{background:transparent!important;border:0!important;border-bottom:2px solid var(--border)!important;border-radius:0!important;padding-left:.2rem!important;padding-right:.2rem!important}
+.partner-comment:focus{border-bottom-color:var(--gold)!important;outline:none}
+.partner-btn.skip,.partner-btn.unknown{border-radius:24px}.partner-btn{border-radius:24px!important}
