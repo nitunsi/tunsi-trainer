@@ -634,3 +634,11 @@ details.neu-filter[open] summary,.neu-sheet .sh-head,.act-head{border-bottom-col
 #tabbar,.sticky-check,.sticky-next,.sh-foot,.act-foot{border-top:0;box-shadow:0 -6px 18px rgba(0,0,0,.10)}
 .partner-header{border-bottom:0}
 body{background-image:none!important}
+
+/* Weniger verschiedene Hintergründe: Flächen nur noch leicht vom Seitenhintergrund abgesetzt */
+:root{--surface:#15120f;--surface2:#1b1713}
+html[data-theme="light"]{--surface:#faf6ed;--surface2:#f0e9db}
+.neu-btn.line,.neu-btn.ghost,.neu-chip,.neu-seg,.neu-vrow .ib,#neu-progline .neu-pl-x,#neu-close,#sync-btn{border-color:transparent!important}
+.neu-btn.line,.neu-btn.ghost,.neu-chip,.neu-seg{background:var(--surface)!important;box-shadow:var(--lift)}
+#tabbar{background:var(--bg);box-shadow:none}
+.nav-strip{box-shadow:none}
