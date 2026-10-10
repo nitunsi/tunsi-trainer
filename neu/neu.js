@@ -286,9 +286,9 @@ window.neuLearnBuffer = learnBuffer;
 function newStuffHint(){
   if(cLesson !== 'all') return '';
   const w = learnBuffer();
-  if(w < 10) return hintCard('Fast nichts Neues mehr in der Wiederholung — nimm heute neue Vokabeln auf.', true);
-  if(w < 25) return hintCard('Zeit für Neues — dein Vorrat an Anfängerwörtern ist knapp. Nimm neue Vokabeln auf.', true);
-  if(w < 40) return hintCard('Bald Zeit für Neues — dein Vorrat an Anfängerwörtern wird knapp. Nimm neue Vokabeln auf.', false);
+  if(w < 10) return hintCard('Kaum noch etwas zu wiederholen. Nimm jetzt neue Vokabeln auf.', true);
+  if(w < 25) return hintCard('Der Nachschub wird knapp. Zeit, Neues zu starten.', true);
+  if(w < 40) return hintCard('Der Vorrat an Anfängerwörtern schrumpft. Zeit für Neues.', false);
   return '';
 }
 
@@ -458,7 +458,7 @@ function motivationHtml(dc, goal){
 // Ziel in Gefahr: das Fällige reicht nicht, um das Tagesziel noch zu erreichen
 function dangerHtml(dc, goal, total){
   if(dc.today < goal && total < goal - dc.today)
-    return hintCard('Fällig sind nur noch '+fmtN(total)+' — dir fehlen noch '+fmtN(goal - dc.today)+' zum Tagesziel. Nimm Neues auf oder zieh vor.', false);
+    return hintCard('Bis zum Tagesziel fehlen '+fmtN(goal - dc.today)+'. Nimm Neues auf oder zieh vor.', false);
   return '';
 }
 window.neuGoHome = goHome;
