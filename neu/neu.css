@@ -555,3 +555,16 @@ body.neu-session main{padding:.4rem 1rem 0!important}
 .neu-pl-lv{display:inline-flex;align-items:center;gap:.35rem;font-size:.8rem;color:var(--text);white-space:nowrap}
 .neu-pl-lv svg{width:30px;height:17px}
 #neu-st-streak{display:flex;align-items:center;justify-content:flex-start;gap:.3rem}#neu-st-streak .neu-flame{margin:0}
+
+/* Wortmarke: Symbol + „تونسي“ in der Schrift, die auch beim Lernen für Arabisch gewählt ist */
+.neu-brand{display:inline-flex;align-items:center;gap:.5rem;vertical-align:middle}
+.neu-brand-i{width:32px;height:32px;flex:none;border-radius:8px}
+.neu-wm{font-family:var(--arf)!important;font-weight:700;color:var(--gold);font-size:1.6rem;line-height:1.2;padding-top:.12em}
+.neu-brand.mid .neu-brand-i{width:34px;height:34px}
+.neu-brand.big{gap:.7rem}
+.neu-brand.big .neu-brand-i{width:52px;height:52px;border-radius:13px}
+.neu-brand.big .neu-wm{font-size:2.6rem}
+.nav-logo{display:flex;align-items:center}
+.partner-logo{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.partner-logo small{flex-basis:100%}
+.login-title{display:flex;justify-content:center}
