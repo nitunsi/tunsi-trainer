@@ -610,3 +610,7 @@ body.neu-kb .neu-micbtn{width:46px;height:46px}
 #neu-progline i.segs s.ok{background:var(--gold)}
 #neu-progline i.segs s.bad{background:transparent;box-shadow:inset 0 0 0 1.5px var(--red)}
 #neu-progline i.segs s.cur{background:transparent;box-shadow:inset 0 0 0 1.5px var(--gold)}
+
+/* Kopfzeile ohne eigene Fläche: Seitenhintergrund, keine Linie */
+.nav-strip,html[data-theme="light"] .nav-strip{background:var(--bg);border-bottom:0}
+#sync-btn{background:transparent!important;border-color:transparent!important}
