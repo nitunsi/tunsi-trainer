@@ -534,9 +534,9 @@ button[title="Aussprache abspielen"]{min-width:48px!important;min-height:48px!im
 @keyframes neu-pop{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:none}}
 
 /* Fortschrittszeile im kompakten Aufbau */
-#neu-progline{display:flex;align-items:center;gap:.6rem;font-size:.85rem;color:var(--muted);margin:0 0 .3rem}
+#neu-progline{display:flex;align-items:center;gap:.6rem;font-size:.85rem;color:var(--muted);margin:0 0 .3rem;position:sticky;top:0;z-index:6;background:var(--bg);padding:.1rem 0}
 /* Auf Karten immer nur die kleine Zeile, nie die große obere Leiste */
-body:has(#neu-progline) .nav-strip{display:none!important}
+body.neu-session.neu-hasprog .nav-strip{display:none!important}
 #neu-progline .neu-pl-x{width:32px;height:32px;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:10px;padding:0;cursor:pointer}
 #neu-progline .neu-pl-x svg{width:16px;height:16px}
 #neu-progline i{flex:1;height:4px;border-radius:2px;background:var(--surface2);overflow:hidden}
@@ -545,4 +545,7 @@ body:has(#neu-progline) .nav-strip{display:none!important}
 /* Obere Infozeile der Vokabelkarte immer gleich hoch (mit und ohne Ton-Knopf, vor und nach dem Antworten) */
 .neu-inforow{min-height:50px;align-items:center}
 /* Kurs-Karte beginnt auf derselben Höhe wie die Vokabelkarte (mit ihrer Infozeile), damit im Mix nichts springt */
-#neu-progline ~ .neu-ccard{margin-top:calc(50px + .25rem + 5px)!important}
+body.neu-mix #neu-progline ~ .neu-ccard{margin-top:calc(50px + .25rem + 6px)!important}
+
+/* gleicher Außenabstand in Übungen, egal ob der kompakte Aufbau gerade aktiv ist */
+body.neu-session main{padding:.4rem 1rem 0!important}
