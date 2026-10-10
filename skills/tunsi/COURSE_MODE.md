@@ -9,6 +9,14 @@ Regeln für den Lektionen/Stepper-Bereich des Trainers (`course_lessons`/`course
 - Output-Datei immer `trainer.html` (ohne Versionsnummer) — Ausnahme: bei Android-Caching-Problemen Versionsnummer erhöhen
 - **Bei Performance-Fixes (z.B. fehlendes `spellcheck="false"`) alle Geschwister-Inputs im selben Formular mitprüfen, nicht nur das gemeldete Feld** (Präzedenzfall: PRECEDENTS.md → Code-Änderungen)
 
+## Offline und schneller Start (seit 2026-10)
+
+- **`sw.js`** (Wurzel, Scope `/`): speichert nur die App-Hülle (`trainer.html`, `neu/neu.css`, `neu/neu.js`, Manifest, Symbole, Schriften). Navigation und `neu/*`: Netz zuerst (3 s), sonst Zwischenspeicher. Nur GET der eigenen Herkunft – nie Supabase, nie Audio, nie Schreiben. Neue Version = Hinweis „Neue Version – neu laden“, nie stilles Einspielen. **Neue Datei unter `neu/`?** Dann in `CORE` in `sw.js` eintragen, wenn sie offline gebraucht wird.
+- **Lese-Cache** (IndexedDB `tounsi_cache`, in `trainer.html` Abschnitt „LESE-CACHE“): hängt in `sbApi`/`sbApiRangeFirst`; nur Pfade aus `rcCacheable()` (Vokabeln, Fortschritt, Kurs, Lektionen, users). Neuer Lese-Pfad, der offline gebraucht wird → dort eintragen. `review_log` bewusst nicht gecacht.
+- **Start aus dem Zwischenspeicher** (`_rcMode='cache'`): Startseite sofort, danach `rcRefresh()` im Hintergrund (Zwischenspeicher füllen) und `rcApplyIfIdle()` (übernehmen nur auf der Startseite, nie mitten in einer Übung). Nicht gesendete Antworten werden über den Stand gelegt (`oqOverlayVocab/Course`).
+- **Schreiben:** nur über die Offline-Queue. Kurs-Fortschritt (`type:'course_progress'`) und Kurs-Protokoll laufen jetzt ebenfalls über die Queue.
+- **Schriften** liegen in `neu/fonts/` (selbst ausgeliefert, `immutable`). `berlinDayKey` nutzt einen gemeinsamen `Intl.DateTimeFormat` (vorher ~2,6 s Startzeit auf einem langsamen Gerät).
+
 ## Kurs-Modus: course_lessons / course_exercises
 
 Der Trainer hat neben der klassischen SRS-Vokabelabfrage einen Kurs-Modus, aufgebaut aus den Uni-Wien-Lehrskripten. Drei Tabellen:

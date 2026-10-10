@@ -158,7 +158,7 @@ window.neuArt = ART; window.neuArtHtml = artHtml;
 const _cache = {};
 async function loadActivity(){
   if(_cache.act && Date.now() - _cache.act.t < 120000) return _cache.act;
-  const berlin = d => d.toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
+  const berlin = d => berlinDay(d);
   const midnight = new Date(); midnight.setHours(0,0,0,0);
   const now = new Date();
   const todayKey = berlin(now);
@@ -174,7 +174,17 @@ async function loadActivity(){
   let saved = null;
   try{ saved = JSON.parse(LS.get('neu-streak','null')); }catch(e){}
   let upToYesterday;
-  const first = await fetchPage(0);
+  let first;
+  try{ first = await fetchPage(0); }
+  catch(e){
+    // kein Netz: gespeicherte Serie (bis gestern) + heute lokal gezählt
+    if(saved && Number.isInteger(saved.n)){
+      const todayLocal = window.neuLocalToday ? window.neuLocalToday() : 0;
+      _cache.act = {t: Date.now() - 100000, today: todayLocal, streak: (saved.day === yKey ? saved.n : 0) + (todayLocal > 0 ? 1 : 0)};
+      return _cache.act;
+    }
+    throw e;
+  }
   if(saved && saved.day === yKey && Number.isInteger(saved.n)){
     upToYesterday = saved.n;
   } else {
@@ -217,7 +227,7 @@ window.neuFilterOff = function(){ try{ filterLessonDropdown('all'); }catch(e){ c
    geladen wird nur, was seit dem letzten Mal dazukam. Berliner Kalendertage, heute zählt nicht mit. */
 async function loadDayCounts(){
   if(_cache.dc && Date.now() - _cache.dc.t < 120000) return _cache.dc;
-  const berlin = d => d.toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
+  const berlin = d => berlinDay(d);
   const now = new Date();
   const todayKey = berlin(now);
   const yest = new Date(now); yest.setDate(yest.getDate() - 1);
@@ -236,8 +246,11 @@ async function loadDayCounts(){
   // Gezählt werden pro Berliner Tag nur RICHTIGE Antworten (Vokabeln und Kurs-Übungen zusammen). Mehrfach richtig
   // am selben Tag ist selten, deshalb reicht die Anzahl; sie gilt für Tagesziel, heute geschafft und alle Schnitte.
   const fresh = {};
+  let dcFailed = false;
   for(let page = 0; page < 40; page++){
-    const r = await sbApi('review_log?user_id=eq.'+currentUser.id+'&select=created_at&correct=eq.true&created_at=gte.'+sinceISO+'&order=created_at.desc&limit=1000&offset='+(page*1000));
+    let r;
+    try{ r = await sbApi('review_log?user_id=eq.'+currentUser.id+'&select=created_at&correct=eq.true&created_at=gte.'+sinceISO+'&order=created_at.desc&limit=1000&offset='+(page*1000)); }
+    catch(e){ if(!saved) throw e; dcFailed = true; break; }
     (r || []).forEach(x => { const k = berlin(new Date(x.created_at)); fresh[k] = (fresh[k] || 0) + 1; });
     if(!r || r.length < 1000) break;
   }
@@ -260,7 +273,7 @@ async function loadDayCounts(){
     for(let i = 1; i <= n; i++){ const d = new Date(now); d.setDate(d.getDate() - i); sum += keep[berlin(d)] || 0; }
     avgs[n] = sum / n;
   });
-  _cache.dc = {t: Date.now(), today, avgs, days: keep};
+  _cache.dc = {t: dcFailed ? Date.now() - 100000 : Date.now(), today, avgs, days: keep};   // bei Netzfehler bald neu versuchen
   return _cache.dc;
 }
 // Immer das höchste übertroffene Fenster zeigen (90 vor 30 vor 14 vor 7)
@@ -324,6 +337,7 @@ function goHome(){
     + '</div>'
     + '</div>';
   loadPartnerLine();
+  if(typeof rcApplyIfIdle === 'function') setTimeout(rcApplyIfIdle, 300);   // frische Daten aus dem Hintergrund jetzt übernehmen
   Promise.all([loadActivity(), loadDayCounts()]).then(([a, dc]) => {
     const r = $('neu-ring'); if(!r || cMode !== 'home') return;
     const p = dc.today / goal;
@@ -396,7 +410,7 @@ function showCelebration(m, mark){
 window.neuMilesCheck = milesCheck;
 // Tempo: wie viele Vokabeln wurden in den letzten 30 Tagen neu gestartet (erste Antwort im Zeitraum)? Pro Tag einmal berechnet.
 async function loadPace(){
-  const day = new Date().toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
+  const day = berlinDay(new Date());
   try{ const c = JSON.parse(LS.get('neu-pace', 'null')); if(c && c.day === day) return c.n; }catch(e){}
   const since = new Date(Date.now() - 30*86400000).toISOString();
   const cnt = {};
@@ -425,7 +439,7 @@ function renderMilestones(vStarted, vTotal, vProfi){
 }
 // Wochenstreifen: die letzten 6 Tage und heute; voll = Tagesziel erreicht, halb = etwas geschafft, leer = nichts
 function weekHtml(dc, goal){
-  const berlin = d => d.toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
+  const berlin = d => berlinDay(d);
   const wd = ['So','Mo','Di','Mi','Do','Fr','Sa'];
   let out = '';
   for(let i = 6; i >= 0; i--){
@@ -529,7 +543,7 @@ function vibe(ok){ if(LS.get('neu-vib','0') === '1' && navigator.vibrate) naviga
 const _srsAnswer = window.srsAnswer;
 // Heute richtig beantwortet: lokal mitgezählt (Gerätespeicher), damit eine zu frühe Abfrage der Datenbank
 // (Antworten sind noch unterwegs) den Tageswert nicht nach unten drückt. Zählt der Server mehr, gilt der Server.
-const berlinKey = () => new Date().toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
+const berlinKey = () => berlinDay(new Date());
 const localToday = () => { try{ const o = JSON.parse(LS.get('neu-today','null')); return o && o.k === berlinKey() ? (o.n||0) : 0; }catch(e){ return 0; } };
 window.neuLocalToday = localToday;
 const adjustToday = delta => {
@@ -553,7 +567,7 @@ if(_courseExAnswer) window.courseExAnswer = function(ex, ok){ vibe(ok); bumpToda
 // Nur bei eingeschaltetem Ton (Lautsprecher-Schalter unten) und eingeschalteter Einstellung, nur für Vokabeln mit Audio.
 window.neuPickDir = function(v, lvl){
   const base = lvl >= 3 ? 'de2ar' : (Math.random() > .5 ? 'ar2de' : 'de2ar');
-  if(!audioAutoplay || LS.get('neu-listen','1') !== '1' || !v.au) return base;
+  if(!audioAutoplay || LS.get('neu-listen','1') !== '1' || !v.au || navigator.onLine === false) return base;   // ohne Netz kein Ton: normale Karte
   return Math.random() < (lvl >= 3 ? 0.3 : 0.5) ? 'au2de' : base;
 };
 window.neuToggleListen = function(){ LS.set('neu-listen', LS.get('neu-listen','1') === '1' ? '0' : '1'); showMore(); };
@@ -819,6 +833,7 @@ window.neuLvl = function(d){ const e = $('ei-lvl'); if(e) e.value = Math.max(0, 
 /* ---------- Höraufgabe: Audio hören, Bedeutung wählen (ohne Fortschrittswertung) ---------- */
 let LQ = null;
 function startListen(){
+  if(navigator.onLine === false){ showToast('Offline – die Höraufgabe braucht Internet', 'warn'); return; }
   const pool = ALL_VOCAB.filter(v => v.au && v.en && !isQueueBlocked(v));
   if(pool.length < 4){ showToast('Zu wenige Vokabeln mit Audio','warn'); return; }
   reset('listen');
@@ -887,6 +902,7 @@ function speakMatch(target, alts){
 }
 window.neuSpeakMatch = speakMatch;
 function startSpeak(){
+  if(navigator.onLine === false){ showToast('Offline – Sprechen braucht Internet', 'warn'); return; }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SR){ showToast('Spracherkennung gibt es in diesem Browser nicht (Chrome auf Android verwenden)', 'warn'); return; }
   const pool = ALL_VOCAB.filter(v => v.ar && v.en && v.au && !isQueueBlocked(v));
@@ -1227,7 +1243,7 @@ const pct0 = (a,b) => b ? Math.round(100*a/b) : 0;
 async function loadActivityBars(N){
   const key = 'act' + N;
   if(_cache[key] && Date.now() - _cache[key].t < 120000) return _cache[key].d;
-  const berlin = d => d.toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
+  const berlin = d => berlinDay(d);
   const midnight = new Date(); midnight.setHours(0,0,0,0);
   const since = new Date(midnight); since.setDate(since.getDate() - N);
   const days = {};
@@ -1572,6 +1588,8 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     const r = await f.apply(this, arguments);
     try{
       loadOverlayUpdate('Tageswerte laden…', 99, 'Tagesziel, Serie, Schnitte');
+      // Start aus dem Zwischenspeicher: nicht warten, die Startseite zeigt Platzhalter und füllt sich selbst
+      if(typeof _rcMode !== 'undefined' && _rcMode === 'cache'){ window.neuActivity().catch(() => {}); window.neuDayCounts().catch(() => {}); return r; }
       // höchstens 40 s warten, danach lädt die Startseite die Werte selbst nach
       await Promise.race([Promise.all([window.neuActivity(), window.neuDayCounts()]), new Promise(res => setTimeout(res, 40000))]);
     }catch(e){}
@@ -1832,7 +1850,7 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
 
 /* ===== Partner-Check: Motivation und Bilder für Semia ===== */
 (function(){
-  const berlinKey = d => d.toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'});
+  const berlinKey = d => berlinDay(d);
   function berlinMidnightISO(){
     const key = berlinKey(new Date()), u = new Date(key + 'T00:00:00Z');
     const wall = u.toLocaleString('sv-SE', {timeZone:'Europe/Berlin'});          // Berliner Uhrzeit zu diesem UTC-Zeitpunkt
@@ -1954,4 +1972,38 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
   const p = document.getElementById('ex-progress');
   if(p) new MutationObserver(() => { try{ line(); }catch(e){} }).observe(p, {childList:true, characterData:true, subtree:true});
   setInterval(() => { try{ line(); }catch(e){} }, 500);
+})();
+
+
+/* ===== Hinweise: Offline-Stand, Aktualisierung läuft, neue Version ===== */
+(function(){
+  function bar(id, cls){
+    let e = document.getElementById(id);
+    if(!e){ e = document.createElement('div'); e.id = id; e.className = 'neu-pill ' + (cls || ''); document.body.appendChild(e); }
+    return e;
+  }
+  function fmt(t){
+    const d = new Date(t), now = new Date();
+    const same = d.toDateString() === now.toDateString();
+    return (same ? 'heute' : d.toLocaleDateString('de-DE', {day:'numeric', month:'numeric'})) + ', ' + d.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) + ' Uhr';
+  }
+  // t = Zeitstempel des gespeicherten Stands; null = Hinweis ausblenden
+  window.neuOfflineHint = function(t){
+    const e = bar('neu-offline', 'off');
+    if(t == null){ e.style.display = 'none'; return; }
+    e.innerHTML = '<b>Offline</b> – Stand von ' + fmt(t);
+    e.style.display = 'block';
+  };
+  window.neuBusyHint = function(on){
+    const e = bar('neu-busy', 'busy');
+    e.textContent = 'Aktualisiere …';
+    e.style.display = on ? 'block' : 'none';
+  };
+  window.neuUpdateHint = function(){
+    if(document.getElementById('neu-update')) return;
+    const e = bar('neu-update', 'upd');
+    e.innerHTML = 'Neue Version – <button type="button" onclick="location.reload()">neu laden</button>';
+    e.style.display = 'block';
+  };
+  window.addEventListener('offline', () => { if(window._neuOffNote !== 1){ window._neuOffNote = 1; } });
 })();

@@ -17,9 +17,6 @@
 <meta name="apple-mobile-web-app-title" content="تونسي">
 <link rel="preconnect" href="https://lzecflvfalxkodytnwzf.supabase.co">
 <link rel="dns-prefetch" href="https://lzecflvfalxkodytnwzf.supabase.co">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@400;500&family=Noto+Naskh+Arabic:wght@400;700&family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&family=Noto+Kufi+Arabic:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0e0c0a;--surface:#1a1612;--surface2:#242018;--border:#3a3228;--gold:#c9a84c;--gold2:#e8c96a;--red:#c94c4c;--green:#4cac6e;--text:#f0e8d8;--muted:#8a7d6a;--blue:#4c7ac9;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;}
@@ -683,6 +680,21 @@ function retryLoad(){
   if(currentUser) enterApp(currentUser);
 }
 
+// Holt Vokabeln und Fortschritt (parallel). Wird auch genutzt, um den Zwischenspeicher im Hintergrund aufzufrischen.
+function srsFetchRows(onVocab, onProg){
+  const loadVocabTask = sbApiPaged(
+      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,lessons(lesson_number)&order=id.asc',
+      1000,
+      (loaded) => { if(onVocab) onVocab(loaded); }
+    );
+  const loadProgressTask = sbApiPaged(
+      'progress?user_id=eq.'+currentUser.id+'&select=id,vocabulary_id,correct_count,wrong_count,review_count,next_review,last_reviewed,last_correct&order=id.asc',
+      1000,
+      (loaded) => { if(onProg) onProg(loaded); }
+    );
+  return Promise.all([loadVocabTask, loadProgressTask]);
+}
+
 async function srsLoadFromSupabase(){
   if(!currentUser) return;
   try{
@@ -695,19 +707,7 @@ async function srsLoadFromSupabase(){
     };
     _updLoadUI();
 
-    const loadVocabTask = sbApiPaged(
-      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,lessons(lesson_number)&order=id.asc',
-      1000,
-      (loaded) => { _vLoaded = loaded; _updLoadUI(); }
-    );
-
-    const loadProgressTask = sbApiPaged(
-      'progress?user_id=eq.'+currentUser.id+'&select=id,vocabulary_id,correct_count,wrong_count,review_count,next_review,last_reviewed,last_correct&order=id.asc',
-      1000,
-      (loaded) => { _pLoaded = loaded; _updLoadUI(); }
-    );
-
-    const [allVocab, allProgress] = await Promise.all([loadVocabTask, loadProgressTask]);
+    const [allVocab, allProgress] = await srsFetchRows((v) => { _vLoaded = v; _updLoadUI(); }, (p) => { _pLoaded = p; _updLoadUI(); });
     // Tatsächliche Zahl merken → Balken beim nächsten Start präzise
     try{ localStorage.setItem(LOAD_COUNT_KEY, String(allVocab.length)); }catch(e){}
     loadOverlayUpdate('Daten laden…', 95, allVocab.length + ' Vokabeln · ' + allProgress.length + ' Fortschritte');
@@ -753,6 +753,7 @@ async function srsLoadFromSupabase(){
         last_correct: toUTC(p.last_correct),
       };
     });
+    await oqOverlayVocab();   // noch nicht gesendete Antworten über den geladenen Stand legen
     const vmSize = Object.keys(vocabIdMap).length;
     const spSize = Object.keys(srsProgress).length;
     dbg('vocabIdMap: ' + vmSize + ' Einträge', vmSize > 0 ? 'ok' : 'err');
@@ -1306,7 +1307,10 @@ async function correctLastFlashLog(newCorrectValue){
 // Fälligkeit zählt nach TAG (Berliner Kalendertag), nicht nach Uhrzeit: wer für heute 03:00 Uhr
 // angesetzt ist, ist ab 00:00 Uhr fällig, nicht erst ab 03:00. Die Uhrzeit bleibt gespeichert
 // (nextReviewDE setzt weiter 03:00 Berliner Zeit), sie entscheidet nur nichts mehr.
-function berlinDayKey(d){ return new Date(d).toLocaleDateString('en-CA', {timeZone:'Europe/Berlin'}); }
+// Ein gemeinsamer Formatierer ist um ein Vielfaches schneller als toLocaleDateString bei jedem Aufruf (spart beim Start Sekunden)
+const BERLIN_DAY_FMT = new Intl.DateTimeFormat('en-CA', {timeZone:'Europe/Berlin'});
+function berlinDay(d){ return BERLIN_DAY_FMT.format(d); }
+function berlinDayKey(d){ return BERLIN_DAY_FMT.format(new Date(d)); }
 function isDueByDay(ts){ return berlinDayKey(ts) <= berlinDayKey(new Date()); }
 
 function srsIsDue(vocab){
@@ -1386,9 +1390,122 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
   }catch(e){}
 })();
 
+// ══ LESE-CACHE (IndexedDB) ═══════════════════════════════════════════════════
+// Lerndaten (Vokabeln, Fortschritt, Kurs …) werden nach jedem erfolgreichen Laden abgelegt. Ohne Netz (oder beim Start,
+// siehe _rcMode) kommt der letzte Stand daraus. Geschrieben wird NIE hierüber – Schreiben läuft nur über sbApi/die Queue.
+// Keine Schlüssel/Tokens im Cache: gespeichert werden nur die Antwort-Daten unter dem Pfad.
+const RC_DB_NAME = 'tounsi_cache', RC_STORE = 'kv';
+const RC_BOOT_MAX_AGE = 3*24*3600*1000;   // älter als 3 Tage: beim Start lieber frisch laden (offline gilt jeder Stand)
+let _rcDbP = null;
+let _rcMode = 'net';                     // 'cache' = beim Start zuerst gespeicherte Daten nehmen, wenn vorhanden
+let _rcBootHit = false;                  // der Start hat Daten aus dem Zwischenspeicher genommen → danach im Hintergrund auffrischen
+let _rcOfflineSince = null;              // Zeitstempel des ältesten Stands, der wegen fehlendem Netz geliefert wurde
+function rcDb(){
+  if(_rcDbP) return _rcDbP;
+  _rcDbP = new Promise((res, rej) => {
+    try{
+      const rq = indexedDB.open(RC_DB_NAME, 1);
+      rq.onupgradeneeded = () => { rq.result.createObjectStore(RC_STORE); };
+      rq.onsuccess = () => res(rq.result);
+      rq.onerror = () => rej(rq.error);
+    }catch(e){ rej(e); }
+  });
+  return _rcDbP;
+}
+async function rcGet(key){
+  try{
+    const db = await rcDb();
+    return await new Promise((res) => { const r = db.transaction(RC_STORE).objectStore(RC_STORE).get(key); r.onsuccess = () => res(r.result || null); r.onerror = () => res(null); });
+  }catch(e){ return null; }
+}
+async function rcSet(key, v){
+  try{
+    const db = await rcDb();
+    await new Promise((res) => { const tx = db.transaction(RC_STORE, 'readwrite'); tx.objectStore(RC_STORE).put({t: Date.now(), v}, key); tx.oncomplete = () => res(); tx.onerror = () => res(); tx.onabort = () => res(); });
+  }catch(e){}
+}
+// nur Lese-Daten, die zum Lernen gebraucht werden (kein review_log, keine Admin-Abfragen)
+function rcCacheable(p){
+  return /^(vocabulary\?select=id,darija,arabic_script|progress\?user_id=|course_lessons\?|course_exercises\?select=\*|course_progress\?user_id=|course_exercise_progress\?user_id=|lessons\?select=id,lesson_number|users\?username=eq\.)/.test(p);
+}
+function rcIsNetError(e){
+  return !!e && (e.name === 'TypeError' || /Zeitüberschreitung|Failed to fetch|NetworkError|Load failed/i.test(String(e.message||'')));
+}
+function rcMarkOffline(t){
+  if(_rcOfflineSince === null || t < _rcOfflineSince) _rcOfflineSince = t;
+  try{ if(window.neuOfflineHint) window.neuOfflineHint(_rcOfflineSince); }catch(e){}
+}
+async function rcWrap(key, doFetch){
+  const hit = await rcGet(key);
+  if(navigator.onLine === false){
+    if(hit){ rcMarkOffline(hit.t); return hit.v; }
+    throw new Error('Offline – dafür gibt es noch keine gespeicherten Daten');
+  }
+  if(_rcMode === 'cache' && hit && (Date.now() - hit.t) < RC_BOOT_MAX_AGE){ _rcBootHit = true; return hit.v; }
+  try{
+    const v = await doFetch(hit ? 8000 : 20000);
+    rcSet(key, v);                       // nicht abwarten
+    if(key.startsWith('R|vocabulary')){ try{ localStorage.setItem('rc-last-net', String(Date.now())); }catch(e){} }   // Zeitpunkt des letzten frischen Ladens
+    return v;
+  }catch(e){
+    if(hit && rcIsNetError(e)){ rcMarkOffline(hit.t); return hit.v; }
+    throw e;
+  }
+}
 async function sbApi(path,method='GET',body=null,prefer=null){
+  if(method !== 'GET' || !rcCacheable(path)) return _sbApiNet(path,method,body,prefer);
+  return rcWrap('G|'+path, ms => _sbApiNet(path,method,body,prefer,ms));
+}
+async function sbApiRangeFirst(basePath, batchSize){
+  if(!rcCacheable(basePath)) return _sbRangeNet(basePath, batchSize);
+  return rcWrap('R|'+basePath+'|'+batchSize, ms => _sbRangeNet(basePath, batchSize, ms));
+}
+// ── Nach dem Start aus dem Zwischenspeicher: im Hintergrund frisch laden, anwenden wenn man auf der Startseite ist ──
+let _rcRefreshing = false, _rcRefreshPending = false, _rcLastRefresh = 0;
+function rcAfterBoot(){
+  _rcMode = 'net';
+  // Aus dem Zwischenspeicher gestartet: im Hintergrund auffrischen – außer der Stand ist keine 10 Minuten alt
+  let age = Infinity; try{ age = Date.now() - (parseInt(localStorage.getItem('rc-last-net'), 10) || 0); }catch(e){}
+  if(_rcBootHit && age > 10*60*1000) setTimeout(rcRefresh, 600);
+  else _rcLastRefresh = Date.now() - Math.min(age, 10*60*1000);
+}
+async function rcRefresh(){
+  if(_rcRefreshing || !currentUser || currentUser.is_partner || navigator.onLine === false) return;
+  _rcRefreshing = true;
+  try{ if(window.neuBusyHint) window.neuBusyHint(true); }catch(e){}
+  try{
+    await syncFlush();                                                            // eigene offene Antworten zuerst senden
+    await Promise.all([srsFetchRows(), courseFetchRows(), courseExProgressFetch()]);   // füllt nur den Zwischenspeicher (Netz)
+    _rcRefreshPending = true; _rcLastRefresh = Date.now(); _rcBootHit = false;
+    try{ localStorage.setItem('rc-last-net', String(Date.now())); }catch(e){}
+  }catch(e){ dbg('Auffrischen im Hintergrund fehlgeschlagen: '+e.message, 'warn'); }
+  _rcRefreshing = false;
+  try{ if(window.neuBusyHint) window.neuBusyHint(false); }catch(e){}
+  rcApplyIfIdle();
+}
+// Frische Daten nur auf der Startseite übernehmen, nie mitten in einer Übung
+async function rcApplyIfIdle(){
+  if(!_rcRefreshPending || _rcRefreshing) return;
+  if(cMode !== 'home' || document.body.classList.contains('neu-session')) return;
+  _rcRefreshPending = false;
+  _rcMode = 'cache';
+  try{
+    await srsLoadFromSupabase();
+    await loadCourseData(true);
+    try{ await loadLessonChips(); }catch(e){}
+    try{ updateLessonChips(); }catch(e){}
+  }catch(e){ dbg('Auffrischen übernehmen fehlgeschlagen: '+e.message, 'warn'); }
+  _rcMode = 'net';
+  if(cMode === 'home' && window.neuGoHome) window.neuGoHome();
+}
+window.addEventListener('online', () => { _rcOfflineSince = null; try{ if(window.neuOfflineHint) window.neuOfflineHint(null); }catch(e){} setTimeout(()=>{ if(currentUser) rcRefresh(); }, 1500); });
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible' && currentUser && Date.now() - _rcLastRefresh > 15*60*1000) rcRefresh();
+});
+// ══ ENDE LESE-CACHE ═════════════════════════════════════════════════════════
+async function _sbApiNet(path,method='GET',body=null,prefer=null,timeoutMs=20000){
   const ctrl = new AbortController();
-  const to = setTimeout(()=>ctrl.abort(), 20000); // 20s Timeout — hängende Requests sauber abbrechen
+  const to = setTimeout(()=>ctrl.abort(), timeoutMs); // 20s Timeout — hängende Requests sauber abbrechen
   try{
     const r=await fetch(SB_URL+'/rest/v1/'+path,{
       method,
@@ -1405,17 +1522,17 @@ async function sbApi(path,method='GET',body=null,prefer=null){
     if(!r.ok){ const err=new Error(t); err.status=r.status; throw err; }  // status: siehe syncFlush()
     return t?JSON.parse(t):null;
   }catch(e){
-    if(e.name==='AbortError') throw new Error('Zeitüberschreitung (20s) — Netzwerk prüfen');
+    if(e.name==='AbortError') throw new Error('Zeitüberschreitung ('+Math.round(timeoutMs/1000)+'s) — Netzwerk prüfen');
     throw e;
   }finally{
     clearTimeout(to);
   }
 }
 // Erste Seite mit Prefer: count=exact abfragen → Gesamtzahl steckt im Content-Range-Header
-async function sbApiRangeFirst(basePath, batchSize){
+async function _sbRangeNet(basePath, batchSize, timeoutMs=20000){
   const sep = basePath.includes('?') ? '&' : '?';
   const ctrl = new AbortController();
-  const to = setTimeout(()=>ctrl.abort(), 20000);
+  const to = setTimeout(()=>ctrl.abort(), timeoutMs);
   try{
     const r = await fetch(SB_URL+'/rest/v1/'+basePath+sep+'limit='+batchSize+'&offset=0',{
       method:'GET',
@@ -1435,7 +1552,7 @@ async function sbApiRangeFirst(basePath, batchSize){
     if(cr){ const m = cr.match(/\/(\d+)$/); if(m) total = parseInt(m[1],10); }
     return { data, total };
   }catch(e){
-    if(e.name==='AbortError') throw new Error('Zeitüberschreitung (20s) — Netzwerk prüfen');
+    if(e.name==='AbortError') throw new Error('Zeitüberschreitung ('+Math.round(timeoutMs/1000)+'s) — Netzwerk prüfen');
     throw e;
   }finally{
     clearTimeout(to);
@@ -1637,6 +1754,14 @@ async function syncFlush(manual=false){
           await sbApi('review_log', 'POST', item.payload);
         } else if(item.type === 'log_update'){
           await sbApi('review_log?id=eq.'+item.existing_id, 'PATCH', item.payload);
+        } else if(item.type === 'course_progress'){
+          if(item.is_patch){
+            await sbApi('course_exercise_progress?id=eq.'+item.existing_id, 'PATCH', item.payload);
+          } else {
+            const res = await sbApi('course_exercise_progress?on_conflict=user_id,exercise_id', 'POST', item.payload, 'resolution=merge-duplicates,return=representation');
+            const row = res && res[0] ? res[0] : null;
+            if(row && row.id && COURSE_EX_PROGRESS[item.exerciseId]) COURSE_EX_PROGRESS[item.exerciseId].id = row.id;
+          }
         } else if(item.is_patch){
           await sbApi('progress?id=eq.'+item.existing_id, 'PATCH', item.payload);
         } else {
@@ -1668,6 +1793,33 @@ async function syncFlush(manual=false){
   }
   _syncRunning = false;
   syncUpdateIcon();
+}
+
+// Noch nicht gesendete Antworten (Queue) über frisch geladene/zwischengespeicherte Daten legen, damit nach einem
+// Neustart ohne Netz nichts „vergessen“ wirkt. Reihenfolge = Reihenfolge der Antworten.
+async function oqOverlayVocab(){
+  try{
+    const items = (await oqGetAll()).filter(i => !i.failed && !i.type && i.vocabId);
+    items.forEach(i => {
+      const p = i.payload || {};
+      const cur = srsProgress[i.vocabId] || { id: i.existing_id || null, vocabulary_id: i.vocabId };
+      const d = s => s ? new Date(s) : null;
+      srsProgress[i.vocabId] = Object.assign(cur, {
+        level: Math.min(p.correct_count || 0, 6), next_review: d(p.next_review),
+        review_count: p.review_count || 0, wrong_count: p.wrong_count || 0,
+        last_reviewed: d(p.last_reviewed), last_correct: d(p.last_correct)
+      });
+    });
+  }catch(e){}
+}
+async function oqOverlayCourse(){
+  try{
+    const items = (await oqGetAll()).filter(i => !i.failed && i.type === 'course_progress');
+    items.forEach(i => {
+      const cur = COURSE_EX_PROGRESS[i.exerciseId] || { id: i.existing_id || null, exercise_id: i.exerciseId };
+      COURSE_EX_PROGRESS[i.exerciseId] = Object.assign(cur, i.payload || {});
+    });
+  }catch(e){}
 }
 
 // Zeigt die abgelehnten Eintraege und bietet an, sie zu verwerfen. Verwerfen loescht nur die
@@ -1743,7 +1895,13 @@ function enterApp(user){
     loadOverlayShow();
     syncStartLoop();
     syncUpdateIcon();
-    syncFlush().then(()=>srsLoadFromSupabase()).then(()=>{
+    const _flushP = syncFlush();
+    // Start aus dem Zwischenspeicher: nicht auf das Senden der Queue warten (die Antworten werden über den Stand gelegt)
+    (_rcMode === 'cache' ? Promise.resolve() : _flushP).then(()=>srsLoadFromSupabase().catch(e=>{
+      // Zwischenspeicher unvollständig/inkonsistent → einmal frisch aus dem Netz laden
+      if(_rcMode === 'cache'){ _rcMode = 'net'; _rcBootHit = false; return srsLoadFromSupabase(); }
+      throw e;
+    })).then(()=>{
       cMode = 'stats';
       document.querySelectorAll('.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));
       const statsBtn = document.querySelector('.lesson-chip[onclick*="\'stats\'"]');
@@ -1758,6 +1916,7 @@ function enterApp(user){
         updateLessonChips();
         applyLatin();
         loadOverlayHide();
+        rcAfterBoot();
       });
     }).catch(e=>{
       // Fehler wurde bereits im Overlay angezeigt (Retry-Button sichtbar)
@@ -1774,6 +1933,7 @@ async function trySessionRestore(){
   const ls = document.getElementById('login-screen');
   if(ls) ls.style.display='none';
   loadOverlayShow();
+  _rcMode = 'cache';   // Start: gespeicherte Daten zuerst (wenn vorhanden und nicht älter als 3 Tage)
   try{
     const res = await sbApi('users?username=eq.'+encodeURIComponent(s.username)+'&select=id,username,is_admin,is_partner,created_at,last_active_at,last_reminder_sent_at');
     if(res.length===0){
@@ -1786,6 +1946,7 @@ async function trySessionRestore(){
     enterApp(res[0]);
   }catch(e){
     // Kein Netz o.ä. → zurück zum Login, Session bleibt für nächsten Versuch erhalten
+    _rcMode = 'net';
     dbg('Session-Restore fehlgeschlagen: '+e.message, 'warn');
     loadOverlayHide();
     if(ls) ls.style.display='';
@@ -5020,13 +5181,23 @@ async function loadCourseLessonOptions(){
     dbg('Fehler beim Laden der Kurs-Lektionen für Filter: '+e.message, 'warn');
   }
 }
-async function loadCourseData(force){
-  if(_courseLoaded && !force) return;
-  const [lessons, exercises, progress] = await Promise.all([
+// Kurs-Daten holen (auch zum Auffrischen des Zwischenspeichers im Hintergrund)
+function courseFetchRows(){
+  return Promise.all([
     sbApi('course_lessons?select=*&order=course_number.asc'),
     sbApiPaged('course_exercises?select=*,vocabulary(id,arabic_script,darija,german,ninja_audio_url,ninja_audio_start,ninja_audio_end)&order=course_lesson_id.asc,position.asc', 1000),
     sbApi('course_progress?user_id=eq.'+currentUser.id+'&select=*')
   ]);
+}
+function courseExProgressFetch(){
+  return sbApiPaged(
+    'course_exercise_progress?user_id=eq.'+currentUser.id+'&select=id,exercise_id,correct_count,wrong_count,review_count,next_review,last_reviewed,last_correct&order=id.asc',
+    1000
+  );
+}
+async function loadCourseData(force){
+  if(_courseLoaded && !force) return;
+  const [lessons, exercises, progress] = await courseFetchRows();
   COURSE_LESSONS = lessons || [];
   COURSE_EXERCISES_BY_LESSON = {};
   COURSE_EX_BY_ID = {};
@@ -5048,12 +5219,10 @@ async function loadCourseData(force){
 
 async function loadCourseExProgress(force){
   if(_courseExProgressLoaded && !force) return;
-  const rows = await sbApiPaged(
-    'course_exercise_progress?user_id=eq.'+currentUser.id+'&select=id,exercise_id,correct_count,wrong_count,review_count,next_review,last_reviewed,last_correct&order=id.asc',
-    1000
-  );
+  const rows = await courseExProgressFetch();
   COURSE_EX_PROGRESS = {};
   (rows||[]).forEach(p=>{ COURSE_EX_PROGRESS[p.exercise_id] = p; });
+  await oqOverlayCourse();   // noch nicht gesendete Antworten über den geladenen Stand legen
   _courseExProgressLoaded = true;
 }
 
@@ -5182,7 +5351,17 @@ async function courseExAnswer(exercise, correct){
       if(row && row.id) COURSE_EX_PROGRESS[exId].id = row.id;
     }
   }catch(e){
-    dbg('FEHLER beim Speichern von course_exercise_progress ('+exId+'): '+e.message, 'err');
+    dbg('FEHLER beim Speichern von course_exercise_progress ('+exId+') → Offline-Queue: '+e.message, 'err');
+    try{
+      if(existing && existing.id){
+        await oqPush({ type:'course_progress', exerciseId: exId, existing_id: existing.id, is_patch: true,
+          payload: { correct_count: data.correct_count, wrong_count: data.wrong_count, review_count: data.review_count,
+                     next_review: data.next_review, last_reviewed: data.last_reviewed, last_correct: data.last_correct } });
+      } else {
+        await oqPush({ type:'course_progress', exerciseId: exId, is_patch: false, payload: data });
+      }
+      syncUpdateIcon();
+    }catch(qe){ dbg('Queue FEHLER (Kurs): '+qe.message, 'err'); }
   }
   // (Keine automatische Freischaltung des nächsten Chunks mehr, siehe courseEnsureFrontierUnlocked.)
   courseEnsureFrontierUnlocked().catch(()=>{});
@@ -5196,11 +5375,13 @@ async function courseExAnswer(exercise, correct){
 // (courseCorrectLast) dieselbe Zeile patchen kann statt doppelt zu zählen.
 async function logCourseReview(correct, exerciseId){
   if(!currentUser) return null;
+  const payload = { user_id: currentUser.id, vocabulary_id: null, course_exercise_id: exerciseId || null, correct, mode: 'course', created_at: new Date().toISOString() };
   try{
-    const res = await sbApi('review_log', 'POST', { user_id: currentUser.id, vocabulary_id: null, course_exercise_id: exerciseId || null, correct, mode: 'course', created_at: new Date().toISOString() });
+    const res = await sbApi('review_log', 'POST', payload, 'return=representation');
     return res && res[0] ? res[0].id : null;
   }catch(e){
-    dbg('Kurs review_log FEHLER: '+e.message, 'warn');
+    dbg('Kurs review_log FEHLER → Offline-Queue: '+e.message, 'warn');
+    try{ await oqPush({ type:'log_insert', payload }); syncUpdateIcon(); }catch(qe){}
     return null;
   }
 }
@@ -8873,5 +9054,18 @@ window.addEventListener('unhandledrejection', (e) => {
 </div>
 
 <script src="neu/neu.js"></script>
+<script>
+// Service Worker: App-Hülle offline; Hinweis bei neuer Version (kein stilles Einspielen)
+if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
+  navigator.serviceWorker.addEventListener('message', e => { if(e.data && e.data.type === 'update-available' && window.neuUpdateHint) window.neuUpdateHint(); });
+  const _swCheck = () => { try{ if(navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage({type:'check'}); }catch(e){} };
+  document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') _swCheck(); });
+  setInterval(_swCheck, 30*60*1000);
+}
+// Browser bitten, den Speicher (Lerndaten, App-Hülle) nicht von selbst zu löschen
+try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+</script>
+
 </body>
 </html>
