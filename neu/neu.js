@@ -1725,21 +1725,33 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
   };
 })();
 
-/* ===== Fortschrittszeile „3 / 12“ auch im kompakten Aufbau (Obere Leiste ist dort ausgeblendet) ===== */
+/* ===== Fortschrittszeile „X  3 / 12 ▬▬“: in allen Übungen die einzige (kleine) obere Leiste ===== */
 (function(){
+  const X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>';
+  let busy = false;
   function line(){
-    const c = document.getElementById('exercise-content'); if(!c) return;
-    let el = document.getElementById('neu-progline');
-    const txt = ((document.getElementById('ex-progress') || {}).textContent || '').trim();
-    const m = txt.match(/^(\d+)\s*\/\s*(\d+)$/);
-    if(!m){ if(el) el.remove(); return; }
-    const pct = Math.max(0, Math.min(100, Math.round(parseInt(m[1], 10) / parseInt(m[2], 10) * 100)));
-    if(!el){ el = document.createElement('div'); el.id = 'neu-progline'; }
-    el.innerHTML = '<span>'+m[1]+' / '+m[2]+'</span><i><b style="width:'+pct+'%"></b></i>';
-    if(c.firstChild !== el) c.insertBefore(el, c.firstChild);
+    if(busy) return; busy = true;
+    try{
+      const c = document.getElementById('exercise-content'); if(!c) return;
+      let el = document.getElementById('neu-progline');
+      const sess = document.body.classList.contains('neu-session');
+      const txt = (((document.getElementById('ex-progress') || {}).textContent || '').trim()) || (((document.getElementById('neu-prog-n') || {}).textContent || '').trim());
+      const m = txt.match(/^(\d+)\s*\/\s*(\d+)$/);
+      if(!sess || !m){ if(el) el.remove(); return; }
+      const pct = Math.max(0, Math.min(100, Math.round(parseInt(m[1], 10) / parseInt(m[2], 10) * 100)));
+      const html = '<button type="button" class="neu-pl-x" onclick="neuLeave()" aria-label="Beenden">'+X+'</button><span>'+m[1]+' / '+m[2]+'</span><i><b style="width:'+pct+'%"></b></i>';
+      if(!el){ el = document.createElement('div'); el.id = 'neu-progline'; }
+      if(el.dataset.k !== txt){ el.innerHTML = html; el.dataset.k = txt; }
+      if(c.firstChild !== el) c.insertBefore(el, c.firstChild);
+    } finally { busy = false; }
   }
   ['rFlash', 'rCourseEx'].forEach(n => {
     const f = window[n];
     if(typeof f === 'function') window[n] = function(){ const r = f.apply(this, arguments); try{ line(); }catch(e){} return r; };
   });
+  const c = document.getElementById('exercise-content');
+  if(c) new MutationObserver(() => { try{ line(); }catch(e){} }).observe(c, {childList:true});
+  const p = document.getElementById('ex-progress');
+  if(p) new MutationObserver(() => { try{ line(); }catch(e){} }).observe(p, {childList:true, characterData:true, subtree:true});
+  setInterval(() => { try{ line(); }catch(e){} }, 500);
 })();
