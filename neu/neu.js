@@ -716,7 +716,10 @@ window.renderCourseOverview = function(){
     const txt = state === 'done' ? '✓' : state === 'read' ? '–' : Math.round(frac*100);
     const sub = state === 'read' ? 'nur Lesen' : state === 'done' ? 'abgeschlossen' : state === 'run' ? fmtN(mastered)+' von '+fmtN(total)+' Übungen gemeistert' : 'noch nicht freigeschaltet';
     const lv = lessonVocab(l);
-    const stats = (lv.length ? line('Vokabeln', vocStat(lv)) : '') + (total ? line('Übungen', exStat(items)) : '');
+    const bc = {}; items.forEach(e => { const k = e.meta && e.meta.beleg; if(COURSE_BELEG[k]) bc[k] = (bc[k]||0)+1; });
+    const belegLine = Object.keys(COURSE_BELEG).filter(k => bc[k]).map(k => '<span title="'+COURSE_BELEG[k].t+': '+COURSE_BELEG[k].tip+'">'+COURSE_BELEG[k].ic+' '+bc[k]+'</span>').join(' · ');
+    const stats = (lv.length ? line('Vokabeln', vocStat(lv)) : '') + (total ? line('Übungen', exStat(items)) : '')
+      + (belegLine ? '<div style="margin-top:.6rem;font-size:.85rem;color:var(--muted)">Beleg: '+belegLine+'</div>' : '');
     return '<div class="neu-node'+(state==='lock'?' lock':'')+(l.id===curId?' cur':'')+'" onclick="showCourseLesson('+l.id+')">'
       + '<div class="top">'+ring(state==='lock'?0:frac, 54, 6, col, txt)
       + '<div class="tx"><div class="t1">Lektion '+l.course_number+(l.id===curId?' <span class="neu-chip on" style="min-height:22px;padding:0 .5rem;font-size:.72rem;vertical-align:middle">aktuell</span>':'')+'</div><div class="t2">'+escHtml(cleanTitle(l.title))+'</div><div class="t3" style="color:'+(state==='run'?'var(--gold2)':'var(--muted)')+'">'+sub+'</div></div>'
