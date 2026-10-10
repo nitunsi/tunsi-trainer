@@ -1224,7 +1224,7 @@ window.showStats = function(){
     + '</div>';
   if(all){ loadPartnerLine(); renderActivityCard(); }
   renderMilestones(vStarted, vTotal, vp[3]);
-  Promise.all([loadActivity(), loadDayCounts()]).then(([a, dc]) => { const t = $('neu-st-today'), s = $('neu-st-streak'); if(t) t.textContent = fmtN(dc.today); if(s) s.innerHTML = a.streak ? flame(a.streak) + a.streak + ' T' : '–'; }).catch(() => {});
+  Promise.all([loadActivity(), loadDayCounts()]).then(([a, dc]) => { const t = $('neu-st-today'), s = $('neu-st-streak'); if(t) t.textContent = fmtN(dc.today); if(s) s.innerHTML = a.streak ? flame(a.streak) + a.streak : '–'; }).catch(() => {});
 };
 
 /* ---------- Erster Einstieg: nach dem Laden auf die Startseite ---------- */

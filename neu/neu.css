@@ -554,3 +554,4 @@ body.neu-session main{padding:.4rem 1rem 0!important}
 #neu-progline em{font-style:normal;flex:none}
 .neu-pl-lv{display:inline-flex;align-items:center;gap:.35rem;font-size:.8rem;color:var(--text);white-space:nowrap}
 .neu-pl-lv svg{width:30px;height:17px}
+#neu-st-streak{display:flex;align-items:center;justify-content:flex-start;gap:.3rem}#neu-st-streak .neu-flame{margin:0}
