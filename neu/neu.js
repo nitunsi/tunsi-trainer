@@ -285,10 +285,10 @@ function hintCard(text, red){
 window.neuLearnBuffer = learnBuffer;
 function newStuffHint(){
   if(cLesson !== 'all') return '';
-  const w = learnBuffer(), n = Math.round(w);
-  if(w < 10) return hintCard('Fast nichts Neues mehr in der Wiederholung (noch '+n+') — nimm heute neue auf.', true);
-  if(w < 25) return hintCard('Zeit für Neues — dein Anfänger-Puffer wird knapp (noch '+n+').', true);
-  if(w < 40) return hintCard('Bald Zeit für Neues — dein Anfänger-Puffer sinkt (noch '+n+').', false);
+  const w = learnBuffer();
+  if(w < 10) return hintCard('Fast nichts Neues mehr in der Wiederholung — nimm heute neue Vokabeln auf.', true);
+  if(w < 25) return hintCard('Zeit für Neues — dein Vorrat an Anfängerwörtern ist knapp. Nimm neue Vokabeln auf.', true);
+  if(w < 40) return hintCard('Bald Zeit für Neues — dein Vorrat an Anfängerwörtern wird knapp. Nimm neue Vokabeln auf.', false);
   return '';
 }
 
