@@ -614,3 +614,23 @@ body.neu-kb .neu-micbtn{width:46px;height:46px}
 /* Kopfzeile ohne eigene Fläche: Seitenhintergrund, keine Linie */
 .nav-strip,html[data-theme="light"] .nav-strip{background:var(--bg);border-bottom:0}
 #sync-btn{background:transparent!important;border-color:transparent!important}
+
+/* ==================== Ruhiger: weniger Linien ==================== */
+:root{--hair:color-mix(in srgb,var(--border) 40%,transparent);--lift:0 1px 2px rgba(0,0,0,.18),0 4px 14px rgba(0,0,0,.14)}
+html[data-theme="light"]{--lift:0 1px 2px rgba(60,40,10,.06),0 4px 14px rgba(60,40,10,.07)}
+/* Flächen statt Rahmen */
+.neu-card,#result-screen .neu-res .rows,.neu-vlist,details.neu-filter{border:0;box-shadow:var(--lift)}
+.neu-vlist{box-shadow:var(--lift)}
+.neu-seg{border:0;background:var(--surface2)}
+.neu-chip,.neu-vrow .ib,#neu-progline .neu-pl-x,#neu-close{border-color:transparent;background:var(--surface2)}
+.neu-switch{border-color:transparent}
+.sh-in,.sh-ib,.sh-step button,.sh-step input,.neu-batch input{border-color:transparent}
+.neu-btn.ghost{border-color:transparent;background:var(--surface2)}
+/* Trennlinien: nur noch ganz zart oder weg */
+.neu-vrow,.neu-list button,.neu-list .li,.neu-node,.neu-chunk,.neu-lvrow,.act-row,#result-screen .neu-res .rows div{border-bottom-color:var(--hair)}
+.neu-vrow:last-child,#result-screen .neu-res .rows div:last-child{border-bottom:0}
+.neu-sumrow,.neu-week,.neu-mile + .neu-mile{border-top:0}
+details.neu-filter[open] summary,.neu-sheet .sh-head,.act-head{border-bottom-color:var(--hair)}
+#tabbar,.sticky-check,.sticky-next,.sh-foot,.act-foot{border-top:0;box-shadow:0 -6px 18px rgba(0,0,0,.10)}
+.partner-header{border-bottom:0}
+body{background-image:none!important}
