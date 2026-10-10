@@ -705,3 +705,11 @@ details.neu-filter{border-top:1px solid var(--hair)!important;border-bottom:1px 
 .neu-btn.blue{border-radius:30px!important}
 .neu-btn.line,.neu-btn.ghost{border-radius:24px!important}
 .neu-list button,.neu-list .li{padding-left:0;padding-right:0;border-bottom-color:var(--hair)}
+.neu-node.cur{background:transparent!important;border-radius:0;padding-left:.2rem;padding-right:.2rem;margin:0;box-shadow:inset 3px 0 0 var(--gold);padding-left:.8rem}
+
+/* ==================== Admin-Seiten: gleiche Ränder, Text-Karten ohne Rahmen ==================== */
+body.neu-admin #exercise-content>div[style*="padding:1rem"]{padding-left:0!important;padding-right:0!important}
+body.neu-admin #exercise-content div[style*="border:1px solid var(--border)"]:not([class*="neu-btn"]){border:0!important;border-top:1px solid var(--hair)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+body.neu-admin #exercise-content div[style*="background:var(--surface)"]:not([style*="border-radius:50%"]){background:transparent!important}
+#act-batch-bar,#vl-bulk-bar{background:var(--bg)!important;border-top:0!important;box-shadow:0 -6px 18px rgba(0,0,0,.08)}
+#neu-progline i.segs s{background:var(--border)}
