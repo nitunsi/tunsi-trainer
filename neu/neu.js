@@ -978,6 +978,61 @@ window.neuSpeakRetry = function(){
 };
 window.neuSpeakNext = function(){ if(!SQ) return; SQ.i++; if(SQ.i >= SQ.deck.length){ showRes(); } else renderSpeak(); };
 window.neuSpeakState = () => SQ;
+
+/* ---------- Mikrofon-Knopf im Vokabel-Eingabefeld (Deutsch → Arabisch): gesprochenes Wort wird als Text eingetragen ---------- */
+(function(){
+  const SRC = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SRC) return;
+  let cur = null;
+  function addMic(){
+    const inp = $('flash-input'); if(!inp || inp.dataset.mic) return;
+    const ex = (typeof exList !== 'undefined' && exList) ? exList[cIdx] : null;
+    if(!ex || ex.dir !== 'de2ar' || !ex.v) return;
+    inp.dataset.mic = '1';
+    const w = document.createElement('div'); w.className = 'neu-micwrap';
+    inp.parentNode.insertBefore(w, inp); w.appendChild(inp);
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'neu-micbtn'; b.setAttribute('aria-label', 'Antwort sprechen');
+    b.innerHTML = IC.mic;
+    b.onclick = () => listen(inp, b, ex.v);
+    w.appendChild(b);
+  }
+  function listen(inp, b, v){
+    if(cur){ try{ cur.stop(); }catch(e){} cur = null; b.classList.remove('on'); return; }
+    const rec = new SRC(); cur = rec;
+    rec.lang = 'ar-TN'; rec.interimResults = false; rec.maxAlternatives = 5; rec.continuous = false;
+    b.classList.add('on');
+    rec.onresult = e => {
+      const r = e.results[0], alts = []; for(let k = 0; k < r.length; k++) alts.push(r[k].transcript);
+      if(!alts.length) return;
+      window._neuSp = {id: v.id, alts};
+      inp.value = alts[0];
+      inp.dispatchEvent(new Event('input', {bubbles:true}));
+    };
+    rec.onerror = e => {
+      const msg = e.error === 'not-allowed' || e.error === 'service-not-allowed' ? 'Mikrofon nicht erlaubt (in den Browser-Einstellungen freigeben).'
+        : e.error === 'no-speech' ? 'Nichts gehört. Nochmal versuchen.'
+        : e.error === 'network' ? 'Keine Verbindung zur Spracherkennung.' : 'Spracherkennung: '+e.error;
+      showToast(msg, 'warn');
+    };
+    rec.onend = () => { cur = null; b.classList.remove('on'); };
+    try{ rec.start(); }catch(err){ cur = null; b.classList.remove('on'); showToast('Konnte nicht starten: '+err.message, 'warn'); }
+  }
+  const _rf = window.rFlash;
+  if(typeof _rf === 'function') window.rFlash = function(){ const r = _rf.apply(this, arguments); try{ addMic(); }catch(e){} return r; };
+  // Gesprochenes, unverändert übernommenes Wort: gilt, wenn das Konsonantengerüst passt (wie „Fast!“ bei Schreibvarianten)
+  const _chk = window.chkFlash;
+  if(typeof _chk === 'function') window.chkFlash = function(){
+    try{
+      const inp = $('flash-input'), sp = window._neuSp, ex = exList[cIdx];
+      if(inp && sp && ex && ex.v && sp.id === ex.v.id && inp.value.trim() === sp.alts[0]){
+        const v = ex.v, val = inp.value.trim();
+        const ok = checkAnswer(val, v.ar).ok || checkAnswer(val, v.tr).ok;
+        if(!ok && speakMatch(v.ar, sp.alts).ok) inp.value = v.ar;
+      }
+    }catch(e){}
+    return _chk.apply(this, arguments);
+  };
+})();
 const _restart = window.restartExercise;
 window.restartExercise = function(){ if(cMode === 'speak'){ closeResult(); startSpeak(); return; } if(cMode === 'listen'){ closeResult(); startListen(); return; } return _restart.apply(this, arguments); };
 
