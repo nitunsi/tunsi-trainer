@@ -541,3 +541,8 @@ body:has(#neu-progline) .nav-strip{display:none!important}
 #neu-progline .neu-pl-x svg{width:16px;height:16px}
 #neu-progline i{flex:1;height:4px;border-radius:2px;background:var(--surface2);overflow:hidden}
 #neu-progline b{display:block;height:100%;background:var(--gold);border-radius:2px}
+
+/* Obere Infozeile der Vokabelkarte immer gleich hoch (mit und ohne Ton-Knopf, vor und nach dem Antworten) */
+.neu-inforow{min-height:50px;align-items:center}
+/* Kurs-Karte beginnt auf derselben Höhe wie die Vokabelkarte (mit ihrer Infozeile), damit im Mix nichts springt */
+#neu-progline ~ .neu-ccard{margin-top:calc(50px + .25rem + 5px)!important}
