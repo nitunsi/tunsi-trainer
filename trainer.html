@@ -3213,6 +3213,11 @@ function showRes(){
 
 let forecastWindow = 7; // Anzahl Tage im Fälligkeits-Forecast
 // Zeitraum wechseln, ohne dass die Seite nach oben springt: Höhe halten, neu zeichnen, Scrollstand zurücksetzen
+// Nach einer Aktion die Seite neu zeichnen, auf der man gerade ist (Lernen bleibt Lernen, Statistik bleibt Statistik)
+function statsRefresh(){
+  if(cMode === 'home' && typeof window.neuGoHome === 'function') window.neuGoHome();
+  else showStats();
+}
 async function forecastSet(n){
   forecastWindow = n;
   const y = window.scrollY, box = document.getElementById('exercise-content');
@@ -3557,7 +3562,7 @@ async function statsUnlockNextChunk(){
   if(!confirm('Abschnitt freischalten?\n'+txt)) return;
   await courseUnlockChunk(ch);
   showToast('✓ Freigeschaltet: '+txt,'ok');
-  showStats();
+  statsRefresh();
 }
 // Schreibt die Fälligkeit „jetzt“ für die übergebenen Vokabeln ([{id, src}]); Rückfrage und Neuzeichnen machen die Aufrufer.
 async function statsActivateApply(picked){
@@ -3592,7 +3597,7 @@ async function statsActivateVocab(n){
   }catch(e){
     showToast('Fehler: '+e.message,'err');
   }
-  showStats();
+  statsRefresh();
 }
 
 // Aus der Statistik direkt in einen Lernmodus springen (wie ein Klick im Menü)
