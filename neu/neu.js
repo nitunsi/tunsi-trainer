@@ -866,7 +866,7 @@ let SQ = null;
 const AR_FOLD = {'أ':'ا','إ':'ا','آ':'ا','ٱ':'ا','ى':'ي','ة':'ه','ؤ':'و','ئ':'ي','ڨ':'ق','ڤ':'ف','پ':'ب','چ':'ج','گ':'ق'};
 // Gerüst: ohne Vokalzeichen, Dehnungsbuchstaben und Wortgrenzen; Schreibvarianten vereinheitlicht
 function arSkel(t){
-  return String(t || '').replace(/[ً-ٰٟـ]/g, '').replace(/[أإآٱىةؤئڨڤپچگ]/g, c => AR_FOLD[c]).replace(/[^ء-ي]/g, '').replace(/^ال(?=..)/, '').replace(/[اويء]/g, '');
+  return String(t || '').replace(/[ً-ٰٟـ]/g, '').replace(/[أإآٱىةؤئڨڤپچگ]/g, c => AR_FOLD[c]).replace(/[^ء-ي]/g, '').replace(/^ال(?=..)/, '').replace(/[اويء]/g, '').replace(/(?<=.)ه$/, '');   // Wortende -a (ه, ة, ى) zählt nicht
 }
 function lev(a, b){
   const m = a.length, n = b.length; if(!m) return n; if(!n) return m;
