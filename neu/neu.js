@@ -985,16 +985,15 @@ window.neuSpeakState = () => SQ;
   if(!SRC) return;
   let cur = null;
   function addMic(){
-    const inp = $('flash-input'); if(!inp || inp.dataset.mic) return;
+    const inp = $('flash-input'), bar = $('sticky-check-inner'); if(!inp || !bar) return;
+    const old = $('neu-micbtn'); if(old) old.remove();
     const ex = (typeof exList !== 'undefined' && exList) ? exList[cIdx] : null;
     if(!ex || ex.dir !== 'de2ar' || !ex.v) return;
-    inp.dataset.mic = '1';
-    const w = document.createElement('div'); w.className = 'neu-micwrap';
-    inp.parentNode.insertBefore(w, inp); w.appendChild(inp);
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'neu-micbtn'; b.setAttribute('aria-label', 'Antwort sprechen');
+    // links unten in der Prüfen-Leiste: mit dem linken Daumen gut erreichbar
+    const b = document.createElement('button'); b.type = 'button'; b.id = 'neu-micbtn'; b.className = 'neu-micbtn'; b.setAttribute('aria-label', 'Antwort sprechen');
     b.innerHTML = IC.mic;
     b.onclick = () => listen(inp, b, ex.v);
-    w.appendChild(b);
+    bar.insertBefore(b, bar.firstChild);
   }
   function listen(inp, b, v){
     if(cur){ try{ cur.stop(); }catch(e){} cur = null; b.classList.remove('on'); return; }
