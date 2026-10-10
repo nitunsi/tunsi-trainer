@@ -1724,3 +1724,22 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     return r;
   };
 })();
+
+/* ===== Fortschrittszeile „3 / 12“ auch im kompakten Aufbau (Obere Leiste ist dort ausgeblendet) ===== */
+(function(){
+  function line(){
+    const c = document.getElementById('exercise-content'); if(!c) return;
+    let el = document.getElementById('neu-progline');
+    const txt = ((document.getElementById('ex-progress') || {}).textContent || '').trim();
+    const m = txt.match(/^(\d+)\s*\/\s*(\d+)$/);
+    if(!m){ if(el) el.remove(); return; }
+    const pct = Math.max(0, Math.min(100, Math.round(parseInt(m[1], 10) / parseInt(m[2], 10) * 100)));
+    if(!el){ el = document.createElement('div'); el.id = 'neu-progline'; }
+    el.innerHTML = '<span>'+m[1]+' / '+m[2]+'</span><i><b style="width:'+pct+'%"></b></i>';
+    if(c.firstChild !== el) c.insertBefore(el, c.firstChild);
+  }
+  ['rFlash', 'rCourseEx'].forEach(n => {
+    const f = window[n];
+    if(typeof f === 'function') window[n] = function(){ const r = f.apply(this, arguments); try{ line(); }catch(e){} return r; };
+  });
+})();
