@@ -655,3 +655,17 @@ details.neu-filter{border-top:1px solid var(--hair)!important;border-bottom:1px 
 .neu-card{padding-left:0;padding-right:0}
 .neu-row2>.neu-card{border-top:0!important}
 .neu-row2>.neu-card{padding-left:0!important}
+
+/* ==================== Startseite: ein Hauptelement, ein starker Button ==================== */
+.neu-home .neu-hero-in{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.7rem}
+.neu-home #neu-ring svg{width:clamp(96px,19vh,140px)!important;height:clamp(96px,19vh,140px)!important}
+.neu-home .neu-hero-t #neu-goal-t{font-size:1.2rem}
+.neu-home .neu-hero{padding-top:.4rem!important;padding-bottom:.4rem!important;border-top:0!important}
+.neu-home .neu-hero .neu-week{border-top:0;margin-top:.9rem}
+.neu-home .neu-btn:not(.ghost):not(.line){border-radius:30px!important}
+.neu-home .neu-row2{margin:.4rem 0 .8rem!important}
+.neu-home .neu-row2 .neu-btn.ghost{background:transparent!important;border:0!important;align-items:center!important;text-align:center}
+.neu-home .neu-row2 .neu-btn.ghost>span:nth-child(2){font-size:1.9rem!important;color:var(--gold2);font-weight:700}
+.neu-home .neu-row2 .neu-btn.ghost small{display:block!important;color:var(--muted)}
+.neu-home .neu-chips{flex-direction:column;align-items:center;gap:.2rem}
+.neu-home .neu-chips .neu-chip{background:transparent!important;border:0!important;box-shadow:none!important;color:var(--gold2);font-size:.95rem;min-height:40px}
