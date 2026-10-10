@@ -285,10 +285,10 @@ function hintCard(text, red){
 window.neuLearnBuffer = learnBuffer;
 function newStuffHint(){
   if(cLesson !== 'all') return '';
-  const w = learnBuffer(), n = Math.round(w);
-  if(w < 10) return hintCard('Fast nichts Neues mehr in der Wiederholung (noch '+n+') — nimm heute neue auf.', true);
-  if(w < 25) return hintCard('Zeit für Neues — dein Anfänger-Puffer wird knapp (noch '+n+').', true);
-  if(w < 40) return hintCard('Bald Zeit für Neues — dein Anfänger-Puffer sinkt (noch '+n+').', false);
+  const w = learnBuffer();
+  if(w < 10) return hintCard('Fast nichts Neues mehr in der Wiederholung — nimm heute neue Vokabeln auf.', true);
+  if(w < 25) return hintCard('Zeit für Neues — dein Vorrat an Anfängerwörtern ist knapp. Nimm neue Vokabeln auf.', true);
+  if(w < 40) return hintCard('Bald Zeit für Neues — dein Vorrat an Anfängerwörtern wird knapp. Nimm neue Vokabeln auf.', false);
   return '';
 }
 
@@ -1224,7 +1224,7 @@ window.showStats = function(){
     + '</div>';
   if(all){ loadPartnerLine(); renderActivityCard(); }
   renderMilestones(vStarted, vTotal, vp[3]);
-  Promise.all([loadActivity(), loadDayCounts()]).then(([a, dc]) => { const t = $('neu-st-today'), s = $('neu-st-streak'); if(t) t.textContent = fmtN(dc.today); if(s) s.innerHTML = a.streak ? flame(a.streak) + a.streak + ' T' : '–'; }).catch(() => {});
+  Promise.all([loadActivity(), loadDayCounts()]).then(([a, dc]) => { const t = $('neu-st-today'), s = $('neu-st-streak'); if(t) t.textContent = fmtN(dc.today); if(s) s.innerHTML = a.streak ? flame(a.streak) + a.streak : '–'; }).catch(() => {});
 };
 
 /* ---------- Erster Einstieg: nach dem Laden auf die Startseite ---------- */
@@ -1729,6 +1729,19 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
 (function(){
   const X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>';
   let busy = false;
+  function levelChip(){
+    try{
+      const ex = (typeof exList !== 'undefined' && exList) ? exList[cIdx] : null; if(!ex) return '';
+      let lvl = 0, started = false;
+      if(ex.exercise){ const p = COURSE_EX_PROGRESS[ex.exercise.id]; started = !!p; lvl = Math.min((p && p.correct_count) || 0, 6); }
+      else if(ex.v && ex.v.id){ const p = srsProgress[ex.v.id]; started = !!(p && p.next_review); lvl = (p && p.level) || 0; }
+      else return '';
+      const col = started ? 'var(--gold)' : 'var(--border)';
+      let bars = '';
+      for(let k = 1; k <= 6; k++){ const h = 3 + k * 2; bars += '<rect x="'+((k-1)*4)+'" y="'+(14-h)+'" width="2.6" height="'+h+'" rx="1" fill="'+(started && k <= lvl ? 'var(--gold)' : 'var(--border)')+'"/>'; }
+      return '<span class="neu-pl-lv" title="Aktuelle Stufe dieser Übung"><svg viewBox="0 0 24 14" aria-hidden="true">'+bars+'</svg>'+(started ? 'Stufe '+lvl : 'Neu')+'</span>';
+    }catch(e){ return ''; }
+  }
   function line(){
     if(busy) return; busy = true;
     try{
@@ -1739,9 +1752,11 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
       const m = txt.match(/^(\d+)\s*\/\s*(\d+)$/);
       if(!sess || !m){ if(el) el.remove(); return; }
       const pct = Math.max(0, Math.min(100, Math.round(parseInt(m[1], 10) / parseInt(m[2], 10) * 100)));
-      const html = '<button type="button" class="neu-pl-x" onclick="neuLeave()" aria-label="Beenden">'+X+'</button><span>'+m[1]+' / '+m[2]+'</span><i><b style="width:'+pct+'%"></b></i>';
+      const html = '<button type="button" class="neu-pl-x" onclick="neuLeave()" aria-label="Beenden">'+X+'</button><span>'+m[1]+' / '+m[2]+'</span><i><b style="width:'+pct+'%"></b></i><em></em>';
       if(!el){ el = document.createElement('div'); el.id = 'neu-progline'; }
       if(el.dataset.k !== txt){ el.innerHTML = html; el.dataset.k = txt; }
+      const lv = levelChip(), slot = el.querySelector('em');
+      if(slot && slot.dataset.k !== lv){ slot.innerHTML = lv; slot.dataset.k = lv; }
       if(c.firstChild !== el) c.insertBefore(el, c.firstChild);
       document.body.classList.toggle('neu-mix', cMode === 'mix');
     } finally { busy = false; }
