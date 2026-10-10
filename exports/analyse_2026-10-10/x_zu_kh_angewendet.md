@@ -26,3 +26,16 @@ Offen (Entscheidung nötig): 816 (raz3a / riz3it), 2037 (naxid, Präsensform von
 | vocabulary 1281 | darija | nekheth | nakhith |
 
 Mehrzahl im Präsens (nekhthew, tekhthew, yakhthew) bewusst unverändert, Entscheidung offen.
+
+## Nachtrag 2 (angewendet 2026-10-10, Einzelwort-Prüfung)
+
+| Tabelle / Nr. | Feld | alt | neu | Beleg |
+|---|---|---|---|---|
+| course_exercises 1261 | solution | razli | rajli | rajli = mein Mann (Prompt) |
+| course_exercises 1388 | solution | barkallahu fik | baraka allahou fik | Vokabel 465 |
+| course_exercises 1389 | solution | friska | frishka | Vokabel 4019 |
+| course_exercises 1541 | solution | mzahhma | mza77ma | h→7-Regel (Wurzel z-7-m); Wort selbst von Semia zu bestätigen |
+| course_exercises 2119 | prompt, solution | hfadt / hfadthum | 7fadt / 7fadthum | h→7-Regel |
+
+Als belegt geprüft (keine Änderung): twaba3 (TUNICO/Peace Corps: Würfel (Zucker)), zbayin (plausibel, im Tunesischen nicht belegt; zbayen in Ägyptisch/Levantinisch).
+Offen: Mehrzahl Präsens khtha (nekhthew/tekhthew/yakhthew), zouz/zuz.
