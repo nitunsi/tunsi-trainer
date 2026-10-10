@@ -1337,7 +1337,7 @@ window.neuBarsTap = function(ev, el){
   const t = el.parentElement.querySelector('.neu-tip'); if(t) t.textContent = bars[i].dataset.tip || '';
 };
 function winChips(cur, fn){ return '<div style="display:flex;gap:.35rem">'+[7,14,30,90].map(n => '<span class="neu-chip'+(n===cur?' on':'')+'" style="min-height:32px;padding:0 .65rem" onclick="'+fn+'('+n+')">'+n+'</span>').join('')+'</div>'; }
-window.neuSetFc = function(n){ forecastWindow = n; showStats(); };
+window.neuSetFc = function(n){ forecastSet(n); };   // Scrollstand bleibt erhalten (siehe forecastSet in trainer.html)
 window.neuSetAct = function(n){ activityWindow = n; renderActivityCard(); };
 window.neuFilterOffStats = function(){ try{ filterLessonDropdown('all'); }catch(e){ cLesson = 'all'; } showStats(); };
 

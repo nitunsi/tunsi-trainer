@@ -3212,6 +3212,16 @@ function showRes(){
 }
 
 let forecastWindow = 7; // Anzahl Tage im Fälligkeits-Forecast
+// Zeitraum wechseln, ohne dass die Seite nach oben springt: Höhe halten, neu zeichnen, Scrollstand zurücksetzen
+async function forecastSet(n){
+  forecastWindow = n;
+  const y = window.scrollY, box = document.getElementById('exercise-content');
+  if(box) box.style.minHeight = box.offsetHeight + 'px';
+  try{ await showStats(); }catch(e){ console.error('forecastSet', e); }
+  const back = () => window.scrollTo({top: y, behavior: 'instant'});
+  back(); requestAnimationFrame(back); setTimeout(back, 80);
+  setTimeout(() => { if(box) box.style.minHeight = ''; back(); }, 350);
+}
 let activityWindow = 7; // Anzahl Tage in der Lernaktivität-Statistik
 
 // Mini-Gauge unter jedem Tagesbalken: Breite des Fülllbalkens zeigt den Kurs-Anteil
@@ -3445,7 +3455,7 @@ function showStats(){
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;">
         <div style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);">Fällig · ${forecastWindow} Tage</div>
         <div style="display:flex;gap:.25rem;">
-          ${[7,14,30,90].map(n => `<button onclick="forecastWindow=${n};showStats();" style="padding:.3rem .55rem;font-size:.8rem;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;cursor:pointer;border-radius:2px;${forecastWindow===n ? 'background:var(--gold);border:1px solid var(--gold);color:var(--bg);font-weight:700;' : 'background:transparent;border:1px solid var(--border);color:var(--muted);'}">${n}d</button>`).join('')}
+          ${[7,14,30,90].map(n => `<button onclick="forecastSet(${n})" style="padding:.3rem .55rem;font-size:.8rem;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;cursor:pointer;border-radius:2px;${forecastWindow===n ? 'background:var(--gold);border:1px solid var(--gold);color:var(--bg);font-weight:700;' : 'background:transparent;border:1px solid var(--border);color:var(--muted);'}">${n}d</button>`).join('')}
         </div>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);padding:.7rem .7rem .5rem;">
