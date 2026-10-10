@@ -1853,7 +1853,15 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
   let lastArt = null;
   function pickArt(){ let k; do{ k = POOL[Math.floor(Math.random() * POOL.length)]; }while(k === lastArt && POOL.length > 1); lastArt = k; return k; }
   const pick = a => a[Math.floor(Math.random() * a.length)];
+  const isSemia = () => !!(currentUser && currentUser.is_partner);
   function message(n, block){
+    if(isSemia()){
+      if(n >= 100) return pick(['Über 100 Wörter heute, Semi! Go Semi, go Semi! Ya3tik es-sa77a!', 'Hundert und mehr — du bist unglaublich, Semi!']);
+      if(n >= 50) return pick(['Schon über 50 Wörter, Semi. Go Semi, go Semi!', 'Halbe Hundert geschafft. Bravo, Semi!']);
+      if(n >= 30) return pick(['Du bist im Fluss, Semi! Go Semi, go Semi!', 'Drei Blöcke und mehr — danke, Semi!']);
+      if(n > block) return pick(['Noch ein Block, Semi. Go Semi, go Semi!', 'Yalla Semi, das läuft!']);
+      return pick(['Go Semi, go Semi! Mit jedem Wort wird der Trainer besser.', 'Danke, Semi! Ya3tik es-sa77a.']);
+    }
     if(n >= 100) return pick(['Über 100 Wörter heute — das ist wirklich stark. Ya3tik es-sa77a!', 'Hundert und mehr! Danke, dass du dir so viel Zeit nimmst.']);
     if(n >= 50) return pick(['Schon über 50 Wörter heute. Das hilft dem Trainer sehr.', 'Halbe Hundert geschafft — bravo!']);
     if(n >= 30) return pick(['Drei Blöcke und mehr heute — danke, das ist eine große Hilfe.', 'Du bist richtig im Fluss. Weiter so!']);
@@ -1875,7 +1883,9 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     const p = document.querySelector('.partner-progress');
     if(p && !existing){
       const line = document.createElement('div'); line.className = 'neu-ptoday';
-      const paint = n => { line.textContent = n ? 'Heute schon '+n+' geprüft' : 'Los geht’s — der erste Block wartet'; };
+      const base = n => n ? 'Heute schon '+n+' geprüft' : 'Los geht’s — der erste Block wartet';
+      const cheer = () => { if(!isSemia() || typeof _pIdx === 'undefined') return ''; return _pIdx === 0 ? 'Go Semi, go Semi!' : _pIdx === 4 ? 'Halbzeit, Semi! Go Semi, go Semi!' : _pIdx === 9 ? 'Letzte Karte, Semi — du schaffst das!' : ''; };
+      const paint = n => { const c = cheer(); line.textContent = c || base(n); };
       paint(today ? today.n : 0);
       p.insertAdjacentElement('afterend', line);
       loadToday().then(paint);
