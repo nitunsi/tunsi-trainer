@@ -44,3 +44,9 @@ Einzeln nachgeschlagen und korrigiert:
 
 Stufen jetzt: skript 122, belegt 1559 minus 2, abgeleitet 290, unsicher 18.
 Offen: Belegprüfung der Stufe "belegt" noch einmal komplett gegen die Skript-Seiten rechnen (statt gegen die Lektionstexte).
+
+## Neuberechnung gegen die vollständigen Skript-Seiten (11.10.2026)
+Rechenweg: `beleg_neuberechnung.py` (Universum: TUNICO, Peace Corps, Ninja, Vokabeln, Lektionstexte und alle 270 Skript-Seiten; "skript" = ganze Lösung steht in dieser Wortfolge auf einer Skript-Seite). Es wurde nur **hochgestuft** (151 Übungen; Liste in `beleg_hochstufung_2026-10-11.json`): 39 auf skript, 112 von abgeleitet auf belegt. Die rechnerischen Herabstufungen wurden nicht übernommen: Stichprobe zeigt, dass es fast nur deutsche Wörter in den Klammern sind (Fehlalarme).
+Zusätzlich korrigiert: shware3 -> shwara3 (1086, 1101; TUNICO, Peace Corps, Skript).
+
+Stufen jetzt: skript 161, belegt 1635, abgeleitet 173, unsicher 18 (963-978, 1060, 1888).
