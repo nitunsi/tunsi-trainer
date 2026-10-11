@@ -28,3 +28,19 @@ Korrigiert:
 - 638: tubb / tubba; neue Vokabel 4607 (Nils, 11.10.2026)
 
 Neue Stufen: skript 122, belegt 1559, abgeleitet 290, unsicher 16 (nur 963-978: `fi-` nach `qa3id`; dazu liefern die Quellen keine Beispielsätze).
+
+## Formen-Prüfung gegen alle Formfelder und die vollständigen Skript-Seiten (11.10.2026)
+Wichtiger Fund: `course_lessons.grammar_notes/dialog_text` enthalten **nicht alles** aus dem Skript. Beispiel: Lektion 2, Seite 23 (`uniwien_source_pages`) nennt "ṭbīb / ṭubba = Arzt"; in den Lektionstexten steht das nicht. Alle früheren Belegprüfungen gegen die Lektionstexte waren deshalb unvollständig. Maßgeblich ist `uniwien_source_pages` (270 Seiten, 310.000 Zeichen).
+
+Prüflauf: Tunesische Formen aller Übungen gegen TUNICO (Wortformen, Lemmata, `inflected`, Korpusformen), Peace Corps (`forms_chatalpha`), Ninja, Vokabeln, Lektionstexte. 964 Formen waren nicht direkt belegt; 443 davon sind Stamm + Pronominalsuffix. Von den übrigen 521 stehen 117 lose (Schreibvarianten) in den Skript-Seiten. Der Rest (404) sind überwiegend Tabellenformen (Negation, Partizipien, Verb-Paradigmen), die nach den Skript-Regeln gebildet sind.
+
+Einzeln nachgeschlagen und korrigiert:
+- 2079: dillaat -> dilla3at (Skript: dillāʕ/dillāʕa; TUNICO und Peace Corps: dilla3at)
+- 1759, 1799, 1855: mliyyah -> mli7 (TUNICO, Peace Corps, Skript "mlīḥ")
+- 1851: it-tifel -> it-tfal (TUNICO und Peace Corps: tfal)
+- 1617: hunak -> ghadi (Quellen kennen nur ghadi/huni)
+- hethukum (11 Übungen) ist belegt (TUNICO hāḏūkum, Peace Corps hadhukum)
+- 1888 (fustan: Quellen nennen ruba/kiswa) und 1060 (lutilat: TUNICO util, Plural witla/wutla): Stufe unsicher, nicht geändert
+
+Stufen jetzt: skript 122, belegt 1559 minus 2, abgeleitet 290, unsicher 18.
+Offen: Belegprüfung der Stufe "belegt" noch einmal komplett gegen die Skript-Seiten rechnen (statt gegen die Lektionstexte).
