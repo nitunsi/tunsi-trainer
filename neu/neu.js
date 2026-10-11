@@ -554,6 +554,7 @@ function showMore(){
     +   '<div style="height:.5rem"></div>'+seg([['0.85','Klein'],['1','Mittel'],['1.2','Groß'],['1.4','Sehr groß']], LS.get('neu-ars','1'), "neuSetArs('%v')")
     +   '<div class="neu-list" style="margin-top:.4rem"><div class="li"><span class="sp">Vokalzeichen anzeigen</span>'+sw(LS.get('neu-arv','1') === '1', "neuToggleArv()")+'</div></div>'
     +   '<div class="neu-arprev" id="neu-arprev">'+arPrev()+'</div>'
+    +   '<div class="neu-list" style="margin-top:.4rem"><div class="li"><span class="sp">Ähnlich klingende Buchstaben gelten als richtig<span class="neu-sub" style="display:block;font-size:.8rem">Aus: nur die genauen Buchstaben zählen (Vokalzeichen sind immer egal).</span></span>'+sw(LS.get('neu-tol','1') !== '0', "neuToggleTol()")+'</div></div>'
     +   '<div class="neu-cap" style="margin-top:1rem">Tagesziel (richtige Antworten pro Tag)</div>'+seg([[50,'50'],[100,'100'],[150,'150'],[200,'200']], goal, "neuSetGoal(%v)")
     +   '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Audio beim Aufdecken abspielen</span>'+sw(audioAutoplay, "toggleAudioAutoplay();showMore()")+'</div>'
     +   '<div class="li"><span class="sp">Vibration bei Richtig und Falsch</span>'+sw(vib, "neuToggleVib()")+'</div></div>'
@@ -581,6 +582,7 @@ if(window.matchMedia) try{ window.matchMedia('(prefers-color-scheme: light)').ad
 window.neuSetTheme = function(v){ LS.set('neu-theme', v); applyTheme(); showMore(); };
 window.neuSetFont = function(k){ LS.set('neu-font', k); applyFont(); showMore(); };
 window.neuSetGoal = function(n){ LS.set('neu-goal', String(n)); showMore(); };
+window.neuToggleTol = function(){ LS.set('neu-tol', LS.get('neu-tol','1') === '0' ? '1' : '0'); showMore(); };
 window.neuToggleVib = function(){ LS.set('neu-vib', LS.get('neu-vib','0') === '1' ? '0' : '1'); if(LS.get('neu-vib') === '1' && navigator.vibrate) navigator.vibrate(30); showMore(); };
 window.neuLesson = function(v){ const s = $('lesson-select'); if(s) s.value = v; try{ filterLessonDropdown(v); }catch(e){} goHome(); };
 
