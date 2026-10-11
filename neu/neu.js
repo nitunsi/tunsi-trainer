@@ -602,8 +602,14 @@ const bumpToday = ok => { if(ok) adjustToday(1); };
   const f = window[n];
   if(typeof f === 'function') window[n] = function(a, toOk){
     adjustToday(toOk ? 1 : -1);
+    if(window.neuPlFix) window.neuPlFix(toOk);
     return f.apply(this, arguments);
   };
+});
+// Fortschrittsleiste sofort umschalten, wenn „War doch richtig/falsch“ gedrückt wird (die Datenbank-Korrektur wartet erst auf den Schreibvorgang)
+[['markFlashCorrect', () => true], ['markFlashWrong', () => false], ['courseCorrectLast', a => !!a]].forEach(([n, ok]) => {
+  const f = window[n];
+  if(typeof f === 'function') window[n] = function(){ if(window.neuPlFix) window.neuPlFix(ok.apply(null, arguments)); return f.apply(this, arguments); };
 });
 if(_srsAnswer) window.srsAnswer = function(v, ok){ vibe(ok); bumpToday(ok); if(window.neuPlRes) window.neuPlRes(ok); return _srsAnswer.apply(this, arguments); };
 const _courseExAnswer = window.courseExAnswer;
@@ -1995,9 +2001,11 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     return {idx: cur - 1, total: tot};
   }
   function curIdx(){ const p = pos(); return p ? p.idx : null; }
-  window.neuPlRes = function(ok){ const i = curIdx(); if(i !== null) RES[i] = !!ok; try{ line(); }catch(e){} };
+  let LAST = null;   // Nummer der zuletzt beantworteten Karte — „War doch richtig/falsch“ und ⏮ korrigieren genau diese
+  window.neuPlRes = function(ok){ const i = curIdx(); if(i !== null){ RES[i] = !!ok; LAST = i; } try{ line(); }catch(e){} };
+  window.neuPlFix = function(ok){ if(LAST !== null) RES[LAST] = !!ok; try{ line(); }catch(e){} };
   window.neuPlDump = () => JSON.stringify(RES);
-  window.neuPlReset = function(){ ROUND.n = 0; Object.keys(RES).forEach(k => delete RES[k]); const el = document.getElementById('neu-progline'); if(el) el.dataset.k = ''; };
+  window.neuPlReset = function(){ ROUND.n = 0; LAST = null; Object.keys(RES).forEach(k => delete RES[k]); const el = document.getElementById('neu-progline'); if(el) el.dataset.k = ''; };
   function levelChip(){
     try{
       const ex = (typeof exList !== 'undefined' && exList) ? exList[cIdx] : null; if(!ex) return '';
