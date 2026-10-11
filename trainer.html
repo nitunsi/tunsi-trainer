@@ -479,10 +479,35 @@ function schreibungNote(v){
     + list + '</div>';
 }
 
+// Arabische Eingaben: Vokalzeichen (Harakat), Tatweel, Alif-/Ya-/Ta-marbuta-Varianten sind für die
+// Prüfung egal. Ähnlich klingende Buchstaben (arSimilar) gelten als "fast richtig" und zählen als richtig.
+const AR_RE = /[\u0600-\u06FF]/;
+function arNorm(s){
+  return (s||'').replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ').trim();
+}
+const AR_GROUPS = ['كقگڨ','تط','سص','دض','زذظ','حه','عاء','غر'];
+function arSimilar(a, b){
+  if(a === b) return true;
+  return AR_GROUPS.some(g => g.includes(a) && g.includes(b));
+}
+// true, wenn sich a und b nur an EINER Stelle unterscheiden und dort ähnlich klingende Buchstaben stehen
+function arOneSwap(a, b){
+  if(a.length !== b.length) return false;
+  let diff = 0;
+  for(let i=0;i<a.length;i++){ if(a[i] !== b[i]){ if(!arSimilar(a[i], b[i])) return false; diff++; if(diff>1) return false; } }
+  return diff === 1;
+}
 function checkAnswer(input, answer){
   const rawInput = input.trim().toLowerCase();
   const n = normalize(input);
   const rawVariants = answer.split(/\s*\/\s*/).map(v => v.trim()).filter(v=>v!=='');
+  // Arabische Schrift eingegeben: eigener Vergleich (exakt ohne Vokalzeichen, sonst höchstens ein ähnlich klingender Buchstabe daneben)
+  if(AR_RE.test(input)){
+    const ai = arNorm(input), av = rawVariants.map(arNorm).filter(v=>v!=='');
+    if(av.some(v => v === ai)) return {ok:true, exact:true, correct:answer};
+    if(av.some(v => arOneSwap(ai, v))) return {ok:true, exact:false, correct:answer};
+    return {ok:false, exact:false, correct:answer};
+  }
   // Roher Match (für Zahlen und Sonderfälle die normalize zerstört)
   if(rawVariants.some(v => v.toLowerCase() === rawInput)) return {ok:true, exact:true, correct:answer};
   const variants = rawVariants.map(v => normalize(v)).filter(v=>v!=='');
@@ -497,6 +522,10 @@ function checkAnswer(input, answer){
     return d<b.dist?{dist:d,v}:b;
   },{dist:99,v:''});
   if(best.dist===1 && n.length>=5){
+    return {ok:true, exact:false, correct:answer};
+  }
+  // k <-> g (ق wird oft g gesprochen/geschrieben): genau eine Stelle, mindestens 3 Zeichen
+  if(n.length>=3 && variants.some(v => v.length===n.length && [...v].filter((ch,i)=>ch!==n[i]).length===1 && [...v].some((ch,i)=>ch!==n[i] && ((ch==='k'&&n[i]==='g')||(ch==='g'&&n[i]==='k'))))){
     return {ok:true, exact:false, correct:answer};
   }
   return {ok:false, exact:false, correct:answer};
