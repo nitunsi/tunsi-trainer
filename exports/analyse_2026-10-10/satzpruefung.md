@@ -28,7 +28,8 @@ Nils: `ftur` ist das Mittagessen, Frühstück ist `ftur is-sba7`. Die deutschen 
 - 865 Aufgaben geprüft: 555 gleich, 91 abweichend, 219 ohne Gegenstück im Skript (selbst gebaut oder andere Quelle).
 - Von den 91 Abweichungen sind die meisten Skript-Tippfehler, die unsere Übung bereits richtig hat (`tibstu` -> `tib3tu`, `la-ssha` -> `la-3sha`, `sandna` -> `3andna`, `rrawwa7` -> `nrawwa7`, `talza` -> `talfza`), Schreibvarianten (`hadi`/`hethi`, `thibb`/`t7ibb`) oder Ausrichtungsrauschen bei Lücken.
 - Echte Fehler der Übungen, korrigiert: 1213, 1276, 1279, 1293 (`shar` -> `shhar`, Monat), 1296 (`tshum` -> `t3um`, schwimmen), 1564 und 1572 (`msau` -> `mshau`).
-- Offen: 1439 `ksab` (Skript: `k3ab`, Bedeutung unklar), 1178 (Frage endet im Skript mit `w-3lash?`, die Übung lässt es weg).
+- 1439: `ksab` -> `k3ab` (Nils: gehört zu `ka3ba`, Stück; Skript: `k3ab`) korrigiert.
+- Offen: 1178 (Frage endet im Skript mit `w-3lash?`, die Übung lässt es weg).
 
 ## 5. Verbtabellen gegen die Konjugation der Vokabeln
 Präsens-Tabellen der Übungen gegen `vocabulary.conjugation`: 112 vergleichbare Zellen (16 Verben): 86 gleich, 26 nur Vokalunterschiede, 0 Konsonantenunterschiede. Die übrigen Tabellen lassen sich nicht vergleichen (Vokabel hat keine oder andere Konjugation).
