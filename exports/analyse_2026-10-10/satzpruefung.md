@@ -19,3 +19,6 @@ Deutsche Glosse der Vokabeln gegen den deutschen Satz. Von 174 Treffern blieben 
 Hinweis zu `ftur`: Ninja führt `ftur` als Mittagessen, das Skript als Frühstück (`ftur is-sba7`). Nichts geändert.
 
 Nebenbei: Fehler in der früheren Token-Auswertung - deutsche Wörter aus den Klammern der Lösungen flossen als "unbekannt" ein, weil Klammern nach dem Abschneiden an ` — ` nicht mehr entfernt wurden. Die Stufen-Neuberechnung hat dadurch einige Übungen zu schlecht eingestuft (nur Herabstufungen, die nicht übernommen wurden).
+
+## ftur = Mittagessen (Nils, 11.10.2026)
+Nils: `ftur` ist das Mittagessen, Frühstück ist `ftur is-sba7`. Die deutschen Texte der Übungen 999, 1126, 1306, 1444, 1571, 1572 und 1641 wurden angepasst (Frühstück/Essen -> Mittagessen). Die tunesischen Sätze blieben unverändert. 1566 (`ftur is-sba7`) und 2018 (`bit li-ftur` = Esszimmer) blieben.
