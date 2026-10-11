@@ -50,3 +50,9 @@ Rechenweg: `beleg_neuberechnung.py` (Universum: TUNICO, Peace Corps, Ninja, Voka
 Zusätzlich korrigiert: shware3 -> shwara3 (1086, 1101; TUNICO, Peace Corps, Skript).
 
 Stufen jetzt: skript 161, belegt 1635, abgeleitet 173, unsicher 18 (963-978, 1060, 1888).
+
+## Verknüpfungen, Doppelte, Zahlen-Schreibung (11.10.2026)
+- **Verknüpfung Übung ↔ Vokabel:** 197 Verknüpfungen geprüft, alle zeigen auf existierende Vokabeln. Korrigiert: 517 (`nijbdu flus`) von `yuq3ud` auf `yijbid` (Id 3816), 306 (`il-ma3had`) von `mashhad` auf `ma3had` (Id 3664). Aussprache: 102 von 105 verknüpft (3 Vornamen ohne Vokabel), 22 verknüpfte Vokabeln ohne Audio.
+- **Doppelte Übungen gelöscht (12):** 1078, 1755, 1786, 1462, 1463 sowie die Lektion-5-Kopien der Zahlen-Übungen 604, 605, 606, 607, 608, 609, 611 (Lektion 3 behält 184-191 in der Schreibung der Vokabeln). Die 7 dazugehörigen Fortschritts-Einträge (`course_exercise_progress`) wurden mit gelöscht.
+- **Zahlen in der Schreibung der Vokabeln** (`thletha`, `thmenya`, `setta`, `ts3a`) in 58 Übungen angeglichen (vorher `tlata`, `tmanya`, `sitta`, `tis3a`); Artikel bei Uhrzeit/Wochentag angepasst (`it-tlata` -> `ith-thletha`, `it-tmanya` -> `ith-thmenya`). Die Zahlen 11-19 und Zehner blieben unverändert.
+- **Lektionstexte:** Abgleich mit den Skript-Seiten siehe `lektionstexte_luecken.md`; Ergänzungen stehen noch aus.
