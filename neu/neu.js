@@ -522,7 +522,7 @@ function dangerHtml(dc, goal, total){
   const need = goal - dc.today;
   if(dc.today < goal && total < need){
     const extra = need - total;   // so viele fehlen, nachdem alles Fällige gelernt ist
-    return hintCard((total > 0 ? 'Alle '+fmtN(total)+' Fälligen lernen + ' : '')+fmtN(extra)+' aufnehmen oder vorziehen → Tagesziel.', false);
+    return hintCard((total > 0 ? 'Alle '+fmtN(total)+' Fälligen lernen und ' : '')+fmtN(extra)+' aufnehmen oder vorziehen, um das Tagesziel zu erreichen.', false);
   }
   return '';
 }
