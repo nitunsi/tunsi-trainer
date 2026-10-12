@@ -595,6 +595,7 @@ const berlinKey = () => berlinDay(new Date());
 const localToday = () => { try{ const o = JSON.parse(LS.get('neu-today','null')); return o && o.k === berlinKey() ? (o.n||0) : 0; }catch(e){ return 0; } };
 window.neuLocalToday = localToday;
 const adjustToday = delta => {
+  [7,14,30,90].forEach(n => { delete _cache['act' + n]; });   // Aktivitäts-Tabelle in der Statistik neu laden
   try{ LS.set('neu-today', JSON.stringify({k: berlinKey(), n: Math.max(0, localToday() + delta)})); }catch(e){}
   if(_cache.dc){ _cache.dc.today = Math.max(0, _cache.dc.today + delta); _cache.dc.t = Date.now(); }
 };
@@ -1299,7 +1300,7 @@ const LV_COL = ['var(--lvn)','var(--lv0)','var(--lv1)','var(--lv2)','var(--lv3)'
 const pct0 = (a,b) => b ? Math.round(100*a/b) : 0;
 async function loadActivityBars(N){
   const key = 'act' + N;
-  if(_cache[key] && Date.now() - _cache[key].t < 120000) return _cache[key].d;
+  if(_cache[key] && Date.now() - _cache[key].t < 15000) return _cache[key].d;   // kurz, damit frisch Gelerntes in der Statistik schnell auftaucht
   const berlin = d => berlinDay(d);
   const midnight = new Date(); midnight.setHours(0,0,0,0);
   const since = new Date(midnight); since.setDate(since.getDate() - N);
@@ -1311,6 +1312,9 @@ async function loadActivityBars(N){
   }
   const list = [];
   for(let i = N; i >= 0; i--){ const d = new Date(midnight); d.setDate(d.getDate() - i); const e = days[berlin(d)] || {a:0, c:0}; list.push({d, a:e.a, c:e.c}); }
+  // Heute: Antworten, die noch unterwegs zur Datenbank sind, zählen lokal schon mit
+  const last = list[list.length - 1], lt = window.neuLocalToday ? window.neuLocalToday() : 0;
+  if(last && lt > last.c){ last.a += lt - last.c; last.c = lt; }
   _cache[key] = {t: Date.now(), d: list};
   return list;
 }
