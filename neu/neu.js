@@ -345,10 +345,10 @@ function animateRing(host, p, today, goal){
 // Gruß nach Berliner Uhrzeit: Tounsi + Deutsch, mit Sonne oder Mond
 function greetingNow(){
   const hr = parseInt(new Intl.DateTimeFormat('de-DE', {hour:'2-digit', hour12:false, timeZone:'Europe/Berlin'}).format(new Date()), 10) % 24;
-  if(hr >= 5 && hr < 12) return {art:'sun', tn:'Sbah el-khir', de:'Guten Morgen'};
-  if(hr >= 12 && hr < 18) return {art:'sun', tn:'Nhar-ek zin', de:'Einen schönen Tag'};
-  if(hr >= 18 && hr < 22) return {art:'moon', tn:'Msa el-khir', de:'Guten Abend'};
-  return {art:'moon', tn:'Tes7a 3la khir', de:'Gute Nacht'};
+  if(hr >= 5 && hr < 12) return {art:'sun', tn:'Sba7 lkhiyr', de:'Guten Morgen'};
+  if(hr >= 12 && hr < 18) return {art:'sun', tn:'Nharik zin', de:'Einen schönen Tag'};
+  if(hr >= 18 && hr < 22) return {art:'moon', tn:'Massik bil khir', de:'Guten Abend'};
+  return {art:'moon', tn:'Tisbe7 3ala khir', de:'Gute Nacht'};
 }
 function greetHtml(){
   const g = greetingNow(), name = currentUser && currentUser.username ? ', '+escHtml(currentUser.username) : '';
