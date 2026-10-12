@@ -519,8 +519,11 @@ function motivationHtml(dc, goal){
 }
 // Ziel in Gefahr: das Fällige reicht nicht, um das Tagesziel noch zu erreichen
 function dangerHtml(dc, goal, total){
-  if(dc.today < goal && total < goal - dc.today)
-    return hintCard('Bis zum Tagesziel fehlen '+fmtN(goal - dc.today)+'. Nimm Neues auf oder zieh vor.', false);
+  const need = goal - dc.today;
+  if(dc.today < goal && total < need){
+    const extra = need - total;   // so viele fehlen, nachdem alles Fällige gelernt ist
+    return hintCard((total > 0 ? 'Alle '+fmtN(total)+' Fälligen lernen und ' : '')+fmtN(extra)+' aufnehmen oder vorziehen, um das Tagesziel zu erreichen.', false);
+  }
   return '';
 }
 window.neuGoHome = goHome;
