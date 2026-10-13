@@ -370,12 +370,12 @@ function goHome(){
     + '</div></div>'
     + '<div id="neu-new">'+newStuffHint()+'</div>'
     + (empty
-      ? '<div class="neu-card neu-empty">'+artHtml('tea')+'<div><div style="font-size:1.15rem;font-weight:700;color:var(--gold2)">Alles erledigt</div><div class="neu-sub" style="margin-top:.2rem">Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b></div></div></div>'
+      ? '<div class="neu-card neu-empty">'+artHtml('tea')+'<div><div style="font-size:1.15rem;font-weight:700;color:var(--gold2)">Alles erledigt</div><div class="neu-sub" style="margin-top:.2rem">Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b>'+(d.blocked ? ' · '+fmtN(d.blocked)+' gesperrt' : '')+'</div></div></div>'
       : '<button class="neu-btn" style="min-height:56px;font-size:1.1rem;margin:0 0 .6rem" onclick="setMode(\'mix\')">Los geht’s · '+fmtN(total)+' fällig</button>')
-    + '<div class="neu-row2" style="margin-bottom:.6rem">'
+    + (empty ? '' : '<div class="neu-row2" style="margin-bottom:.6rem">'
     +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem" '+(d.voc?'':'disabled')+' onclick="setMode(\'flash\')"><span class="neu-sub">Vokabeln</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.voc)+'</span><small>fällig'+(d.blocked?' · '+fmtN(d.blocked)+' gesperrt':'')+'</small></button>'
     +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem;border-color:#3b4f7a" '+(d.course?'':'disabled')+' onclick="setMode(\'coursesrs\')"><span class="neu-sub" style="color:var(--blue)">Kurs</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.course)+'</span><small>fällig</small></button>'
-    + '</div>'
+    + '</div>')
     + '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer;padding:.7rem 1rem" onclick="setMode(\'partnerqueue\')"><div style="flex:1"><span class="neu-skel" style="width:60%;height:1.1rem"></span><div style="height:.4rem"></div><span class="neu-skel" style="width:40%;height:.8rem"></span></div></div>'
     + '<div class="neu-chips" style="padding-bottom:0">'
     +   '<span class="neu-chip" onclick="openActivateDialog()">Fällig setzen</span>'
