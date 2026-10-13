@@ -68,6 +68,7 @@ function chrome(mode){
   document.body.classList.toggle('neu-session', sess && appVisible);
   document.body.classList.toggle('neu-hasprog', HASPROG.includes(mode));
   document.body.classList.toggle('neu-tabs', appVisible && !sess);
+  document.body.classList.toggle('neu-onhome', mode==='home' && appVisible);
   document.body.classList.toggle('neu-nohdr', mode==='home' || mode==='more' || mode==='stats');
   document.body.classList.toggle('neu-admin', ADMIN.includes(mode));
   const t = TABOF(mode);
@@ -369,7 +370,7 @@ function goHome(){
     + '</div></div>'
     + '<div id="neu-new">'+newStuffHint()+'</div>'
     + (empty
-      ? '<div class="neu-card" style="text-align:center;padding:.8rem">'+artHtml('tea')+'<div style="font-size:1.15rem;font-weight:700;color:var(--gold2)">Alles erledigt</div><div class="neu-sub" style="margin-top:.2rem">Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b></div></div>'
+      ? '<div class="neu-card neu-empty">'+artHtml('tea')+'<div><div style="font-size:1.15rem;font-weight:700;color:var(--gold2)">Alles erledigt</div><div class="neu-sub" style="margin-top:.2rem">Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b></div></div></div>'
       : '<button class="neu-btn" style="min-height:56px;font-size:1.1rem;margin:0 0 .6rem" onclick="setMode(\'mix\')">Los geht’s · '+fmtN(total)+' fällig</button>')
     + '<div class="neu-row2" style="margin-bottom:.6rem">'
     +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem" '+(d.voc?'':'disabled')+' onclick="setMode(\'flash\')"><span class="neu-sub">Vokabeln</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.voc)+'</span><small>fällig'+(d.blocked?' · '+fmtN(d.blocked)+' gesperrt':'')+'</small></button>'
@@ -389,7 +390,6 @@ function goHome(){
     const p = dc.today / goal;
     try{ animateRing(r, p, dc.today, goal); }
     catch(e){ console.error('animateRing', e); r.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', Math.min(999, Math.round(p*100)) + ' %'); $('neu-goal-t').textContent = fmtN(dc.today) + ' von ' + fmtN(goal); }
-    const wk = $('neu-week'); if(wk) wk.innerHTML = weekHtml(dc, goal);
     setTimeout(() => { try{ milesCheck(a.streak || 0); }catch(e){} }, 600);
     $('neu-streak').innerHTML = a.streak ? flame(a.streak) + a.streak + ' Tag' + (a.streak===1?'':'e') + ' in Folge' : 'Noch keine Serie';
   }).catch(() => { const s = $('neu-streak'); if(s) s.textContent = ''; });
@@ -398,7 +398,6 @@ function goHome(){
     if(cMode !== 'home') return;
     const dng = dangerHtml(dc, goal, total), nw = $('neu-new');
     if(dng && nw) nw.innerHTML = dng;
-    const el = $('neu-motiv'); if(el) el.innerHTML = motivationHtml(dc, goal);
   }).catch(() => {});
 }
 // Serien-Flamme: ab 7, 30 und 100 Tagen in anderer Farbe

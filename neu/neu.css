@@ -222,7 +222,6 @@ body.neu-tabs.neu-nohdr main{padding-bottom:calc(var(--tabh) + .6rem + env(safe-
 }
 @media (max-height:680px){
   .neu-home #neu-partner .neu-sub{display:none}
-  .neu-home .neu-chips{display:none}
   .neu-home .neu-row2 .neu-btn small{display:none}
 }
 .neu-node.cur{background:rgba(201,168,76,.1);border-radius:12px;padding-left:.7rem;padding-right:.7rem;margin:0 -.5rem;border-bottom-color:transparent}
@@ -719,3 +718,24 @@ body.neu-admin #exercise-content div[style*="background:var(--surface)"]:not([st
 .partner-comment{background:transparent!important;border:0!important;border-bottom:2px solid var(--border)!important;border-radius:0!important;padding-left:.2rem!important;padding-right:.2rem!important}
 .partner-comment:focus{border-bottom-color:var(--gold)!important;outline:none}
 .partner-btn.skip,.partner-btn.unknown{border-radius:24px}.partner-btn{border-radius:24px!important}
+
+/* ==================== Startseite ohne Scrollen ==================== */
+body.neu-onhome{overflow:hidden}
+body.neu-onhome main{height:calc(var(--vvh,100dvh) - 52px);box-sizing:border-box;overflow:hidden}
+body.neu-onhome #exercise-screen,body.neu-onhome #exercise-content{height:100%}
+body.neu-onhome .neu-wrap.neu-home{height:100%;display:flex;flex-direction:column;padding:0}
+.neu-home > *{flex:none}
+.neu-home > .neu-hero{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center}
+.neu-home #neu-ring svg{width:clamp(84px,13vh,112px)!important;height:clamp(84px,13vh,112px)!important}
+.neu-home .neu-hero-in{gap:.4rem}
+.neu-home #neu-new .neu-card{padding:.15rem 0!important;margin:0 0 .4rem!important;background:transparent!important;border:0!important}
+.neu-home #neu-new .neu-card div{font-size:.92rem;text-align:center}
+.neu-home .neu-empty{display:flex;align-items:center;justify-content:center;gap:.8rem;text-align:left;min-height:56px;padding:0!important}
+.neu-home .neu-empty .neu-art{width:64px;max-width:64px;margin:0;flex:none}
+.neu-home .neu-chips{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:.1rem .9rem;padding-bottom:0}
+.neu-home .neu-chips .neu-chip{font-size:.85rem;min-height:36px;margin:0;padding:0}
+@media (max-height:600px){
+  body.neu-onhome{overflow:auto}
+  body.neu-onhome main{height:auto;overflow:visible}
+  body.neu-onhome .neu-wrap.neu-home{height:auto}
+}
