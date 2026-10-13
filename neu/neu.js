@@ -522,7 +522,11 @@ function dangerHtml(dc, goal, total){
   const need = goal - dc.today;
   if(dc.today < goal && total < need){
     const extra = need - total;   // so viele fehlen, nachdem alles Fällige gelernt ist
-    return hintCard((total > 0 ? 'Alle '+fmtN(total)+' Fälligen lernen und ' : '')+fmtN(extra)+' aufnehmen oder vorziehen, um das Tagesziel zu erreichen.', false);
+    // Morgen fällige Einträge auf Stufe 4–6 vorhanden: vorziehen, sonst Neues aktivieren
+    const tmr = new Date(); tmr.setHours(0,0,0,0); tmr.setDate(tmr.getDate() + 1);
+    let hi = false;
+    try{ hi = pullForwardCandidates().some(c => c.day === tmr.getTime() && c.level >= 4 && c.level <= 6); }catch(e){}
+    return hintCard((total > 0 ? 'Alle Fälligen lernen und ' : '')+fmtN(extra)+(hi ? ' vorziehen' : ' aktivieren')+', um das Tagesziel zu erreichen.', false);
   }
   return '';
 }
