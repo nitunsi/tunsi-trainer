@@ -68,6 +68,7 @@ function chrome(mode){
   document.body.classList.toggle('neu-session', sess && appVisible);
   document.body.classList.toggle('neu-hasprog', HASPROG.includes(mode));
   document.body.classList.toggle('neu-tabs', appVisible && !sess);
+  document.body.classList.toggle('neu-onhome', mode==='home' && appVisible);
   document.body.classList.toggle('neu-nohdr', mode==='home' || mode==='more' || mode==='stats');
   document.body.classList.toggle('neu-admin', ADMIN.includes(mode));
   const t = TABOF(mode);
@@ -316,15 +317,15 @@ function animateRing(host, p, today, goal){
   const fromP = same ? last.p : 0, fromT = same ? last.today : 0;
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const goalEl = $('neu-goal-t');
-  const setTexts = (pp, t) => { const tx = host.querySelector('text'); if(tx) tx.textContent = Math.min(999, Math.round(pp*100)) + ' %'; if(goalEl) goalEl.textContent = fmtN(Math.round(t)) + ' von ' + fmtN(goal); };
+  const setTexts = (pp, t) => { const tx = host.querySelector('text'); if(tx) tx.textContent = fmtN(Math.round(t)); if(goalEl) goalEl.textContent = 'von ' + fmtN(goal) + ' richtigen Antworten'; };
   const hit = p >= 1 && !(same && last.p >= 1);
   LS.set('neu-ringlast', JSON.stringify({day, p, today}));
   if(reduce || (Math.abs(fromP - p) < 0.005 && fromT === today)){
-    host.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', Math.min(999, Math.round(p*100)) + ' %');
-    if(goalEl) goalEl.textContent = fmtN(today) + ' von ' + fmtN(goal);
+    host.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', fmtN(today));
+    if(goalEl) goalEl.textContent = 'von ' + fmtN(goal) + ' richtigen Antworten';
     return;
   }
-  host.innerHTML = ring(fromP, 76, 8, fromP >= 1 ? 'var(--green)' : 'var(--gold)', Math.round(fromP*100) + ' %');
+  host.innerHTML = ring(fromP, 76, 8, fromP >= 1 ? 'var(--green)' : 'var(--gold)', fmtN(Math.round(fromT)));
   const arc = host.querySelectorAll('circle')[1];
   const circ = 2 * Math.PI * (76 - 8) / 2;
   if(arc){
@@ -365,11 +366,11 @@ function goHome(){
     + lessonFilterChip()
     + '<div class="neu-card neu-hero" style="padding:.8rem 1rem"><div class="neu-hero-in">'
     +   '<div id="neu-ring">'+ring(0, 76, 8, 'var(--gold)', '')+'</div>'
-    +   '<div class="neu-hero-t"><div class="neu-sub">Tagesziel (richtige Antworten)</div><div id="neu-goal-t" style="font-size:1.15rem;font-weight:700;margin:1px 0"><span class="neu-skel" style="width:2.2rem;height:1.1rem"></span> von '+goal+'</div><div id="neu-streak" class="neu-sub">&nbsp;</div></div>'
+    +   '<div class="neu-hero-t"><div class="neu-sub">Tagesziel</div><div id="neu-goal-t" style="font-size:1.05rem;font-weight:700;margin:1px 0">von '+goal+' richtigen Antworten</div><div id="neu-streak" class="neu-sub">&nbsp;</div></div>'
     + '</div></div>'
     + '<div id="neu-new">'+newStuffHint()+'</div>'
     + (empty
-      ? '<div class="neu-card" style="text-align:center;padding:.8rem">'+artHtml('tea')+'<div style="font-size:1.15rem;font-weight:700;color:var(--gold2)">Alles erledigt</div><div class="neu-sub" style="margin-top:.2rem">Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b></div></div>'
+      ? '<div class="neu-card neu-empty">'+artHtml('tea')+'<div><div style="font-size:1.15rem;font-weight:700;color:var(--gold2)">Alles erledigt</div><div class="neu-sub" style="margin-top:.2rem">Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b></div></div></div>'
       : '<button class="neu-btn" style="min-height:56px;font-size:1.1rem;margin:0 0 .6rem" onclick="setMode(\'mix\')">Los geht’s · '+fmtN(total)+' fällig</button>')
     + '<div class="neu-row2" style="margin-bottom:.6rem">'
     +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem" '+(d.voc?'':'disabled')+' onclick="setMode(\'flash\')"><span class="neu-sub">Vokabeln</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.voc)+'</span><small>fällig'+(d.blocked?' · '+fmtN(d.blocked)+' gesperrt':'')+'</small></button>'
@@ -377,7 +378,7 @@ function goHome(){
     + '</div>'
     + '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer;padding:.7rem 1rem" onclick="setMode(\'partnerqueue\')"><div style="flex:1"><span class="neu-skel" style="width:60%;height:1.1rem"></span><div style="height:.4rem"></div><span class="neu-skel" style="width:40%;height:.8rem"></span></div></div>'
     + '<div class="neu-chips" style="padding-bottom:0">'
-    +   '<span class="neu-chip" onclick="openActivateDialog()">Vokabeln fällig setzen</span>'
+    +   '<span class="neu-chip" onclick="openActivateDialog()">Fällig setzen</span>'
     +   '<span class="neu-chip" onclick="statsUnlockNextChunk()">Nächster Abschnitt</span>'
     +   '<span class="neu-chip" onclick="openPullForward()">Vorziehen</span>'
     + '</div>'
@@ -388,8 +389,7 @@ function goHome(){
     const r = $('neu-ring'); if(!r || cMode !== 'home') return;
     const p = dc.today / goal;
     try{ animateRing(r, p, dc.today, goal); }
-    catch(e){ console.error('animateRing', e); r.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', Math.min(999, Math.round(p*100)) + ' %'); $('neu-goal-t').textContent = fmtN(dc.today) + ' von ' + fmtN(goal); }
-    const wk = $('neu-week'); if(wk) wk.innerHTML = weekHtml(dc, goal);
+    catch(e){ console.error('animateRing', e); r.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', fmtN(dc.today)); $('neu-goal-t').textContent = 'von ' + fmtN(goal) + ' richtigen Antworten'; }
     setTimeout(() => { try{ milesCheck(a.streak || 0); }catch(e){} }, 600);
     $('neu-streak').innerHTML = a.streak ? flame(a.streak) + a.streak + ' Tag' + (a.streak===1?'':'e') + ' in Folge' : 'Noch keine Serie';
   }).catch(() => { const s = $('neu-streak'); if(s) s.textContent = ''; });
@@ -398,7 +398,6 @@ function goHome(){
     if(cMode !== 'home') return;
     const dng = dangerHtml(dc, goal, total), nw = $('neu-new');
     if(dng && nw) nw.innerHTML = dng;
-    const el = $('neu-motiv'); if(el) el.innerHTML = motivationHtml(dc, goal);
   }).catch(() => {});
 }
 // Serien-Flamme: ab 7, 30 und 100 Tagen in anderer Farbe
@@ -526,7 +525,7 @@ function dangerHtml(dc, goal, total){
     const tmr = new Date(); tmr.setHours(0,0,0,0); tmr.setDate(tmr.getDate() + 1);
     let hi = false;
     try{ hi = pullForwardCandidates().some(c => c.day === tmr.getTime() && c.level >= 4 && c.level <= 6); }catch(e){}
-    return hintCard((total > 0 ? 'Alle Fälligen lernen und ' : '')+fmtN(extra)+(hi ? ' vorziehen' : ' aktivieren')+', um das Tagesziel zu erreichen.', false);
+    return hintCard((total > 0 ? 'Alle Fälligen lernen und ' : '')+'<b style="color:var(--gold2)">'+fmtN(extra)+'</b>'+(hi ? ' vorziehen' : ' aktivieren')+', um das Tagesziel zu erreichen.', false);
   }
   return '';
 }
