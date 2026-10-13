@@ -751,3 +751,9 @@ body.neu-onhome .neu-wrap.neu-home{height:100%;display:flex;flex-direction:colum
 /* Startseite: keine Trennlinien */
 .neu-home .neu-card{border-top:0!important}
 .neu-home .neu-row2{margin:.2rem 0 .6rem!important}
+
+/* Startseite: Ring nimmt den freien Platz (84-160 px), Hinweis darf dazukommen */
+.neu-home .neu-hero{align-items:stretch}
+.neu-home .neu-hero-in{flex:1;min-height:0;justify-content:center}
+.neu-home #neu-ring{flex:1 1 0;min-height:84px;max-height:160px;width:100%;display:flex;justify-content:center;align-items:center}
+.neu-home #neu-ring svg{height:100%!important;width:auto!important;max-height:160px}
