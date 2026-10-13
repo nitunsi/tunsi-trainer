@@ -726,7 +726,7 @@ body.neu-onhome #exercise-screen,body.neu-onhome #exercise-content{height:100%}
 body.neu-onhome .neu-wrap.neu-home{height:100%;display:flex;flex-direction:column;padding:0}
 .neu-home > *{flex:none}
 .neu-home > .neu-hero{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center}
-.neu-home #neu-ring svg{width:clamp(84px,13vh,112px)!important;height:clamp(84px,13vh,112px)!important}
+.neu-home #neu-ring svg{width:clamp(84px,14vh,120px)!important;height:clamp(84px,14vh,120px)!important}
 .neu-home .neu-hero-in{gap:.4rem}
 .neu-home #neu-new .neu-card{padding:.15rem 0!important;margin:0 0 .4rem!important;background:transparent!important;border:0!important}
 .neu-home #neu-new .neu-card div{font-size:.92rem;text-align:center}
@@ -739,3 +739,11 @@ body.neu-onhome .neu-wrap.neu-home{height:100%;display:flex;flex-direction:colum
   body.neu-onhome main{height:auto;overflow:visible}
   body.neu-onhome .neu-wrap.neu-home{height:auto}
 }
+
+/* Startseite: Feinschliff (mittig, Hinweis leise, Pillen) */
+.neu-home #neu-new .neu-card div{font-weight:400!important;color:var(--muted)!important}
+.neu-home #neu-new .neu-card[style*="var(--red)"] div{color:var(--red)!important}
+.neu-home #neu-partner{justify-content:center;text-align:center;padding:.5rem 0!important}
+.neu-home #neu-partner > div > div:first-child{font-size:.9rem!important;color:var(--muted)}
+.neu-home .neu-chips{gap:.4rem;flex-wrap:nowrap}
+.neu-home .neu-chips .neu-chip{border:1px solid var(--border)!important;border-radius:20px!important;padding:0 .7rem;min-height:40px;font-size:.82rem;color:var(--text);white-space:nowrap}
