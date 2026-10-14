@@ -5735,12 +5735,29 @@ function courseConjView(ex){
   if(!ex || ex.exercise_type!=='grammar_drill' || (ex.instruction||'').trim()) return null;
   const t = (ex.prompt||'').trim(), sol0 = (ex.solution||'').trim();
   const cap = x => x.charAt(0).toUpperCase()+x.slice(1);
-  let word, instr, m;
+  let word, instr, m, suffix = false, partizip = false;
   if((m = t.match(/^Negation:\s*([^\s()]+)(?:\s*\(([^()]+)\))?$/))){ word = m[1]; instr = 'Verneinen'+(m[2] ? ' ('+m[2].trim()+')' : '')+'.'; }
   else if((m = t.match(/^([^\s()]+)\s*\(([^()]+)\)$/)) && /konjugier|partizip|negation|dual|imperativ|perfekt|präsens|gruppe/i.test(m[2])){ word = m[1]; instr = cap(m[2].trim()).replace(/\.?$/,'.'); }
   else if(/^Gruppe\s+\d+\./.test(sol0) && /^[^\s()]+$/.test(t)){ word = t; instr = 'Gruppe zuordnen und konjugieren.'; }
+  else if((m = t.match(/^(.+?)\s+"([^"]+)"\s*\+\s*Pronominalsuffixe$/))){ word = m[1]; instr = 'Pronominalsuffixe anhängen („'+m[2]+'“).'; suffix = true; }
+  else if((m = t.match(/^([^\s:()]+):\s*(.*Partizip.*)$/))){ word = m[1]; instr = cap(m[2].trim()).replace(/\.?$/,'.'); partizip = true; }
   else return null;
+  if(partizip){
+    // "akt.Part. a/b/c. pass.Part. d/e/f. Imperativ x (Sg.) / y (Pl.). Beispiel: …" in beschriftete Zeilen zerlegen
+    const LB = {'akt.Part.':'Aktives Partizip','pass.Part.':'Passives Partizip','kein pass.Part.':'Passives Partizip','Imperativ':'Imperativ','Beispiel:':'Beispiel'};
+    const parts = sol0.split(/(?:^|\s)(kein pass\.Part\.|akt\.Part\.|pass\.Part\.|Imperativ|Beispiel:)\s*/).map(x=>x.trim());
+    if(parts[0] !== '' || parts.length < 3) return null;
+    let rows = '';
+    for(let i=1;i<parts.length;i+=2){
+      const key = parts[i]; let val = (parts[i+1]||'').replace(/\.$/,'').trim();
+      if(key==='kein pass.Part.') val = 'keines';
+      if(!val) return null;
+      rows += '<div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;align-self:baseline">'+LB[key]+'</div><div style="color:var(--gold2)">'+escHtml(val)+'</div>';
+    }
+    return {prompt: word, instr, solHtml: '<div style="display:grid;grid-template-columns:5.6rem 1fr;gap:.45rem .7rem">'+rows+'</div>'};
+  }
   let sol = sol0, gruppe = null;
+  if(suffix) sol = sol.replace(/;\s*/, '; Pl. ');
   const gm = sol.match(/^Gruppe\s+(\d+)\.\s*(.*)$/); if(gm){ gruppe = gm[1]; sol = gm[2]; }
   const cut = x => x.split(',').map(f=>f.trim().replace(/\.$/,'')).filter(Boolean);
   const block = txt => {
