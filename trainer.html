@@ -5726,43 +5726,54 @@ function courseBelegHtml(ex){
   if(!b) return '';
   return '<div style="margin-top:.6rem;font-size:.68rem;color:var(--muted)" title="'+b.tip+'"><span style="color:'+b.c+'">'+b.ic+' '+b.t+'</span> — '+b.tip+'</div>';
 }
-// Konjugier-Karten ("yqum (konjugieren)", Lösung "a, b, c, d; Pl. e, f, g, h." oder mit "Perf.: …  Präs.: …"):
-// die Aufgabe aus der Klammer wird zur Anweisung, die Lösung zur Tabelle Singular/Plural (bei beiden Zeiten zwei Blöcke).
-// Nur wenn alles sauber passt (4 Singular-Formen, 3 oder 4 Plural-Formen oder gar keine), sonst null und die Karte bleibt wie bisher. Daten bleiben unverändert.
+// Konjugier-/Negations-/Gruppen-Karten ("yqum (konjugieren)", "Negation: yijbid", Lösung "a, b, c, d; Pl. e, f, g, h."
+// oder mit "Perf.: …  Präs.: …" bzw. "Gruppe 5. …"): die Aufgabe aus der Klammer wird zur Anweisung, die Lösung zur
+// Tabelle Singular/Plural (bei beiden Zeiten zwei Blöcke). Passt die Lösung nicht sauber (4 Singular-Formen, 3 oder 4
+// Plural-Formen oder gar keine), bleibt die Lösung wie bisher (solHtml null), nur Anweisung und Wort werden getrennt.
+// Daten bleiben unverändert.
 function courseConjView(ex){
   if(!ex || ex.exercise_type!=='grammar_drill' || (ex.instruction||'').trim()) return null;
-  const pm = (ex.prompt||'').match(/^(\S+)\s*\(([^()]*konjugier[^()]*)\)\s*$/i);
-  if(!pm) return null;
-  const sol = (ex.solution||'').trim();
+  const t = (ex.prompt||'').trim(), sol0 = (ex.solution||'').trim();
+  const cap = x => x.charAt(0).toUpperCase()+x.slice(1);
+  let word, instr, m;
+  if((m = t.match(/^Negation:\s*([^\s()]+)(?:\s*\(([^()]+)\))?$/))){ word = m[1]; instr = 'Verneinen'+(m[2] ? ' ('+m[2].trim()+')' : '')+'.'; }
+  else if((m = t.match(/^([^\s()]+)\s*\(([^()]+)\)$/)) && /konjugier|partizip|negation|dual|imperativ|perfekt|präsens|gruppe/i.test(m[2])){ word = m[1]; instr = cap(m[2].trim()).replace(/\.?$/,'.'); }
+  else if(/^Gruppe\s+\d+\./.test(sol0) && /^[^\s()]+$/.test(t)){ word = t; instr = 'Gruppe zuordnen und konjugieren.'; }
+  else return null;
+  let sol = sol0, gruppe = null;
+  const gm = sol.match(/^Gruppe\s+(\d+)\.\s*(.*)$/); if(gm){ gruppe = gm[1]; sol = gm[2]; }
+  const cut = x => x.split(',').map(f=>f.trim().replace(/\.$/,'')).filter(Boolean);
   const block = txt => {
-    const cut = x => x.split(',').map(t=>t.trim().replace(/\.$/,'')).filter(Boolean);
-    const m = txt.trim().match(/^([^;]+);\s*Pl\.\s*(.+?)\.?$/);
-    if(!m){ const sg0 = cut(txt); return !/[;]/.test(txt) && sg0.length===4 ? {sg:sg0, pl:[]} : null; }   // nur Singular-Formen
-    const sg = cut(m[1]), pl = cut(m[2]);
+    const bm = txt.trim().match(/^([^;]+);\s*Pl\.\s*(.+?)\.?$/);
+    if(!bm){ const sg0 = cut(txt); return !/[;]/.test(txt) && sg0.length===4 ? {sg:sg0, pl:[]} : null; }   // nur Singular-Formen
+    const sg = cut(bm[1]), pl = cut(bm[2]);
     return sg.length===4 && (pl.length===3 || pl.length===4) ? {sg, pl} : null;
   };
-  let blocks;
+  let blocks = null;
   if(/^Perf\.:/.test(sol) && /Präs\.:/.test(sol)){
-    const m = sol.match(/^Perf\.:\s*(.+?)\s*Präs\.:\s*(.+)$/); if(!m) return null;
-    const a = block(m[1]), b = block(m[2]); if(!a||!b) return null;
-    blocks = [Object.assign({head:'Perfekt'},a), Object.assign({head:'Präsens'},b)];
+    const pm = sol.match(/^Perf\.:\s*(.+?)\s*Präs\.:\s*(.+)$/);
+    const a = pm && block(pm[1]), b = pm && block(pm[2]);
+    if(a && b) blocks = [Object.assign({head:'Perfekt'},a), Object.assign({head:'Präsens'},b)];
   } else {
-    const a = block(sol); if(!a) return null;
-    blocks = [Object.assign({head:''},a)];
+    const a = block(sol);
+    if(a) blocks = [Object.assign({head: gruppe ? 'Gruppe '+gruppe : ''},a)];
   }
-  const cell = f => '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:.95rem;color:var(--gold2)">'+escHtml(f)+'</span>';
-  const row = (l, forms) => '<div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;align-self:baseline">'+l+'</div>'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.2rem .6rem">'+forms.map(cell).join('')+'</div>';
-  const solHtml = blocks.map((b,i) =>
-    (b.head ? '<div style="font-size:.72rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin:'+(i?'.8rem 0 .35rem;padding-top:.6rem;border-top:1px dashed var(--border)':'.2rem 0 .35rem')+'">'+b.head+'</div>' : '')
-    + '<div style="display:grid;grid-template-columns:4.6rem 1fr;gap:.35rem .7rem">'+row('Singular',b.sg)+(b.pl.length ? row('Plural',b.pl) : '')+'</div>'
-  ).join('');
-  const inner = pm[2].trim();
-  return {prompt: pm[1], instr: inner.charAt(0).toUpperCase()+inner.slice(1)+'.', solHtml};
+  if(!blocks && gruppe) return null;   // "Gruppe N." ohne passende Tabelle: Karte unverändert lassen
+  let solHtml = null;
+  if(blocks){
+    const cell = f => '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:.9rem;color:var(--gold2);white-space:nowrap">'+escHtml(f)+'</span>';
+    const row = (l, forms) => '<div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;align-self:baseline">'+l+'</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax('+(Math.max(...forms.map(f=>f.length))>10 ? '8rem' : '4.2rem')+',1fr));gap:.2rem .6rem">'+forms.map(cell).join('')+'</div>';
+    solHtml = blocks.map((b,i) =>
+      (b.head ? '<div style="font-size:.72rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin:'+(i?'.8rem 0 .35rem;padding-top:.6rem;border-top:1px dashed var(--border)':'.2rem 0 .35rem')+'">'+escHtml(b.head)+'</div>' : '')
+      + '<div style="display:grid;grid-template-columns:4.6rem 1fr;gap:.35rem .7rem">'+row('Singular',b.sg)+(b.pl.length ? row('Plural',b.pl) : '')+'</div>'
+    ).join('');
+  }
+  return {prompt: word, instr, solHtml};
 }
 function courseExSolutionHtml(exercise){
   const _cv = courseConjView(exercise);
-  if(_cv) return _cv.solHtml + courseMetaGermanHtml(exercise) + courseBelegHtml(exercise);
+  if(_cv && _cv.solHtml) return _cv.solHtml + courseMetaGermanHtml(exercise) + courseBelegHtml(exercise);
   let solHtml = null;
   if(exercise.exercise_type==='answer_pattern'){
     const m = (exercise.solution||'').match(/^(.*?)\s*\(([^—]+)—\s*(.*)\)\s*$/);
