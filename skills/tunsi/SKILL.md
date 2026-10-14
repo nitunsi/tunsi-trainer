@@ -16,6 +16,7 @@ Fokus dieser Datei: bestehende Trainer-Vokabeln prüfen, neue Vokabeln nachschla
 |---|---|
 | **Vokabeln prüfen ODER neu anlegen** — eine, ein Batch, geflaggte, fällige, ein Import, „ich brauche ein Wort für X" | **Der Prozess — ein Ablauf, zwei Eingänge.** Dasselbe Vorgehen für alle Fälle; es wechseln nur die Zeilen am Anfang und `UPDATE`/`INSERT` am Ende. |
 | Neue Vokabel nachschlagen / Quellen abgleichen | vocab_lookup — Cross-Source-Abgleich (ganz unten), das Werkzeug hinter Schritt 3 |
+| Steht das Wort im Uni-Wien-Skript? Woher stammt eine Kurs-/Lektionsvokabel? | **`uniwien_source_pages`** — wörtliche Seitentranskription beider Bände (Spalten `book`, `pdf_page`, `lesson_number`, `section`, `content`). Mit der **Uni-Wien-Umschrift** suchen (`ž`, `ʕ`, `ḥ`, `ṣ`, `ā` …), nicht mit unserem Chat-Alphabet. Details: IMPORTS.md → `uniwien_source_pages`. Die Kurs-Verknüpfung (`course_lessons.vocab_lesson_refs`) sagt **nichts** über die Herkunft einer Vokabel |
 | Quelle schreibt etwas anders als wir — Fehler oder nur Konvention? | **Quell-Konventionen** (in Transliteration — Ziel-Konvention). Was dort erklärt ist, ist kein Befund |
 | „alle Regeln laufen lassen" | Datenqualitäts-Checks → **A** (müssen auf 0 stehen). Das SQL dort ist nur eine Teilmenge; der vollständige Lauf geht über den Node-Harness gegen `trainer.html` |
 | Bestand nach Kandidaten durchsuchen | Datenqualitäts-Checks → **B** (Verdachtslisten mit Fehlalarmquote) — **nie im Block korrigieren** |
@@ -150,6 +151,14 @@ Ist die Vokabel ein **Verb**, zusätzlich das 3-Zeilen-Modell (siehe „Verb-Kon
 3. `peacecorps_dict_import` — dritte unabhängige Quelle, v.a. bei älterem Lehrbuchvokabular
 
 **Vierte Quelle, immer verfügbar: die arabische Morphologie.** Die drei Offline-Quellen sind Wörterbücher — sie führen Lemmata, keine Paradigmen. Wo eine Form aus dem Wurzelmuster folgt (Imperativ, Partizip, Maß-Zugehörigkeit, assimilierte/hohle Wurzeln), ist sie ableitbar und braucht keinen Wörterbucheintrag: `وَقَفَ → يَقِفُ → قِفْ` (das و fällt im Imperfekt und Imperativ weg). „Kein Treffer in den drei Quellen" ist dort **keine** Begründung zum Zurückstellen (PRECEDENTS.md → „Die Morphologie ist auch eine Quelle"). Über **Bedeutung** entscheidet sie dagegen nichts.
+
+**Zusätzlich das Uni-Wien-Skript** (`uniwien_source_pages`, Umschrift siehe Schnellzugriff), wenn die Zeile aus dem Kurs oder einer Lektion stammen könnte. Es ist eine Quelle für Schreibung und Bedeutung, kein Wörterbuch.
+
+**So suchen, sonst gilt „kein Treffer" nicht (Fall `yetwajja3` / `shah`, 2026-10-14):**
+- **TUNICO nicht nur über `lemma_chatalpha`:** auch `inflected` (Beugungsformen wie f./Pl.) und `variants_chatalpha`. `shiha` steht nur als `s7i7a` unter dem Lemma `s7i7`.
+- **Nach Bedeutung suchen, nicht nur nach Schreibung**, in allen drei Quellen auf Deutsch **und** Englisch (`senses`, `english`). Die geratene Schreibung findet bei fehlerhaften Zeilen definitionsgemäß nichts. Den Treffer für `shah` brachte erst die Suche nach „gesund / stark / healthy".
+- **Eigenen Bestand auf Geschwisterzeilen prüfen** (m./f./Pl. derselben Reihe): `shih` (3887), `shiha` (3976) und `shihin` (3977) bilden eine Reihe, die falsche Zeile fiel dort sofort auf.
+- **Hochsprache (MSA) im Netz ist kein Beleg fürs Tunesische.** Eine unbelegte Form V (`tawajja3a` → `yetwajja3`) ist nur abgeleitet; steht sie in keiner der Quellen, wird sie nicht angelegt.
 
 Erst wenn **keine** der drei trifft, gilt „keine externe Bestätigung". Werkzeug für alle drei: **vocab_lookup** (unten) — `english_key` als primäre Achse, Skelett-Treffer nur separat und ab Länge 4. Live-Ninja nur, wenn offline nichts kommt (IMPORTS.md).
 
