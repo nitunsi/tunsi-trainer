@@ -17,6 +17,13 @@ Regeln für den Lektionen/Stepper-Bereich des Trainers (`course_lessons`/`course
 - **Schreiben:** nur über die Offline-Queue. Kurs-Fortschritt (`type:'course_progress'`) und Kurs-Protokoll laufen jetzt ebenfalls über die Queue.
 - **Schriften** liegen in `neu/fonts/` (selbst ausgeliefert, `immutable`). `berlinDayKey` nutzt einen gemeinsamen `Intl.DateTimeFormat` (vorher ~2,6 s Startzeit auf einem langsamen Gerät).
 
+## Erinnerung per Web-Push und Badge (seit 2026-10)
+
+- **Server (Supabase `lzecflvfalxkodytnwzf`):** Tabelle `push_subscriptions` (user_id, endpoint, p256dh, auth), Edge Function `due-reminder` (nur für Nutzer `Nils`; zählt `progress` + `course_exercise_progress` mit `next_review` bis Ende des Berliner Tages; höchstens ein Push pro Tag über `users.last_reminder_sent_at`), Cron-Job `due-reminder-daily` täglich 05:00 UTC (06:00 Sommer / 07:00 Winter). Secrets: `VAPID_PUBLIC`, `VAPID_PRIVATE`, `CRON_SECRET`.
+- **Client:** `neu/neu.js` Abschnitt „Erinnerung (Web-Push) und Badge“ (`neuTogglePush`, `neuBadge`, Schalter unter Mehr → Konto, nur für Nicht-Partner); `sw.js` Handler `push` und `notificationclick`.
+- Der Server zählt rohe `next_review`-Zeilen, der Trainer blendet gesperrte Vokabeln aus (`isQueueBlocked`) — die Zahl in der Meldung kann daher etwas höher sein als die Anzeige im Trainer.
+- iPhone: Push nur mit App auf dem Home-Bildschirm (iOS ≥ 16.4).
+
 ## Kurs-Modus: course_lessons / course_exercises
 
 Der Trainer hat neben der klassischen SRS-Vokabelabfrage einen Kurs-Modus, aufgebaut aus den Uni-Wien-Lehrskripten. Drei Tabellen:

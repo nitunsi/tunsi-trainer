@@ -110,3 +110,20 @@ self.addEventListener('message', e => {
     }catch(_){}
   })());
 });
+
+// Erinnerung (Web-Push): Meldung zeigen, Badge setzen, beim Tippen die App öffnen
+self.addEventListener('push', e => {
+  let d = {}; try{ d = e.data ? e.data.json() : {}; }catch(_){}
+  e.waitUntil((async () => {
+    if(d.badge && self.navigator && navigator.setAppBadge){ try{ await navigator.setAppBadge(d.badge); }catch(_){} }
+    await self.registration.showNotification(d.title || 'تونسي', { body: d.body || 'Es ist etwas fällig.', icon: '/neu/app/icon-192.png', badge: '/neu/app/icon-192.png', tag: 'due' });
+  })());
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil((async () => {
+    const cs = await self.clients.matchAll({type: 'window', includeUncontrolled: true});
+    for(const c of cs){ if('focus' in c) return c.focus(); }
+    return self.clients.openWindow('/');
+  })());
+});
