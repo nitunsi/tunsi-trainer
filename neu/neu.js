@@ -141,7 +141,7 @@ function b64ToU8(s){
   const p = '='.repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, '+').replace(/_/g, '/'));
   return Uint8Array.from(b, c => c.charCodeAt(0));
 }
-async function neuTogglePush(){
+window.neuTogglePush = async function(){
   try{
     const reg = await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.getSubscription();
@@ -157,7 +157,7 @@ async function neuTogglePush(){
     }
   }catch(e){ alert('Erinnerung: '+(e && e.message || e)); }
   await pushRefresh(); showMore();
-}
+};
 function nextDueText(){
   const now = new Date(); let next = null;
   ALL_VOCAB.forEach(v => { if(isQueueBlocked(v)) return; const p = srsProgress[v.id]; if(p && p.next_review){ const d = new Date(p.next_review); if(!isDueByDay(d) && (!next || d < next)) next = d; } });
