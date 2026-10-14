@@ -127,6 +127,37 @@ function dueCounts(){
   Object.values(COURSE_EX_PROGRESS).forEach(p => { if(p && p.next_review && isDueByDay(courseParseTs(p.next_review))) course++; });
   return {voc, blocked, course};
 }
+/* ---------- Erinnerung (Web-Push) und Badge ---------- */
+const VAPID_PUBLIC = 'BKm4g_zUDLpRrgT2t8VzhDdLlKaqpJypmBVrykVRvW6ZXT8fcf7PT5DyANBmFSvMIil-jLJWULo-QtNuh_fL9B4';
+let _pushOn = false;
+const pushOk = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+function neuBadge(){
+  try{ if(!navigator.setAppBadge) return; const d = dueCounts(), n = d.voc + d.course; if(n > 0) navigator.setAppBadge(n); else navigator.clearAppBadge(); }catch(e){}
+}
+async function pushRefresh(){
+  try{ if(!pushOk()) return; const reg = await navigator.serviceWorker.ready; _pushOn = !!(await reg.pushManager.getSubscription()) && Notification.permission === 'granted'; }catch(e){}
+}
+function b64ToU8(s){
+  const p = '='.repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from(b, c => c.charCodeAt(0));
+}
+async function neuTogglePush(){
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if(sub){
+      await sbApi('push_subscriptions?endpoint=eq.'+encodeURIComponent(sub.endpoint), 'DELETE');
+      await sub.unsubscribe();
+    }else{
+      if(await Notification.requestPermission() !== 'granted'){ alert('Benachrichtigungen sind für diese App nicht erlaubt (Einstellungen des Geräts).'); return; }
+      const s = await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: b64ToU8(VAPID_PUBLIC)});
+      const j = s.toJSON();
+      await sbApi('push_subscriptions?endpoint=eq.'+encodeURIComponent(j.endpoint), 'DELETE');
+      await sbApi('push_subscriptions', 'POST', {user_id: currentUser.id, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth});
+    }
+  }catch(e){ alert('Erinnerung: '+(e && e.message || e)); }
+  await pushRefresh(); showMore();
+}
 function nextDueText(){
   const now = new Date(); let next = null;
   ALL_VOCAB.forEach(v => { if(isQueueBlocked(v)) return; const p = srsProgress[v.id]; if(p && p.next_review){ const d = new Date(p.next_review); if(!isDueByDay(d) && (!next || d < next)) next = d; } });
@@ -359,6 +390,7 @@ function goHome(){
   reset('home');
   const c = $('exercise-content'); if(!c) return;
   const d = dueCounts(), total = d.voc + d.course;
+  neuBadge(); pushRefresh();
   const goal = parseInt(LS.get('neu-goal','100'), 10) || 100;
   const empty = total === 0;
   c.innerHTML = '<div class="neu-wrap neu-home">'
@@ -569,6 +601,7 @@ function showMore(){
     + '</div>'
     + '<div class="neu-h">Konto</div><div class="neu-card neu-list" style="padding:.3rem .9rem">'
     +   '<div class="li"><span class="sp neu-sub">'+escHtml(currentUser ? currentUser.username : '')+' · '+APP_VERSION+' (neu)</span></div>'
+    +   (pushOk() && currentUser && !currentUser.is_partner ? '<div class="li"><span class="sp">Erinnerung morgens, wenn etwas fällig ist<span class="neu-sub" style="display:block;font-size:.8rem">iPhone: nur mit App auf dem Home-Bildschirm</span></span>'+sw(_pushOn, "neuTogglePush()")+'</div>' : '')
     +   li('bug','Debug',"toggleDebug()") + li('out','Abmelden',"doLogout()")
     + '</div>'
     + '</div>';
