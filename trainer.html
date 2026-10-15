@@ -3902,8 +3902,8 @@ function openPullForward(){
     + '<div style="font-size:1.05rem;font-weight:700;color:var(--gold)">Vorziehen</div>'
     + '<div style="font-size:.8rem;color:var(--muted);margin:.1rem 0 .5rem">Vorziehbar: '+fmtN(avail)+' · frühestes Datum, hohe Stufe zuerst</div>'
     + '<div style="font-size:.8rem;color:var(--muted);margin-bottom:.25rem">Morgen fällig, nach Stufe:</div><div style="display:flex;gap:.4rem;margin-bottom:.6rem">'+[4,5,6].map(l => { const on = l === topLv; return '<div class="'+(on?'pf-tile':'')+'" '+(on?'data-n="'+perLv[l]+'" ':'')+'style="flex:1;text-align:center;padding:.3rem .2rem;background:var(--bg);border:1px solid var(--border);border-radius:10px;'+(on?'cursor:pointer':'opacity:.55')+'"><div style="font-size:.72rem;color:var(--muted)">Stufe '+l+'</div><div style="font-size:1.1rem;font-weight:700;color:var(--gold2)">'+fmtN(perLv[l])+'</div></div>'; }).join('')+'</div>'
-    + '<div id="pf-chips" style="display:flex;gap:.4rem;margin-bottom:.5rem">'+[[10,'10'],[20,'20'],[perLv[4]+perLv[5]+perLv[6],'Stufe 4–6: '+(perLv[4]+perLv[5]+perLv[6])],[avail,'Alle '+avail]].filter(c=>c[0]>0&&c[0]<=Math.min(avail,PF_MAX)).filter((c,k,a)=>a.findIndex(x=>x[0]===c[0])===k).map(c=>'<button type="button" data-n="'+c[0]+'" style="flex:'+(c[1].length>4?'2':'1')+';min-height:42px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:.9rem;border-radius:10px;cursor:pointer">'+c[1]+'</button>').join('')+'</div>'
-    + '<input id="pf-n" type="number" inputmode="numeric" min="0" max="'+Math.min(avail,PF_MAX)+'" value="'+preset+'" style="width:100%;padding:.4rem;background:var(--bg);border:1px solid var(--gold);color:var(--text);font-size:1.2rem;text-align:center;border-radius:10px;margin-bottom:.6rem;min-height:44px">'
+    + '<div id="pf-chips" style="display:flex;gap:.4rem;margin-bottom:.5rem">'+[[10,'10'],[20,'20'],[perLv[4]+perLv[5]+perLv[6],'Stufe 4–6: '+(perLv[4]+perLv[5]+perLv[6])],[avail,'Alle '+avail]].filter(c=>c[0]>0&&c[0]<=Math.min(avail,500)).filter((c,k,a)=>a.findIndex(x=>x[0]===c[0])===k).map(c=>'<button type="button" data-n="'+c[0]+'" style="flex:'+(c[1].length>4?'2':'1')+';min-height:42px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:.9rem;border-radius:10px;cursor:pointer">'+c[1]+'</button>').join('')+'</div>'
+    + '<input id="pf-n" type="number" inputmode="numeric" min="0" max="'+Math.min(avail,500)+'" value="'+preset+'" style="width:100%;padding:.4rem;background:var(--bg);border:1px solid var(--gold);color:var(--text);font-size:1.2rem;text-align:center;border-radius:10px;margin-bottom:.6rem;min-height:44px">'
     + '<div style="display:flex;gap:.5rem">'
     + '<button id="pf-cancel" style="flex:1;min-height:46px;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.95rem;border-radius:10px;cursor:pointer">Abbrechen</button>'
     + '<button id="pf-go" style="flex:1;min-height:46px;background:var(--gold);border:none;color:#0e0c0a;font-weight:700;font-size:.95rem;border-radius:10px;cursor:pointer">Vorziehen</button>'
@@ -3929,7 +3929,7 @@ function openPullForward(){
   o.querySelectorAll('.pf-tile').forEach(t => t.onclick = () => {
     const n = parseInt(t.dataset.n, 10) || 0;
     if(n < 1) return;
-    inp.value = Math.min(n, PF_MAX, avail);
+    inp.value = Math.min(n, 500, avail);
     o.querySelectorAll('.pf-tile').forEach(x => x.style.borderColor = 'var(--border)');
     t.style.borderColor = 'var(--gold)';
   });
