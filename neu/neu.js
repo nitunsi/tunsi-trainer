@@ -504,10 +504,24 @@ async function loadPace(){
   LS.set('neu-pace', JSON.stringify({day, n}));
   return n;
 }
+// Kurzzeile der Meilensteine: die Kategorie, die ihrer nächsten Marke am nächsten ist (Streifen + Text)
+function milesNext(vals){
+  let best = null;
+  MILES.forEach(m => {
+    const v = vals[m.key]; if(v == null) return;
+    const nxt = m.marks.find(x => v < x); if(!nxt) return;
+    const last = m.marks.filter(x => v >= x).pop() || 0, pct = Math.round((v - last) / (nxt - last) * 100);
+    if(!best || pct > best.pct) best = {name:m.name, v, nxt, pct};
+  });
+  if(!best) return '<div class="neu-sub" style="font-size:.78rem;margin-top:.3rem">Alle Marken erreicht</div>';
+  return '<div class="neu-mbar" style="margin-top:.4rem"><i style="width:'+best.pct+'%"></i></div><div class="neu-sub" style="font-size:.78rem;margin-top:2px">Nächste Marke: '+best.name+' '+fmtN(best.v)+' / '+fmtN(best.nxt)+'</div>';
+}
 function renderMilestones(vStarted, vTotal, vProfi){
   const el = $('neu-miles'); if(!el) return;
-  el.innerHTML = milesHtml({v:vStarted, p:vProfi});
-  loadActivity().then(a => { const e = $('neu-miles'); if(e && cMode === 'stats') e.innerHTML = milesHtml({v:vStarted, p:vProfi, s:a.streak || 0}); }).catch(() => {});
+  const sum = $('neu-miles-sum');
+  const set = vals => { const e = $('neu-miles'); if(e) e.innerHTML = milesHtml(vals); const sm = $('neu-miles-sum'); if(sm){ const old = sm.querySelector('.neu-mnext'); if(old) old.remove(); const d = document.createElement('div'); d.className = 'neu-mnext'; d.innerHTML = milesNext(vals); sm.appendChild(d); } };
+  set({v:vStarted, p:vProfi});
+  loadActivity().then(a => { if(cMode === 'stats') set({v:vStarted, p:vProfi, s:a.streak || 0}); }).catch(() => {});
   loadPace().then(n => {
     const f = $('neu-forecast'); if(!f || cMode !== 'stats') return;
     const left = vTotal - vStarted;
@@ -1468,13 +1482,12 @@ window.showStats = function(){
   const nextChunk = (all && _courseLoaded) ? statsNextLockedChunk() : null;
   const courseVocabLeft = statsCourseVocabQueue().length;
 
-  const legend = (p, act, tip) => '<div class="neu-leg">'+['Neu','Anfänger','Fortgeschritten','Profi'].map((l,i) =>
-    '<div'+(i===0 && act ? ' class="act" onclick="'+act+'" title="'+escHtml(tip||'')+'"' : '')+'><u style="background:'+PHASE_COL[i]+'"></u><span>'+l+'</span><b>'+fmtN(p[i])+'</b></div>').join('')+'</div>';
   const segBar = p => { const t = p.reduce((a,x)=>a+x,0) || 1; return '<div class="neu-seg2">'+p.map((x,i) => x ? '<i style="width:'+(x/t*100)+'%;background:'+PHASE_COL[i]+'"></i>' : '').join('')+'</div>'; };
-  const kpi = (label, a, b) => '<div><div class="neu-sub">'+label+'</div><div class="neu-kpi'+(b && a>=b ? ' ok':'')+'">'+pct0(a,b)+' %</div></div>';
-  const prog = (title, started, total, p, act, tip) => '<div class="neu-prog-block"><div style="font-weight:700;margin-bottom:.5rem">'+title+'</div>'
-    + '<div style="display:flex;gap:1.6rem">'+kpi('gestartet', started, total)+kpi('davon Profi', p[3], started)+'</div>'
-    + segBar(p) + legend(p, act, tip) + '</div>';
+  const progLegend = '<div style="display:grid;grid-template-columns:repeat(4,1fr);font-size:.72rem;text-align:center;color:var(--muted);margin-bottom:.5rem">'
+    + ['Neu','Anfänger','Fortgeschr.','Profi'].map((l,i) => '<span><u style="display:inline-block;width:8px;height:8px;border-radius:2px;background:'+PHASE_COL[i]+';margin-right:3px"></u>'+l+'</span>').join('')+'</div>';
+  const progA = (title, started, total, p) => '<div style="margin-bottom:.9rem"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:.5rem"><b>'+title+'</b>'
+    + '<span class="neu-sub"><b style="color:var(--gold2)">'+pct0(started,total)+' %</b> gestartet · <b style="color:var(--gold2)">'+pct0(p[3],started)+' %</b> Profi</span></div>'
+    + segBar(p)+'<div style="display:grid;grid-template-columns:repeat(4,1fr);font-size:.85rem;text-align:center">'+p.map(x => '<span>'+fmtN(x)+'</span>').join('')+'</div></div>';
 
   const fcItems = fc.map((v,i) => { const dd = new Date(todayD); dd.setDate(dd.getDate()+i);
     const dm = dd.getDate()+'.'+(dd.getMonth()+1)+'.';
@@ -1496,19 +1509,20 @@ window.showStats = function(){
     +   '<div class="neu-card" style="margin:0;padding:.7rem .9rem"><div class="neu-sub">Serie</div><div class="neu-kpi" id="neu-st-streak" style="font-size:1.6rem"><span class="neu-skel" style="width:2rem;height:1.3rem"></span></div></div>'
     + '</div>'
     + (all ? newStuffHint() : '')
-    + '<div class="neu-card"><div class="neu-ch">Fortschritt</div>'
-    +   prog('Vokabeln', vStarted, vTotal, vp, '', '')
-    +   (all ? '<div style="height:1px;background:var(--border);margin:1rem 0"></div>'+prog('Übungen', cActive, cTotal, cp, '', '') : '')
-    + '</div>'
-    + '<div class="neu-card"><div class="neu-ch">Meilensteine</div><div id="neu-miles"></div><div id="neu-forecast" class="neu-sub" style="margin-top:.7rem"></div></div>'
     + '<div class="neu-card"><div class="neu-ch" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem"><span>Fällig</span></div>'
     +   '<div style="margin:.2rem 0 .7rem">'+winChips(N, 'neuSetFc')+'</div>'
     +   barChart(fcItems, {sum: fcSum, avg: fcTotal / N, def: 'Balken antippen: fällig an dem Tag'}) + (fcBlocked ? '<div class="neu-sub" style="margin-top:.5rem">'+fmtN(fcBlocked)+' in der Partner-Queue gesperrt</div>' : '')
     + '</div>'
+    + '<div class="neu-card"><div class="neu-ch">Fortschritt</div>'
+    +   progLegend
+    +   progA('Vokabeln', vStarted, vTotal, vp)
+    +   (all ? progA('Übungen', cActive, cTotal, cp) : '')
+    + '</div>'
     + (all ? '<div class="neu-card"><div class="neu-ch">Aktivität</div><div id="neu-act-chips" style="margin:.2rem 0 .7rem"></div><div id="neu-act-body"></div></div>' : '')
-    + (all ? '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer" onclick="setMode(\'partnerqueue\')"><div class="neu-sub">Prüf-Aktivität wird geladen …</div></div>' : '')
     + '<div class="neu-card"><div class="neu-ch">Stufen</div><div class="neu-seg2" style="height:16px;margin:.2rem 0 .8rem">'+lvTot.map((x,i) => x ? '<i style="width:'+(x/lvSum*100)+'%;background:'+LV_COL[i]+'"></i>' : '').join('')+'</div>'
     +   '<details class="neu-filter" style="margin:0;border:none;background:none;padding:0"><summary style="min-height:40px">Alle Stufen anzeigen</summary>'+lvRows+'</details></div>'
+    + (all ? '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer" onclick="setMode(\'partnerqueue\')"><div class="neu-sub">Prüf-Aktivität wird geladen …</div></div>' : '')
+    + '<div class="neu-card"><details class="neu-filter" style="margin:0;border:none;background:none;padding:0"><summary id="neu-miles-sum" style="display:block;min-height:44px"><div style="display:flex;justify-content:space-between;font-weight:700"><span>Meilensteine</span><span class="neu-sub" style="font-weight:400">alle zeigen</span></div></summary><div id="neu-miles" style="margin-top:.5rem"></div><div id="neu-forecast" class="neu-sub" style="margin-top:.7rem"></div></details></div>'
     + '<div class="neu-row2" style="margin-bottom:.8rem"><button class="neu-btn ghost" onclick="statsStartMode(\'lessons\')">Lektions-Übersicht</button><button class="neu-btn ghost" style="border-color:#3b4f7a;color:var(--blue)" onclick="statsStartMode(\'course\')">Kurs-Übersicht</button></div>'
     + '<details class="neu-filter"><summary>Weitere Werkzeuge</summary><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem">'
     +   '<button class="neu-btn line" style="flex:1;min-width:10rem" onclick="if(confirm(\'Fälligkeiten glätten? (betrifft bis zu '+smoothMax+' Vokabeln)\'))smoothSchedule();">Glätten<small>bis zu '+fmtN(smoothMax)+' Einträge</small></button>'
