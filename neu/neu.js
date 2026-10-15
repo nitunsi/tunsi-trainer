@@ -1523,14 +1523,14 @@ window.showStats = function(){
   const lvRows = lvTot.map((n,i) => '<div class="neu-lvrow"><u style="background:'+LV_COL[i]+'"></u><span>'+(i===0?'Neu':'Stufe '+(i-1))+'</span><em>'+hints[i]+'</em><b>'+fmtN(n)+'</b><s'+(dueByBucket[i]?' style="color:var(--red)"':'')+'>'+(dueByBucket[i]?fmtN(dueByBucket[i])+' fällig':'')+'</s></div>').join('');
 
   const tab = statsTab === 'fortschritt' ? 'fortschritt' : 'verlauf';
-  const pill = (t, id) => '<span class="neu-chip'+(tab === id ? ' on' : '')+'" style="min-height:36px;padding:0 1rem" onclick="neuStatsTab(\''+id+'\')">'+t+'</span>';
+  const pill = (t, id) => '<span class="neu-chip'+(tab === id ? ' on' : '')+'" style="min-height:38px;padding:0 1.1rem;'+(tab === id ? 'background:var(--gold)!important;color:#17120a!important;border-color:var(--gold)!important;font-weight:700' : 'color:var(--text)')+'" onclick="neuStatsTab(\''+id+'\')">'+t+'</span>';
   const head = (t, right) => '<div style="display:flex;justify-content:space-between;align-items:center;margin:.6rem 0 .1rem"><div class="neu-sub" style="text-transform:uppercase;letter-spacing:1.2px;font-size:.72rem">'+t+'</div>'+(right || '')+'</div>';
   const winPills = (cur, fn) => '<span style="display:inline-flex;gap:.3rem">'+[7,14,30,90].map(n => '<span class="neu-chip'+(n===cur?' on':'')+'" style="min-height:30px;padding:0 .7rem" onclick="'+fn+'('+n+')">'+n+'</span>').join('')+'</span>';
   const ringBlock = (title, started, total, p) => '<div style="flex:1;min-width:0;text-align:center">'+ring(total ? started/total : 0, 80, 9, 'var(--gold)', pct0(started,total)+' %')
     + '<div><b>'+title+'</b> <span class="neu-sub" style="font-size:.8rem">gestartet</span></div><div class="neu-sub" style="font-size:.78rem">davon Profi <b style="color:var(--gold2)">'+pct0(p[3],started)+' %</b></div>'
     + segBar(p)+'<div style="display:grid;grid-template-columns:repeat(4,1fr);font-size:.74rem">'+p.map(x => '<span>'+fmtN(x)+'</span>').join('')+'</div></div>';
   const grp = (t, r, k) => '<div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:.5rem 0 0;display:flex;align-items:center;gap:.4rem"><u style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+PHASE_COL[k]+'"></u>'+t+(r ? ' <span style="font-weight:400;text-transform:none">· '+r+'</span>' : '')+'</div>';
-  const lvRow = i => '<div class="neu-lvrow" style="min-height:30px"><u style="background:'+LV_COL[i]+'"></u><span>'+(i===0?'Neu':'Stufe '+(i-1))+'</span><em>'+(i===0 ? 'noch nicht gestartet' : hints[i])+'</em><b>'+fmtN(lvTot[i])+'</b><s'+(dueByBucket[i]?' style="color:var(--red)"':'')+'>'+(dueByBucket[i]?fmtN(dueByBucket[i])+' fällig':'')+'</s></div>';
+  const lvRow = i => '<div class="neu-lvrow" style="min-height:30px"><u style="background:'+LV_COL[i]+'"></u><span>'+(i===0?'Neu':'Stufe '+(i-1))+'</span><em>'+(i===0 ? 'ungestartet' : hints[i])+'</em><b>'+fmtN(lvTot[i])+'</b><s'+(dueByBucket[i]?' style="color:var(--red)"':'')+'>'+(dueByBucket[i]?fmtN(dueByBucket[i])+' fällig':'')+'</s></div>';
   const stufen = lvRow(0)+grp('Anfänger','Stufe 0–2',1)+[1,2,3].map(lvRow).join('')+grp('Fortgeschritten','Stufe 3–4',2)+[4,5].map(lvRow).join('')+grp('Profi','Stufe 5–6',3)+[6,7].map(lvRow).join('');
   const verlauf = head('Fällig', winPills(N, 'neuSetFc'))
     + '<div class="neu-sub" style="font-size:.8rem;margin-bottom:.2rem">'+fcSum.map(([t, v]) => t+' <b style="color:var(--text)">'+v+'</b>').join(' · ')+'</div>'
@@ -1543,7 +1543,7 @@ window.showStats = function(){
     + '</div><div style="height:.4rem"></div>' + stufen;
   c.innerHTML = '<div class="neu-wrap">'
     + (all ? '' : '<div style="margin-bottom:.6rem;text-align:center"><span class="neu-chip on" onclick="neuFilterOffStats()">Filter: '+escHtml(cLesson==='COURSEVOCAB'?'Kurs-Lektion':cLesson)+' ✕</span></div>')
-    + '<div style="display:flex;gap:.5rem;justify-content:center;margin:.1rem 0 .5rem">'+pill('Verlauf','verlauf')+pill('Fortschritt','fortschritt')+'</div>'
+    + '<div style="display:flex;gap:.5rem;justify-content:center;margin:.1rem 0 .7rem">'+pill('Verlauf','verlauf')+pill('Fortschritt','fortschritt')+'</div>'
     + (tab === 'verlauf' ? verlauf : fortschritt)
     + '</div>';
   if(tab === 'verlauf'){ if(all) renderActivityCard(); renderMilestones(vStarted, vTotal, vp[3]); }
