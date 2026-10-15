@@ -1523,7 +1523,7 @@ window.showStats = function(){
   const lvRows = lvTot.map((n,i) => '<div class="neu-lvrow"><u style="background:'+LV_COL[i]+'"></u><span>'+(i===0?'Neu':'Stufe '+(i-1))+'</span><em>'+hints[i]+'</em><b>'+fmtN(n)+'</b><s'+(dueByBucket[i]?' style="color:var(--red)"':'')+'>'+(dueByBucket[i]?fmtN(dueByBucket[i])+' fällig':'')+'</s></div>').join('');
 
   const tab = statsTab === 'fortschritt' ? 'fortschritt' : 'verlauf';
-  const pill = (t, id) => '<span class="neu-chip'+(tab === id ? ' on' : '')+'" style="min-height:38px;padding:0 1.1rem;'+(tab === id ? 'background:var(--gold)!important;color:#17120a!important;border-color:var(--gold)!important;font-weight:700' : 'color:var(--text)')+'" onclick="neuStatsTab(\''+id+'\')">'+t+'</span>';
+  const pill = (t, id) => '<span class="neu-chip'+(tab === id ? ' on' : '')+'" style="min-height:40px;padding:0 .3rem;font-size:1.05rem;'+(tab === id ? '' : 'color:var(--muted)')+'" onclick="neuStatsTab(\''+id+'\')">'+t+'</span>';
   const head = (t, right) => '<div style="display:flex;justify-content:space-between;align-items:center;margin:.6rem 0 .1rem"><div class="neu-sub" style="text-transform:uppercase;letter-spacing:1.2px;font-size:.72rem">'+t+'</div>'+(right || '')+'</div>';
   const winPills = (cur, fn) => '<span style="display:inline-flex;gap:.3rem">'+[7,14,30,90].map(n => '<span class="neu-chip'+(n===cur?' on':'')+'" style="min-height:30px;padding:0 .7rem" onclick="'+fn+'('+n+')">'+n+'</span>').join('')+'</span>';
   const ringBlock = (title, started, total, p) => '<div style="flex:1;min-width:0;text-align:center">'+ring(total ? started/total : 0, 80, 9, 'var(--gold)', pct0(started,total)+' %')
@@ -1543,7 +1543,7 @@ window.showStats = function(){
     + '</div><div style="height:.4rem"></div>' + stufen;
   c.innerHTML = '<div class="neu-wrap">'
     + (all ? '' : '<div style="margin-bottom:.6rem;text-align:center"><span class="neu-chip on" onclick="neuFilterOffStats()">Filter: '+escHtml(cLesson==='COURSEVOCAB'?'Kurs-Lektion':cLesson)+' ✕</span></div>')
-    + '<div style="display:flex;gap:.5rem;justify-content:center;margin:.1rem 0 .7rem">'+pill('Verlauf','verlauf')+pill('Fortschritt','fortschritt')+'</div>'
+    + '<div class="neu-chips" style="position:sticky;top:52px;z-index:5;background:var(--bg);justify-content:center;gap:1.6rem;padding:.2rem 0 .1rem;margin:0 0 .5rem">'+pill('Verlauf','verlauf')+pill('Fortschritt','fortschritt')+'</div>'
     + (tab === 'verlauf' ? verlauf : fortschritt)
     + '</div>';
   if(tab === 'verlauf'){ if(all) renderActivityCard(); renderMilestones(vStarted, vTotal, vp[3]); }
