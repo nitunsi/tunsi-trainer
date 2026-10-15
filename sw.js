@@ -9,7 +9,7 @@ const META  = 'tounsi-meta-v1';
 const NET_TIMEOUT = 3000;
 const CORE = [
   '/trainer.html', '/neu/neu.css', '/neu/neu.js',
-  '/neu/app/manifest.webmanifest', '/neu/app/icon-192.png', '/neu/app/icon-512.png', '/neu/app/apple-touch-icon.png', '/neu/app/icon.svg',
+  '/neu/app/manifest.webmanifest', '/neu/app/icon-192.png', '/neu/app/icon-512.png', '/neu/app/apple-touch-icon.png', '/neu/app/icon.svg', '/neu/app/badge-96.png',
   '/neu/fonts/plexmono-400.woff2', '/neu/fonts/plexmono-500.woff2', '/neu/fonts/playfair.woff2', '/neu/fonts/naskh.woff2'
 ];
 
@@ -116,7 +116,7 @@ self.addEventListener('push', e => {
   let d = {}; try{ d = e.data ? e.data.json() : {}; }catch(_){}
   e.waitUntil((async () => {
     if(d.badge && self.navigator && navigator.setAppBadge){ try{ await navigator.setAppBadge(d.badge); }catch(_){} }
-    await self.registration.showNotification(d.title || 'تونسي', { body: d.body || 'Es ist etwas fällig.', icon: '/neu/app/icon-192.png', badge: '/neu/app/icon-192.png', tag: 'due' });
+    await self.registration.showNotification(d.title || 'تونسي', { body: d.body || 'Es ist etwas fällig.', icon: '/neu/app/icon-192.png', badge: '/neu/app/badge-96.png', tag: 'due' });
   })());
 });
 self.addEventListener('notificationclick', e => {
