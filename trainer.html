@@ -1025,7 +1025,7 @@ async function smoothSchedule(){
       ? `<span style="color:var(--gold)">✓ ${done} geglättet${todayNote}, ${errors} Fehler.</span>`
       : `<span style="color:var(--green)">✓ ${done} Fälligkeiten neu verteilt${todayNote}.</span>`;
   }
-  showStats();
+  if(cMode==='stats') showStats();   // aus „Mehr“ aufgerufen: dort bleiben und die Meldung stehen lassen
 }
 
 // Einmalig alle next_review neu berechnen: last_reviewed + SRS_DAYS[level]
@@ -1079,7 +1079,7 @@ async function recalcAllNextReview(){
       ? `<span style="color:var(--gold)">✓ ${done} neu gesetzt, ${errors} Fehler.</span>`
       : `<span style="color:var(--green)">✓ ${done} Fälligkeiten neu berechnet.</span>`;
   }
-  showStats();
+  if(cMode==='stats') showStats();   // aus „Mehr“ aufgerufen: dort bleiben und die Meldung stehen lassen
 }
 function toLocalInputDE(date){
   const d = date instanceof Date ? date : new Date(date);
