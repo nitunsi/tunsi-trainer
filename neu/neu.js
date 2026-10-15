@@ -69,6 +69,7 @@ function chrome(mode){
   document.body.classList.toggle('neu-hasprog', HASPROG.includes(mode));
   document.body.classList.toggle('neu-tabs', appVisible && !sess);
   document.body.classList.toggle('neu-onhome', mode==='home' && appVisible);
+  if(mode !== 'stats') document.body.classList.remove('neu-lock');
   document.body.classList.toggle('neu-nohdr', mode==='home' || mode==='more' || mode==='stats');
   document.body.classList.toggle('neu-admin', ADMIN.includes(mode));
   const t = TABOF(mode);
@@ -1453,13 +1454,21 @@ function renderActivityCard(){
         tip: (i===list.length-1 ? 'Heute' : WD[x.d.getDay()]+' '+dm(x.d))+': '+fmtN(x.c)+' richtig (von '+fmtN(x.a)+' beantwortet)'}));
       opts.avg = avg;
     }
-    const line = '<div class="neu-sub" style="font-size:.8rem;margin-bottom:.2rem">'+sum.map(([t, v]) => t+' <b style="color:var(--text)">'+v+'</b>').join(' · ')+'</div>';
     delete opts.sum; opts.H = 68;
-    el.innerHTML = line + barChart(items, opts);
+    el.innerHTML = barChart(items, opts);
+    if(window.neuStatsLock) window.neuStatsLock();
   }).catch(e => { const b = $('neu-act-body'); if(b) b.innerHTML = '<div style="color:var(--red);font-size:.85rem">Fehler: '+escHtml(e.message)+'</div>'; });
 }
 
 let statsTab = 'verlauf';
+// Passt die Statistik ohne Scrollen auf den Bildschirm, wird die Seite festgesetzt (kein Hin- und Herziehen); sonst bleibt sie scrollbar
+window.neuStatsLock = function(){
+  const b = document.body;
+  if(cMode !== 'stats'){ b.classList.remove('neu-lock'); return; }
+  b.classList.remove('neu-lock');
+  const fits = document.documentElement.scrollHeight <= window.innerHeight + 1;
+  b.classList.toggle('neu-lock', fits);
+};
 window.neuStatsTab = function(t){ statsTab = t; showStats(); };
 window.showStats = function(){
   reset('stats');
@@ -1536,20 +1545,20 @@ window.showStats = function(){
     + '<b>'+fmtN(lvTot[i])+'</b><s style="text-align:right;text-decoration:none;white-space:nowrap'+(dueByBucket[i]?';color:var(--red)':'')+'">'+(dueByBucket[i]?fmtN(dueByBucket[i])+' fällig':'')+'</s></div>';
   const stufen = lvRow(0)+grp('Anfänger','Stufe 0–2',1)+[1,2,3].map(lvRow).join('')+grp('Fortgeschritten','Stufe 3–4',2)+[4,5].map(lvRow).join('')+grp('Profi','Stufe 5–6',3)+[6,7].map(lvRow).join('');
   const verlauf = head('Fällig', winPills(N, 'neuSetFc'))
-    + '<div class="neu-sub" style="font-size:.8rem;margin-bottom:.2rem">'+fcSum.map(([t, v]) => t+' <b style="color:var(--text)">'+v+'</b>').join(' · ')+'</div>'
     + barChart(fcItems, {avg: fcTotal / N, H: 68, def: 'Balken antippen: fällig an dem Tag'}) + phaseLegend() + (fcBlocked ? '<div class="neu-sub" style="margin-top:.4rem">'+fmtN(fcBlocked)+' in der Partner-Queue gesperrt</div>' : '')
     + (all ? head('Aktivität', '<span id="neu-act-chips"></span>')+'<div id="neu-act-body"></div>' : '')
-    + '<div style="margin-top:.5rem"><details class="neu-filter" style="margin:0;border:none;background:none;padding:0"><summary style="display:flex;justify-content:space-between;align-items:center;min-height:30px"><span class="neu-sub" style="text-transform:uppercase;letter-spacing:1.2px;font-size:.72rem">Serie &amp; Meilensteine</span><span class="neu-sub" style="font-size:.78rem">alle ›</span></summary>'
+    + '<div style="margin-top:.5rem"><details class="neu-filter" ontoggle="neuStatsLock()" style="margin:0;border:none;background:none;padding:0"><summary style="display:flex;justify-content:space-between;align-items:center;min-height:30px"><span class="neu-sub" style="text-transform:uppercase;letter-spacing:1.2px;font-size:.72rem">Serie &amp; Meilensteine</span><span class="neu-sub" style="font-size:.78rem">alle ›</span></summary>'
     +   '<div id="neu-miles" style="margin-top:.4rem"></div><div id="neu-forecast" class="neu-sub" style="margin:.5rem 0 .3rem"></div></details><div id="neu-miles-rows"></div></div>';
   const fortschritt = '<div style="display:flex;gap:.6rem;margin-top:.4rem">'
     + ringBlock('Vokabeln', vStarted, vTotal, vp) + (all ? ringBlock('Übungen', cActive, cTotal, cp) : '')
     + '</div><div style="height:.4rem"></div>' + stufen;
   c.innerHTML = '<div class="neu-wrap">'
     + (all ? '' : '<div style="margin-bottom:.6rem;text-align:center"><span class="neu-chip on" onclick="neuFilterOffStats()">Filter: '+escHtml(cLesson==='COURSEVOCAB'?'Kurs-Lektion':cLesson)+' ✕</span></div>')
-    + '<div class="neu-chips" style="position:sticky;top:52px;z-index:5;background:var(--bg);justify-content:center;gap:1.6rem;padding:.2rem 0 .1rem;margin:0 0 .5rem">'+pill('Verlauf','verlauf')+pill('Fortschritt','fortschritt')+'</div>'
+    + '<div class="neu-chips neu-stabs" style="justify-content:center;gap:1.6rem;padding:.2rem 0 .1rem;margin:0 0 .5rem">'+pill('Verlauf','verlauf')+pill('Fortschritt','fortschritt')+'</div>'
     + (tab === 'verlauf' ? verlauf : fortschritt)
     + '</div>';
   if(tab === 'verlauf'){ if(all) renderActivityCard(); renderMilestones(vStarted, vTotal, vp[3]); }
+  window.neuStatsLock(); setTimeout(window.neuStatsLock, 600); setTimeout(window.neuStatsLock, 1800);
 };
 
 /* ---------- Erster Einstieg: nach dem Laden auf die Startseite ---------- */
