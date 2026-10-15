@@ -134,6 +134,9 @@ const pushOk = () => 'serviceWorker' in navigator && 'PushManager' in window && 
 function neuBadge(){
   try{ if(!navigator.setAppBadge) return; const d = dueCounts(), n = d.voc + d.course; if(n > 0) navigator.setAppBadge(n); else navigator.clearAppBadge(); }catch(e){}
 }
+// Badge aktuell halten: beim Verlassen der App (Wechsel in den Hintergrund); auf der Startseite setzt goHome es ebenfalls
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') neuBadge(); });
+window.addEventListener('pagehide', neuBadge);
 async function pushRefresh(){
   try{ if(!pushOk()) return; const reg = await navigator.serviceWorker.ready; _pushOn = !!(await reg.pushManager.getSubscription()) && Notification.permission === 'granted'; }catch(e){}
 }
