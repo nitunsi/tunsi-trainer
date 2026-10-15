@@ -1383,6 +1383,11 @@ function barChart(items, opts){
   const n = items.length, max = Math.max(1, ...items.map(x => x.v)), H = 96;
   const stack = x => {
     const h = Math.round(x.v / max * H), hc = x.c != null && x.v ? Math.round(h * x.c / x.v) : h;
+    if(x.ph && x.v){   // nach Phase eingefärbt: Neu oben, Profi unten; Rundungsrest geht an das größte Stück
+      const segs = x.ph.map(n => n ? Math.max(1, Math.round(h * n / x.v)) : 0);
+      segs[segs.indexOf(Math.max(...segs))] += h - segs.reduce((t, g) => t + g, 0);
+      return segs.map((g, k) => g > 0 ? '<i style="height:'+g+'px;background:'+PHASE_COL[k]+'"></i>' : '').join('');
+    }
     return x.v ? (x.c != null
       ? '<i style="height:'+(h-hc)+'px;background:#5a4c2e"></i><i style="height:'+hc+'px;background:var(--gold)"></i>'
       : '<i style="height:'+h+'px;background:'+(x.hot?'var(--gold2)':'var(--bar)')+'"></i>') : '';
@@ -1407,6 +1412,11 @@ window.neuBarsTap = function(ev, el){
   bars.forEach((b, k) => b.classList.toggle('sel', k === i));
   const t = el.parentElement.querySelector('.neu-tip'); if(t) t.textContent = bars[i].dataset.tip || '';
 };
+// Farblegende der Phasen unter Diagrammen (Neu = Stufe 0, Anfänger = 1–2, Fortgeschritten = 3–4, Profi = 5–6)
+function phaseLegend(){
+  return '<div style="display:flex;flex-wrap:wrap;gap:.2rem .9rem;margin-top:.6rem;font-size:.78rem;color:var(--muted)">'
+    + ['Neu','Anfänger','Fortgeschritten','Profi'].map((l,i) => '<span><u style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+PHASE_COL[i]+';margin-right:4px;vertical-align:-1px"></u>'+l+'</span>').join('')+'</div>';
+}
 function winChips(cur, fn){ return '<div style="display:flex;gap:.35rem">'+[7,14,30,90].map(n => '<span class="neu-chip'+(n===cur?' on':'')+'" style="min-height:32px;padding:0 .65rem" onclick="'+fn+'('+n+')">'+n+'</span>').join('')+'</div>'; }
 window.neuSetFc = function(n){ forecastSet(n); };   // Scrollstand bleibt erhalten (siehe forecastSet in trainer.html)
 window.neuSetAct = function(n){ activityWindow = n; renderActivityCard(); };
@@ -1453,6 +1463,8 @@ window.showStats = function(){
   const todayD = new Date(); todayD.setHours(0,0,0,0);
   const N = forecastWindow;
   const fc = new Array(N).fill(0); let fcBlocked = 0;
+  const fcp = Array.from({length:N}, () => [0,0,0,0]);   // pro Tag: fällig nach Phase (Neu = Stufe 0, Anfänger = 1–2, Fortgeschritten = 3–4, Profi = 5–6)
+  const phOf = idx => idx <= 1 ? 0 : idx <= 3 ? 1 : idx <= 5 ? 2 : 3;
   const dueByBucket = [0,0,0,0,0,0,0,0];
   const dayIdx = d => { const nd = new Date(d); nd.setHours(0,0,0,0); const diff = Math.round((nd - todayD) / 86400000); return diff < 0 ? 0 : diff; };
   base.forEach(v => {
@@ -1460,7 +1472,7 @@ window.showStats = function(){
     const lv = st ? (p.level||0) : -1;
     const idx = !st ? 0 : (lv === 0 ? 1 : Math.min(lv+1, 7));
     vb[idx]++; if(st) vPts += Math.min(lv,6);
-    if(st){ const di = dayIdx(p.next_review); if(di < N){ if(isQueueBlocked(v)) fcBlocked++; else fc[di]++; } if(srsIsDue(v) && !isQueueBlocked(v)) dueByBucket[idx]++; }
+    if(st){ const di = dayIdx(p.next_review); if(di < N){ if(isQueueBlocked(v)) fcBlocked++; else { fc[di]++; fcp[di][phOf(idx)]++; } } if(srsIsDue(v) && !isQueueBlocked(v)) dueByBucket[idx]++; }
   });
   const cb = [0,0,0,0,0,0,0,0]; let cPts = 0, cTotal = 0, cActive = 0;
   if(all){
@@ -1468,7 +1480,7 @@ window.showStats = function(){
     Object.values(COURSE_EX_PROGRESS).forEach(p => {
       const lv = Math.min(p.correct_count||0, 6); const idx = lv === 0 ? 1 : Math.min(lv+1, 7);
       cb[idx]++; cActive++; cPts += lv;
-      if(p.next_review){ const nd = courseParseTs(p.next_review); const di = dayIdx(nd); if(di < N) fc[di]++; if(isDueByDay(nd)) dueByBucket[idx]++; }
+      if(p.next_review){ const nd = courseParseTs(p.next_review); const di = dayIdx(nd); if(di < N){ fc[di]++; fcp[di][phOf(idx)]++; } if(isDueByDay(nd)) dueByBucket[idx]++; }
     });
     cb[0] = Math.max(0, cTotal - cActive);
   }
@@ -1492,8 +1504,9 @@ window.showStats = function(){
   const fcItems = fc.map((v,i) => { const dd = new Date(todayD); dd.setDate(dd.getDate()+i);
     const dm = dd.getDate()+'.'+(dd.getMonth()+1)+'.';
     const label = N <= 7 ? (i===0 ? 'Heute' : i===1 ? 'Morgen' : WD[dd.getDay()]) : '';
-    return {v, label, hot:i===0, act: '', ax: i===0 ? 'Heute' : dm,
-      tip: (i===0 ? 'Heute' : WD[dd.getDay()]+' '+dm)+': '+fmtN(v)+' fällig'}; });
+    const ph = fcp[i], phTxt = v ? ' (' + ['Neu','Anf.','Fortg.','Profi'].map((nm,k) => nm+' '+fmtN(ph[k])).join(' · ') + ')' : '';
+    return {v, label, hot:i===0, act: '', ax: i===0 ? 'Heute' : dm, ph,
+      tip: (i===0 ? 'Heute' : WD[dd.getDay()]+' '+dm)+': '+fmtN(v)+' fällig'+phTxt}; });
   const fcTotal = fc.reduce((a,x)=>a+x,0), fcMax = Math.max(0, ...fc);
   const fcSum = [['Gesamt', fmtN(fcTotal)], ['Ø pro Tag', fmtN(Math.round(fcTotal / N))], ['Spitze', fmtN(fcMax)]];
   const lvTot = vb.map((x,i) => x + cb[i]), lvSum = lvTot.reduce((a,x)=>a+x,0) || 1;
@@ -1511,7 +1524,7 @@ window.showStats = function(){
     + (all ? newStuffHint() : '')
     + '<div class="neu-card"><div class="neu-ch" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem"><span>Fällig</span></div>'
     +   '<div style="margin:.2rem 0 .7rem">'+winChips(N, 'neuSetFc')+'</div>'
-    +   barChart(fcItems, {sum: fcSum, avg: fcTotal / N, def: 'Balken antippen: fällig an dem Tag'}) + (fcBlocked ? '<div class="neu-sub" style="margin-top:.5rem">'+fmtN(fcBlocked)+' in der Partner-Queue gesperrt</div>' : '')
+    +   barChart(fcItems, {sum: fcSum, avg: fcTotal / N, def: 'Balken antippen: fällig an dem Tag'}) + phaseLegend() + (fcBlocked ? '<div class="neu-sub" style="margin-top:.5rem">'+fmtN(fcBlocked)+' in der Partner-Queue gesperrt</div>' : '')
     + '</div>'
     + '<div class="neu-card"><div class="neu-ch">Fortschritt</div>'
     +   progLegend
