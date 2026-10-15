@@ -5732,8 +5732,25 @@ function courseBelegHtml(ex){
 // Plural-Formen oder gar keine), bleibt die Lösung wie bisher (solHtml null), nur Anweisung und Wort werden getrennt.
 // Daten bleiben unverändert.
 function courseConjView(ex){
-  if(!ex || ex.exercise_type!=='grammar_drill' || (ex.instruction||'').trim()) return null;
+  if(!ex || (ex.instruction||'').trim()) return null;
   const t = (ex.prompt||'').trim(), sol0 = (ex.solution||'').trim();
+  const esc = x => escHtml(x);
+  const lab = l => '<div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;align-self:baseline">'+l+'</div>';
+  if(ex.exercise_type==='translate_de_tn'){
+    // Zahlenkarten: "22 (Männer)" mit Lösung "Zahl; Zahl Nomen" -> Anweisung, groß nur die Zahl, zwei beschriftete Zeilen
+    const nm = t.match(/^(\d+)\s*\(([^()]+)\)$/), parts = sol0.split(/\s*;\s*/);
+    if(!nm || parts.length!==2 || !parts[1].startsWith(parts[0])) return null;
+    return {prompt: nm[1], instr: 'Zahl, dann Zahl mit Nomen ('+nm[2].trim()+').',
+      solHtml: '<div style="display:grid;grid-template-columns:5rem 1fr;gap:.35rem .7rem">'+lab('Zahl')+'<div style="font-family:\'IBM Plex Mono\',monospace">'+esc(parts[0])+'</div>'+lab('Mit Nomen')+'<div style="font-family:\'IBM Plex Mono\',monospace">'+esc(parts[1])+'</div></div>'};
+  }
+  if(ex.exercise_type==='fill_blank'){
+    // Lückentext: Hinweis in Klammern hinter dem Satz ("hetha ktab sami. (Suffix)") -> kleine Anweisung, groß nur der Satz.
+    // Nicht bei Frage-Antwort-Paaren ("… ? – …"), dort ist der Auftrag unklar und gehört in die Daten.
+    const hm = t.match(/^(.+?)\s*\(([^()]+)\)$/);
+    if(!hm || /___/.test(t) || /\s–\s/.test(sol0.split(' — ')[0])) return null;
+    return {prompt: hm[1], instr: 'Hinweis: '+hm[2].trim().replace(/\.$/,'')+'.', solHtml: null};
+  }
+  if(ex.exercise_type!=='grammar_drill') return null;
   const cap = x => x.charAt(0).toUpperCase()+x.slice(1);
   let word, instr, m, suffix = false, partizip = false;
   if((m = t.match(/^Negation:\s*([^\s()]+)(?:\s*\(([^()]+)\))?$/))){ word = m[1]; instr = 'Verneinen'+(m[2] ? ' ('+m[2].trim()+')' : '')+'.'; }
