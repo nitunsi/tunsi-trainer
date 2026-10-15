@@ -1422,7 +1422,7 @@ function phaseLegend(){   // Neu ist nie fällig, daher nur drei Phasen
   return '<div style="display:flex;flex-wrap:wrap;gap:.2rem .9rem;margin-top:.5rem;font-size:.78rem;color:var(--muted)">'
     + ['Anfänger','Fortgeschritten','Profi'].map((l,i) => '<span><u style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+PHASE_COL[i+1]+';margin-right:4px;vertical-align:-1px"></u>'+l+'</span>').join('')+'</div>';
 }
-function winChips(cur, fn){ return '<div style="display:flex;gap:.35rem">'+[7,14,30,90].map(n => '<span class="neu-chip'+(n===cur?' on':'')+'" style="min-height:32px;padding:0 .65rem" onclick="'+fn+'('+n+')">'+n+'</span>').join('')+'</div>'; }
+function winChips(cur, fn){ return '<div class="neu-chips" style="display:flex;gap:.5rem;overflow:visible;padding:0;margin:0">'+[7,14,30,90].map(n => '<span class="neu-chip'+(n===cur?' on':'')+'" style="min-height:32px;padding:0 .3rem;font-size:.95rem" onclick="'+fn+'('+n+')">'+n+'</span>').join('')+'</div>'; }
 window.neuSetFc = function(n){ forecastSet(n); };   // Scrollstand bleibt erhalten (siehe forecastSet in trainer.html)
 window.neuSetAct = function(n){ activityWindow = n; renderActivityCard(); };
 window.neuFilterOffStats = function(){ try{ filterLessonDropdown('all'); }catch(e){ cLesson = 'all'; } showStats(); };
@@ -1525,12 +1525,15 @@ window.showStats = function(){
   const tab = statsTab === 'fortschritt' ? 'fortschritt' : 'verlauf';
   const pill = (t, id) => '<span class="neu-chip'+(tab === id ? ' on' : '')+'" style="min-height:40px;padding:0 .3rem;font-size:1.05rem;'+(tab === id ? '' : 'color:var(--muted)')+'" onclick="neuStatsTab(\''+id+'\')">'+t+'</span>';
   const head = (t, right) => '<div style="display:flex;justify-content:space-between;align-items:center;margin:.6rem 0 .1rem"><div class="neu-sub" style="text-transform:uppercase;letter-spacing:1.2px;font-size:.72rem">'+t+'</div>'+(right || '')+'</div>';
-  const winPills = (cur, fn) => '<span style="display:inline-flex;gap:.3rem">'+[7,14,30,90].map(n => '<span class="neu-chip'+(n===cur?' on':'')+'" style="min-height:30px;padding:0 .7rem" onclick="'+fn+'('+n+')">'+n+'</span>').join('')+'</span>';
+  const winPills = (cur, fn) => winChips(cur, fn);
   const ringBlock = (title, started, total, p) => '<div style="flex:1;min-width:0;text-align:center">'+ring(total ? started/total : 0, 80, 9, 'var(--gold)', pct0(started,total)+' %')
     + '<div><b>'+title+'</b> <span class="neu-sub" style="font-size:.8rem">gestartet</span></div><div class="neu-sub" style="font-size:.78rem">davon Profi <b style="color:var(--gold2)">'+pct0(p[3],started)+' %</b></div>'
     + segBar(p)+'<div style="display:grid;grid-template-columns:repeat(4,1fr);font-size:.74rem">'+p.map(x => '<span>'+fmtN(x)+'</span>').join('')+'</div></div>';
   const grp = (t, r, k) => '<div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:.5rem 0 0;display:flex;align-items:center;gap:.4rem"><u style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+PHASE_COL[k]+'"></u>'+t+(r ? ' <span style="font-weight:400;text-transform:none">· '+r+'</span>' : '')+'</div>';
-  const lvRow = i => '<div class="neu-lvrow" style="min-height:30px"><u style="background:'+LV_COL[i]+'"></u><span>'+(i===0?'Neu':'Stufe '+(i-1))+'</span><em>'+(i===0 ? 'ungestartet' : hints[i])+'</em><b>'+fmtN(lvTot[i])+'</b><s'+(dueByBucket[i]?' style="color:var(--red)"':'')+'>'+(dueByBucket[i]?fmtN(dueByBucket[i])+' fällig':'')+'</s></div>';
+  const lvMax = Math.max(1, ...lvTot.slice(1));
+  const lvRow = i => '<div class="neu-lvrow" style="min-height:30px;display:grid;grid-template-columns:.65rem 3.5rem 4.4rem minmax(2rem,1fr) 2.2rem 4.2rem;align-items:center;gap:.3rem"><u style="background:'+LV_COL[i]+'"></u><span style="width:auto">'+(i===0?'Neu':'Stufe '+(i-1))+'</span><em style="flex:none;white-space:nowrap">'+(i===0 ? 'ungestartet' : hints[i])+'</em>'
+    + (i===0 ? '<span style="width:auto"></span>' : '<span style="width:auto;display:block;height:6px;border-radius:3px;background:var(--surface2)"><i style="display:block;height:6px;border-radius:3px;width:'+Math.max(2, Math.round(lvTot[i]/lvMax*100))+'%;background:'+LV_COL[i]+'"></i></span>')
+    + '<b>'+fmtN(lvTot[i])+'</b><s style="text-align:right;text-decoration:none;white-space:nowrap'+(dueByBucket[i]?';color:var(--red)':'')+'">'+(dueByBucket[i]?fmtN(dueByBucket[i])+' fällig':'')+'</s></div>';
   const stufen = lvRow(0)+grp('Anfänger','Stufe 0–2',1)+[1,2,3].map(lvRow).join('')+grp('Fortgeschritten','Stufe 3–4',2)+[4,5].map(lvRow).join('')+grp('Profi','Stufe 5–6',3)+[6,7].map(lvRow).join('');
   const verlauf = head('Fällig', winPills(N, 'neuSetFc'))
     + '<div class="neu-sub" style="font-size:.8rem;margin-bottom:.2rem">'+fcSum.map(([t, v]) => t+' <b style="color:var(--text)">'+v+'</b>').join(' · ')+'</div>'
