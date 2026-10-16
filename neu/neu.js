@@ -1461,6 +1461,12 @@ function renderActivityCard(){
 }
 
 let statsTab = 'verlauf';
+window.neuStufeTap = function(i){
+  const d = window._stufenData; if(!d) return;
+  document.querySelectorAll('.neu-stcol').forEach(c => { c.style.opacity = (+c.dataset.i === i) ? '1' : '.5'; });
+  const el = document.getElementById('neu-stufe-detail'); if(!el) return;
+  el.innerHTML = '<b style="color:var(--text)">Stufe '+(i-1)+'</b> · '+(i === 1 ? 'sofort wieder' : 'nach '+d.hints[i].replace('Wdh. in ',''))+' · <b style="color:var(--text)">'+fmtN(d.cnt[i])+'</b> Einträge'+(d.due[i] ? ' · <span style="color:var(--red)">'+fmtN(d.due[i])+' fällig</span>' : '');
+};
 // Passt die Statistik ohne Scrollen auf den Bildschirm, wird die Seite festgesetzt (kein Hin- und Herziehen); sonst bleibt sie scrollbar
 window.neuStatsLock = function(){
   const b = document.body;
@@ -1529,7 +1535,6 @@ window.showStats = function(){
   const fcSum = [['Gesamt', fmtN(fcTotal)], ['Ø pro Tag', fmtN(Math.round(fcTotal / N))], ['Spitze', fmtN(fcMax)]];
   const lvTot = vb.map((x,i) => x + cb[i]), lvSum = lvTot.reduce((a,x)=>a+x,0) || 1;
   const hints = ['ohne Fälligkeit','fällig','Wdh. in 1 T','3 T','7 T','14 T','30 T','90 T'];
-  const lvRows = lvTot.map((n,i) => '<div class="neu-lvrow"><u style="background:'+LV_COL[i]+'"></u><span>'+(i===0?'Neu':'Stufe '+(i-1))+'</span><em>'+hints[i]+'</em><b>'+fmtN(n)+'</b><s'+(dueByBucket[i]?' style="color:var(--red)"':'')+'>'+(dueByBucket[i]?fmtN(dueByBucket[i])+' fällig':'')+'</s></div>').join('');
 
   const tab = statsTab === 'fortschritt' ? 'fortschritt' : 'verlauf';
   const pill = (t, id) => '<span class="neu-chip'+(tab === id ? ' on' : '')+'" style="min-height:40px;padding:0 .3rem;font-size:1.05rem;'+(tab === id ? '' : 'color:var(--muted)')+'" onclick="neuStatsTab(\''+id+'\')">'+t+'</span>';
@@ -1538,12 +1543,21 @@ window.showStats = function(){
   const ringBlock = (title, started, total, p) => '<div style="flex:1;min-width:0;text-align:center">'+ring(total ? started/total : 0, 80, 9, 'var(--gold)', pct0(started,total)+' %')
     + '<div><b>'+title+'</b> <span class="neu-sub" style="font-size:.8rem">gestartet</span></div><div class="neu-sub" style="font-size:.78rem">davon Profi <b style="color:var(--gold2)">'+pct0(p[3],started)+' %</b></div>'
     + segBar(p)+'<div style="display:grid;grid-template-columns:repeat(4,1fr);font-size:.74rem">'+p.map(x => '<span>'+fmtN(x)+'</span>').join('')+'</div></div>';
-  const grp = (t, r, k) => '<div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:.5rem 0 0;display:flex;align-items:center;gap:.4rem"><u style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+PHASE_COL[k]+'"></u>'+t+(r ? ' <span style="font-weight:400;text-transform:none">· '+r+'</span>' : '')+'</div>';
-  const lvMax = Math.max(1, ...lvTot.slice(1));
-  const lvRow = i => '<div class="neu-lvrow" style="min-height:30px;display:grid;grid-template-columns:.65rem 3.5rem 4.4rem minmax(2rem,1fr) 2.2rem 4.2rem;align-items:center;gap:.3rem"><u style="background:'+LV_COL[i]+'"></u><span style="width:auto">'+(i===0?'Neu':'Stufe '+(i-1))+'</span><em style="flex:none;white-space:nowrap">'+(i===0 ? 'ungestartet' : hints[i])+'</em>'
-    + (i===0 ? '<span style="width:auto"></span>' : '<span style="width:auto;display:block;height:6px;border-radius:3px;background:var(--surface2)"><i style="display:block;height:6px;border-radius:3px;width:'+Math.max(2, Math.round(lvTot[i]/lvMax*100))+'%;background:'+LV_COL[i]+'"></i></span>')
-    + '<b>'+fmtN(lvTot[i])+'</b><s style="text-align:right;text-decoration:none;white-space:nowrap'+(dueByBucket[i]?';color:var(--red)':'')+'">'+(dueByBucket[i]?fmtN(dueByBucket[i])+' fällig':'')+'</s></div>';
-  const stufen = lvRow(0)+grp('Anfänger','Stufe 0–2',1)+[1,2,3].map(lvRow).join('')+grp('Fortgeschritten','Stufe 3–4',2)+[4,5].map(lvRow).join('')+grp('Profi','Stufe 5–6',3)+[6,7].map(lvRow).join('');
+  // Stufen als Säulen (Stufe 0–6): Farbe = Phase, roter Streifen oben = heute fällig; antippen zeigt die Zahlen
+  const phaseOfIdx = i => i <= 3 ? 1 : i <= 5 ? 2 : 3;
+  const SH = 110, lvMax = Math.max(1, ...lvTot.slice(1));
+  window._stufenData = {cnt: lvTot.slice(), due: dueByBucket.slice(), hints};
+  const stufen = '<div style="margin-top:.4rem"><div style="display:flex;gap:6px;align-items:flex-end;height:'+(SH+22)+'px">'
+    + lvTot.slice(1).map((n, k) => { const i = k + 1, h = Math.max(n ? 3 : 0, Math.round(n / lvMax * SH)), dh = dueByBucket[i] ? Math.min(h, Math.max(4, Math.round(dueByBucket[i] / n * h))) : 0;
+      return '<div class="neu-stcol" data-i="'+i+'" onclick="neuStufeTap('+i+')" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;cursor:pointer"><b style="font-size:.74rem;color:var(--muted);margin-bottom:2px">'+fmtN(n)+'</b>'
+        + '<div style="width:100%;height:'+h+'px;border-radius:5px 5px 0 0;overflow:hidden;display:flex;flex-direction:column">'+(dh ? '<i style="display:block;height:'+dh+'px;background:var(--red)"></i>' : '')+'<i style="display:block;flex:1;background:'+PHASE_COL[phaseOfIdx(i)]+'"></i></div></div>'; }).join('')
+    + '</div><div style="display:flex;gap:6px;margin-top:3px">'
+    + lvTot.slice(1).map((n, k) => '<div style="flex:1;text-align:center;font-size:.8rem"><b>S'+k+'</b><div class="neu-sub" style="font-size:.66rem">'+(k === 0 ? 'sofort' : hints[k+1].replace('Wdh. in ',''))+'</div></div>').join('')
+    + '</div><div id="neu-stufe-detail" class="neu-sub" style="min-height:1.4rem;margin-top:.5rem;font-size:.85rem;text-align:center">Säule antippen: Anzahl, Intervall, fällig</div>'
+    + '<div style="display:flex;flex-wrap:wrap;gap:.2rem .8rem;margin-top:.4rem;font-size:.76rem;color:var(--muted)">'
+    + [['Anfänger S0–2',1],['Fortgeschritten S3–4',2],['Profi S5–6',3]].map(([t, k]) => '<span><u style="display:inline-block;width:8px;height:8px;border-radius:2px;background:'+PHASE_COL[k]+';margin-right:3px"></u>'+t+'</span>').join('')
+    + '<span><u style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--red);margin-right:3px"></u>fällig heute</span></div>'
+    + '<div class="neu-sub" style="font-size:.8rem;margin-top:.4rem">Neu (ungestartet): <b style="color:var(--text)">'+fmtN(lvTot[0])+'</b></div></div>';
   const verlauf = head('Fällig', winPills(N, 'neuSetFc'))
     + barChart(fcItems, {avg: fcTotal / N, H: 68, def: 'Balken antippen: fällig an dem Tag'}) + phaseLegend() + (fcBlocked ? '<div class="neu-sub" style="margin-top:.4rem">'+fmtN(fcBlocked)+' in der Partner-Queue gesperrt</div>' : '')
     + (all ? head('Aktivität', '<span id="neu-act-chips"></span>')+'<div id="neu-act-body"></div>' : '')
