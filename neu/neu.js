@@ -161,16 +161,24 @@ window.neuTogglePush = async function(){
       await sbApi('push_subscriptions', 'POST', {user_id: currentUser.id, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth});
     }
   }catch(e){ alert('Erinnerung: '+(e && e.message || e)); }
-  await pushRefresh();
-  if(currentUser && currentUser.is_partner) partnerPushRender(); else showMore();
+  await pushRefresh(); showMore();
 };
-/* Semia: Erinnerungen an Vokabel-Prüfungen erlauben (Schalter oben im Prüfbereich) */
-window.partnerPushRender = function(){
-  const el = document.getElementById('partner-push'); if(!el) return;
-  if(!pushOk()){ el.innerHTML = ''; return; }
-  el.innerHTML = '<div class="li" style="display:flex;align-items:center;gap:.8rem;padding:.6rem .2rem;border-bottom:1px solid var(--border);margin-bottom:1rem"><span class="sp" style="flex:1;font-size:.82rem">Erinnerung zum Prüfen<span class="neu-sub" style="display:block;font-size:.72rem;color:var(--muted)">iPhone: nur mit App auf dem Home-Bildschirm</span></span>'+sw(_pushOn, "neuTogglePush()")+'</div>';
+/* Semia: Push immer an, ohne Schalter. Die Erlaubnis fragt das Gerät einmal beim ersten Tippen; danach wird das Abo bei jedem Start erneuert. */
+window.partnerPushInit = async function(){
+  try{
+    if(!pushOk() || Notification.permission === 'denied') return;
+    const reg = await navigator.serviceWorker.ready;
+    const sub = async () => {
+      const s = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: b64ToU8(VAPID_PUBLIC)});
+      const j = s.toJSON();
+      await sbApi('push_subscriptions?endpoint=eq.'+encodeURIComponent(j.endpoint), 'DELETE');
+      await sbApi('push_subscriptions', 'POST', {user_id: currentUser.id, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth});
+    };
+    if(Notification.permission === 'granted'){ await sub(); return; }
+    const ask = async () => { document.removeEventListener('click', ask, true); try{ if(await Notification.requestPermission() === 'granted') await sub(); }catch(e){} };
+    document.addEventListener('click', ask, true);
+  }catch(e){}
 };
-window.partnerPushInit = async function(){ await pushRefresh(); partnerPushRender(); };
 
 function nextDueText(){
   const now = new Date(); let next = null;
