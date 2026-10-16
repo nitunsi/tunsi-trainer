@@ -163,6 +163,23 @@ window.neuTogglePush = async function(){
   }catch(e){ alert('Erinnerung: '+(e && e.message || e)); }
   await pushRefresh(); showMore();
 };
+/* Semia: Push immer an, ohne Schalter. Die Erlaubnis fragt das Gerät einmal beim ersten Tippen; danach wird das Abo bei jedem Start erneuert. */
+window.partnerPushInit = async function(){
+  try{
+    if(!pushOk() || Notification.permission === 'denied') return;
+    const reg = await navigator.serviceWorker.ready;
+    const sub = async () => {
+      const s = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: b64ToU8(VAPID_PUBLIC)});
+      const j = s.toJSON();
+      await sbApi('push_subscriptions?endpoint=eq.'+encodeURIComponent(j.endpoint), 'DELETE');
+      await sbApi('push_subscriptions', 'POST', {user_id: currentUser.id, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth});
+    };
+    if(Notification.permission === 'granted'){ await sub(); return; }
+    const ask = async () => { document.removeEventListener('click', ask, true); try{ if(await Notification.requestPermission() === 'granted') await sub(); }catch(e){} };
+    document.addEventListener('click', ask, true);
+  }catch(e){}
+};
+
 function nextDueText(){
   const now = new Date(); let next = null;
   ALL_VOCAB.forEach(v => { if(isQueueBlocked(v)) return; const p = srsProgress[v.id]; if(p && p.next_review){ const d = new Date(p.next_review); if(!isDueByDay(d) && (!next || d < next)) next = d; } });

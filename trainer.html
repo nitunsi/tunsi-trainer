@@ -1954,6 +1954,7 @@ function enterApp(user){
     loadOverlayHide(); // Session-Restore zeigt das Lade-Overlay schon; Partner laden nichts nach
     document.getElementById('partner-screen').style.display='block';
     partnerInit();
+    if(window.partnerPushInit) partnerPushInit();
   } else {
     document.getElementById('app-screen').style.display='block';
     document.getElementById('header-user').textContent=APP_VERSION+' · '+currentUser.username;
@@ -7204,6 +7205,50 @@ async function showPartnerQueue(filter){
   }
 }
 
+
+// ── Manuelle Erinnerung an Semia (Push) ──────────────────────────────────
+const NUDGE_TEXTS = [
+  'Hast du kurz Zeit für ein paar Vokabeln? Jede Prüfung hilft uns weiter 💛',
+  'Kleine Pause? 5 Vokabeln prüfen und schon ist wieder etwas geschafft.',
+  'Du hast den besten Blick für die richtige Schreibweise – magst du ein paar prüfen?',
+  'Ein paar Minuten, ein paar Wörter: danke, dass du mitprüfst!',
+  'Neue Vokabeln warten auf dein Urteil. Schaffst du heute ein paar?',
+  'Mit deiner Hilfe wird der Trainer jeden Tag besser. Kurz reinschauen?',
+  'Kaffeepause? Perfekt für ein paar Vokabeln zum Prüfen ☕',
+  'Yallah, ein paar Wörter prüfen – ich lerne sie dann morgen schon richtig!',
+];
+let _nudgeIdx = -1, _nudgeText = null;
+function nudgeNext(){
+  let i; do{ i = Math.floor(Math.random()*NUDGE_TEXTS.length); }while(i === _nudgeIdx && NUDGE_TEXTS.length > 1);
+  _nudgeIdx = i;
+  _nudgeText = NUDGE_TEXTS[i];
+  const t = document.getElementById('nudge-text'); if(t) t.value = _nudgeText;
+  const m = document.getElementById('nudge-msg'); if(m) m.textContent = '';
+}
+function nudgeCardHtml(){
+  if(_nudgeText === null) _nudgeText = NUDGE_TEXTS[_nudgeIdx = Math.floor(Math.random()*NUDGE_TEXTS.length)];
+  return '<div style="border:1px solid var(--border);border-radius:8px;padding:.8rem;margin-bottom:1rem">'+
+    '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.4rem">Semia erinnern (Push, Text vorher änderbar)</div>'+
+    '<textarea id="nudge-text" maxlength="140" rows="2" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:.5rem .6rem;color:var(--text);font-family:inherit;font-size:.85rem;resize:none" oninput="_nudgeText=this.value">'+escHtml(_nudgeText)+'</textarea>'+
+    '<div style="display:flex;gap:.5rem;margin-top:.5rem;align-items:center">'+
+    '<button onclick="nudgeNext()" style="padding:.35rem .7rem;font-size:.75rem;cursor:pointer;border-radius:4px;background:transparent;border:1px solid var(--border);color:var(--muted)">Anderer Text</button>'+
+    '<button id="nudge-send" onclick="nudgeSend()" style="padding:.35rem .9rem;font-size:.75rem;cursor:pointer;border-radius:4px;background:var(--gold);border:1px solid var(--gold);color:var(--bg);font-weight:700">Senden</button>'+
+    '<span id="nudge-msg" style="font-size:.72rem;color:var(--muted)"></span></div></div>';
+}
+async function nudgeSend(){
+  const t = document.getElementById('nudge-text'), m = document.getElementById('nudge-msg'), b = document.getElementById('nudge-send');
+  const text = t ? t.value.trim() : '';
+  if(!text){ m.textContent = 'Bitte einen Text eintragen'; return; }
+  b.disabled = true; m.textContent = 'Sende…';
+  try{
+    const r = await fetch(SB_URL+'/functions/v1/partner-nudge',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({text})});
+    const j = await r.json().catch(()=>({}));
+    if(j.sent > 0){ m.textContent = 'Gesendet'; showToast('Erinnerung an Semia gesendet','ok'); }
+    else m.textContent = j.reason === 'no subscriptions' ? 'Semia hat die Erinnerung noch nicht eingeschaltet' : j.reason === 'too soon' ? 'Gerade erst gesendet – bitte kurz warten' : 'Nicht gesendet ('+(j.reason||j.error||r.status)+')';
+  }catch(e){ m.textContent = 'Fehler: '+e.message; }
+  b.disabled = false;
+}
+
 function setPqFilter(f){
   pqFilter = f;
   renderPartnerQueue();
@@ -7243,7 +7288,7 @@ function renderPartnerQueue(){
     { k:'commented', label:'💬 Kommentar', c:counts.commented },
   ];
 
-  let h = '<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.9rem">' +
+  let h = nudgeCardHtml() + '<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.9rem">' +
     chips.map(c => '<button onclick="setPqFilter(\'' + c.k + '\')" style="padding:.3rem .6rem;font-size:.7rem;font-family:\'IBM Plex Mono\',monospace;cursor:pointer;border-radius:3px;' +
       (pqFilter===c.k ? 'background:var(--gold);border:1px solid var(--gold);color:var(--bg);font-weight:700;' : 'background:transparent;border:1px solid var(--border);color:var(--muted);') +
       '">' + c.label + ' (' + c.c + ')</button>').join('') +
