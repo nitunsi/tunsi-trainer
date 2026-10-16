@@ -763,3 +763,23 @@ html:has(body.neu-lock),body.neu-lock{overflow:hidden;overscroll-behavior:none}
 body.neu-lock main{height:calc(var(--vvh,100dvh) - 52px);box-sizing:border-box;overflow:hidden;overscroll-behavior:none}
 .neu-stabs{position:sticky;top:52px;z-index:5;background:var(--bg)}
 body.neu-lock .neu-stabs{position:static}
+
+/* Statistik wie die Lernen-Seite: feste Höhe, der freie Platz wird zwischen den Blöcken verteilt, kein Verschieben */
+html:has(body.neu-onstats),body.neu-onstats{overflow:hidden;overscroll-behavior:none}
+body.neu-onstats main{height:calc(var(--vvh,100dvh) - 52px);box-sizing:border-box;overflow:hidden;overscroll-behavior:none}
+body.neu-onstats #exercise-screen,body.neu-onstats #exercise-content{height:100%}
+body.neu-onstats .neu-wrap{height:100%;display:flex;flex-direction:column}
+body.neu-onstats .neu-sbody{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly}
+body.neu-onstats .neu-stabs{position:static}
+@media (max-height:700px){
+  html:has(body.neu-onstats),body.neu-onstats{overflow:auto}
+  body.neu-onstats main{height:auto;overflow:visible}
+  body.neu-onstats .neu-wrap{height:auto}
+  body.neu-onstats .neu-sbody{display:block}
+  body.neu-onstats .neu-stabs{position:sticky}
+}
+html:has(body.neu-onstats.neu-sopen),body.neu-onstats.neu-sopen{overflow:auto}
+body.neu-onstats.neu-sopen main{height:auto;overflow:visible}
+body.neu-onstats.neu-sopen .neu-wrap{height:auto}
+body.neu-onstats.neu-sopen .neu-sbody{display:block}
+body.neu-onstats.neu-sopen .neu-stabs{position:sticky}

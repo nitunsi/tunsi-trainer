@@ -69,7 +69,8 @@ function chrome(mode){
   document.body.classList.toggle('neu-hasprog', HASPROG.includes(mode));
   document.body.classList.toggle('neu-tabs', appVisible && !sess);
   document.body.classList.toggle('neu-onhome', mode==='home' && appVisible);
-  if(mode !== 'stats') document.body.classList.remove('neu-lock');
+  document.body.classList.toggle('neu-onstats', mode==='stats' && appVisible);
+  if(mode !== 'stats') document.body.classList.remove('neu-sopen');
   document.body.classList.toggle('neu-nohdr', mode==='home' || mode==='more' || mode==='stats');
   document.body.classList.toggle('neu-admin', ADMIN.includes(mode));
   const t = TABOF(mode);
@@ -1468,12 +1469,8 @@ window.neuStufeTap = function(i){
   el.innerHTML = '<b style="color:var(--text)">Stufe '+(i-1)+'</b> · '+(i === 1 ? 'sofort wieder' : 'nach '+d.hints[i].replace('Wdh. in ',''))+' · <b style="color:var(--text)">'+fmtN(d.cnt[i])+'</b> Einträge'+(d.due[i] ? ' · <span style="color:var(--red)">'+fmtN(d.due[i])+' fällig</span>' : '');
 };
 // Passt die Statistik ohne Scrollen auf den Bildschirm, wird die Seite festgesetzt (kein Hin- und Herziehen); sonst bleibt sie scrollbar
-window.neuStatsLock = function(){
-  const b = document.body;
-  if(cMode !== 'stats'){ b.classList.remove('neu-lock'); return; }
-  b.classList.remove('neu-lock');
-  const fits = document.documentElement.scrollHeight <= window.innerHeight + 1;
-  b.classList.toggle('neu-lock', fits);
+window.neuStatsLock = function(){   // aufgeklappte Meilensteine brauchen Platz: dann darf gescrollt werden
+  const d = document.querySelector('.neu-wrap details'); document.body.classList.toggle('neu-sopen', !!(d && d.open));
 };
 window.neuStatsTab = function(t){ statsTab = t; showStats(); };
 window.showStats = function(){
@@ -1558,18 +1555,18 @@ window.showStats = function(){
     + [['Anfänger S0–2',1],['Fortgeschritten S3–4',2],['Profi S5–6',3]].map(([t, k]) => '<span><u style="display:inline-block;width:8px;height:8px;border-radius:2px;background:'+PHASE_COL[k]+';margin-right:3px"></u>'+t+'</span>').join('')
     + '<span><u style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--red);margin-right:3px"></u>fällig heute</span></div>'
     + '<div class="neu-sub" style="font-size:.8rem;margin-top:.4rem">Neu (ungestartet): <b style="color:var(--text)">'+fmtN(lvTot[0])+'</b></div></div>';
-  const verlauf = head('Fällig', winPills(N, 'neuSetFc'))
-    + barChart(fcItems, {avg: fcTotal / N, H: 68, def: 'Balken antippen: fällig an dem Tag'}) + phaseLegend() + (fcBlocked ? '<div class="neu-sub" style="margin-top:.4rem">'+fmtN(fcBlocked)+' in der Partner-Queue gesperrt</div>' : '')
-    + (all ? head('Aktivität', '<span id="neu-act-chips"></span>')+'<div id="neu-act-body"></div>' : '')
-    + '<div style="margin-top:.5rem"><details class="neu-filter" ontoggle="neuStatsLock()" style="margin:0;border:none;background:none;padding:0"><summary style="display:flex;justify-content:space-between;align-items:center;min-height:30px"><span class="neu-sub" style="text-transform:uppercase;letter-spacing:1.2px;font-size:.72rem">Serie &amp; Meilensteine</span><span class="neu-sub" style="font-size:.78rem">alle ›</span></summary>'
+  const verlauf = '<div>'+head('Fällig', winPills(N, 'neuSetFc'))
+    + barChart(fcItems, {avg: fcTotal / N, H: 68, def: 'Balken antippen: fällig an dem Tag'}) + phaseLegend() + (fcBlocked ? '<div class="neu-sub" style="margin-top:.4rem">'+fmtN(fcBlocked)+' in der Partner-Queue gesperrt</div>' : '') + '</div>'
+    + (all ? '<div>'+head('Aktivität', '<span id="neu-act-chips"></span>')+'<div id="neu-act-body"></div></div>' : '')
+    + '<div><details class="neu-filter" ontoggle="neuStatsLock()" style="margin:0;border:none;background:none;padding:0"><summary style="display:flex;justify-content:space-between;align-items:center;min-height:30px"><span class="neu-sub" style="text-transform:uppercase;letter-spacing:1.2px;font-size:.72rem">Serie &amp; Meilensteine</span><span class="neu-sub" style="font-size:.78rem">alle ›</span></summary>'
     +   '<div id="neu-miles" style="margin-top:.4rem"></div><div id="neu-forecast" class="neu-sub" style="margin:.5rem 0 .3rem"></div></details><div id="neu-miles-rows"></div></div>';
-  const fortschritt = '<div style="display:flex;gap:.6rem;margin-top:.4rem">'
+  const fortschritt = '<div style="display:flex;gap:.6rem">'
     + ringBlock('Vokabeln', vStarted, vTotal, vp) + (all ? ringBlock('Übungen', cActive, cTotal, cp) : '')
-    + '</div><div style="height:.4rem"></div>' + stufen;
+    + '</div><div>' + stufen + '</div>';
   c.innerHTML = '<div class="neu-wrap">'
     + (all ? '' : '<div style="margin-bottom:.6rem;text-align:center"><span class="neu-chip on" onclick="neuFilterOffStats()">Filter: '+escHtml(cLesson==='COURSEVOCAB'?'Kurs-Lektion':cLesson)+' ✕</span></div>')
     + '<div class="neu-chips neu-stabs" style="justify-content:center;gap:1.6rem;padding:.2rem 0 .1rem;margin:0 0 .5rem">'+pill('Verlauf','verlauf')+pill('Fortschritt','fortschritt')+'</div>'
-    + (tab === 'verlauf' ? verlauf : fortschritt)
+    + '<div class="neu-sbody">' + (tab === 'verlauf' ? verlauf : fortschritt) + '</div>'
     + '</div>';
   if(tab === 'verlauf'){ if(all) renderActivityCard(); renderMilestones(vStarted, vTotal, vp[3]); }
   window.neuStatsLock(); setTimeout(window.neuStatsLock, 600); setTimeout(window.neuStatsLock, 1800);
