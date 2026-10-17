@@ -1729,7 +1729,8 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
         if(/Übersetzen/.test(badge) && /^Übersetze(n Sie)?( ins Tunesische)?\.?$/i.test(t)) return true;
         if(/Übersetzen/.test(badge) && /^Übersetzen Sie nach dem Muster\.?$/i.test(t) && !hasPattern) return true;
         if(/Merksatz/.test(badge) && /^Merksatz$/i.test(t)) return true;
-        if(/Feste Antwort/.test(badge) && /^(Feste Formel: )?Was antwortet man( darauf)?\?$/i.test(t)) return true;
+        if(/Formel/.test(badge) && /^(Feste Formel: )?Was antwortet man( darauf)?\?$/i.test(t)) return true;
+        if(/Muster/.test(badge) && /^Übersetze nach dem Muster\.?$/i.test(t) && !hasPattern) return true;
         return false;
       };
       [...card.children].slice(1).forEach(k => { if(!k.id && redundant(k.textContent.trim())) k.remove(); });
