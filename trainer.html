@@ -5721,6 +5721,7 @@ const COURSE_LABEL_RULES = [
 ];
 function courseTypeLabel(exercise){
   const t = exercise.exercise_type, ins = (exercise.instruction||'').trim();
+  if(t==='grammar_drill' && /^Gruppe \d+\./.test((exercise.solution||'').trim())) return 'Konjugieren';
   const r = COURSE_LABEL_RULES.find(x => x[0]===t && x[2] && x[1].test(ins));
   if(r) return r[2];
   if(t==='fill_blank' && !/_{2,}/.test(exercise.prompt||'')){
@@ -5796,6 +5797,7 @@ function courseConjView(ex){
   else if((m = t.match(/^(.+?)\s+"([^"]+)"\s*\+\s*Pronominalsuffixe$/))){ word = m[1]; instr = 'Pronominalsuffixe anhängen („'+m[2]+'“).'; suffix = true; }
   else if((m = t.match(/^([^\s:()]+):\s*(.*Partizip.*)$/))){ word = m[1]; instr = cap(m[2].trim()).replace(/\.?$/,'.'); partizip = true; }
   else return null;
+  if(/gruppe zuordnen/i.test(instr)) instr = 'Konjugiere im Präsens und nenne die Gruppe.';
   if(partizip){
     // "akt.Part. a/b/c. pass.Part. d/e/f. Imperativ x (Sg.) / y (Pl.). Beispiel: …" in beschriftete Zeilen zerlegen
     const LB = {'akt.Part.':'Aktives Partizip','pass.Part.':'Passives Partizip','kein pass.Part.':'Passives Partizip','Imperativ':'Imperativ','Beispiel:':'Beispiel'};
