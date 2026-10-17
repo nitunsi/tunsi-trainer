@@ -5833,12 +5833,29 @@ function courseConjView(ex){
   }
   if(!blocks && gruppe) return null;   // "Gruppe N." ohne passende Tabelle: Karte unverändert lassen
   let solHtml = null;
-  // Gruppen-Karten (Präsens): wie die anderen Konjugationskarten mit Personen beschriftet.
-  // Reihenfolge der Lösung: er, du, sie, ich; im Plural: sie, ihr, (doppelt), wir. Doppelte Formen entfallen.
-  if(blocks && gruppe && blocks.length===1 && blocks[0].sg.length===4 && blocks[0].pl.length>=3){
-    const b0 = blocks[0], sg = b0.sg, pl = b0.pl;
-    const rows = [['ena',sg[3]],['enti',sg[1]],['houwwa',sg[0]],['hiyya',sg[2]],['a7na',pl[pl.length-1]],['entouma',pl[1]],['houma',pl[0]]].map(r=>({person:r[0],form:r[1]}));
-    return {prompt: word, instr, solHtml: '<div style="font-size:.72rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin:.2rem 0 .45rem">'+escHtml(b0.head)+'</div>'+renderGrammarDrillGrid(rows,true)};
+  // Konjugationsblöcke mit beschrifteten Personen statt Singular-/Plural-Reihen. Die Reihenfolge der Formen hängt von
+  // der Kartenart ab: Präsens er/du/sie/ich, Perfekt er/sie/du/ich, Negation ich/du/sie/er (Plural entsprechend);
+  // doppelte Formen (enti = hiyya im Präsens, Plural „tikhdmu“ zweimal) entfallen.
+  if(blocks && !suffix){
+    const kindOf = b => b.head==='Perfekt' ? 'perf' : b.head==='Präsens' ? 'pres'
+      : /ich\/du\/er\/sie/.test(t) ? 'zal' : /^Negation/.test(t) ? 'neg' : /Perfekt/i.test(t) ? 'perf' : 'pres';
+    const persons = b => {
+      const k = kindOf(b), sg = b.sg, pl = b.pl;
+      if(sg.length!==4 || pl.length<3) return null;
+      let ena, enti, houwwa, hiyya, a7na, entouma, houma;
+      if(k==='pres'){ [houwwa, enti, hiyya, ena] = sg; houma = pl[0]; entouma = pl[1]; a7na = pl[pl.length-1]; }
+      else if(k==='perf'){ [houwwa, hiyya, enti, ena] = sg; if(pl.length!==4) return null; houma = pl[0]; entouma = pl[2]; a7na = pl[3]; }
+      else if(k==='neg'){ [ena, enti, hiyya, houwwa] = sg; if(pl.length!==4) return null; a7na = pl[0]; entouma = pl[1]; houma = pl[3]; }
+      else { [ena, enti, houwwa, hiyya] = sg; if(pl.length!==3) return null; a7na = pl[0]; entouma = pl[1]; houma = pl[2]; }
+      return [['ena',ena],['enti',enti],['houwwa',houwwa],['hiyya',hiyya],['a7na',a7na],['entouma',entouma],['houma',houma]].map(r=>({person:r[0],form:r[1]}));
+    };
+    const grids = blocks.map(persons);
+    if(grids.every(Boolean)){
+      solHtml = blocks.map((b,i) =>
+        (b.head ? '<div style="font-size:.72rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin:'+(i?'.8rem 0 .4rem;padding-top:.6rem;border-top:1px dashed var(--border)':'.2rem 0 .45rem')+'">'+escHtml(b.head)+'</div>' : '')
+        + renderGrammarDrillGrid(grids[i], true)).join('');
+      return {prompt: word, instr, solHtml};
+    }
   }
   if(blocks){
     const cell = f => '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:.9rem;color:var(--gold2);white-space:nowrap">'+escHtml(f)+'</span>';
