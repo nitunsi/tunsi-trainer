@@ -1788,7 +1788,10 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     if(ex.exercise_type === 'answer_pattern' && PAREN.test(ex.solution || '')) return null;   // schon in drei Zeilen gegliedert
     let tn, de;
     const i = html.indexOf(' — ');
-    if(i > 0){ tn = html.slice(0, i); de = html.slice(i + 3); }
+    // „Tounsi (Frage? – Antwort)“: der Strich steht in der Klammer, nicht zwischen Tounsi und Deutsch
+    const pp = i > 0 ? null : html.match(/^(.+?)\s+\(([A-ZÄÖÜ][^()]*)\)(<\/mark>)?\s*$/);
+    if(pp && !/ – (?=[A-ZÄÖÜ])/.test(pp[1])){ tn = pp[1] + (pp[3] ? '</mark>' : ''); de = pp[2]; }
+    else if(i > 0){ tn = html.slice(0, i); de = html.slice(i + 3); }
     else {
       const m = html.match(/^(.*?) – (?=[A-ZÄÖÜ])(.*)$/);
       // „Tounsi (Deutsch)“ ohne Strich: die Klammer am Ende ist die deutsche Übersetzung
