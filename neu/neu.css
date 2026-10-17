@@ -191,6 +191,8 @@ body.neu-kb .q-sub{font-size:.85rem!important;margin-top:.1rem}
 body.neu-kb .neu-audioq{width:60px;height:60px;font-size:1.5rem;margin:.1rem auto .2rem}
 body.neu-kb #flash-input,body.neu-kb #course-input{min-height:48px;padding:.6rem .9rem!important;margin-bottom:68px!important}
 body.neu-kb .neu-ccard{padding:.6rem .8rem!important;margin-bottom:.4rem!important}
+/* Kurs-Karte: gleicher Innenabstand mit und ohne Tastatur-Aufbau, sonst springt die Kopfzeile je nach Aufgabentyp um ~7px */
+body.neu-session .neu-ccard{padding:.6rem .8rem!important}
 body.neu-kb .sticky-check{padding:.35rem 1rem calc(.35rem + env(safe-area-inset-bottom,0px))!important}
 body.neu-kb .sticky-check-btn,body.neu-kb .sticky-check-ghost{height:46px}
 body.neu-kb .sticky-check-ghost{width:44px}
