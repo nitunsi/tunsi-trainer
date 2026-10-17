@@ -594,14 +594,13 @@ function dangerHtml(dc, goal, total){
     try{ pf = pullForwardCandidates().filter(c => c.day === tmr.getTime() && c.level >= 4 && c.level <= 6).length; }catch(e){}
     const b = n => '<b style="color:var(--gold2)">'+fmtN(n)+'</b>';
     const parts = [];
-    if(total > 0) parts.push('alle Fälligen lernen');
     if(pf >= extra) parts.push(b(extra)+' vorziehen');
     else{
       if(pf > 0) parts.push('alle '+b(pf)+' vorziehen');
       parts.push(b(extra - pf)+' aktivieren');
     }
-    const txt = parts.length > 1 ? parts.slice(0, -1).join(', ') + ' und ' + parts[parts.length - 1] : parts[0];
-    return hintCard(txt.charAt(0) === '<' ? txt + ', um das Tagesziel zu erreichen.' : txt.charAt(0).toUpperCase() + txt.slice(1) + ', um das Tagesziel zu erreichen.', false);
+    const txt = parts.join(' und ');
+    return hintCard(txt + ', um das Tagesziel zu erreichen.', false);
   }
   return '';
 }
