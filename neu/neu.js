@@ -588,11 +588,19 @@ function dangerHtml(dc, goal, total){
   const need = goal - dc.today;
   if(dc.today < goal && total < need){
     const extra = need - total;   // so viele fehlen, nachdem alles Fällige gelernt ist
-    // Morgen fällige Einträge auf Stufe 4–6 vorhanden: vorziehen, sonst Neues aktivieren
+    // Vorziehbar = morgen fällige Einträge auf Stufe 4–6. Reichen sie nicht, bleibt der Rest zum Aktivieren.
     const tmr = new Date(); tmr.setHours(0,0,0,0); tmr.setDate(tmr.getDate() + 1);
-    let hi = false;
-    try{ hi = pullForwardCandidates().some(c => c.day === tmr.getTime() && c.level >= 4 && c.level <= 6); }catch(e){}
-    return hintCard((total > 0 ? 'Alle Fälligen lernen und ' : '')+'<b style="color:var(--gold2)">'+fmtN(extra)+'</b>'+(hi ? ' vorziehen' : ' aktivieren')+', um das Tagesziel zu erreichen.', false);
+    let pf = 0;
+    try{ pf = pullForwardCandidates().filter(c => c.day === tmr.getTime() && c.level >= 4 && c.level <= 6).length; }catch(e){}
+    const b = n => '<b style="color:var(--gold2)">'+fmtN(n)+'</b>';
+    const parts = [];
+    if(pf >= extra) parts.push('Noch '+b(extra)+' vorziehen');
+    else{
+      if(pf > 0) parts.push('Noch alle '+b(pf)+' vorziehen');
+      parts.push((pf > 0 ? '' : 'Noch ')+b(extra - pf)+' aktivieren');
+    }
+    const txt = parts.length > 1 ? parts[0] + ' und ' + parts[1] : parts[0];
+    return hintCard(txt + ', um das Tagesziel zu erreichen.', false);
   }
   return '';
 }
