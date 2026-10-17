@@ -5686,13 +5686,45 @@ async function goMix(){
   render();
 }
 
-const COURSE_TYPE_LABELS = {translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',grammar_drill:'Grammatik-Übung',fixed_response:'Feste Antwort',grammar_card:'Merksatz'};
+const COURSE_TYPE_LABELS = {translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',grammar_drill:'Grammatik-Übung',fixed_response:'Feste Antwort',grammar_card:'Merksatz',build_dialog:'Dialog bilden',pronunciation:'Aussprache'};
 // „Lücke füllen“ stimmt nur, wenn der Prompt wirklich eine Lücke hat (___). Ohne Lücke ist es eine
 // Umformaufgabe („Ersetze das Nomen durch …“, „Setze in den Plural“) oder eine Übersetzung.
+// Typ-Zeile nach Art der Aufgabe: erste passende Regel (Typ + Anfang der Anweisung) gewinnt, sonst der Typ.
+const COURSE_LABEL_RULES = [
+  ['translate_de_tn', /^negiere/i, 'Negieren'],
+  ['translate_de_tn', /^bejahe/i, 'Bejahen'],
+  ['translate_de_tn', /^(bilde die frage mit|mit „walla“)/i, 'Frage bilden'],
+  ['translate_de_tn', /^übersetze, dann setze in den plural/i, 'Plural'],
+  ['translate_de_tn', /^(übersetze nach dem muster|muster:)/i, 'Muster'],
+  ['answer_pattern', /^antworte mit ja und nein/i, 'Ja und Nein'],
+  ['answer_pattern', /^ordne die wörter/i, 'Satz ordnen'],
+  ['answer_pattern', /^bilde das gegenteil/i, 'Gegenteil'],
+  ['answer_pattern', /^(welche jahreszeit|rbi3 \(frühling)/i, 'Jahreszeit'],
+  ['answer_pattern', /^verneine und nenne die richtige nationalität/i, 'Nationalität'],
+  ['answer_pattern', /^übersetze und nenne das verb/i, 'Verb nennen'],
+  ['grammar_drill', /^konjugiere im präsens, bejaht/i, 'Konjugieren, bejaht'],
+  ['grammar_drill', /^konjugiere im präsens, verneint/i, 'Konjugieren, verneint'],
+  ['grammar_drill', /^bilde den imperativ/i, 'Imperativ'],
+  ['grammar_drill', /^hänge possessivsuffixe/i, 'Possessivsuffix'],
+  ['grammar_drill', /^beantworte mit ja und nein/i, 'Ja und Nein'],
+  ['grammar_drill', /^(wie lautet|artikel:)/i, 'Artikel'],
+  ['fixed_response', /^richtig oder falsch/i, 'Richtig oder falsch'],
+  ['build_dialog', /^übersetze/i, 'Übersetzen'],
+  ['fill_blank', /^(personalpronomen ergänzen|(name|subjekt) → personalpronomen)/i, 'Pronomen'],
+  ['fill_blank', /^(name|nomen|objekt)[^→]*→ suffix/i, 'Suffix'],
+  ['fill_blank', /^land → nationalität/i, 'Nationalität'],
+  ['fill_blank', /^stelle eine passende frage/i, 'Frage bilden'],
+  ['fill_blank', /^(setze in den plural|plural \+|beides in den plural|bilde die frage zur antwort, beides)/i, 'Plural'],
+  ['fill_blank', /^bilde den dual/i, 'Dual'],
+  ['fill_blank', /^bilde die genitivverbindung/i, 'Genitiv'],
+  ['fill_blank', /^ergänze die imperative/i, 'Imperativ'],
+];
 function courseTypeLabel(exercise){
-  const t = exercise.exercise_type;
+  const t = exercise.exercise_type, ins = (exercise.instruction||'').trim();
+  const r = COURSE_LABEL_RULES.find(x => x[0]===t && x[2] && x[1].test(ins));
+  if(r) return r[2];
   if(t==='fill_blank' && !/_{2,}/.test(exercise.prompt||'')){
-    return /^übersetz/i.test(exercise.instruction||'') ? 'Übersetzen' : 'Umformen';
+    return /^übersetz/i.test(ins) ? 'Übersetzen' : 'Umformen';
   }
   return COURSE_TYPE_LABELS[t] || t;
 }
@@ -6401,7 +6433,7 @@ function renderCourseTestTab(tc, l){
 
   const isGrammar = t.phase==='grammar';
   const gradable = COURSE_GRADABLE_TYPES.includes(ex.exercise_type);
-  const label = isGrammar ? '🧠 Grammatik-Check' : ex.exercise_type==='fill_blank' ? courseTypeLabel(ex) : ({translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',build_dialog:'Dialog bilden',grammar_drill:'Grammatik-Übung',fixed_response:'Feste Antwort'})[ex.exercise_type] || ex.exercise_type;
+  const label = isGrammar ? '🧠 Grammatik-Check' : courseTypeLabel(ex);
 
   let h = '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.3rem">'+label+' · '+cur+' / '+total+'</div>';
   if(ex.exercise_type==='answer_pattern'){
