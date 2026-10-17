@@ -5769,7 +5769,14 @@ function courseBelegHtml(ex){
 // Tabelle Singular/Plural (bei beiden Zeiten zwei Blöcke). Passt die Lösung nicht sauber (4 Singular-Formen, 3 oder 4
 // Plural-Formen oder gar keine), bleibt die Lösung wie bisher (solHtml null), nur Anweisung und Wort werden getrennt.
 // Daten bleiben unverändert.
+// Deutsche Bedeutung des Verbs (meta.verb_de) als erste Zeile der Lösung bei Konjugations-, Verneinungs- und Partizip-Karten
 function courseConjView(ex){
+  const r = _courseConjViewCore(ex);
+  const de = ex && ex.meta && ex.meta.verb_de;
+  if(r && r.solHtml && de) r.solHtml = '<div style="font-size:.95rem;color:var(--text);margin:0 0 .55rem">'+escHtml(de)+'</div>'+r.solHtml;
+  return r;
+}
+function _courseConjViewCore(ex){
   if(!ex || (ex.instruction||'').trim()) return null;
   const t = (ex.prompt||'').trim(), sol0 = (ex.solution||'').trim();
   const esc = x => escHtml(x);
