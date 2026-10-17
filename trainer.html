@@ -5797,7 +5797,7 @@ function courseConjView(ex){
   else if((m = t.match(/^(.+?)\s+"([^"]+)"\s*\+\s*Pronominalsuffixe$/))){ word = m[1]; instr = 'Pronominalsuffixe anhängen („'+m[2]+'“).'; suffix = true; }
   else if((m = t.match(/^([^\s:()]+):\s*(.*Partizip.*)$/))){ word = m[1]; instr = cap(m[2].trim()).replace(/\.?$/,'.'); partizip = true; }
   else return null;
-  if(/gruppe zuordnen/i.test(instr)) instr = 'Konjugiere im Präsens und nenne die Gruppe.';
+  if(/gruppe zuordnen/i.test(instr)) instr = 'Konjugiere im Präsens.';
   if(partizip){
     // "akt.Part. a/b/c. pass.Part. d/e/f. Imperativ x (Sg.) / y (Pl.). Beispiel: …" in beschriftete Zeilen zerlegen
     const LB = {'akt.Part.':'Aktives Partizip','pass.Part.':'Passives Partizip','kein pass.Part.':'Passives Partizip','Imperativ':'Imperativ','Beispiel:':'Beispiel'};
@@ -5829,7 +5829,7 @@ function courseConjView(ex){
     if(a && b) blocks = [Object.assign({head:'Perfekt'},a), Object.assign({head:'Präsens'},b)];
   } else {
     const a = block(sol);
-    if(a) blocks = [Object.assign({head: gruppe ? 'Gruppe '+gruppe : ''},a)];
+    if(a) blocks = [Object.assign({head: gruppe ? 'Gruppe '+gruppe+({1:' (yaf3al)',2:' (yaf3il)',3:' (yif3al)',4:' (yuf3ul)',5:' (yif3il)',6:' (yuf3ul)'}[gruppe]||'') : ''},a)];
   }
   if(!blocks && gruppe) return null;   // "Gruppe N." ohne passende Tabelle: Karte unverändert lassen
   let solHtml = null;
