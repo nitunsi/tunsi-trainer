@@ -267,7 +267,12 @@ async function loadPartnerLine(){
     (ps || []).forEach(p => { if(p.last_active_at){ const d = new Date(p.last_active_at); if(!last || d > last){ last = d; name = p.username || name; } } });
     let when = 'noch keine Aktivität';
     if(last){ const h = Math.floor((Date.now() - last) / 3600000); when = h < 1 ? 'vor weniger als einer Stunde' : h < 24 ? 'vor '+h+' Std.' : 'vor '+Math.floor(h/24)+' Tag'+(Math.floor(h/24)===1?'':'en'); }
-    el.innerHTML = '<div style="flex:1;min-width:0"><div style="font-size:1rem">'+escHtml(name)+' zuletzt aktiv: '+when+'</div><div class="neu-sub" style="margin-top:2px">'+(open ? fmtN(open)+' Rückmeldung'+(open===1?'':'en')+' offen' : 'keine Rückmeldungen offen')+'</div></div><div class="neu-sub" style="font-size:1.4rem">›</div>';
+    // Treffer der Prüfungen (Duplikate, Transliteration) ersetzen „keine Rückmeldungen offen“; sind beide da, stehen sie nebeneinander
+    let q = 0; try{ if(typeof ALL_VOCAB !== 'undefined' && ALL_VOCAB.length) q = countDupeIssues() + countTranslitIssues(); }catch(e){}
+    const oTxt = open ? fmtN(open)+' Rückmeldung'+(open===1?'':'en')+' offen' : '';
+    const qTxt = q ? '<span style="color:var(--gold2);text-decoration:underline" onclick="event.stopPropagation();setMode(\'dupes\')">'+fmtN(q)+' Treffer in den Prüfungen</span>' : '';
+    const partnerSub2 = oTxt && qTxt ? oTxt+' · '+qTxt : (oTxt || qTxt || 'keine Rückmeldungen offen');
+    el.innerHTML = '<div style="flex:1;min-width:0"><div style="font-size:1rem">'+escHtml(name)+' zuletzt aktiv: '+when+'</div><div class="neu-sub" style="margin-top:2px">'+partnerSub2+'</div></div><div class="neu-sub" style="font-size:1.4rem">›</div>';
   }catch(e){ el.style.display = 'none'; }
 }
 function lessonFilterChip(){
@@ -1916,7 +1921,7 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
         showToast('✓ '+sel.length+' Vokabeln fällig gesetzt', 'ok');
       }catch(e){ showToast('Fehler: '+e.message, 'err'); }
       close();
-      if(cMode === 'home') goHome(); else if(cMode === 'stats') showStats();
+      if(cMode === 'home') neuGoHome(); else if(cMode === 'stats') showStats();
     };
     load();
   };
