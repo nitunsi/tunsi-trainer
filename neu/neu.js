@@ -1780,11 +1780,52 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
 
 /* ---------- Kurs: Lösung gegliedert statt als Fließtext („Tounsi — Deutsch“ -> Tounsi / Deutsch) ---------- */
 (function(){
-  const TYPES = ['translate_de_tn','fill_blank','build_dialog','answer_pattern'];
+  const TYPES = ['translate_de_tn','fill_blank','build_dialog','answer_pattern','fixed_response'];
   const PAREN = /^(.*?)\s*\(([^—]+)—\s*(.*)\)\s*$/;
+  const row = (l, cls, v) => '<span class="l">'+l+'</span><span class="'+cls+'">'+v+'</span>';
+  const wrap = rows => '<span class="neu-sol">'+rows+'</span>';
+  const pl = x => x.replace(/ (?=Pl\. )/g, '<br>');                       // Singular und Plural untereinander
+  // Sonderformen der Lösung, die nicht „Tounsi — Deutsch“ sind
+  function special(html, ex){
+    let m;
+    const t = ex.exercise_type;
+    // „Das Brot ist frisch. — Verb: ya3zin (kneten)“: erst Deutsch, dann das Verb
+    if(t === 'answer_pattern' && (m = html.match(/^([A-ZÄÖÜ].*?) — (Verb(?:en)?):\s*(.+)$/)))
+      return wrap(row('Deutsch', 'de', m[1]) + row(m[2], 'tn', m[3]));
+    // „… Pl. … — b-il-3aks: … Pl. …“: beides Tounsi, Gegenteil ist keine Übersetzung
+    if((m = html.match(/^(.*?) — b-il-3aks:\s*(.+)$/)))
+      return wrap(row('Tounsi', 'tn', pl(m[1])) + row('Gegenteil', 'tn', pl(m[2])));
+    // „Tounsi. "Deutsch"": Übersetzung in Anführungszeichen am Ende
+    if(t !== 'fixed_response' && html.indexOf(' — ') < 0 && (m = html.match(/^(.*?)\s+"([A-ZÄÖÜ][^"]*)"\s*$/))){
+      const tn = t === 'answer_pattern' ? m[1].replace(/ \/ /g, '<br>') : m[1];
+      return wrap(row('Tounsi', 'tn', tn) + row('Deutsch', 'de', m[2]));
+    }
+    if(t === 'fixed_response'){
+      // „falsch - korrekt: … (Deutsch -> Begründung)“ bzw. „richtig. (Deutsch)“
+      if((m = html.match(/^(richtig|falsch)(?: - korrekt: (.+?))?\.?\s*\((.*)\)\s*$/))){
+        const urteil = m[1] === 'richtig' ? 'Richtig' : 'Falsch';
+        return wrap(row('Urteil', 'de', urteil) + (m[2] ? row('Richtig wäre', 'tn', m[2]) : '') + row('Deutsch', 'de', m[3].replace(/ -> /g, '<br>')));
+      }
+      // „massik bil khir (gleiche Formel zurück)“
+      if((m = html.match(/^(.+?)\s+\((gleiche Formel zurück)\)\s*$/)))
+        return wrap(row('Tounsi', 'tn', m[1]) + row('Hinweis', 'de', m[2]));
+    }
+    // Dialog nur auf Deutsch („Wo ist die Bank? – Welche Bank? – …“): eine Äußerung pro Zeile
+    if(t === 'build_dialog' && html.indexOf(' — ') < 0 && /^[A-ZÄÖÜ]/.test(html) && html.indexOf(' – ') > 0)
+      return wrap(row('Deutsch', 'de', html.replace(/ – /g, '<br>')));
+    // Dialog-Lösung: ein Sprecher pro Zeile, Beispiele einzeln
+    if(t === 'build_dialog' && html.indexOf(' — ') < 0 || t === 'build_dialog' && /^Beispiel/.test(html)){
+      let d = html.replace(/ (?=[a-z0-9]+: )/g, '<br>').replace(/ — | \/ (?=fi-)/g, '<br>');
+      if(/^Beispiel/.test(html)) d = d.replace(/^(Beispiel(?:lösung)?:)\s*/, '$1<br>').replace(/\. \/ /g, '.<br>');
+      if(d !== html) return wrap(row('Tounsi', 'tn', d));
+    }
+    return null;
+  }
   // html = bereits maskierte Lösung (ggf. mit Hervorhebungen im Tounsi-Teil)
   function format(html, ex){
     if(!ex || !TYPES.includes(ex.exercise_type) || !html) return null;
+    const sp = special(html, ex);
+    if(sp) return sp;
     if(ex.exercise_type === 'answer_pattern' && PAREN.test(ex.solution || '')) return null;   // schon in drei Zeilen gegliedert
     let tn, de;
     const i = html.indexOf(' — ');
