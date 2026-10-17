@@ -5833,6 +5833,13 @@ function courseConjView(ex){
   }
   if(!blocks && gruppe) return null;   // "Gruppe N." ohne passende Tabelle: Karte unverändert lassen
   let solHtml = null;
+  // Gruppen-Karten (Präsens): wie die anderen Konjugationskarten mit Personen beschriftet.
+  // Reihenfolge der Lösung: er, du, sie, ich; im Plural: sie, ihr, (doppelt), wir. Doppelte Formen entfallen.
+  if(blocks && gruppe && blocks.length===1 && blocks[0].sg.length===4 && blocks[0].pl.length>=3){
+    const b0 = blocks[0], sg = b0.sg, pl = b0.pl;
+    const rows = [['ena',sg[3]],['enti',sg[1]],['houwwa',sg[0]],['hiyya',sg[2]],['a7na',pl[pl.length-1]],['entouma',pl[1]],['houma',pl[0]]].map(r=>({person:r[0],form:r[1]}));
+    return {prompt: word, instr, solHtml: '<div style="font-size:.72rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin:.2rem 0 .45rem">'+escHtml(b0.head)+'</div>'+renderGrammarDrillGrid(rows,true)};
+  }
   if(blocks){
     const cell = f => '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:.9rem;color:var(--gold2);white-space:nowrap">'+escHtml(f)+'</span>';
     const row = (l, forms) => '<div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;align-self:baseline">'+l+'</div>'
