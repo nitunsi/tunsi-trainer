@@ -5721,6 +5721,7 @@ const COURSE_LABEL_RULES = [
 ];
 function courseTypeLabel(exercise){
   const t = exercise.exercise_type, ins = (exercise.instruction||'').trim();
+  if(t==='grammar_drill' && /^Gruppe \d+\./.test((exercise.solution||'').trim())) return 'Konjugieren';
   const r = COURSE_LABEL_RULES.find(x => x[0]===t && x[2] && x[1].test(ins));
   if(r) return r[2];
   if(t==='fill_blank' && !/_{2,}/.test(exercise.prompt||'')){
@@ -5796,6 +5797,7 @@ function courseConjView(ex){
   else if((m = t.match(/^(.+?)\s+"([^"]+)"\s*\+\s*Pronominalsuffixe$/))){ word = m[1]; instr = 'Pronominalsuffixe anhängen („'+m[2]+'“).'; suffix = true; }
   else if((m = t.match(/^([^\s:()]+):\s*(.*Partizip.*)$/))){ word = m[1]; instr = cap(m[2].trim()).replace(/\.?$/,'.'); partizip = true; }
   else return null;
+  if(/gruppe zuordnen/i.test(instr)) instr = 'Konjugiere im Präsens und nenne die Gruppe.';
   if(partizip){
     // "akt.Part. a/b/c. pass.Part. d/e/f. Imperativ x (Sg.) / y (Pl.). Beispiel: …" in beschriftete Zeilen zerlegen
     const LB = {'akt.Part.':'Aktives Partizip','pass.Part.':'Passives Partizip','kein pass.Part.':'Passives Partizip','Imperativ':'Imperativ','Beispiel:':'Beispiel'};
@@ -5831,6 +5833,30 @@ function courseConjView(ex){
   }
   if(!blocks && gruppe) return null;   // "Gruppe N." ohne passende Tabelle: Karte unverändert lassen
   let solHtml = null;
+  // Konjugationsblöcke mit beschrifteten Personen statt Singular-/Plural-Reihen. Die Reihenfolge der Formen hängt von
+  // der Kartenart ab: Präsens er/du/sie/ich, Perfekt er/sie/du/ich, Negation ich/du/sie/er (Plural entsprechend);
+  // doppelte Formen (enti = hiyya im Präsens, Plural „tikhdmu“ zweimal) entfallen.
+  if(blocks && !suffix){
+    const kindOf = b => b.head==='Perfekt' ? 'perf' : b.head==='Präsens' ? 'pres'
+      : /ich\/du\/er\/sie/.test(t) ? 'zal' : /^Negation/.test(t) ? 'neg' : /Perfekt/i.test(t) ? 'perf' : 'pres';
+    const persons = b => {
+      const k = kindOf(b), sg = b.sg, pl = b.pl;
+      if(sg.length!==4 || pl.length<3) return null;
+      let ena, enti, houwwa, hiyya, a7na, entouma, houma;
+      if(k==='pres'){ [houwwa, enti, hiyya, ena] = sg; houma = pl[0]; entouma = pl[1]; a7na = pl[pl.length-1]; }
+      else if(k==='perf'){ [houwwa, hiyya, enti, ena] = sg; if(pl.length!==4) return null; houma = pl[0]; entouma = pl[2]; a7na = pl[3]; }
+      else if(k==='neg'){ [ena, enti, hiyya, houwwa] = sg; if(pl.length!==4) return null; a7na = pl[0]; entouma = pl[1]; houma = pl[3]; }
+      else { [ena, enti, houwwa, hiyya] = sg; if(pl.length!==3) return null; a7na = pl[0]; entouma = pl[1]; houma = pl[2]; }
+      return [['ena',ena],['enti',enti],['houwwa',houwwa],['hiyya',hiyya],['a7na',a7na],['entouma',entouma],['houma',houma]].map(r=>({person:r[0],form:r[1]}));
+    };
+    const grids = blocks.map(persons);
+    if(grids.every(Boolean)){
+      solHtml = blocks.map((b,i) =>
+        (b.head ? '<div style="font-size:.72rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin:'+(i?'.8rem 0 .4rem;padding-top:.6rem;border-top:1px dashed var(--border)':'.2rem 0 .45rem')+'">'+escHtml(b.head)+'</div>' : '')
+        + renderGrammarDrillGrid(grids[i], true)).join('');
+      return {prompt: word, instr, solHtml};
+    }
+  }
   if(blocks){
     const cell = f => '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:.9rem;color:var(--gold2);white-space:nowrap">'+escHtml(f)+'</span>';
     const row = (l, forms) => '<div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;align-self:baseline">'+l+'</div>'
