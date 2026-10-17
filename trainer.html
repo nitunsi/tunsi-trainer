@@ -5700,6 +5700,11 @@ function courseTypeLabel(exercise){
     if(/^ordne die wörter/i.test(ins)) return 'Satz ordnen';
     if(/^bilde das gegenteil/i.test(ins)) return 'Umformen';
   }
+  if(t==='translate_de_tn'){
+    if(/^negiere/i.test(ins)) return 'Negieren';
+    if(/^bejahe/i.test(ins)) return 'Bejahen';
+    if(/^bilde die frage mit/i.test(ins)) return 'Frage bilden';
+  }
   if(t==='build_dialog' && /^übersetze/i.test(ins)) return 'Übersetzen';
   return COURSE_TYPE_LABELS[t] || t;
 }
