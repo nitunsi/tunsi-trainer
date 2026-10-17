@@ -5686,7 +5686,7 @@ async function goMix(){
   render();
 }
 
-const COURSE_TYPE_LABELS = {translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',grammar_drill:'Grammatik-Übung',fixed_response:'Feste Antwort',grammar_card:'Merksatz'};
+const COURSE_TYPE_LABELS = {translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',grammar_drill:'Grammatik-Übung',fixed_response:'Feste Antwort',grammar_card:'Merksatz',build_dialog:'Dialog bilden'};
 // „Lücke füllen“ stimmt nur, wenn der Prompt wirklich eine Lücke hat (___). Ohne Lücke ist es eine
 // Umformaufgabe („Ersetze das Nomen durch …“, „Setze in den Plural“) oder eine Übersetzung.
 function courseTypeLabel(exercise){
@@ -5694,6 +5694,13 @@ function courseTypeLabel(exercise){
   if(t==='fill_blank' && !/_{2,}/.test(exercise.prompt||'')){
     return /^übersetz/i.test(exercise.instruction||'') ? 'Übersetzen' : 'Umformen';
   }
+  // Typ-Zeile nach der Anweisung, wenn der Typ allein die Aufgabe nicht trifft
+  const ins = exercise.instruction||'';
+  if(t==='answer_pattern'){
+    if(/^ordne die wörter/i.test(ins)) return 'Satz ordnen';
+    if(/^bilde das gegenteil/i.test(ins)) return 'Umformen';
+  }
+  if(t==='build_dialog' && /^übersetze/i.test(ins)) return 'Übersetzen';
   return COURSE_TYPE_LABELS[t] || t;
 }
 
@@ -6401,7 +6408,7 @@ function renderCourseTestTab(tc, l){
 
   const isGrammar = t.phase==='grammar';
   const gradable = COURSE_GRADABLE_TYPES.includes(ex.exercise_type);
-  const label = isGrammar ? '🧠 Grammatik-Check' : ex.exercise_type==='fill_blank' ? courseTypeLabel(ex) : ({translate_de_tn:'Übersetzen',fill_blank:'Lücke füllen',answer_pattern:'Antworten',build_dialog:'Dialog bilden',grammar_drill:'Grammatik-Übung',fixed_response:'Feste Antwort'})[ex.exercise_type] || ex.exercise_type;
+  const label = isGrammar ? '🧠 Grammatik-Check' : courseTypeLabel(ex);
 
   let h = '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.3rem">'+label+' · '+cur+' / '+total+'</div>';
   if(ex.exercise_type==='answer_pattern'){
