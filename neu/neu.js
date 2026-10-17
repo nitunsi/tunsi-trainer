@@ -1916,7 +1916,7 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
         showToast('✓ '+sel.length+' Vokabeln fällig gesetzt', 'ok');
       }catch(e){ showToast('Fehler: '+e.message, 'err'); }
       close();
-      if(cMode === 'home') goHome(); else if(cMode === 'stats') showStats();
+      if(cMode === 'home') neuGoHome(); else if(cMode === 'stats') showStats();
     };
     load();
   };
