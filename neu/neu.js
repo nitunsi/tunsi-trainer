@@ -596,10 +596,10 @@ function dangerHtml(dc, goal, total){
     const parts = [];
     if(pf >= extra) parts.push(b(extra)+' vorziehen');
     else{
-      if(pf > 0) parts.push('alle '+b(pf)+' vorziehen');
+      if(pf > 0) parts.push('Alle '+b(pf)+' vorziehen');
       parts.push(b(extra - pf)+' aktivieren');
     }
-    const txt = parts.join(' und ');
+    const txt = parts.length > 1 ? parts[0] + ' und ' + parts[1] : parts[0];
     return hintCard(txt + ', um das Tagesziel zu erreichen.', false);
   }
   return '';
