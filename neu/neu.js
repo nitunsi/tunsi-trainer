@@ -594,10 +594,10 @@ function dangerHtml(dc, goal, total){
     try{ pf = pullForwardCandidates().filter(c => c.day === tmr.getTime() && c.level >= 4 && c.level <= 6).length; }catch(e){}
     const b = n => '<b style="color:var(--gold2)">'+fmtN(n)+'</b>';
     const parts = [];
-    if(pf >= extra) parts.push(b(extra)+' vorziehen');
+    if(pf >= extra) parts.push('Noch '+b(extra)+' vorziehen');
     else{
-      if(pf > 0) parts.push('Alle '+b(pf)+' vorziehen');
-      parts.push(b(extra - pf)+' aktivieren');
+      if(pf > 0) parts.push('Noch alle '+b(pf)+' vorziehen');
+      parts.push((pf > 0 ? '' : 'Noch ')+b(extra - pf)+' aktivieren');
     }
     const txt = parts.length > 1 ? parts[0] + ' und ' + parts[1] : parts[0];
     return hintCard(txt + ', um das Tagesziel zu erreichen.', false);
