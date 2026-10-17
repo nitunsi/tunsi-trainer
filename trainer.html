@@ -5702,13 +5702,13 @@ const COURSE_LABEL_RULES = [
   ['answer_pattern', /^(welche jahreszeit|rbi3 \(frühling)/i, 'Jahreszeit'],
   ['answer_pattern', /^verneine und nenne die richtige nationalität/i, 'Nationalität'],
   ['answer_pattern', /^übersetze und nenne das verb/i, 'Verb nennen'],
-  ['grammar_drill', /^konjugiere im präsens, bejaht/i, 'Konjugieren, bejaht'],
-  ['grammar_drill', /^konjugiere im präsens, verneint/i, 'Konjugieren, verneint'],
+  ['grammar_drill', /^konjugiere im präsens, bejaht/i, 'Konjugieren'],
+  ['grammar_drill', /^konjugiere im präsens, verneint/i, 'Verneinen'],
   ['grammar_drill', /^bilde den imperativ/i, 'Imperativ'],
-  ['grammar_drill', /^hänge possessivsuffixe/i, 'Possessivsuffix'],
+  ['grammar_drill', /^hänge possessivsuffixe/i, 'Possessiv'],
   ['grammar_drill', /^beantworte mit ja und nein/i, 'Ja und Nein'],
   ['grammar_drill', /^(wie lautet|artikel:)/i, 'Artikel'],
-  ['fixed_response', /^richtig oder falsch/i, 'Richtig oder falsch'],
+  ['fixed_response', /^richtig oder falsch/i, 'Richtig/falsch'],
   ['build_dialog', /^übersetze/i, 'Übersetzen'],
   ['fill_blank', /^(personalpronomen ergänzen|(name|subjekt) → personalpronomen)/i, 'Pronomen'],
   ['fill_blank', /^(name|nomen|objekt)[^→]*→ suffix/i, 'Suffix'],
@@ -5911,7 +5911,7 @@ function rCourseEx(ex, el){
   answered = false;
   const exercise = ex.exercise;
   const lesson = COURSE_LESSONS.find(l=>l.id===exercise.course_lesson_id);
-  const label = courseIsDialogQuestion(exercise) ? 'Frage zum Dialog' : courseTypeLabel(exercise);
+  const label = courseIsDialogQuestion(exercise) ? 'Dialogfrage' : courseTypeLabel(exercise);
   const p = COURSE_EX_PROGRESS[exercise.id];
   const isNew = !p || !p.review_count;
   const prog = (document.getElementById('ex-progress')||{}).textContent||'';
