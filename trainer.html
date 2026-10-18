@@ -4252,6 +4252,10 @@ function filterCourseEntries(q, dueUntil){
   }
   return xs;
 }
+// Kursdaten UND Lernstand der Übungen laden (loadCourseData meldet sich früher zurück, als der Lernstand da ist)
+function loadCourseListData(){
+  return loadCourseData().then(() => loadCourseExProgress());
+}
 function fillCourseLessonSelect(){
   const sel = document.getElementById('vl-cls-filter'); if(!sel || !COURSE_LESSONS.length) return;
   sel.innerHTML = '<option value="all">Alle Kurs-Lektionen</option>' + COURSE_LESSONS.map(l =>
@@ -4260,7 +4264,7 @@ function fillCourseLessonSelect(){
 function setVocabSource(val){
   vocabSourceFilter = val;
   const ls = document.getElementById('vl-cls-filter'); if(ls) ls.style.display = val === 'vocab' ? 'none' : '';
-  if(val !== 'vocab' && !_courseLoaded) loadCourseData().then(fillCourseLessonSelect).catch(() => {});
+  if(val !== 'vocab' && (!_courseLoaded || !_courseExProgressLoaded)) loadCourseListData().then(fillCourseLessonSelect).catch(() => {});
   else fillCourseLessonSelect();
   filterVocabList();
 }
@@ -4490,8 +4494,8 @@ function filterVocabList(){
     v.tr.toLowerCase().includes(q)
   );
   if(vocabSourceFilter !== 'vocab'){
-    if(!_courseLoaded){
-      loadCourseData().then(() => { if(document.getElementById('vocab-search')) filterVocabList(); }).catch(() => {});
+    if(!_courseLoaded || !_courseExProgressLoaded){
+      loadCourseListData().then(() => { if(document.getElementById('vocab-search')) filterVocabList(); }).catch(() => {});
       const t = document.getElementById('vocab-table');
       if(t) t.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem">Lade Kurs-Übungen…</div>';
       return;
@@ -7563,7 +7567,7 @@ async function showPartnerQueue(filter){
         'course_exercises?or=(partner_status.eq.rejected,partner_status.eq.suggested,partner_status.eq.unknown,partner_comment.not.is.null)' +
         '&select=id,course_lesson_id,exercise_type,instruction,prompt,solution,partner_status,partner_comment&order=id.asc', 500);
     }catch(e){ xres = []; }
-    if(xres.length && !_courseLoaded){ try{ await loadCourseData(); }catch(e){} }
+    if(xres.length && !_courseLoaded){ try{ await loadCourseListData(); }catch(e){} }
     xres.forEach(x => { x._ex = true; x.exId = x.id; x.id = -x.id; });
     pqAllResults = res.concat(xres);
 
