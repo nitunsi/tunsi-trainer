@@ -7571,7 +7571,8 @@ async function showPartnerQueue(filter){
     let xres = [];
     try{
       xres = await sbApiPaged(
-        'course_exercises?or=(partner_status.eq.rejected,partner_status.eq.suggested,partner_status.eq.unknown,partner_comment.not.is.null)' +
+        // Kommentare vom Import („Original aus Skript …“, bei geprüften Skript-Übungen) sind keine Rückmeldung von Semia
+        'course_exercises?or=(partner_status.eq.rejected,partner_status.eq.suggested,partner_status.eq.unknown,and(partner_comment.not.is.null,partner_comment.not.like.Original*))' +
         '&select=id,course_lesson_id,exercise_type,instruction,prompt,solution,partner_status,partner_comment&order=id.asc', 500);
     }catch(e){ xres = []; }
     if(xres.length && !_courseLoaded){ try{ await loadCourseListData(); }catch(e){} }
