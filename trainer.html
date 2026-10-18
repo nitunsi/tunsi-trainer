@@ -5785,18 +5785,23 @@ function courseConjView(ex){
 }
 // Tabelle der Personen: eine Spalte (Zeit steht dann in der Anweisung) oder je Zeit eine Spalte (Perfekt | Präsens).
 // grids: je Zeit eine Liste {person, form}; showForm=false zeigt „…“ (Fragetabelle).
+function courseConjGapNote(grids){
+  return grids.some(g => g.some(r => r.form == null))
+    ? '<div style="margin-top:.5rem;font-size:.72rem;color:var(--muted)">— Form fehlt noch (Tabelle unvollständig)</div>' : '';
+}
 function courseConjTableHtml(heads, grids, showForm){
   if(grids.length === 1){
     return (heads[0] ? '<div style="font-size:.72rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin:.2rem 0 .45rem">'+escHtml(heads[0])+'</div>' : '')
-      + renderGrammarDrillGrid(grids[0], showForm);
+      + renderGrammarDrillGrid(grids[0], showForm) + courseConjGapNote(grids);
   }
   const th = 'text-align:left;padding:.15rem .5rem .35rem 0;font-size:.72rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px';
   let h = '<table style="border-collapse:collapse;width:100%;font-size:.85rem"><tr><th></th>'+heads.map(x => '<th style="'+th+'">'+escHtml(x)+'</th>').join('')+'</tr>';
   grids[0].forEach((r, i) => {
     h += '<tr><td style="color:var(--muted);font-family:\'IBM Plex Mono\',monospace;padding:.2rem .8rem .2rem 0">'+escHtml(r.person)+'</td>'
-      + grids.map(g => '<td style="padding:.2rem .5rem .2rem 0;color:'+(showForm ? 'var(--gold2)' : 'var(--muted)')+'">'+(showForm ? escHtml(g[i].form) : '…')+'</td>').join('')+'</tr>';
+      + grids.map(g => g[i].form == null ? '<td style="padding:.2rem .5rem .2rem 0;color:var(--muted);opacity:.5" title="Form fehlt noch">—</td>'
+        : '<td style="padding:.2rem .5rem .2rem 0;color:'+(showForm ? 'var(--gold2)' : 'var(--muted)')+'">'+(showForm ? escHtml(g[i].form) : '…')+'</td>').join('')+'</tr>';
   });
-  return h+'</table>';
+  return h+'</table>'+courseConjGapNote(grids);
 }
 // Karten „Konjugiere im Präsens, bejaht/verneint (alle Personen)“ mit „yakol (essen)“: die Bedeutung kommt erst in die Lösung,
 // die Personen stehen in der Tabelle und brauchen keinen Zusatz in der Anweisung.
@@ -5887,8 +5892,14 @@ function _courseConjViewCore(ex){
       : /ich\/du\/er\/sie/.test(t) ? 'zal' : /^Negation/.test(t) ? 'neg' : /Perfekt/i.test(t) ? 'perf' : 'pres';
     const persons = b => {
       const k = kindOf(b), sg = b.sg, pl = b.pl;
-      if(sg.length!==4 || pl.length<3) return null;
-      let ena, enti, houwwa, hiyya, a7na, entouma, houma;
+      if(sg.length!==4) return null;
+      let ena, enti, houwwa, hiyya, a7na = null, entouma = null, houma = null;
+      if(pl.length===0){   // nur Singular-Formen (Plural fehlt in den Daten): Tabelle mit sichtbaren Lücken, nur bei Konjugationskarten
+        if(!/^Konjugiere/.test(instr) || (k!=='pres' && k!=='perf')) return null;
+        if(k==='pres') [houwwa, enti, hiyya, ena] = sg; else [houwwa, hiyya, enti, ena] = sg;
+        return [['ena',ena],['enti',enti],['houwwa',houwwa],['hiyya',hiyya],['a7na',a7na],['entouma',entouma],['houma',houma]].map(r=>({person:r[0],form:r[1]}));
+      }
+      if(pl.length<3) return null;
       if(k==='pres'){ [houwwa, enti, hiyya, ena] = sg; houma = pl[0]; entouma = pl[1]; a7na = pl[pl.length-1]; }
       else if(k==='perf'){ [houwwa, hiyya, enti, ena] = sg; if(pl.length!==4) return null; houma = pl[0]; entouma = pl[2]; a7na = pl[3]; }
       else if(k==='neg'){ [ena, enti, hiyya, houwwa] = sg; if(pl.length!==4) return null; a7na = pl[0]; entouma = pl[1]; houma = pl[3]; }
@@ -6473,7 +6484,8 @@ function renderGrammarDrillGrid(rows, showForm){
   let g = '<div style="display:grid;grid-template-columns:auto 1fr;gap:.35rem 1rem;font-size:.85rem">';
   rows.forEach(r => {
     g += '<div style="color:var(--muted);font-family:\'IBM Plex Mono\',monospace">'+escHtml(r.person)+'</div>';
-    g += '<div style="color:'+(showForm?'var(--gold2)':'var(--muted)')+'">'+(showForm?escHtml(r.form):'…')+'</div>';
+    g += r.form == null ? '<div style="color:var(--muted);opacity:.5" title="Form fehlt noch">—</div>'
+      : '<div style="color:'+(showForm?'var(--gold2)':'var(--muted)')+'">'+(showForm?escHtml(r.form):'…')+'</div>';
   });
   g += '</div>';
   return g;
