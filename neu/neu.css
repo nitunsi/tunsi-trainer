@@ -455,6 +455,8 @@ html[data-theme="light"] #act-overlay{background:rgba(40,30,15,.45)}
 /* Linien-Symbole */
 .neu-ic{width:1.1em;height:1.1em;vertical-align:-.17em;display:inline-block;flex:none}
 .neu-dot{width:.7em;height:.7em;border-radius:50%;vertical-align:.02em;margin:0 .1em}
+.neu-chip .neu-ic:not(:last-child){margin-right:.3em}   /* im Chip (inline-flex) fällt das Leerzeichen neben dem Symbol weg */
+.neu-chip .neu-ic:not(:first-child){margin-left:.3em}
 
 /* Wochenstreifen */
 .neu-week{display:flex;justify-content:space-between;margin-top:.7rem;padding-top:.6rem;border-top:1px solid var(--border)}
