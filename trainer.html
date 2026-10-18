@@ -4273,9 +4273,10 @@ function exRowHtml(v){
   const td = (extra, inner) => '<td style="padding:.3rem;'+extra+'">'+inner+'</td>';
   return '<tr style="border-bottom:1px solid rgba(58,50,40,.4);content-visibility:auto;contain-intrinsic-size:auto 32px">'
     + '<td style="padding:.3rem .3rem"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)" style="cursor:pointer"'+(selectedVocabIds.has(v.id)?' checked':'')+'/></td>'
-    + td('color:var(--muted);font-size:.65rem', escHtml(v.ls)+(e.flagged ? ' 🚩' : ''))
+    + td('color:var(--muted);font-size:.65rem;white-space:nowrap', escHtml(v.ls)+(e.flagged ? ' 🚩' : '')
+        + ' <button onclick="openCourseExInfo('+v.exId+')" title="Übung ansehen und bearbeiten" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.8rem;padding:.1rem .35rem;cursor:pointer;border-radius:3px">👁</button>')
     + td('text-align:right;color:var(--muted);font-size:.62rem', escHtml(v.type))
-    + td('font-size:.7rem;color:var(--muted)', escHtml(trunc(v.tr, 40)))
+    + '<td onclick="openCourseExInfo('+v.exId+')" style="padding:.3rem;font-size:.7rem;color:var(--muted);cursor:pointer">'+escHtml(trunc(v.tr, 40))+'</td>'
     + td('', '<span style="font-size:.72rem">'+escHtml(trunc(e.instruction||'', 50))+'</span><div style="font-size:.68rem;color:var(--muted)">'+escHtml(trunc(v.en, 60))+'</div>')
     + td('text-align:center', '<span style="color:'+SRS_LEVEL_COLORS[level]+';font-weight:700;font-size:.7rem">'+SRS_LEVEL_LABELS[level]+'</span>')
     + td('text-align:center;color:var(--muted);font-size:.7rem', p ? timeAgo(p.last_reviewed) : '—')
@@ -5820,6 +5821,7 @@ function courseVocabIconsHtml(exercise, cls, style){
   };
   // ✎ nur mit Vokabel (die Vokabel-Flagge steckt im Bearbeiten-Fenster); 🚩 gilt immer der Übung
   return (v && v.id ? '<button onclick="openVocabEdit('+v.id+')" title="Vokabel bearbeiten"'+attr('')+'>&#9998;</button>' : '')
+       + '<button onclick="openCourseExInfo('+exercise.id+',true)" title="Übung bearbeiten"'+attr('')+'>&#128221;</button>'
        + '<button onclick="toggleCourseFlag('+exercise.id+',this)" data-ex="'+exercise.id+'"'
        + ' title="'+(flagged?'Markierung entfernen':'Übung markieren')+'"'
        + attr('flag-btn course-flag-btn'+(flagged?' flagged':''))+'>'+courseFlagLabel(flagged)+'</button>';
