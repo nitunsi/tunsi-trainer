@@ -4287,23 +4287,114 @@ function exRowHtml(v){
     + td('', '<button onclick="openCourseExInfo('+v.exId+')" title="Übung ansehen" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.65rem;padding:.15rem .4rem;cursor:pointer;border-radius:3px">👁</button>')
     + '</tr>';
 }
-// Übung ansehen: Anweisung, Aufgabe und Lösung im Klartext, dazu Flagge und Prüf-Queue
-function openCourseExInfo(exId){
+// Übung ansehen und bearbeiten: Anweisung, Aufgabe und Lösung im Klartext; Bearbeiten-Modus mit Vorschau der Karte
+function courseExPreviewHtml(e){
+  const cv = courseConjView(e);
+  const instr = cv ? cv.instr : e.instruction;
+  return '<div style="border:1px solid var(--border);border-radius:8px;padding:.7rem .8rem;margin-top:.6rem;background:var(--bg)">'
+    + '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Vorschau · '+escHtml(courseTypeLabel(e))+'</div>'
+    + (instr ? '<div style="font-size:.75rem;color:var(--muted);margin-top:.3rem">'+escHtml(instr)+'</div>' : '')
+    + '<div style="font-size:1.05rem;margin:.3rem 0">'+escHtml(cv ? cv.prompt : (e.prompt||''))+'</div>'
+    + (cv && cv.qHtml ? '<div style="margin-bottom:.5rem">'+cv.qHtml+'</div>' : '')
+    + '<div style="border-top:1px dashed var(--border);padding-top:.5rem;color:var(--gold2);font-size:.9rem">'+courseExSolutionHtml(e)+'</div></div>';
+}
+function openCourseExInfo(exId, edit){
   const e = COURSE_EX_BY_ID[exId]; if(!e) return;
   const old = document.getElementById('course-ex-info'); if(old) old.remove();
   const row = (l, t) => t ? '<div style="margin-top:.6rem"><div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">'+l+'</div><div style="white-space:pre-wrap">'+escHtml(t)+'</div></div>' : '';
   const o = document.createElement('div'); o.id = 'course-ex-info';
   o.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center';
-  o.innerHTML = '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px 12px 0 0;padding:1rem 1.1rem 1.4rem;width:100%;max-width:560px;max-height:80vh;overflow:auto">'
-    + '<div style="font-size:.7rem;color:var(--gold)">'+escHtml(courseLessonLabel(e.course_lesson_id))+' · '+escHtml(courseTypeLabel(e))+' · #'+e.id+'</div>'
-    + row('Anweisung', e.instruction) + row('Aufgabe', e.prompt) + row('Lösung', e.solution) + row('Kommentar', e.partner_comment)
-    + '<div style="display:flex;gap:.5rem;margin-top:1rem;flex-wrap:wrap">'
-    + '<button id="cex-flag" onclick="toggleCourseFlag('+e.id+',this)" class="flag-btn course-flag-btn" data-ex="'+e.id+'" style="border:1px solid var(--border);border-radius:6px;padding:.4rem .7rem;opacity:1">'+(e.flagged ? '&#128681; Markierung entfernen' : '&#127987;&#65039; Markieren')+'</button>'
-    + '<button onclick="courseQueuePending('+e.id+',this)" style="border:1px solid var(--gold);color:var(--gold);background:none;border-radius:6px;padding:.4rem .7rem;font-family:inherit">⏳ In die Prüf-Queue</button>'
-    + '<button onclick="document.getElementById(\'course-ex-info\').remove()" style="margin-left:auto;border:1px solid var(--border);color:var(--muted);background:none;border-radius:6px;padding:.4rem .7rem;font-family:inherit">Schließen</button>'
-    + '</div></div>';
-  o.addEventListener('click', ev => { if(ev.target === o) o.remove(); });
+  const btn = (extra) => 'border-radius:6px;padding:.4rem .7rem;font-family:inherit;background:none;'+extra;
+  const head = '<div style="font-size:.7rem;color:var(--gold)">'+escHtml(courseLessonLabel(e.course_lesson_id))+' · '+escHtml(courseTypeLabel(e))+' · #'+e.id+(e.flagged ? ' · 🚩' : '')+'</div>';
+  let body;
+  if(!edit){
+    body = head + row('Anweisung', e.instruction) + row('Aufgabe', e.prompt) + row('Lösung', e.solution) + row('Kommentar', e.partner_comment)
+      + ((e.meta && (e.meta.verb_de || e.meta.beleg)) ? row('Zusatz', [e.meta.verb_de ? 'Bedeutung: '+e.meta.verb_de : '', e.meta.beleg ? 'Beleg: '+e.meta.beleg : ''].filter(Boolean).join(' · ')) : '')
+      + courseExPreviewHtml(e)
+      + '<div style="display:flex;gap:.5rem;margin-top:1rem;flex-wrap:wrap">'
+      + '<button onclick="openCourseExInfo('+e.id+',true)" style="'+btn('border:1px solid var(--gold2);color:var(--gold2)')+'">✎ Bearbeiten</button>'
+      + '<button id="cex-flag" onclick="toggleCourseFlag('+e.id+',this)" class="flag-btn course-flag-btn" data-ex="'+e.id+'" style="border:1px solid var(--border);border-radius:6px;padding:.4rem .7rem;opacity:1">'+(e.flagged ? '&#128681; Markierung entfernen' : '&#127987;&#65039; Markieren')+'</button>'
+      + '<button onclick="courseQueuePending('+e.id+',this)" style="'+btn('border:1px solid var(--gold);color:var(--gold)')+'">⏳ In die Prüf-Queue</button>'
+      + '<button onclick="document.getElementById(\'course-ex-info\').remove()" style="margin-left:auto;'+btn('border:1px solid var(--border);color:var(--muted)')+'">Schließen</button>'
+      + '</div>';
+  } else {
+    const fld = 'width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:.5rem .6rem;font-family:inherit;font-size:.85rem;margin-top:.2rem';
+    const lab = t => '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-top:.6rem">'+t+'</div>';
+    const types = Object.keys(COURSE_TYPE_LABELS);
+    if(!types.includes(e.exercise_type)) types.push(e.exercise_type);
+    const m = e.meta || {};
+    body = head + '<div style="font-size:.75rem;color:var(--gold2);margin-top:.2rem">Bearbeiten</div>'
+      + lab('Lektion') + '<select id="cex-lesson" style="'+fld+'">'+COURSE_LESSONS.map(l => '<option value="'+l.id+'"'+(l.id === e.course_lesson_id ? ' selected' : '')+'>K'+l.skript+'.'+l.course_number+(l.title ? ' · '+escHtml(String(l.title).slice(0,40)) : '')+'</option>').join('')+'</select>'
+      + lab('Typ') + '<select id="cex-type" style="'+fld+'">'+types.map(t => '<option value="'+t+'"'+(t === e.exercise_type ? ' selected' : '')+'>'+t+(COURSE_TYPE_LABELS[t] ? ' · '+COURSE_TYPE_LABELS[t] : '')+'</option>').join('')+'</select>'
+      + lab('Anweisung') + '<textarea id="cex-instr" rows="2" style="'+fld+'">'+escHtml(e.instruction||'')+'</textarea>'
+      + lab('Aufgabe') + '<textarea id="cex-prompt" rows="2" style="'+fld+'">'+escHtml(e.prompt||'')+'</textarea>'
+      + lab('Lösung') + '<textarea id="cex-sol" rows="4" style="'+fld+'">'+escHtml(e.solution||'')+'</textarea>'
+      + lab('Bedeutung des Verbs (nur Konjugationskarten)') + '<input id="cex-verb" value="'+escHtml(m.verb_de||'')+'" style="'+fld+'">'
+      + lab('Beleg') + '<select id="cex-beleg" style="'+fld+'">'+[['','· keiner'],['skript','🟢 Skript'],['belegt','🔵 Belegt'],['abgeleitet','🟡 Abgeleitet'],['unsicher','🔴 Unsicher']].map(([v,t]) => '<option value="'+v+'"'+((m.beleg||'') === v ? ' selected' : '')+'>'+t+'</option>').join('')+'</select>'
+      + '<div id="cex-preview"></div>'
+      + '<div style="font-size:.7rem;color:var(--muted);margin-top:.6rem">Ändern sich Anweisung, Aufgabe oder Lösung, wird der Prüf-Status zurückgesetzt, damit die Übung neu geprüft wird.</div>'
+      + '<div style="display:flex;gap:.5rem;margin-top:.8rem;flex-wrap:wrap">'
+      + '<button onclick="courseExSave('+e.id+')" style="'+btn('border:1px solid var(--green);color:var(--green);font-weight:700')+'">💾 Speichern</button>'
+      + '<button onclick="courseExEditPreview('+e.id+')" style="'+btn('border:1px solid var(--border);color:var(--text)')+'">👁 Vorschau</button>'
+      + '<button onclick="courseExDelete('+e.id+')" style="'+btn('border:1px solid var(--red);color:var(--red)')+'">🗑 Löschen</button>'
+      + '<button onclick="openCourseExInfo('+e.id+')" style="margin-left:auto;'+btn('border:1px solid var(--border);color:var(--muted)')+'">Abbrechen</button>'
+      + '</div>';
+  }
+  o.innerHTML = '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px 12px 0 0;padding:1rem 1.1rem 1.4rem;width:100%;max-width:560px;max-height:88vh;overflow:auto">'+body+'</div>';
+  if(!edit) o.addEventListener('click', ev => { if(ev.target === o) o.remove(); });
   document.body.appendChild(o);
+}
+function courseExFormValues(e){
+  const g = id => document.getElementById(id).value;
+  const f = { course_lesson_id: parseInt(g('cex-lesson')), exercise_type: g('cex-type'), instruction: g('cex-instr').trim() || null, prompt: g('cex-prompt').trim(), solution: g('cex-sol').trim() || null };
+  const m = Object.assign({}, e.meta || {});
+  const verb = g('cex-verb').trim(), beleg = g('cex-beleg');
+  if(verb) m.verb_de = verb; else delete m.verb_de;
+  if(beleg) m.beleg = beleg; else delete m.beleg;
+  f.meta = m;
+  return f;
+}
+function courseExEditPreview(exId){
+  const e = COURSE_EX_BY_ID[exId]; if(!e) return;
+  const box = document.getElementById('cex-preview'); if(!box) return;
+  box.innerHTML = courseExPreviewHtml(Object.assign({}, e, courseExFormValues(e)));
+}
+async function courseExSave(exId){
+  const e = COURSE_EX_BY_ID[exId]; if(!e) return;
+  const f = courseExFormValues(e), patch = {};
+  if(!f.prompt){ showToast('Aufgabe darf nicht leer sein','warn'); return; }
+  ['course_lesson_id','exercise_type','instruction','prompt','solution'].forEach(k => { if((e[k] == null ? null : e[k]) !== f[k]) patch[k] = f[k]; });
+  if(JSON.stringify(f.meta) !== JSON.stringify(e.meta || {})) patch.meta = f.meta;
+  if(!Object.keys(patch).length){ showToast('Keine Änderung','warn'); return; }
+  if(('instruction' in patch || 'prompt' in patch || 'solution' in patch) && e.partner_status){
+    patch.partner_status = null; patch.status_updated_at = new Date().toISOString();
+  }
+  try{ await sbApi('course_exercises?id=eq.'+exId, 'PATCH', patch); }
+  catch(err){ showToast('Fehler: '+err.message,'err'); return; }
+  const oldLesson = e.course_lesson_id;
+  Object.assign(e, patch);
+  if(e.course_lesson_id !== oldLesson){
+    COURSE_EXERCISES_BY_LESSON[oldLesson] = (COURSE_EXERCISES_BY_LESSON[oldLesson]||[]).filter(x => x.id !== exId);
+    (COURSE_EXERCISES_BY_LESSON[e.course_lesson_id] = COURSE_EXERCISES_BY_LESSON[e.course_lesson_id] || []).push(e);
+  }
+  showToast('✓ Übung gespeichert','ok');
+  openCourseExInfo(exId);
+  if(document.getElementById('vocab-search')) filterVocabList();
+}
+async function courseExDelete(exId){
+  const e = COURSE_EX_BY_ID[exId]; if(!e) return;
+  if(!confirm('Übung #'+exId+' wirklich löschen?\n\n'+(e.prompt||'').slice(0,80))) return;
+  if(!confirm('Sicher? Der Lernstand dieser Übung wird mit gelöscht. Das lässt sich nicht rückgängig machen.')) return;
+  try{
+    await sbApi('course_exercise_progress?exercise_id=eq.'+exId, 'DELETE');
+    await sbApi('course_exercises?id=eq.'+exId, 'DELETE');
+  }catch(err){ showToast('Fehler: '+err.message,'err'); return; }
+  delete COURSE_EX_BY_ID[exId]; delete COURSE_EX_PROGRESS[exId];
+  COURSE_EXERCISES_BY_LESSON[e.course_lesson_id] = (COURSE_EXERCISES_BY_LESSON[e.course_lesson_id]||[]).filter(x => x.id !== exId);
+  selectedVocabIds.delete(-exId);
+  const ov = document.getElementById('course-ex-info'); if(ov) ov.remove();
+  showToast('🗑 Übung gelöscht','ok');
+  if(document.getElementById('vocab-search')) filterVocabList();
 }
 async function courseQueuePending(exId, btn){
   const e = COURSE_EX_BY_ID[exId]; if(!e) return;
