@@ -2004,11 +2004,23 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     cart:'<circle cx="9" cy="20" r="1.200"/><circle cx="18" cy="20" r="1.200"/><path d="M3 4h3l2.500 11h10l2-8H7"/>',
     eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
     inbox:'<path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1 3h6l1-3h5"/>',
-    skip:'<path d="m5 5 8 7-8 7zM16 5v14"/>'
+    skip:'<path d="m5 5 8 7-8 7zM16 5v14"/>',
+    skipback:'<path d="M19 5l-8 7 8 7zM5 5v14"/>',
+    down:'<path d="M12 4v13m0 0-5-5m5 5 5-5M5 21h14"/>',
+    square:'<rect x="5" y="5" width="14" height="14" rx="2"/>',
+    undo:'<path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
+    trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    back:'<path d="m15 5-7 7 7 7"/>',
+    unlock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.500-2"/>',
+    redo:'<path d="M20 12a8 8 0 1 1-3-6.200M20 4v4h-4"/>',
+    pause:'<rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/>',
+    chevup:'<path d="m6 15 6-6 6 6"/>',
+    chevdown:'<path d="m6 9 6 6 6-6"/>'
   };
-  const M = {'🔊':'volume','🔇':'mute','📅':'calendar','⭐':'star','🌟':'star','🔍':'search','📖':'book','📚':'books','🎓':'cap','🔗':'link','⚠️':'warn','⚠':'warn','⏳':'hourglass','💡':'bulb','🚩':'flag','🏳️':'flag','🔁':'repeat','⚡':'bolt','➕':'plus','💬':'chat','🎉':'sparkle','👏':'sparkle','✏️':'pencil','✎':'pencil','🔤':'aa','🔠':'aa','✅':'checkc','✔️':'check','❌':'xc','✖️':'x','❓':'help','🎲':'dice','📬':'mail','🔀':'shuffle','🔒':'lock','📊':'bars','🙋':'hand','🧭':'compass','💾':'save','🎯':'target','💪':'flame','🧠':'brain','📄':'file','📦':'box','🗄':'archive','📋':'clip','🧩':'puzzle','📐':'ruler','🛒':'cart','👁':'eye','📭':'inbox','⏭':'skip'};
+  const M = {'✓':'check','✗':'x','✕':'x','⏮':'skipback','⬇':'down','☐':'square','↩':'undo','🗑':'trash','📥':'inbox','🕐':'clock','⏰':'clock','←':'back','✍':'pencil','📝':'clip','🔓':'unlock','↻':'redo','⏸':'pause','✨':'sparkle','⌃':'chevup','⌄':'chevdown','🔊':'volume','🔇':'mute','📅':'calendar','⭐':'star','🌟':'star','🔍':'search','📖':'book','📚':'books','🎓':'cap','🔗':'link','⚠️':'warn','⚠':'warn','⏳':'hourglass','💡':'bulb','🚩':'flag','🏳️':'flag','🔁':'repeat','⚡':'bolt','➕':'plus','💬':'chat','🎉':'sparkle','👏':'sparkle','✏️':'pencil','✎':'pencil','🔤':'aa','🔠':'aa','✅':'checkc','✔️':'check','❌':'xc','✖️':'x','❓':'help','🎲':'dice','📬':'mail','🔀':'shuffle','🔒':'lock','📊':'bars','🙋':'hand','🧭':'compass','💾':'save','🎯':'target','💪':'flame','🧠':'brain','📄':'file','📦':'box','🗄':'archive','📋':'clip','🧩':'puzzle','📐':'ruler','🛒':'cart','👁':'eye','📭':'inbox','⏭':'skip'};
   const SM = {}; Object.keys(M).forEach(k => { SM[k.replace(/\uFE0F/g,'')] = M[k]; }); Object.keys(SM).forEach(k => { M[k] = SM[k]; });
-  const DOT = {'🟡':'var(--gold)','🔴':'#c0392b','🟠':'#d9822b','🔵':'#3a7bc8','⚪':'var(--muted)'};
+  const DOT = {'🟢':'#2b8650','🟡':'var(--gold)','🔴':'#c0392b','🟠':'#d9822b','🔵':'#3a7bc8','⚪':'var(--muted)'};
   const keys = Object.keys(M).map(k=>k.replace(/\uFE0F/g,'')).filter((k,i,a)=>a.indexOf(k)===i).concat(Object.keys(DOT)).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
   const RE = new RegExp('('+keys.join('|')+')\\uFE0F?','g');
   const SKIP = {SCRIPT:1,STYLE:1,TEXTAREA:1,INPUT:1,OPTION:1,SELECT:1,TITLE:1};
@@ -2022,7 +2034,7 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     if(root.nodeType === 3){ root = root.parentNode; if(!root) return; }
     if(root.nodeType !== 1 || SKIP[root.tagName] || root.closest('option,select,textarea,[data-noicon]')) return;
     const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode(n){
-      const p = n.parentNode; if(!p || SKIP[p.tagName]) return NodeFilter.FILTER_REJECT;
+      const p = n.parentNode; if(!p || SKIP[p.tagName] || (p.closest && p.closest('svg'))) return NodeFilter.FILTER_REJECT;   // Text in SVG (z. B. ✓ im Ring) bleibt Text
       RE.lastIndex = 0; return RE.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT; }});
     const list = []; while(w.nextNode()) list.push(w.currentNode);
     list.forEach(n => {
