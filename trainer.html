@@ -5807,6 +5807,10 @@ function courseConjTableHtml(heads, grids, showForm){
 // die Personen stehen in der Tabelle und brauchen keinen Zusatz in der Anweisung.
 function _courseConjViewA(ex){
   if(!ex || ex.exercise_type !== 'grammar_drill') return null;
+  // Possessivsuffixe: „flous (Geld)“ → Wort groß, Bedeutung erst in der Lösung
+  const pm2 = /^Hänge Possessivsuffixe an/i.test((ex.instruction||'').trim()) && (ex.prompt||'').trim().match(/^([^\s()]+)\s*\(([^()]+)\)$/);
+  const prow = pm2 && parseGrammarDrillSolution(ex.solution);
+  if(prow) return {prompt: pm2[1], instr: 'Hänge Possessivsuffixe an.', de: pm2[2].trim(), grids: [prow], heads: [''], solHtml: courseConjTableHtml([''], [prow], true)};
   const m = (ex.instruction||'').trim().match(/^Konjugiere im Präsens, (bejaht|verneint)/i), pm = (ex.prompt||'').trim().match(/^([^\s()]+)\s*\(([^()]+)\)$/);
   const rows = m && pm && parseGrammarDrillSolution(ex.solution);
   if(!rows) return null;
