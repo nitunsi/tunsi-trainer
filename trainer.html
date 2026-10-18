@@ -4068,6 +4068,8 @@ function showVocabList(){
   vocabPsFilter = 'all';
   vocabAudioFilter = 'all';
   vocabSinceDays = null;
+  vocabSourceFilter = 'vocab';
+  vocabCourseLsFilter = 'all';
   selectedVocabIds.clear();
   const area = document.getElementById('exercise-screen');
   if(area) area.style.display = 'block';
@@ -4123,6 +4125,18 @@ function showVocabList(){
         oninput="filterVocabList()"/>
       <button onclick="clearDueFilter()" title="Datum löschen" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:.1rem .3rem">✕</button>
     </div>
+ <div style="display:flex;gap:.4rem;margin-bottom:.5rem;flex-wrap:wrap">
+      <select id="vl-src-filter" onchange="setVocabSource(this.value)"
+        style="flex:1;min-width:120px;padding:.4rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.8rem;font-family:'IBM Plex Mono',monospace">
+        <option value="vocab">📚 Nur Vokabeln</option>
+        <option value="course">🎓 Nur Kurs-Übungen</option>
+        <option value="all">📚🎓 Beides</option>
+      </select>
+      <select id="vl-cls-filter" onchange="vocabCourseLsFilter=this.value;filterVocabList()" style="display:none;flex:1;min-width:120px;padding:.4rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.8rem;font-family:'IBM Plex Mono',monospace">
+        <option value="all">Alle Kurs-Lektionen</option>
+        ${COURSE_LESSONS.map(l=>`<option value="${l.id}">K${l.skript}.${l.course_number}${l.title?' · '+escHtml(String(l.title).slice(0,28)):''}</option>`).join('')}
+      </select>
+    </div>
     <div style="display:flex;gap:.4rem;margin-bottom:.7rem;flex-wrap:wrap">
       <select id="vl-topic-filter" onchange="vocabTopicFilter=this.value;filterVocabList()"
         style="flex:1;min-width:120px;padding:.4rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.8rem;font-family:'IBM Plex Mono',monospace">
@@ -4173,6 +4187,8 @@ function showVocabList(){
 }
 
 let showOnlyFlagged = false;
+let vocabSourceFilter = 'vocab';   // 'vocab' | 'course' | 'all' — Vokabeln und Kurs-Übungen in einer Liste, per Filter getrennt
+let vocabCourseLsFilter = 'all';   // Kurs-Lektion (course_lessons.id) oder 'all'
 let vocabLevelFilter = 'all'; // 'all' | 0..5
 let vocabTopicFilter = 'all';
 let vocabLsFilter = 'all';
@@ -4203,6 +4219,119 @@ function clearDueFilter(){
   filterVocabList();
 }
 
+// ── Kurs-Übungen in der Vokabelliste ───────────────────────────────────────────────
+// Einträge mit negativer id (= -course_exercises.id), damit Auswahl und Sammelaktionen beide Arten tragen.
+function courseLessonLabel(id){
+  const l = COURSE_LESSONS.find(x => x.id === id);
+  return l ? 'K'+l.skript+'.'+l.course_number : 'K?';
+}
+function courseListEntries(){
+  return Object.values(COURSE_EX_BY_ID).map(e => {
+    const cv = courseConjView(e);
+    return { _ex:true, id:-e.id, exId:e.id, clId:e.course_lesson_id, ls:courseLessonLabel(e.course_lesson_id),
+      tr:(cv ? cv.prompt : e.prompt)||'', en:(e.solution||'').replace(/^Perf\.:\s*|^Gruppe \d+\.\s*/,''), ar:'',
+      ps:e.partner_status||null, psu:e.status_updated_at||null, ex:e, type:courseTypeLabel(e) };
+  }).sort((a,b) => a.clId - b.clId || (a.ex.position||0) - (b.ex.position||0));
+}
+function courseExLevel(exId){
+  const p = COURSE_EX_PROGRESS[exId];
+  return p ? Math.min(p.correct_count||0, 6) : 0;
+}
+function filterCourseEntries(q, dueUntil){
+  let xs = courseListEntries();
+  if(showOnlyFlagged) xs = xs.filter(x => x.ex.flagged);
+  if(vocabLevelFilter !== 'all') xs = xs.filter(x => courseExLevel(x.exId) === vocabLevelFilter);
+  if(vocabCourseLsFilter !== 'all') xs = xs.filter(x => String(x.clId) === String(vocabCourseLsFilter));
+  if(vocabLsFilter !== 'all' || vocabTopicFilter !== 'all' || vocabAudioFilter !== 'all') xs = [];   // gilt nur für Vokabeln
+  if(vocabPsFilter !== 'all') xs = xs.filter(x => vocabPsFilter === 'null' ? !x.ps : x.ps === vocabPsFilter);
+  if(vocabSinceDays){ const cutoff = Date.now() - vocabSinceDays * 86400000; xs = xs.filter(x => x.psu && new Date(x.psu).getTime() >= cutoff); }
+  if(dueUntil) xs = xs.filter(x => { const p = COURSE_EX_PROGRESS[x.exId]; return p && p.next_review && courseParseTs(p.next_review) <= dueUntil; });
+  if(q){
+    const nq = normalize(q);
+    xs = xs.filter(x => [x.ex.instruction, x.ex.prompt, x.ex.solution, x.tr].some(t => t && (String(t).toLowerCase().includes(q) || normalize(String(t)).includes(nq))));
+  }
+  return xs;
+}
+function fillCourseLessonSelect(){
+  const sel = document.getElementById('vl-cls-filter'); if(!sel || !COURSE_LESSONS.length) return;
+  sel.innerHTML = '<option value="all">Alle Kurs-Lektionen</option>' + COURSE_LESSONS.map(l =>
+    '<option value="'+l.id+'"'+(String(l.id) === String(vocabCourseLsFilter) ? ' selected' : '')+'>K'+l.skript+'.'+l.course_number+(l.title ? ' · '+escHtml(String(l.title).slice(0,28)) : '')+'</option>').join('');
+}
+function setVocabSource(val){
+  vocabSourceFilter = val;
+  const ls = document.getElementById('vl-cls-filter'); if(ls) ls.style.display = val === 'vocab' ? 'none' : '';
+  if(val !== 'vocab' && !_courseLoaded) loadCourseData().then(fillCourseLessonSelect).catch(() => {});
+  else fillCourseLessonSelect();
+  filterVocabList();
+}
+function exRowHtml(v){
+  const e = v.ex, p = COURSE_EX_PROGRESS[v.exId] || null, level = courseExLevel(v.exId);
+  const trunc = (t, n) => { t = String(t||'').replace(/\s+/g,' ').trim(); return t.length > n ? t.slice(0, n-1)+'…' : t; };
+  const psIcon = {approved:'<span title="Bestätigt" style="color:var(--green)">✅</span>', rejected:'<span title="Falsch" style="color:var(--red)">❌</span>',
+    unknown:'<span title="Kenn ich nicht" style="color:var(--muted)">❓</span>', pending:'<span title="Wartet auf Prüfung" style="color:var(--gold)">⏳</span>',
+    skipped:'<span title="Übersprungen" style="color:var(--muted)">⏭</span>', suggested:'<span title="Vorschlag" style="color:var(--blue)">💡</span>'}[v.ps] || '<span style="color:var(--border)">·</span>';
+  const td = (extra, inner) => '<td style="padding:.3rem;'+extra+'">'+inner+'</td>';
+  return '<tr style="border-bottom:1px solid rgba(58,50,40,.4);content-visibility:auto;contain-intrinsic-size:auto 32px">'
+    + '<td style="padding:.3rem .3rem"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)" style="cursor:pointer"'+(selectedVocabIds.has(v.id)?' checked':'')+'/></td>'
+    + td('color:var(--muted);font-size:.65rem', escHtml(v.ls)+(e.flagged ? ' 🚩' : ''))
+    + td('text-align:right;color:var(--muted);font-size:.62rem', escHtml(v.type))
+    + td('font-size:.7rem;color:var(--muted)', escHtml(trunc(v.tr, 40)))
+    + td('', '<span style="font-size:.72rem">'+escHtml(trunc(e.instruction||'', 50))+'</span><div style="font-size:.68rem;color:var(--muted)">'+escHtml(trunc(v.en, 60))+'</div>')
+    + td('text-align:center', '<span style="color:'+SRS_LEVEL_COLORS[level]+';font-weight:700;font-size:.7rem">'+SRS_LEVEL_LABELS[level]+'</span>')
+    + td('text-align:center;color:var(--muted);font-size:.7rem', p ? timeAgo(p.last_reviewed) : '—')
+    + td('text-align:center;color:var(--muted);font-size:.7rem', p ? timeAgo(p.last_correct) : '—')
+    + td('text-align:center;color:var(--muted);font-size:.7rem', p && p.review_count ? p.review_count : '—')
+    + td('text-align:center;font-size:.7rem', p && p.next_review ? fmtDue(p.next_review) : '—')
+    + td('text-align:center', psIcon)
+    + td('', '')
+    + td('', '<button onclick="openCourseExInfo('+v.exId+')" title="Übung ansehen" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.65rem;padding:.15rem .4rem;cursor:pointer;border-radius:3px">👁</button>')
+    + '</tr>';
+}
+// Übung ansehen: Anweisung, Aufgabe und Lösung im Klartext, dazu Flagge und Prüf-Queue
+function openCourseExInfo(exId){
+  const e = COURSE_EX_BY_ID[exId]; if(!e) return;
+  const old = document.getElementById('course-ex-info'); if(old) old.remove();
+  const row = (l, t) => t ? '<div style="margin-top:.6rem"><div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">'+l+'</div><div style="white-space:pre-wrap">'+escHtml(t)+'</div></div>' : '';
+  const o = document.createElement('div'); o.id = 'course-ex-info';
+  o.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center';
+  o.innerHTML = '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px 12px 0 0;padding:1rem 1.1rem 1.4rem;width:100%;max-width:560px;max-height:80vh;overflow:auto">'
+    + '<div style="font-size:.7rem;color:var(--gold)">'+escHtml(courseLessonLabel(e.course_lesson_id))+' · '+escHtml(courseTypeLabel(e))+' · #'+e.id+'</div>'
+    + row('Anweisung', e.instruction) + row('Aufgabe', e.prompt) + row('Lösung', e.solution) + row('Kommentar', e.partner_comment)
+    + '<div style="display:flex;gap:.5rem;margin-top:1rem;flex-wrap:wrap">'
+    + '<button id="cex-flag" onclick="toggleCourseFlag('+e.id+',this)" class="flag-btn course-flag-btn" data-ex="'+e.id+'" style="border:1px solid var(--border);border-radius:6px;padding:.4rem .7rem;opacity:1">'+(e.flagged ? '&#128681; Markierung entfernen' : '&#127987;&#65039; Markieren')+'</button>'
+    + '<button onclick="courseQueuePending('+e.id+',this)" style="border:1px solid var(--gold);color:var(--gold);background:none;border-radius:6px;padding:.4rem .7rem;font-family:inherit">⏳ In die Prüf-Queue</button>'
+    + '<button onclick="document.getElementById(\'course-ex-info\').remove()" style="margin-left:auto;border:1px solid var(--border);color:var(--muted);background:none;border-radius:6px;padding:.4rem .7rem;font-family:inherit">Schließen</button>'
+    + '</div></div>';
+  o.addEventListener('click', ev => { if(ev.target === o) o.remove(); });
+  document.body.appendChild(o);
+}
+async function courseQueuePending(exId, btn){
+  const e = COURSE_EX_BY_ID[exId]; if(!e) return;
+  try{
+    const patch = { partner_status:'pending', status_updated_at:new Date().toISOString() };
+    await sbApi('course_exercises?id=eq.'+exId, 'PATCH', patch);
+    e.partner_status = 'pending'; e.status_updated_at = patch.status_updated_at;
+    showToast('⏳ In der Prüf-Queue','ok');
+    if(btn){ btn.textContent = '✓ In der Queue'; btn.disabled = true; }
+    if(document.getElementById('vocab-search')) filterVocabList();
+  }catch(err){ showToast('Fehler: '+err.message,'err'); }
+}
+// Flagge einer Kurs-Übung (nur für Nils, ohne Wirkung auf die Queue)
+function courseFlagLabel(on){ return on ? '&#128681;' : '&#127987;&#65039;'; }
+async function toggleCourseFlag(exId, btn){
+  const e = COURSE_EX_BY_ID[exId]; if(!e) return;
+  const flagged = !e.flagged;
+  try{ await sbApi('course_exercises?id=eq.'+exId, 'PATCH', { flagged }); }
+  catch(err){ showToast('Fehler: '+err.message,'err'); return; }
+  e.flagged = flagged;
+  document.querySelectorAll('.course-flag-btn[data-ex="'+exId+'"]').forEach(b => {
+    b.classList.toggle('flagged', flagged);
+    b.title = flagged ? 'Markierung entfernen' : 'Markieren';
+    b.innerHTML = b.id === 'cex-flag' ? (flagged ? '&#128681; Markierung entfernen' : '&#127987;&#65039; Markieren') : courseFlagLabel(flagged);
+  });
+  if(document.getElementById('vocab-search')) filterVocabList();
+}
+
 function filterVocabList(){
   const _vs = document.getElementById('vocab-search');
   if(!_vs) return;
@@ -4210,7 +4339,7 @@ function filterVocabList(){
   const dueUntilEl = document.getElementById('due-until-filter');
   const dueUntil = dueUntilEl && dueUntilEl.value ? new Date(dueUntilEl.value + 'T23:59:59') : null;
 
-  let vocab = cLesson==='all' ? ALL_VOCAB : gv();
+  let vocab = vocabSourceFilter === 'course' ? [] : (cLesson==='all' ? ALL_VOCAB : gv());
   if(showOnlyFlagged) vocab = vocab.filter(v => flaggedVocab.has(v.tr));
 
   // Level-Filter
@@ -4262,14 +4391,22 @@ function filterVocabList(){
     });
   }
 
-  if(!q){ renderVocabTable(vocab); return; }
-  const filtered = vocab.filter(v =>
+  if(q) vocab = vocab.filter(v =>
     v.ar.includes(q) ||
     normalize(v.tr).includes(normalize(q)) ||
     v.en.toLowerCase().includes(q) ||
     v.tr.toLowerCase().includes(q)
   );
-  renderVocabTable(filtered);
+  if(vocabSourceFilter !== 'vocab'){
+    if(!_courseLoaded){
+      loadCourseData().then(() => { if(document.getElementById('vocab-search')) filterVocabList(); }).catch(() => {});
+      const t = document.getElementById('vocab-table');
+      if(t) t.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem">Lade Kurs-Übungen…</div>';
+      return;
+    }
+    vocab = vocab.concat(filterCourseEntries(q, dueUntil));
+  }
+  renderVocabTable(vocab);
 }
 
 function renderSinceBanner(){
@@ -4322,7 +4459,7 @@ function renderVocabTableRows(){
   const SRS_LABELS = SRS_LEVEL_LABELS;
 
   if(!vocabFull.length){
-    el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem">Keine Vokabeln gefunden</div>';
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem">Keine Treffer</div>';
     vocabTableRenderedIds = [];
     return;
   }
@@ -4330,8 +4467,8 @@ function renderVocabTableRows(){
   vocabTableRenderedIds = vocab.map(v => v.id);
 
   const countLabel = vocab.length < vocabFull.length
-    ? ('Zeige '+fmtN(vocab.length)+' von '+fmtN(vocabFull.length)+' Vokabeln')
-    : (fmtN(vocabFull.length)+' Vokabeln');
+    ? ('Zeige '+fmtN(vocab.length)+' von '+fmtN(vocabFull.length)+' Einträgen')
+    : (fmtN(vocabFull.length)+(vocabSourceFilter === 'vocab' ? ' Vokabeln' : ' Einträge'));
   let h = '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem">'+countLabel+'</div>';
   h += '<table style="width:100%;border-collapse:collapse;font-size:.75rem">';
   h += '<thead><tr style="color:var(--muted);font-size:.62rem;text-transform:uppercase;letter-spacing:.05em">';
@@ -4351,6 +4488,7 @@ function renderVocabTableRows(){
   h += '</tr></thead><tbody>';
 
   vocab.forEach((v,i) => {
+    if(v._ex){ h += exRowHtml(v); return; }
     const vocabId = v.id;
     const p = vocabId ? srsProgress[vocabId] : null;
     const level = p ? p.level : 0;
@@ -4439,17 +4577,24 @@ function updateBulkBar(){
   if(lbl) lbl.textContent = n + ' markiert';
 }
 
+// Auswahl trennen: positive ids = Vokabeln, negative = Kurs-Übungen (id = -course_exercises.id)
+function splitSelection(){
+  const all = [...selectedVocabIds];
+  return { v: all.filter(i => i > 0), x: all.filter(i => i < 0).map(i => -i) };
+}
+
 async function bulkReassign(){
   const targetLs = document.getElementById('vl-bulk-ls').value;
   if(!targetLs){ showToast('Bitte Ziel-Lektion wählen','warn'); return; }
-  const n = selectedVocabIds.size;
-  if(!n) return;
+  const sel = splitSelection();
+  const n = sel.v.length;
+  if(!n){ showToast('Zuordnen gilt nur für Vokabeln','warn'); return; }
   const targetId = lsToId(targetLs);
   const btn = document.getElementById('vl-bulk-btn');
   if(btn){ btn.disabled=true; btn.textContent='…'; }
   try {
     // Supabase erlaubt kein Bulk-PATCH mit IN-Liste direkt — wir schicken einzeln parallel
-    const ids = [...selectedVocabIds];
+    const ids = sel.v;
     // Nutze in()-Filter wenn unterstützt
     await sbApi('vocabulary?id=in.('+ids.join(',')+')', 'PATCH', { lesson_id: targetId });
     // Lokal updaten
@@ -4470,19 +4615,24 @@ async function bulkReassign(){
 async function bulkSetStatus(){
   const ps = document.getElementById('vl-bulk-ps').value;
   if(!ps){ showToast('Bitte Status wählen','warn'); return; }
-  const n = selectedVocabIds.size;
+  const sel = splitSelection();
+  const n = sel.v.length + sel.x.length;
   if(!n) return;
   const btn = document.getElementById('vl-bulk-ps-btn');
   if(btn){ btn.disabled=true; btn.textContent='…'; }
   try {
-    const ids = [...selectedVocabIds];
+    const ids = sel.v;
     const patch = { partner_status: ps === 'null' ? null : ps, status_updated_at: new Date().toISOString() };
-    await sbApi('vocabulary?id=in.('+ids.join(',')+')', 'PATCH', patch);
+    if(ids.length) await sbApi('vocabulary?id=in.('+ids.join(',')+')', 'PATCH', patch);
     ids.forEach(vid => {
       const v = vById(vid);
       if(v){ v.ps = ps === 'null' ? null : ps; v.psu = patch.status_updated_at; }
     });
-    showToast('✓ '+n+' Vokabeln → '+(ps==='null'?'kein Status':ps),'ok');
+    if(sel.x.length){
+      await sbApi('course_exercises?id=in.('+sel.x.join(',')+')', 'PATCH', patch);
+      sel.x.forEach(xid => { const e = COURSE_EX_BY_ID[xid]; if(e){ e.partner_status = patch.partner_status; e.status_updated_at = patch.status_updated_at; } });
+    }
+    showToast('✓ '+n+' Einträge → '+(ps==='null'?'kein Status':ps),'ok');
     selectedVocabIds.clear();
     filterVocabList();
   } catch(e){
@@ -4495,19 +4645,24 @@ async function bulkSetStatus(){
 async function bulkSetFlag(){
   const val = document.getElementById('vl-bulk-flag').value;
   if(!val){ showToast('Bitte Flag-Aktion wählen','warn'); return; }
-  const n = selectedVocabIds.size;
+  const sel = splitSelection();
+  const n = sel.v.length + sel.x.length;
   if(!n) return;
   const flagged = val === 'true';
   const btn = document.getElementById('vl-bulk-flag-btn');
   if(btn){ btn.disabled=true; btn.textContent='…'; }
   try {
-    const ids = [...selectedVocabIds];
-    await sbApi('vocabulary?id=in.('+ids.join(',')+')', 'PATCH', { flagged });
+    const ids = sel.v;
+    if(ids.length) await sbApi('vocabulary?id=in.('+ids.join(',')+')', 'PATCH', { flagged });
     ids.forEach(vid => {
       const v = vById(vid);
       if(v){ if(flagged) flaggedVocab.add(v.tr); else flaggedVocab.delete(v.tr); }
     });
-    showToast('✓ '+n+' Vokabeln '+(flagged?'markiert 🚩':'entmarkiert'),'ok');
+    if(sel.x.length){
+      await sbApi('course_exercises?id=in.('+sel.x.join(',')+')', 'PATCH', { flagged });
+      sel.x.forEach(xid => { const e = COURSE_EX_BY_ID[xid]; if(e) e.flagged = flagged; });
+    }
+    showToast('✓ '+n+' Einträge '+(flagged?'markiert 🚩':'entmarkiert'),'ok');
     selectedVocabIds.clear();
     filterVocabList();
   } catch(e){
@@ -5565,17 +5720,18 @@ function correctPreviousCourseEx(){
 // volle Balkenhöhe über style), deshalb kommt das Aussehen von außen und nur die Logik
 // von hier. Geflaggt wird über die id, siehe toggleFlagById().
 function courseVocabIconsHtml(exercise, cls, style){
-  const v = exercise && exercise.vocabulary;
-  if(!v || !v.id) return '';
-  const flagged = flaggedVocab.has(v.darija||'');
+  if(!exercise || !exercise.id) return '';
+  const v = exercise.vocabulary;
+  const flagged = !!exercise.flagged;
   const attr = (extra)=>{
     const c = [cls, extra].filter(Boolean).join(' ');
     return (c ? ' class="'+c+'"' : '') + (style ? ' style="'+style+'"' : '');
   };
-  return '<button onclick="openVocabEdit('+v.id+')" title="Vokabel bearbeiten"'+attr('')+'>&#9998;</button>'
-       + '<button onclick="toggleFlagById('+v.id+',this)"'
-       + ' title="'+(flagged?'Markierung entfernen':'Als fehlerhaft markieren')+'"'
-       + attr('flag-btn'+(flagged?' flagged':''))+'>'+(flagged?'&#128681;':'&#127987;&#65039;')+'</button>';
+  // ✎ nur mit Vokabel (die Vokabel-Flagge steckt im Bearbeiten-Fenster); 🚩 gilt immer der Übung
+  return (v && v.id ? '<button onclick="openVocabEdit('+v.id+')" title="Vokabel bearbeiten"'+attr('')+'>&#9998;</button>' : '')
+       + '<button onclick="toggleCourseFlag('+exercise.id+',this)" data-ex="'+exercise.id+'"'
+       + ' title="'+(flagged?'Markierung entfernen':'Übung markieren')+'"'
+       + attr('flag-btn course-flag-btn'+(flagged?' flagged':''))+'>'+courseFlagLabel(flagged)+'</button>';
 }
 
 // Eigene "Weiter"-Leiste für Kurs-Karten (Pendant zu showFlashNextBar), mit derselben
@@ -7307,7 +7463,16 @@ async function showPartnerQueue(filter){
       '&order=id.asc',
       500
     );
-    pqAllResults = res;
+    // Kurs-Übungen mit Antwort oder Kommentar kommen in dieselbe Liste (id negativ)
+    let xres = [];
+    try{
+      xres = await sbApiPaged(
+        'course_exercises?or=(partner_status.eq.rejected,partner_status.eq.suggested,partner_status.eq.unknown,partner_comment.not.is.null)' +
+        '&select=id,course_lesson_id,exercise_type,instruction,prompt,solution,partner_status,partner_comment&order=id.asc', 500);
+    }catch(e){ xres = []; }
+    if(xres.length && !_courseLoaded){ try{ await loadCourseData(); }catch(e){} }
+    xres.forEach(x => { x._ex = true; x.exId = x.id; x.id = -x.id; });
+    pqAllResults = res.concat(xres);
 
     // Einträge, die noch nicht im lokalen Cache stehen (z.B. gerade erst von Semia
     // vorgeschlagen), nachtragen — sonst fehlt der ✏️ Edit-Button in der Queue.
@@ -7425,6 +7590,20 @@ function renderPartnerQueue(){
   h += '<div style="display:flex;flex-direction:column;gap:.5rem">';
 
   filtered.forEach(v => {
+    if(v._ex){
+      const cm = v.partner_comment ? '<div style="margin-top:.4rem;padding:.4rem .5rem;background:rgba(255,255,255,.04);border-left:2px solid var(--gold);border-radius:2px;font-size:.78rem;color:var(--muted)">💬 ' + escHtml(v.partner_comment) + '</div>' : '';
+      const full = COURSE_EX_BY_ID[v.exId];
+      h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem"><div style="display:flex;align-items:flex-start;gap:.5rem;flex-wrap:wrap"><div style="flex:1;min-width:0">'
+        + '<div style="font-size:.68rem;color:var(--gold)">🎓 ' + escHtml(courseLessonLabel(v.course_lesson_id)) + ' · ' + escHtml(full ? courseTypeLabel(full) : v.exercise_type) + '</div>'
+        + (v.instruction ? '<div style="font-size:.75rem;color:var(--muted);margin-top:.2rem">' + escHtml(v.instruction) + '</div>' : '')
+        + '<div style="font-size:.9rem;margin-top:.2rem">' + escHtml(v.prompt||'') + '</div>'
+        + '<div style="font-size:.8rem;color:var(--muted);margin-top:.2rem;white-space:pre-wrap">' + escHtml(v.solution||'') + '</div>' + cm
+        + '</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;flex-shrink:0">' + (PS_LABEL[v.partner_status] || '<span style="color:var(--border)">·</span>')
+        + '<button onclick="copyQueueEntry(' + v.id + ', this)" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.72rem;padding:.25rem .5rem;cursor:pointer;border-radius:3px">📋 Kopieren</button>'
+        + '<button onclick="openCourseExInfo(' + v.exId + ')" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.72rem;padding:.25rem .5rem;cursor:pointer;border-radius:3px">👁 Ansehen</button>'
+        + '</div></div></div>';
+      return;
+    }
     const ls = v.lessons ? 'L' + v.lessons.lesson_number : '?';
     const psLabel = PS_LABEL[v.partner_status] || '<span style="color:var(--border)">·</span>';
     const comment = v.partner_comment
@@ -7466,7 +7645,9 @@ function copyQueueEntry(vocabId, btnEl){
   const v = pqAllResults.find(x => x.id === vocabId);
   if(!v) return;
   const ls = v.lessons ? 'L' + v.lessons.lesson_number : '?';
-  const text = 'ID: ' + v.id + '\n' +
+  const text = v._ex
+    ? 'Kurs-Übung ID: ' + v.exId + '\nLektion: ' + courseLessonLabel(v.course_lesson_id) + '\nTyp: ' + v.exercise_type + '\nAnweisung: ' + (v.instruction || '-') + '\nAufgabe: ' + (v.prompt || '-') + '\nLösung: ' + (v.solution || '-') + '\nPartner-Status: ' + (v.partner_status || '-') + '\nKommentar: ' + (v.partner_comment || '-')
+    : 'ID: ' + v.id + '\n' +
     'Arabisch: ' + (v.arabic_script || '-') + '\n' +
     'Darija: ' + (v.darija || '-') + '\n' +
     'Deutsch: ' + (v.german || '-') + '\n' +
