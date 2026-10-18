@@ -4252,6 +4252,10 @@ function filterCourseEntries(q, dueUntil){
   }
   return xs;
 }
+// Kursdaten UND Lernstand der Übungen laden (loadCourseData meldet sich früher zurück, als der Lernstand da ist)
+function loadCourseListData(){
+  return loadCourseData().then(() => loadCourseExProgress());
+}
 function fillCourseLessonSelect(){
   const sel = document.getElementById('vl-cls-filter'); if(!sel || !COURSE_LESSONS.length) return;
   sel.innerHTML = '<option value="all">Alle Kurs-Lektionen</option>' + COURSE_LESSONS.map(l =>
@@ -4260,7 +4264,7 @@ function fillCourseLessonSelect(){
 function setVocabSource(val){
   vocabSourceFilter = val;
   const ls = document.getElementById('vl-cls-filter'); if(ls) ls.style.display = val === 'vocab' ? 'none' : '';
-  if(val !== 'vocab' && !_courseLoaded) loadCourseData().then(fillCourseLessonSelect).catch(() => {});
+  if(val !== 'vocab' && (!_courseLoaded || !_courseExProgressLoaded)) loadCourseListData().then(fillCourseLessonSelect).catch(() => {});
   else fillCourseLessonSelect();
   filterVocabList();
 }
@@ -4273,9 +4277,10 @@ function exRowHtml(v){
   const td = (extra, inner) => '<td style="padding:.3rem;'+extra+'">'+inner+'</td>';
   return '<tr style="border-bottom:1px solid rgba(58,50,40,.4);content-visibility:auto;contain-intrinsic-size:auto 32px">'
     + '<td style="padding:.3rem .3rem"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)" style="cursor:pointer"'+(selectedVocabIds.has(v.id)?' checked':'')+'/></td>'
-    + td('color:var(--muted);font-size:.65rem', escHtml(v.ls)+(e.flagged ? ' 🚩' : ''))
+    + td('color:var(--muted);font-size:.65rem;white-space:nowrap', escHtml(v.ls)+(e.flagged ? ' 🚩' : '')
+        + ' <button onclick="openCourseExInfo('+v.exId+')" title="Übung ansehen und bearbeiten" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.8rem;padding:.1rem .35rem;cursor:pointer;border-radius:3px">👁</button>')
     + td('text-align:right;color:var(--muted);font-size:.62rem', escHtml(v.type))
-    + td('font-size:.7rem;color:var(--muted)', escHtml(trunc(v.tr, 40)))
+    + '<td onclick="openCourseExInfo('+v.exId+')" style="padding:.3rem;font-size:.7rem;color:var(--muted);cursor:pointer">'+escHtml(trunc(v.tr, 40))+'</td>'
     + td('', '<span style="font-size:.72rem">'+escHtml(trunc(e.instruction||'', 50))+'</span><div style="font-size:.68rem;color:var(--muted)">'+escHtml(trunc(v.en, 60))+'</div>')
     + td('text-align:center', '<span style="color:'+SRS_LEVEL_COLORS[level]+';font-weight:700;font-size:.7rem">'+SRS_LEVEL_LABELS[level]+'</span>')
     + td('text-align:center;color:var(--muted);font-size:.7rem', p ? timeAgo(p.last_reviewed) : '—')
@@ -4284,7 +4289,7 @@ function exRowHtml(v){
     + td('text-align:center;font-size:.7rem', p && p.next_review ? fmtDue(p.next_review) : '—')
     + td('text-align:center', psIcon)
     + td('', '')
-    + td('', '<button onclick="openCourseExInfo('+v.exId+')" title="Übung ansehen" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.65rem;padding:.15rem .4rem;cursor:pointer;border-radius:3px">👁</button>')
+    + td('', '')
     + '</tr>';
 }
 // Übung ansehen und bearbeiten: Anweisung, Aufgabe und Lösung im Klartext; Bearbeiten-Modus mit Vorschau der Karte
@@ -4489,8 +4494,8 @@ function filterVocabList(){
     v.tr.toLowerCase().includes(q)
   );
   if(vocabSourceFilter !== 'vocab'){
-    if(!_courseLoaded){
-      loadCourseData().then(() => { if(document.getElementById('vocab-search')) filterVocabList(); }).catch(() => {});
+    if(!_courseLoaded || !_courseExProgressLoaded){
+      loadCourseListData().then(() => { if(document.getElementById('vocab-search')) filterVocabList(); }).catch(() => {});
       const t = document.getElementById('vocab-table');
       if(t) t.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem">Lade Kurs-Übungen…</div>';
       return;
@@ -5820,6 +5825,7 @@ function courseVocabIconsHtml(exercise, cls, style){
   };
   // ✎ nur mit Vokabel (die Vokabel-Flagge steckt im Bearbeiten-Fenster); 🚩 gilt immer der Übung
   return (v && v.id ? '<button onclick="openVocabEdit('+v.id+')" title="Vokabel bearbeiten"'+attr('')+'>&#9998;</button>' : '')
+       + '<button onclick="openCourseExInfo('+exercise.id+',true)" title="Übung bearbeiten"'+attr('')+'>&#128221;</button>'
        + '<button onclick="toggleCourseFlag('+exercise.id+',this)" data-ex="'+exercise.id+'"'
        + ' title="'+(flagged?'Markierung entfernen':'Übung markieren')+'"'
        + attr('flag-btn course-flag-btn'+(flagged?' flagged':''))+'>'+courseFlagLabel(flagged)+'</button>';
@@ -7561,7 +7567,7 @@ async function showPartnerQueue(filter){
         'course_exercises?or=(partner_status.eq.rejected,partner_status.eq.suggested,partner_status.eq.unknown,partner_comment.not.is.null)' +
         '&select=id,course_lesson_id,exercise_type,instruction,prompt,solution,partner_status,partner_comment&order=id.asc', 500);
     }catch(e){ xres = []; }
-    if(xres.length && !_courseLoaded){ try{ await loadCourseData(); }catch(e){} }
+    if(xres.length && !_courseLoaded){ try{ await loadCourseListData(); }catch(e){} }
     xres.forEach(x => { x._ex = true; x.exId = x.id; x.id = -x.id; });
     pqAllResults = res.concat(xres);
 
