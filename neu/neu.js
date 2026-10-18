@@ -468,7 +468,9 @@ function flame(n){
 const MILES = [
   {key:'v', name:'Vokabeln gestartet', marks:[100,250,500,1000,1500,2000,3000,4000,5000]},
   {key:'p', name:'Profi-Vokabeln', marks:[50,100,250,500,1000,1500,2000,3000]},
-  {key:'s', name:'Tage in Folge', marks:[3,7,14,30,60,100,200,365]}
+  {key:'s', name:'Tage in Folge', marks:[3,7,14,30,60,100,200,365]},
+  {key:'c', name:'Kurs-Übungen gestartet', marks:[50,100,250,500,1000,1500,2000]},
+  {key:'q', name:'Profi-Kurs-Übungen', marks:[25,50,100,250,500,1000,1500]}
 ];
 function milesHtml(vals){
   return MILES.map(m => {
@@ -485,7 +487,12 @@ function milesHtml(vals){
 function milesNow(streak){
   let v = 0, p = 0;
   ALL_VOCAB.forEach(x => { const q = srsProgress[x.id]; if(q && q.next_review){ v++; if((q.level || 0) >= 5) p++; } });
-  return {v, p, s: streak};
+  const o = {v, p, s: streak};
+  if(_courseLoaded){   // Kurs: ohne geladene Kursdaten nichts melden, sonst wirkt der erste Stand wie ein neuer Meilenstein
+    const ps = Object.values(COURSE_EX_PROGRESS);
+    o.c = ps.length; o.q = ps.filter(q => (q.correct_count || 0) >= 5).length;
+  }
+  return o;
 }
 function milesCheck(streak){
   if(!currentUser || !ALL_VOCAB.length) return;
@@ -496,7 +503,7 @@ function milesCheck(streak){
     const val = now[m.key]; if(val == null) return;
     const mark = m.marks.filter(x => val >= x).pop() || 0;
     reached[m.key] = mark;
-    if(seen && mark > (seen[m.key] || 0)) fresh.push({m, mark});
+    if(seen && (m.key in seen) && mark > seen[m.key]) fresh.push({m, mark});
   });
   const merged = Object.assign({}, seen || {}, reached);
   LS.set('neu-mseen', JSON.stringify(merged));
@@ -504,7 +511,7 @@ function milesCheck(streak){
 }
 function showCelebration(m, mark){
   if($('neu-celeb')) return;
-  const what = m.key === 'v' ? fmtN(mark)+' Vokabeln gestartet' : m.key === 'p' ? fmtN(mark)+' Profi-Vokabeln' : fmtN(mark)+' Tage in Folge';
+  const what = m.key === 'v' ? fmtN(mark)+' Vokabeln gestartet' : m.key === 'p' ? fmtN(mark)+' Profi-Vokabeln' : m.key === 'c' ? fmtN(mark)+' Kurs-Übungen gestartet' : m.key === 'q' ? fmtN(mark)+' Profi-Kurs-Übungen' : fmtN(mark)+' Tage in Folge';
   const o = document.createElement('div'); o.id = 'neu-celeb';
   o.innerHTML = '<div class="neu-celeb-box"><div class="neu-art">'+ART.sun+'</div><div class="neu-celeb-h">Neuer Meilenstein!</div><div class="neu-celeb-t">'+what+'</div><div class="neu-sub" style="margin:.3rem 0 1rem">Ya3tik es-sa77a — weiter so.</div><button class="neu-btn" onclick="document.getElementById(\'neu-celeb\').remove()">Weiter</button></div>';
   o.addEventListener('click', e => { if(e.target === o) o.remove(); });
@@ -530,7 +537,7 @@ async function loadPace(){
 }
 // Serie und Meilensteine kompakt: je eine Zeile mit Streifen bis zur nächsten Marke; die ganze Liste klappt darunter auf
 function milesRows(vals){
-  const order = ['s','v','p'];
+  const order = ['s','v','p','c'];
   return order.map(k => {
     const m = MILES.find(x => x.key === k), v = vals[k]; if(!m || v == null) return '';
     const nxt = m.marks.find(x => v < x), last = m.marks.filter(x => v >= x).pop() || 0;
@@ -540,11 +547,12 @@ function milesRows(vals){
       + '<div class="neu-mbar" style="margin-top:3px"><i style="width:'+pct+'%"></i></div></div>';
   }).join('');
 }
-function renderMilestones(vStarted, vTotal, vProfi){
+function renderMilestones(vStarted, vTotal, vProfi, course){
   const el = $('neu-miles'); if(!el) return;
   const set = vals => { const e = $('neu-miles'); if(e) e.innerHTML = milesHtml(vals); const r = $('neu-miles-rows'); if(r) r.innerHTML = milesRows(vals); };
-  set({v:vStarted, p:vProfi});
-  loadActivity().then(a => { if(cMode === 'stats') set({v:vStarted, p:vProfi, s:a.streak || 0}); }).catch(() => {});
+  const base = Object.assign({v:vStarted, p:vProfi}, course || {});
+  set(base);
+  loadActivity().then(a => { if(cMode === 'stats') set(Object.assign({}, base, {s:a.streak || 0})); }).catch(() => {});
   loadPace().then(n => {
     const f = $('neu-forecast'); if(!f || cMode !== 'stats') return;
     const left = vTotal - vStarted;
@@ -1598,7 +1606,7 @@ window.showStats = function(){
     + '<div class="neu-chips neu-stabs" style="justify-content:center;gap:1.6rem;padding:.2rem 0 .1rem;margin:0 0 .5rem">'+pill('Verlauf','verlauf')+pill('Fortschritt','fortschritt')+'</div>'
     + '<div class="neu-sbody">' + (tab === 'verlauf' ? verlauf : fortschritt) + '</div>'
     + '</div>';
-  if(tab === 'verlauf'){ if(all) renderActivityCard(); renderMilestones(vStarted, vTotal, vp[3]); }
+  if(tab === 'verlauf'){ if(all) renderActivityCard(); renderMilestones(vStarted, vTotal, vp[3], all ? {c:cActive, q:cb[6]+cb[7]} : null); }
   window.neuStatsLock(); setTimeout(window.neuStatsLock, 600); setTimeout(window.neuStatsLock, 1800);
 };
 
