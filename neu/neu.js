@@ -863,6 +863,11 @@ window.neuToggleSelect = function(){
   renderVocabTableRows();
 };
 window.neuRowTap = function(ev, id, i){
+  if(id < 0 && !NEUF.select){   // Kurs-Übung (id = -course_exercises.id): Übungs-Fenster statt Vokabel-Bearbeiten
+    if(ev.target.closest('button,input')) return;
+    openCourseExInfo(-id);
+    return;
+  }
   if(NEUF.select){
     if(ev.target.closest('button')) return;
     const cb = ev.currentTarget.querySelector('input[type=checkbox]');
@@ -873,10 +878,12 @@ window.neuRowTap = function(ev, id, i){
   openVocabEdit(id, i);
 };
 function applyChips(vocab){
-  if(NEUF.due) vocab = vocab.filter(v => srsIsDue(v));
-  if(NEUF.neu) vocab = vocab.filter(v => { const p = srsProgress[v.id]; return !(p && p.next_review); });
-  if(NEUF.audio) vocab = vocab.filter(v => !!v.au);
-  if(NEUF.flag) vocab = vocab.filter(v => flaggedVocab.has(v.tr));
+  // Kurs-Übungen (v._ex) haben ihren Lernstand in COURSE_EX_PROGRESS, keine Audio-Datei und eine eigene Flagge
+  const xp = v => COURSE_EX_PROGRESS[v.exId] || null;
+  if(NEUF.due) vocab = vocab.filter(v => v._ex ? (xp(v) && xp(v).next_review && isDueByDay(courseParseTs(xp(v).next_review))) : srsIsDue(v));
+  if(NEUF.neu) vocab = vocab.filter(v => { const p = v._ex ? xp(v) : srsProgress[v.id]; return !(p && p.next_review); });
+  if(NEUF.audio) vocab = vocab.filter(v => !v._ex && !!v.au);
+  if(NEUF.flag) vocab = vocab.filter(v => v._ex ? !!v.ex.flagged : flaggedVocab.has(v.tr));
   return vocab;
 }
 const _rvt = window.renderVocabTable;
@@ -949,6 +956,19 @@ window.renderVocabTableRows = function(){
   vocabTableRenderedIds = vocab.map(v => v.id);
   let h = top + '<div class="neu-vlist">';
   vocab.forEach((v,i) => {
+    if(v._ex){
+      const pr = COURSE_EX_PROGRESS[v.exId] || null, lvx = pr ? Math.min(pr.correct_count||0, 6) : 0, st = !!(pr && pr.next_review);
+      const cx = st ? ['var(--lv0)','var(--lv1)','var(--lv2)','var(--lv3)','var(--lv4)','var(--lv5)','var(--lv6)'][lvx] : 'var(--border)';
+      const dueNow = st && isDueByDay(courseParseTs(pr.next_review));
+      const pi = {approved:'✅',rejected:'❌',unknown:'❓',pending:'⏳',skipped:'⏭',suggested:'💡'}[v.ps] || '';
+      const short = t => { t = String(t||'').replace(/\s+/g,' ').trim(); return t.length > 70 ? t.slice(0,69)+'…' : t; };
+      h += '<div class="neu-vrow" style="box-shadow:inset 4px 0 0 '+cx+'" onclick="neuRowTap(event,'+v.id+','+i+')"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)"'+(selectedVocabIds.has(v.id)?' checked':'')+'/>'
+        + '<div class="ar"></div>'
+        + '<div class="mid"><div class="t1">'+hl(short(v.tr), hq)+'</div><div class="t2 neu-mono">'+hl(short((v.ex.instruction ? v.ex.instruction+' → ' : '')+v.en), hq)+'</div>'
+        + '<div class="t2">🎓 '+escHtml(v.ls)+' · '+escHtml(v.type)+(v.ex.flagged?' 🚩':'')+(pi?' · '+pi:'')+'</div></div>'
+        + '<div class="rt"><div class="lv"><span class="dot" style="background:'+cx+'"></span>'+(st?'Stufe '+lvx:'Neu')+'</div><div class="t2" style="'+(dueNow?'color:var(--red)':'')+'">'+(st?fmtDue(pr.next_review):'—')+'</div></div></div>';
+      return;
+    }
     const p = v.id ? srsProgress[v.id] : null;
     const level = p ? (p.level||0) : 0;
     const started = !!(p && p.next_review);
