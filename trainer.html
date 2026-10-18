@@ -5721,6 +5721,7 @@ const COURSE_LABEL_RULES = [
 ];
 function courseTypeLabel(exercise){
   const t = exercise.exercise_type, ins = (exercise.instruction||'').trim();
+  if(t==='grammar_drill'){ const cv = courseConjView(exercise); if(cv && cv.chip) return cv.chip; }
   if(t==='grammar_drill' && /^Gruppe \d+\./.test((exercise.solution||'').trim())) return 'Konjugieren';
   const r = COURSE_LABEL_RULES.find(x => x[0]===t && x[2] && x[1].test(ins));
   if(r) return r[2];
@@ -5771,10 +5772,42 @@ function courseBelegHtml(ex){
 // Daten bleiben unverändert.
 // Deutsche Bedeutung des Verbs (meta.verb_de) als erste Zeile der Lösung bei Konjugations-, Verneinungs- und Partizip-Karten
 function courseConjView(ex){
-  const r = _courseConjViewCore(ex);
-  const de = ex && ex.meta && ex.meta.verb_de;
+  const r = _courseConjViewCore(ex) || _courseConjViewA(ex);
+  if(r && r.grids) r.qHtml = courseConjTableHtml(r.heads, r.grids, false);
+  if(r && !r.chip){
+    const i = r.instr || '';
+    r.chip = /^Konjugiere im Perfekt und Präsens/.test(i) ? 'Konjugieren · Perfekt + Präsens' : /^Konjugiere im Perfekt/.test(i) ? 'Konjugieren · Perfekt'
+      : /^Konjugiere im Präsens/.test(i) ? (r.gruppe ? 'Konjugieren · Gruppe '+r.gruppe : 'Konjugieren · Präsens') : null;
+  }
+  const de = (ex && ex.meta && ex.meta.verb_de) || (r && r.de);
   if(r && r.solHtml && de) r.solHtml = '<div style="font-size:.95rem;color:var(--text);margin:0 0 .55rem">'+escHtml(de)+'</div>'+r.solHtml;
   return r;
+}
+// Tabelle der Personen: eine Spalte (Zeit steht dann in der Anweisung) oder je Zeit eine Spalte (Perfekt | Präsens).
+// grids: je Zeit eine Liste {person, form}; showForm=false zeigt „…“ (Fragetabelle).
+function courseConjTableHtml(heads, grids, showForm){
+  if(grids.length === 1){
+    return (heads[0] ? '<div style="font-size:.72rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin:.2rem 0 .45rem">'+escHtml(heads[0])+'</div>' : '')
+      + renderGrammarDrillGrid(grids[0], showForm);
+  }
+  const th = 'text-align:left;padding:.15rem .5rem .35rem 0;font-size:.72rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px';
+  let h = '<table style="border-collapse:collapse;width:100%;font-size:.85rem"><tr><th></th>'+heads.map(x => '<th style="'+th+'">'+escHtml(x)+'</th>').join('')+'</tr>';
+  grids[0].forEach((r, i) => {
+    h += '<tr><td style="color:var(--muted);font-family:\'IBM Plex Mono\',monospace;padding:.2rem .8rem .2rem 0">'+escHtml(r.person)+'</td>'
+      + grids.map(g => '<td style="padding:.2rem .5rem .2rem 0;color:'+(showForm ? 'var(--gold2)' : 'var(--muted)')+'">'+(showForm ? escHtml(g[i].form) : '…')+'</td>').join('')+'</tr>';
+  });
+  return h+'</table>';
+}
+// Karten „Konjugiere im Präsens, bejaht/verneint (alle Personen)“ mit „yakol (essen)“: die Bedeutung kommt erst in die Lösung,
+// die Personen stehen in der Tabelle und brauchen keinen Zusatz in der Anweisung.
+function _courseConjViewA(ex){
+  if(!ex || ex.exercise_type !== 'grammar_drill') return null;
+  const m = (ex.instruction||'').trim().match(/^Konjugiere im Präsens, (bejaht|verneint)/i), pm = (ex.prompt||'').trim().match(/^([^\s()]+)\s*\(([^()]+)\)$/);
+  const rows = m && pm && parseGrammarDrillSolution(ex.solution);
+  if(!rows) return null;
+  const neg = /verneint/i.test(m[1]);
+  return {prompt: pm[1], instr: 'Konjugiere im Präsens, '+(neg ? 'verneint' : 'bejaht')+'.', de: pm[2].trim(), chip: neg ? 'Verneinen · Präsens' : 'Konjugieren · Präsens',
+    grids: [rows], heads: [''], solHtml: courseConjTableHtml([''], [rows], true)};
 }
 function _courseConjViewCore(ex){
   if(!ex || (ex.instruction||'').trim()) return null;
@@ -5805,6 +5838,12 @@ function _courseConjViewCore(ex){
   else if((m = t.match(/^([^\s:()]+):\s*(.*Partizip.*)$/))){ word = m[1]; instr = cap(m[2].trim()).replace(/\.?$/,'.'); partizip = true; }
   else return null;
   if(/gruppe zuordnen/i.test(instr)) instr = 'Konjugiere im Präsens.';
+  if(/^Präsens konjugieren/i.test(instr)) instr = 'Konjugiere im Präsens.';
+  let de = null;
+  if(/perfekt/i.test(instr) && /konjugier/i.test(instr)){   // „Perfekt & Präsens konjugieren“, „Perfekt konjugieren, 'sich fürchten'“
+    const gq = instr.match(/['„"]([^'“"]+)['“"]/); if(gq) de = gq[1].trim();
+    instr = /präsens/i.test(instr) ? 'Konjugiere im Perfekt und Präsens.' : 'Konjugiere im Perfekt.';
+  }
   if(partizip){
     // "akt.Part. a/b/c. pass.Part. d/e/f. Imperativ x (Sg.) / y (Pl.). Beispiel: …" in beschriftete Zeilen zerlegen
     const LB = {'akt.Part.':'Aktives Partizip','pass.Part.':'Passives Partizip','kein pass.Part.':'Passives Partizip','Imperativ':'Imperativ','Beispiel:':'Beispiel'};
@@ -5858,10 +5897,9 @@ function _courseConjViewCore(ex){
     };
     const grids = blocks.map(persons);
     if(grids.every(Boolean)){
-      solHtml = blocks.map((b,i) =>
-        (b.head ? '<div style="font-size:.72rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin:'+(i?'.8rem 0 .4rem;padding-top:.6rem;border-top:1px dashed var(--border)':'.2rem 0 .45rem')+'">'+escHtml(b.head)+'</div>' : '')
-        + renderGrammarDrillGrid(grids[i], true)).join('');
-      return {prompt: word, instr, solHtml};
+      const heads = blocks.map(b => b.head);
+      solHtml = courseConjTableHtml(heads, grids, true);
+      return {prompt: word, instr, solHtml, grids, heads, de, gruppe};
     }
   }
   if(blocks){
@@ -5873,7 +5911,7 @@ function _courseConjViewCore(ex){
       + '<div style="display:grid;grid-template-columns:4.6rem 1fr;gap:.35rem .7rem">'+row('Singular',b.sg)+(b.pl.length ? row('Plural',b.pl) : '')+'</div>'
     ).join('');
   }
-  return {prompt: word, instr, solHtml};
+  return {prompt: word, instr, solHtml, de, gruppe};
 }
 function courseExSolutionHtml(exercise){
   const _cv = courseConjView(exercise);
@@ -5943,7 +5981,7 @@ function rCourseEx(ex, el){
     h += '<div style="margin-bottom:.8rem;font-size:1.15rem;line-height:1.5">'+escHtml(exercise.instruction)+'</div>';
   }
   const cv = courseConjView(exercise);
-  if((exercise.instruction || cv) && !hintFirst) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(exercise.instruction || cv.instr)+'</div>';
+  if((exercise.instruction || cv) && !hintFirst) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(cv ? cv.instr : exercise.instruction)+'</div>';
   else if(courseIsDialogQuestion(exercise)) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">Beantworte die Frage anhand des Dialogs (Knopf „📖 Dialog“).</div>';
   if(exercise.prompt && !hintFirst){
     const vocabAudio = exercise.vocabulary && exercise.vocabulary.ninja_audio_url
@@ -5954,7 +5992,8 @@ function rCourseEx(ex, el){
   const drillRows = exercise.exercise_type==='grammar_drill' ? parseGrammarDrillSolution(exercise.solution) : null;
 
   if(COURSE_SELF_GRADE_TYPES.includes(exercise.exercise_type)){
-    if(drillRows) h += '<div id="course-drill-question" style="border:1px solid var(--blue);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem">'+renderGrammarDrillGrid(drillRows,false)+'</div>';
+    if(cv && cv.qHtml) h += '<div id="course-drill-question" style="border:1px solid var(--blue);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem">'+cv.qHtml+'</div>';
+    else if(drillRows) h += '<div id="course-drill-question" style="border:1px solid var(--blue);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem">'+renderGrammarDrillGrid(drillRows,false)+'</div>';
     h += '<div id="course-solution-box"></div><div id="course-grade-box" style="margin-top:.6rem"></div>';
     h += '</div>'; // Ende Karten-Wrapper
     el.innerHTML = h;
@@ -6476,10 +6515,11 @@ function renderCourseTestTab(tc, l){
        + '<div>☐ Frage auf Tounsi beantworten</div>'
        + '<div>☐ Deine Antwort auf Deutsch übersetzen</div>'
        + '</div>';
-  } else if(ex.instruction || courseConjView(ex)) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(ex.instruction || courseConjView(ex).instr)+'</div>';
+  } else if(ex.instruction || courseConjView(ex)) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(courseConjView(ex) ? courseConjView(ex).instr : ex.instruction)+'</div>';
   if(ex.prompt) h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem;font-size:.95rem;margin-bottom:.8rem">'+escHtml(courseConjView(ex) ? courseConjView(ex).prompt : ex.prompt)+'</div>';
   const drillRows = ex.exercise_type==='grammar_drill' ? parseGrammarDrillSolution(ex.solution) : null;
-  if(drillRows && !t.revealed) h += '<div style="border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem">'+renderGrammarDrillGrid(drillRows, false)+'</div>';
+  const _tcv = courseConjView(ex);
+  if((_tcv && _tcv.qHtml || drillRows) && !t.revealed) h += '<div style="border:1px solid var(--border);border-radius:6px;padding:.7rem .8rem;margin-bottom:.8rem">'+(_tcv && _tcv.qHtml ? _tcv.qHtml : renderGrammarDrillGrid(drillRows, false))+'</div>';
 
   if(!gradable){
     // pronunciation / build_dialog: keine Bewertung, aber build_dialog braucht eine konkrete Anleitung statt bloßem "Weiter"
@@ -6513,8 +6553,8 @@ function renderCourseTestTab(tc, l){
           + '</div>';
       }
     }
+    if(!solHtml && _tcv && _tcv.solHtml) solHtml = _tcv.solHtml;
     if(!solHtml && drillRows) solHtml = renderGrammarDrillGrid(drillRows, true);
-    if(!solHtml && courseConjView(ex)) solHtml = courseConjView(ex).solHtml;
     if(!solHtml) solHtml = escHtml(ex.solution||'—');
     solHtml += courseMetaGermanHtml(ex) + courseBelegHtml(ex);
     h += '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2);margin-bottom:.8rem">'+solHtml+'</div>';
