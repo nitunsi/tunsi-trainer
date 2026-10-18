@@ -965,7 +965,7 @@ window.renderVocabTableRows = function(){
       h += '<div class="neu-vrow" style="box-shadow:inset 4px 0 0 '+cx+'" onclick="neuRowTap(event,'+v.id+','+i+')"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)"'+(selectedVocabIds.has(v.id)?' checked':'')+'/>'
         + '<div class="ar"></div>'
         + '<div class="mid"><div class="t1">'+hl(short(v.tr), hq)+'</div><div class="t2 neu-mono">'+hl(short((v.ex.instruction ? v.ex.instruction+' → ' : '')+v.en), hq)+'</div>'
-        + '<div class="t2">🎓 '+escHtml(v.ls)+' · '+escHtml(v.type)+(v.ex.flagged?' 🚩':'')+(pi?' · '+pi:'')+'</div></div>'
+        + '<div class="t2">Kurs · '+escHtml(v.ls)+' · '+escHtml(v.type)+(v.ex.flagged?' 🚩':'')+(pi?' · '+pi:'')+'</div></div>'
         + '<div class="rt"><div class="lv"><span class="dot" style="background:'+cx+'"></span>'+(st?'Stufe '+lvx:'Neu')+'</div><div class="t2" style="'+(dueNow?'color:var(--red)':'')+'">'+(st?fmtDue(pr.next_review):'—')+'</div></div></div>';
       return;
     }
