@@ -6526,7 +6526,7 @@ function mdLite(s, isDialog){
     if(!tbl.length) return;
     const cells = r=>r.replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
     const rows = tbl.filter(r=>!/^\|[\s:|-]+\|?$/.test(r)).map(cells);
-    html += '<table style="border-collapse:collapse;margin:.3rem 0 .8rem;font-size:.85rem">'+rows.map((r,i)=>'<tr>'+r.map(c=>'<'+(i?'td':'th')+' style="border:1px solid var(--border);padding:.25rem .55rem;text-align:center'+(i?'':';color:var(--gold2)')+'">'+bold(escLine(c))+'</'+(i?'td':'th')+'>').join('')+'</tr>').join('')+'</table>';
+    html += '<div style="overflow-x:auto;max-width:100%"><table style="border-collapse:collapse;margin:.3rem 0 .8rem;font-size:.85rem">'+rows.map((r,i)=>'<tr>'+r.map(c=>'<'+(i?'td':'th')+' style="border:1px solid var(--border);padding:.2rem .4rem;text-align:center'+(i?'':';color:var(--gold2)')+'">'+bold(escLine(c))+'</'+(i?'td':'th')+'>').join('')+'</tr>').join('')+'</table></div>';
     tbl = [];
   };
   lines.forEach(line=>{
