@@ -6000,10 +6000,24 @@ function courseIsDialogQuestion(exercise){
   return !!exercise && exercise.exercise_type === 'fixed_response' && /^dialoge/.test(exercise.chunk_key || '');
 }
 
+// Hat der Abschnitt einer Übung etwas zu zeigen (Dialog oder Grammatik-Text)? Sonst bleibt das Fenster leer.
+function courseChunkHasText(exercise){
+  const lesson = COURSE_LESSONS.find(l=>l.id===exercise.course_lesson_id);
+  const chunk = lesson && (lesson.chunk_order||[]).find(c=>c.key===exercise.chunk_key);
+  if(!chunk) return false;
+  if(chunk.dialog && lesson.dialog_text && lesson.dialog_text.trim()) return true;
+  const sections = parseGrammarSections(lesson.grammar_notes);
+  return (chunk.grammar_headings||[]).some(hd => (sections[hd]||'').trim());
+}
 function courseGrammarButtonHtml(exercise){
   if(!exercise.chunk_key) return '';
   const dialog = courseIsDialogQuestion(exercise);
-  return '<button onclick="showGrammarModal('+exercise.id+')" title="'+(dialog?'Dialog zu dieser Frage anzeigen':'Grammatik zu diesem Abschnitt anzeigen')+'" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.15rem .5rem;border-radius:3px;cursor:pointer">'+(dialog?'📖 Dialog':'🧠 Grammatik')+'</button>';
+  const label = dialog ? '📖 Dialog' : '🧠 Grammatik';
+  const base = 'flex-shrink:0;background:none;border:1px solid var(--border);font-size:.75rem;padding:.15rem .5rem;border-radius:3px;';
+  if(!courseChunkHasText(exercise)){   // ausgegraut: kein Erklärtext hinterlegt
+    return '<button disabled title="Kein Erklärtext für diesen Abschnitt" style="'+base+'color:var(--muted);opacity:.4;cursor:default">'+label+'</button>';
+  }
+  return '<button onclick="showGrammarModal('+exercise.id+')" title="'+(dialog?'Dialog zu dieser Frage anzeigen':'Grammatik zu diesem Abschnitt anzeigen')+'" style="'+base+'color:var(--gold2);cursor:pointer">'+label+'</button>';
 }
 
 // Deutsche Übersetzung zu Karten mit meta.prompt_de / meta.solution_de (feste Antworten, Fragen zum
