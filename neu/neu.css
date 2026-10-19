@@ -809,3 +809,10 @@ body.neu-onstats.neu-sopen .neu-stabs{position:sticky}
 .neu-badge::before{content:'';width:.5rem;height:.5rem;border-radius:50%;background:currentColor}
 .neu-badge.y{color:var(--gold2)}
 .neu-badge.g{color:var(--green)}
+
+.neu-dotrow{display:flex;flex-wrap:nowrap;gap:.2rem .9rem;margin-top:.4rem}
+.neu-dots{display:inline-flex;align-items:center;gap:.25rem;font-size:.8rem;color:var(--muted)}
+.neu-dots em{font-style:normal;margin-right:.2rem}
+.neu-dots i{width:.55rem;height:.55rem;border-radius:50%;background:var(--border)}
+.neu-dots.y i.on{background:var(--gold2)}
+.neu-dots.g i.on{background:var(--green)}

@@ -827,9 +827,9 @@ window.courseOpenReview = function(i){
 window.courseVocabInfo = function(l){
   const f = parseCourseVocabRefs(l.vocab_lesson_refs);
   const list = ALL_VOCAB.filter(v => f.ids.has(v.id) || f.tr.has(v.tr));
-  let started = 0, solid = 0, due = 0;
-  list.forEach(v => { const p = srsProgress[v.id]; if(p && p.next_review){ started++; if((p.level||0) >= 4) solid++; if(!isQueueBlocked(v) && srsIsDue(v)) due++; } });
-  return {total: list.length, started, solid, due};
+  let started = 0, solid = 0, due = 0; const lv = [];
+  list.forEach(v => { const p = srsProgress[v.id]; if(p && p.next_review){ started++; lv.push(p.level||0); if((p.level||0) >= 4) solid++; if(!isQueueBlocked(v) && srsIsDue(v)) due++; } });
+  return {total: list.length, started, solid, due, lv};
 };
 window.courseVocabPractice = function(id){
   const l = COURSE_LESSONS.find(x => x.id === id); if(!l) return;
@@ -842,6 +842,12 @@ window.renderCourseOverview = function(){
   reset('course'); cMode = 'course';
   if(!COURSE_LESSONS.length){ c.innerHTML = '<div class="neu-wrap" style="text-align:center;padding:3rem;color:var(--muted)">Noch keine Kurs-Lektionen angelegt.</div>'; return; }
   const chunks = courseFlattenChunks();
+  const COURSE_DONE_PCT = 0.9;
+  const areaLevel = (lv, total) => {
+    const a = lv.slice().sort((x, y) => x - y);
+    return {level: a.length ? Math.min(4, a[Math.floor(a.length * (1 - COURSE_DONE_PCT))]) : 0, full: total > 0 && a.length >= total, any: a.length > 0};
+  };
+  const dots = (a, label) => '<span class="neu-dots'+(a.full ? ' g' : a.any ? ' y' : '')+'"><em>'+label+'</em>'+[1,2,3,4].map(i => '<i'+(i <= a.level ? ' class="on"' : '')+'></i>').join('')+'</span>';
   const info = l => {
     const items = chunks.filter(ch => ch.lessonId === l.id).reduce((s,ch) => s.concat(ch.srsItems), []);
     const total = items.length;
@@ -849,35 +855,29 @@ window.renderCourseOverview = function(){
     const mastered = items.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
     const due = items.filter(e => { const p = COURSE_EX_PROGRESS[e.id]; return p && p.next_review && isDueByDay(courseParseTs(p.next_review)); }).length;
     const v = courseVocabInfo(l);
-    const exDone = total > 0 && mastered >= total, vocDone = v.total === 0 || v.solid >= v.total;
-    const state = total === 0 ? 'read' : exDone && vocDone ? 'done' : exDone ? 'run' : unlocked > 0 ? 'run' : 'lock';
-    return {l, total, unlocked, mastered, due, state, v, rev: courseReviewTopics(l.id), exDone};
+    // Level je Bereich: so hoch, wie 90 % der aktivierten Karten mindestens stehen (max. 4 = sicher); grün erst, wenn alles aktiv ist
+    const exLv = items.filter(e => COURSE_EX_PROGRESS[e.id]).map(e => COURSE_EX_PROGRESS[e.id].correct_count||0);
+    const ex = areaLevel(exLv, total), vo = areaLevel(v.lv, v.total);
+    const exDone = total > 0 && ex.full && ex.level >= 4, vocDone = v.total === 0 || (vo.full && vo.level >= 4);
+    const state = total === 0 ? 'read' : exDone && vocDone ? 'done' : unlocked > 0 ? 'run' : 'lock';
+    return {l, total, unlocked, mastered, due, state, v, rev: courseReviewTopics(l.id), exDone, ex, vo, exLv};
   };
   const all = COURSE_LESSONS.map(info);
   const cur = all.filter(x => x.state === 'run').pop() || all.find(x => x.state !== 'done' && x.state !== 'read') || null;
   const doneN = all.filter(x => x.state === 'done').length, lessonN = all.filter(x => x.state !== 'read').length;
-  const vbar = v => '<div class="neu-lbar"><i style="width:'+(v.total ? v.solid/v.total*100 : 0)+'%;background:var(--green)"></i><i style="width:'+(v.total ? Math.max(0, v.started-v.solid)/v.total*100 : 0)+'%;background:var(--gold)"></i></div>';
-  const vline = v => v.total ? 'Vokabeln: '+fmtN(v.solid)+' von '+fmtN(v.total)+' sicher'+(v.due ? ' · <span style="color:var(--red)">'+fmtN(v.due)+' fällig</span>' : '') : '';
-  const bar = x => '<div class="neu-lbar"><i style="width:'+(x.total ? x.mastered/x.total*100 : 0)+'%;background:var(--green)"></i><i style="width:'+(x.total ? Math.max(0, x.unlocked-x.mastered)/x.total*100 : 0)+'%;background:var(--gold)"></i></div>';
-  // Abzeichen: Vokabeln / Übungen alle aktiviert (gold) bzw. alle sicher (grün); unabhängig voneinander
-  const badge = (txt, lvl) => '<span class="neu-badge '+lvl+'">'+txt+'</span>';
-  const badgesHtml = x => {
-    const b = [];
-    if(x.v.total){ if(x.v.solid >= x.v.total) b.push(badge('Vokabeln sicher', 'g')); else if(x.v.started >= x.v.total) b.push(badge('Vokabeln aktiviert', 'y')); }
-    if(x.total){ if(x.exDone) b.push(badge('Übungen sicher', 'g')); else if(x.unlocked >= x.total) b.push(badge('Übungen aktiviert', 'y')); }
-    return b.length ? '<div class="neu-badges">'+b.join('')+'</div>' : '';
-  };
+  const gesV = areaLevel([].concat(...all.map(x => x.v.lv)), all.reduce((n, x) => n + x.v.total, 0));
+  const gesE = areaLevel([].concat(...all.map(x => x.exLv)), all.reduce((n, x) => n + x.total, 0));
+  const dotsRow = x => '<div class="neu-dotrow">'+(x.v.total ? dots(x.vo, 'Vokabeln') : '')+(x.total ? dots(x.ex, 'Übungen') : '')+'</div>';
   const rows = all.map(x => {
     const n = x.l.course_number, st = x.state;
-    const sub = st === 'done' ? 'abgeschlossen' : st === 'run' ? fmtN(x.mastered)+' von '+fmtN(x.total)+' gemeistert' : st === 'read' ? 'nur Lesen' : 'noch nicht begonnen';
+    const sub = st === 'read' ? 'nur Lesen' : '';
     const dot = st === 'done' ? '✓' : st === 'read' ? '–' : n;
     return '<div class="neu-lrow '+st+(cur && cur.l.id === x.l.id ? ' cur' : '')+(window._lastCourseLessonId === x.l.id ? ' last' : '')+'" data-id="'+x.l.id+'" onclick="showCourseLesson('+x.l.id+')">'
-      + '<span class="dot">'+dot+'</span><span class="tx"><b>'+escHtml(cleanLessonTitle(x.l.title))+'</b><small>'+sub+(x.due ? ' · <span style="color:var(--red)">'+fmtN(x.due)+' fällig</span>' : '')+'</small>'+(st === 'run' ? bar(x) : '')+(st !== 'done' ? badgesHtml(x) : '')+(x.rev.length ? '<small style="margin-top:.35rem;color:var(--gold2)">'+courseBmIcon(true, 14)+' '+x.rev.length+(x.rev.length === 1 ? ' Thema' : ' Themen')+' nochmal ansehen</small>' : '')+(x.v.started && st !== 'done' && x.v.solid < x.v.total ? '<small style="margin-top:.35rem">'+vline(x.v)+'</small>'+(st === 'run' ? vbar(x.v) : '') : '')+'</span><span class="chev">›</span></div>';
+      + '<span class="dot">'+dot+'</span><span class="tx"><b>'+escHtml(cleanLessonTitle(x.l.title))+'</b>'+(sub ? '<small>'+sub+'</small>' : '')+(st === 'read' ? '' : dotsRow(x))+(x.rev.length ? '<small style="margin-top:.35rem;color:var(--gold2)">'+courseBmIcon(true, 14)+' '+x.rev.length+(x.rev.length === 1 ? ' Thema' : ' Themen')+' nochmal ansehen</small>' : '')+'</span><span class="chev">›</span></div>';
   }).join('');
   const hero = cur
     ? '<div class="neu-card"><div class="neu-cap">Als Nächstes</div><div style="font-size:1.15rem;font-weight:700;margin-top:.2rem">Lektion '+cur.l.course_number+'</div><div class="neu-sub" style="margin:.1rem 0 .7rem">'+escHtml(cleanLessonTitle(cur.l.title))+'</div>'
-      + (cur.total ? '<div class="neu-sub" style="margin-bottom:.3rem">Übungen: '+fmtN(cur.mastered)+' von '+fmtN(cur.total)+' gemeistert'+(cur.due ? ' · '+fmtN(cur.due)+' fällig' : '')+'</div>'+bar(cur) : '')
-      + (cur.v.total ? '<div class="neu-sub" style="margin:.7rem 0 .3rem">'+vline(cur.v)+'</div>'+vbar(cur.v) : '')
+      + dotsRow(cur)
       + '<div style="height:.8rem"></div>'
       + '<button class="neu-btn" onclick="showCourseLesson('+cur.l.id+')">Weiter</button></div>'
     : '';
@@ -889,7 +889,7 @@ window.renderCourseOverview = function(){
   c.innerHTML = '<div class="neu-wrap">'
     + '<div style="font-size:1.5rem;font-weight:700;margin:.2rem 0 .6rem">Kurs</div>'
     + hero + revCard
-    + '<div class="neu-card" style="display:flex;align-items:center;gap:.9rem">'+ring(lessonN ? doneN/lessonN : 0, 56, 6, 'var(--green)', doneN+'/'+lessonN)+'<div><div style="font-weight:700">Kurs</div><div class="neu-sub">'+doneN+' von '+lessonN+' Lektionen abgeschlossen</div></div></div>'
+    + '<div class="neu-card"><div class="neu-cap">Gesamt</div><div class="neu-dotrow" style="margin-top:.4rem">'+dots(gesV, 'Vokabeln')+dots(gesE, 'Übungen')+'</div><div class="neu-sub" style="margin-top:.5rem">'+doneN+' von '+lessonN+' Lektionen abgeschlossen</div></div>'
     + '<div class="neu-card" style="padding:.1rem .9rem">'+rows+'</div>'
     + '</div>';
   if(window._lastCourseLessonId != null){   // zurück aus einer Lektion: dorthin scrollen
