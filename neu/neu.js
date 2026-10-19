@@ -842,6 +842,7 @@ window.renderCourseOverview = function(){
   reset('course'); cMode = 'course';
   if(!COURSE_LESSONS.length){ c.innerHTML = '<div class="neu-wrap" style="text-align:center;padding:3rem;color:var(--muted)">Noch keine Kurs-Lektionen angelegt.</div>'; return; }
   const chunks = courseFlattenChunks();
+  const COURSE_DONE_PCT = 0.9;
   const info = l => {
     const items = chunks.filter(ch => ch.lessonId === l.id).reduce((s,ch) => s.concat(ch.srsItems), []);
     const total = items.length;
@@ -849,9 +850,12 @@ window.renderCourseOverview = function(){
     const mastered = items.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
     const due = items.filter(e => { const p = COURSE_EX_PROGRESS[e.id]; return p && p.next_review && isDueByDay(courseParseTs(p.next_review)); }).length;
     const v = courseVocabInfo(l);
-    const exDone = total > 0 && mastered >= total, vocDone = v.total === 0 || v.solid >= v.total;
-    const state = total === 0 ? 'read' : exDone && vocDone ? 'done' : exDone ? 'run' : unlocked > 0 ? 'run' : 'lock';
-    return {l, total, unlocked, mastered, due, state, v, rev: courseReviewTopics(l.id), exDone};
+    // abgeschlossen: alles aktiviert und mindestens COURSE_DONE_PCT sicher/gemeistert (ein Fehler setzt Level 0, 100 % wären kaum erreichbar)
+    const need = n => Math.ceil(n * COURSE_DONE_PCT);
+    const exDone = total > 0 && unlocked >= total && mastered >= need(total);
+    const vocDone = v.total === 0 || (v.started >= v.total && v.solid >= need(v.total));
+    const state = total === 0 ? 'read' : exDone && vocDone ? 'done' : unlocked > 0 ? 'run' : 'lock';
+    return {l, total, unlocked, mastered, due, state, v, rev: courseReviewTopics(l.id), exDone, vocSafe: v.total > 0 && v.solid >= need(v.total), exSafe: total > 0 && mastered >= need(total)};
   };
   const all = COURSE_LESSONS.map(info);
   const cur = all.filter(x => x.state === 'run').pop() || all.find(x => x.state !== 'done' && x.state !== 'read') || null;
@@ -863,8 +867,8 @@ window.renderCourseOverview = function(){
   const badge = (txt, lvl) => '<span class="neu-badge '+lvl+'">'+txt+'</span>';
   const badgesHtml = x => {
     const b = [];
-    if(x.v.total){ if(x.v.solid >= x.v.total) b.push(badge('Vokabeln sicher', 'g')); else if(x.v.started >= x.v.total) b.push(badge('Vokabeln aktiviert', 'y')); }
-    if(x.total){ if(x.exDone) b.push(badge('Übungen sicher', 'g')); else if(x.unlocked >= x.total) b.push(badge('Übungen aktiviert', 'y')); }
+    if(x.v.total){ if(x.vocSafe) b.push(badge('Vokabeln sicher', 'g')); else if(x.v.started >= x.v.total) b.push(badge('Vokabeln aktiviert', 'y')); }
+    if(x.total){ if(x.exSafe) b.push(badge('Übungen sicher', 'g')); else if(x.unlocked >= x.total) b.push(badge('Übungen aktiviert', 'y')); }
     return b.length ? '<div class="neu-badges">'+b.join('')+'</div>' : '';
   };
   const rows = all.map(x => {
@@ -872,7 +876,7 @@ window.renderCourseOverview = function(){
     const sub = st === 'done' ? 'abgeschlossen' : st === 'run' ? fmtN(x.mastered)+' von '+fmtN(x.total)+' gemeistert' : st === 'read' ? 'nur Lesen' : 'noch nicht begonnen';
     const dot = st === 'done' ? '✓' : st === 'read' ? '–' : n;
     return '<div class="neu-lrow '+st+(cur && cur.l.id === x.l.id ? ' cur' : '')+(window._lastCourseLessonId === x.l.id ? ' last' : '')+'" data-id="'+x.l.id+'" onclick="showCourseLesson('+x.l.id+')">'
-      + '<span class="dot">'+dot+'</span><span class="tx"><b>'+escHtml(cleanLessonTitle(x.l.title))+'</b><small>'+sub+(x.due ? ' · <span style="color:var(--red)">'+fmtN(x.due)+' fällig</span>' : '')+'</small>'+(st === 'run' ? bar(x) : '')+(st !== 'done' ? badgesHtml(x) : '')+(x.rev.length ? '<small style="margin-top:.35rem;color:var(--gold2)">'+courseBmIcon(true, 14)+' '+x.rev.length+(x.rev.length === 1 ? ' Thema' : ' Themen')+' nochmal ansehen</small>' : '')+(x.v.started && st !== 'done' && x.v.solid < x.v.total ? '<small style="margin-top:.35rem">'+vline(x.v)+'</small>'+(st === 'run' ? vbar(x.v) : '') : '')+'</span><span class="chev">›</span></div>';
+      + '<span class="dot">'+dot+'</span><span class="tx"><b>'+escHtml(cleanLessonTitle(x.l.title))+'</b><small>'+sub+(x.due ? ' · <span style="color:var(--red)">'+fmtN(x.due)+' fällig</span>' : '')+'</small>'+(st === 'run' ? bar(x) : '')+(st !== 'done' ? badgesHtml(x) : '')+(x.rev.length ? '<small style="margin-top:.35rem;color:var(--gold2)">'+courseBmIcon(true, 14)+' '+x.rev.length+(x.rev.length === 1 ? ' Thema' : ' Themen')+' nochmal ansehen</small>' : '')+(x.v.started && st !== 'done' && !x.vocSafe ? '<small style="margin-top:.35rem">'+vline(x.v)+'</small>'+(st === 'run' ? vbar(x.v) : '') : '')+'</span><span class="chev">›</span></div>';
   }).join('');
   const hero = cur
     ? '<div class="neu-card"><div class="neu-cap">Als Nächstes</div><div style="font-size:1.15rem;font-weight:700;margin-top:.2rem">Lektion '+cur.l.course_number+'</div><div class="neu-sub" style="margin:.1rem 0 .7rem">'+escHtml(cleanLessonTitle(cur.l.title))+'</div>'
