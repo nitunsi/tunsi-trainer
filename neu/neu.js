@@ -1393,27 +1393,73 @@ window.renderCourseLesson = function(){
   else if(_courseCurTab === 'test') renderCourseTestTab(tc, l);
   else if(_courseCurTab === 'course') renderCourseBrowseTab(tc, l);
 };
+/* Kurs-Ansicht nach Themen: pro Grammatik-Thema eine Zeile; aufgeklappt steht der Erklärtext einmal, darunter die
+   zugehörigen Übungsgruppen. Zuordnung Gruppe → Thema: chunk.topic, sonst die erste Überschrift der Gruppe,
+   sonst „Weitere Übungen“. Dialog-Gruppen gehören zu „Dialoge“. */
+window._browseOpenTopic = null;
+window.courseTopicToggle = function(t){ window._browseOpenTopic = (window._browseOpenTopic === t) ? null : t; renderCourseLesson(); };
+window.courseTopicsOf = function(l){
+  const sections = parseGrammarSections(l.grammar_notes);
+  const heads = Object.keys(sections).filter(k => k !== '__intro__' && sections[k]);
+  const topicOf = c => c.dialog ? 'Dialoge' : (c.topic || ((c.grammar_headings||[]).filter(h => h !== '__intro__')[0]) || 'Weitere Übungen');
+  const byTopic = {};
+  (l.chunk_order||[]).forEach(c => { const t = topicOf(c); (byTopic[t] = byTopic[t] || []).push(c); });
+  const hasDialog = !!byTopic['Dialoge'];
+  const order = (hasDialog ? ['Dialoge'] : []).concat(heads);
+  Object.keys(byTopic).forEach(t => { if(t !== 'Weitere Übungen' && !order.includes(t)) order.push(t); });
+  if(byTopic['Weitere Übungen']) order.push('Weitere Übungen');
+  return {sections, order, byTopic};
+};
 window.renderCourseBrowseTab = function(tc, l){
   if(!courseHasChunks(l)){ renderCourseLearnTab(tc, l); return; }
   const byKey = {};
   (COURSE_EXERCISES_BY_LESSON[l.id]||[]).forEach(e => { (byKey[e.chunk_key] = byKey[e.chunk_key] || []).push(e); });
-  let h = '<div class="neu-card" style="padding:.1rem .9rem">';
-  (l.chunk_order||[]).forEach(c => {
+  const {sections, order, byTopic} = courseTopicsOf(l);
+  const dotCol = {done:'var(--green)', run:'var(--gold)', lock:'var(--border)', read:'var(--muted)'};
+  const stat = c => {
     const all = byKey[c.key] || [];
     const srs = all.filter(e => COURSE_SRS_TYPES.includes(e.exercise_type));
     const non = all.filter(e => !COURSE_SRS_TYPES.includes(e.exercise_type));
     const unlocked = courseChunkUnlocked(srs), mastered = courseChunkMastered(srs);
     const st = !srs.length ? 'read' : mastered ? 'done' : unlocked ? 'run' : 'lock';
-    const mc = srs.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 3).length; // gleiche Schwelle wie der Punkt (courseChunkMastered)
-    const open = _browseOpenChunk === c.key;
-    const dot = {done:'var(--green)', run:'var(--gold)', lock:'var(--border)', read:'var(--muted)'}[st];
-    const sub = srs.length ? fmtN(mc)+' von '+fmtN(srs.length)+' gemeistert'+(st==='lock' ? ' · gesperrt' : '') : non.length ? fmtN(non.length)+' zum Lesen' : '';
-    h += '<div class="neu-chunk'+(st==='lock'?' lock':'')+'"><button class="hd" onclick="courseBrowseToggle(\''+eq(c.key)+'\')"><span class="dot" style="background:'+dot+'"></span><span class="tx"><b>'+escHtml(c.label)+'</b><small>'+sub+'</small></span><span class="chev">'+(open?'⌃':'⌄')+'</span></button>';
+    const mc = srs.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 3).length;
+    return {all, srs, non, unlocked, st, mc};
+  };
+  const box = inner => '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7">'+inner+'</div>';
+  let h = '<div class="neu-card" style="padding:.1rem .9rem">';
+  order.forEach(t => {
+    const cs = (byTopic[t] || []).filter(c => (byKey[c.key]||[]).length);
+    const ss = cs.map(stat);
+    const tot = ss.reduce((a,s) => a + s.srs.length, 0), mc = ss.reduce((a,s) => a + s.mc, 0);
+    const st = !tot ? 'read' : ss.every(s => s.st === 'done' || s.st === 'read') ? 'done' : ss.some(s => s.st !== 'lock') ? 'run' : 'lock';
+    const open = window._browseOpenTopic === t;
+    const sub = tot ? fmtN(mc)+' von '+fmtN(tot)+' Übungen · '+cs.length+(cs.length === 1 ? ' Gruppe' : ' Gruppen')
+      : cs.length ? fmtN(cs.reduce((a,c) => a + (byKey[c.key]||[]).length, 0))+' zum Lesen' : 'nur Text';
+    h += '<div class="neu-chunk'+(st==='lock'?' lock':'')+'"><button class="hd" onclick="courseTopicToggle(\''+eq(t)+'\')"><span class="dot" style="background:'+dotCol[st]+'"></span><span class="tx"><b>'+escHtml(t.replace(/\s*\(.*$/,''))+'</b><small>'+sub+'</small></span><span class="chev">'+(open?'⌃':'⌄')+'</span></button>';
     if(open){
-      h += '<div class="bd">'+courseChunkLearnHtml(l, c);
-      if(srs.length && !unlocked) h += '<button class="neu-btn blue" style="margin-top:.7rem" onclick="courseManualUnlockChunk('+l.id+',\''+eq(c.key)+'\')">Diesen Abschnitt jetzt freischalten</button>';
-      if(srs.length) h += '<div class="neu-cap" style="margin:.9rem 0 .4rem">Übungen</div><div style="display:flex;flex-wrap:wrap;gap:.4rem">'+srs.map(e => '<span class="neu-chip" style="min-height:30px;cursor:default">'+courseExLevelBadge(e.id)+'</span>').join('')+'</div>';
-      h += courseNonSrsHtml(non)+'</div>';
+      h += '<div class="bd">';
+      if(t === 'Dialoge'){
+        if(l.dialog_text) h += box(mdLite(l.dialog_text, true));
+        if(cs.some(c => (c.grammar_headings||[]).includes('__intro__')) && sections.__intro__) h += '<div style="margin-top:.6rem">'+box(mdLite(sections.__intro__))+'</div>';
+      } else if(sections[t]){
+        h += box(mdLite(t === '__intro__' ? sections[t] : '### '+t+'\n'+sections[t]).replace(/^<div[^>]*>[^<]*<\/div>/, ''));
+      }
+      if(cs.length){
+        h += '<div class="neu-cap" style="margin:.9rem 0 .1rem">Übungsgruppen</div>';
+        cs.forEach(c => {
+          const s = stat(c), copen = _browseOpenChunk === c.key;
+          const csub = s.srs.length ? fmtN(s.mc)+' von '+fmtN(s.srs.length)+' gemeistert'+(s.st==='lock' ? ' · gesperrt' : '') : s.non.length ? fmtN(s.non.length)+' zum Lesen' : '';
+          h += '<div class="neu-chunk'+(s.st==='lock'?' lock':'')+'"><button class="hd" style="min-height:48px" onclick="courseBrowseToggle(\''+eq(c.key)+'\')"><span class="dot" style="background:'+dotCol[s.st]+'"></span><span class="tx"><b style="font-size:.92rem">'+escHtml(c.label)+'</b><small>'+csub+'</small></span><span class="chev">'+(copen?'⌃':'⌄')+'</span></button>';
+          if(copen){
+            h += '<div class="bd">';
+            if(s.srs.length && !s.unlocked) h += '<button class="neu-btn blue" onclick="courseManualUnlockChunk('+l.id+',\''+eq(c.key)+'\')">Diese Gruppe jetzt freischalten</button>';
+            if(s.srs.length) h += '<div class="neu-cap" style="margin:.7rem 0 .4rem">Übungen</div><div style="display:flex;flex-wrap:wrap;gap:.4rem">'+s.srs.map(e => '<span class="neu-chip" style="min-height:30px;cursor:default">'+courseExLevelBadge(e.id)+'</span>').join('')+'</div>';
+            h += courseNonSrsHtml(s.non)+'</div>';
+          }
+          h += '</div>';
+        });
+      }
+      h += '</div>';
     }
     h += '</div>';
   });
