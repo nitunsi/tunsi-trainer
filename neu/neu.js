@@ -489,8 +489,8 @@ function milesNow(streak){
   ALL_VOCAB.forEach(x => { const q = srsProgress[x.id]; if(q && q.next_review){ v++; if((q.level || 0) >= 5) p++; } });
   const o = {v, p, s: streak};
   if(_courseLoaded){   // Kurs: ohne geladene Kursdaten nichts melden, sonst wirkt der erste Stand wie ein neuer Meilenstein
-    const ps = Object.values(COURSE_EX_PROGRESS);
-    o.c = ps.length; o.q = ps.filter(q => (q.correct_count || 0) >= 5).length;
+    const ps = courseEffItems();
+    o.c = ps.length; o.q = ps.filter(q => q.lv >= 5).length;
   }
   return o;
 }
@@ -801,6 +801,45 @@ window.showRes = function(){
 };
 
 /* ---------- Kurs als Lernpfad ---------- */
+/* Lektion manuell als „verstanden“ markieren: course_progress.status = 'understood'. Zählt in Übersicht, Statistik und Meilensteinen wie gemeistert. */
+window.courseUnderstood = function(lessonId){ const r = COURSE_PROGRESS_BY_LESSON[lessonId]; return !!(r && r.status === 'understood'); };
+window.courseToggleUnderstood = async function(lessonId){
+  const row = COURSE_PROGRESS_BY_LESSON[lessonId], now = !courseUnderstood(lessonId);
+  try{
+    if(row){
+      const payload = {status: now ? 'understood' : 'in_progress', completed_at: now ? new Date().toISOString() : row.completed_at};
+      await sbApi('course_progress?id=eq.'+row.id, 'PATCH', payload);
+      Object.assign(row, payload);
+    } else {
+      const res = await sbApi('course_progress?select=*', 'POST', {user_id: currentUser.id, course_lesson_id: lessonId, status: 'understood', exercises_done: [], completed_at: new Date().toISOString()}, 'return=representation');
+      COURSE_PROGRESS_BY_LESSON[lessonId] = Array.isArray(res) ? res[0] : res;
+    }
+    showToast(now ? '✓ Lektion als verstanden markiert' : 'Markierung entfernt', 'ok');
+    renderCourseLesson();
+  }catch(e){ showToast('Fehler beim Speichern: '+e.message, 'err'); }
+};
+window.courseEffItems = function(){   // freigeschaltete Kurs-Übungen; Lektionen „verstanden“ zählen mindestens als Stufe 5 (Profi)
+  const out = [];
+  courseFlattenChunks().forEach(ch => { const und = courseUnderstood(ch.lessonId); ch.srsItems.forEach(e => {
+    const p = COURSE_EX_PROGRESS[e.id]; if(!p && !und) return;
+    const base = p ? Math.min(p.correct_count||0, 6) : 0;
+    out.push({lv: und ? Math.max(base, 5) : base, p});
+  }); });
+  return out;
+};
+window.courseVocabInfo = function(l){
+  const f = parseCourseVocabRefs(l.vocab_lesson_refs);
+  const list = ALL_VOCAB.filter(v => f.ids.has(v.id) || f.tr.has(v.tr));
+  let started = 0, solid = 0, due = 0;
+  list.forEach(v => { const p = srsProgress[v.id]; if(p && p.next_review){ started++; if((p.level||0) >= 4) solid++; if(!isQueueBlocked(v) && srsIsDue(v)) due++; } });
+  return {total: list.length, started, solid, due};
+};
+window.courseVocabPractice = function(id){
+  const l = COURSE_LESSONS.find(x => x.id === id); if(!l) return;
+  COURSE_VOCAB_FILTER = parseCourseVocabRefs(l.vocab_lesson_refs); cLesson = 'COURSEVOCAB'; cCourseId = l.id;
+  try{ updateLessonChips(); }catch(e){}
+  setMode('flash');
+};
 window.renderCourseOverview = function(){
   const c = $('exercise-content'); if(!c) return;
   reset('course'); cMode = 'course';
@@ -812,23 +851,28 @@ window.renderCourseOverview = function(){
     const unlocked = items.filter(e => COURSE_EX_PROGRESS[e.id]).length;
     const mastered = items.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
     const due = items.filter(e => { const p = COURSE_EX_PROGRESS[e.id]; return p && p.next_review && isDueByDay(courseParseTs(p.next_review)); }).length;
-    const state = total === 0 ? 'read' : mastered >= total ? 'done' : unlocked > 0 ? 'run' : 'lock';
-    return {l, total, unlocked, mastered, due, state};
+    const und = courseUnderstood(l.id);
+    const state = und && total ? 'done' : total === 0 ? 'read' : mastered >= total ? 'done' : unlocked > 0 ? 'run' : 'lock';
+    return {l, total, unlocked, mastered, due, state, und, v: courseVocabInfo(l)};
   };
   const all = COURSE_LESSONS.map(info);
   const cur = all.filter(x => x.state === 'run').pop() || all.find(x => x.state !== 'done' && x.state !== 'read') || null;
   const doneN = all.filter(x => x.state === 'done').length, lessonN = all.filter(x => x.state !== 'read').length;
+  const vbar = v => '<div class="neu-lbar"><i style="width:'+(v.total ? v.solid/v.total*100 : 0)+'%;background:var(--green)"></i><i style="width:'+(v.total ? Math.max(0, v.started-v.solid)/v.total*100 : 0)+'%;background:var(--gold)"></i></div>';
+  const vline = v => v.total ? 'Vokabeln: '+fmtN(v.solid)+' von '+fmtN(v.total)+' sicher'+(v.due ? ' · <span style="color:var(--red)">'+fmtN(v.due)+' fällig</span>' : '') : '';
   const bar = x => '<div class="neu-lbar"><i style="width:'+(x.total ? x.mastered/x.total*100 : 0)+'%;background:var(--green)"></i><i style="width:'+(x.total ? Math.max(0, x.unlocked-x.mastered)/x.total*100 : 0)+'%;background:var(--gold)"></i></div>';
   const rows = all.map(x => {
     const n = x.l.course_number, st = x.state;
-    const sub = st === 'done' ? 'abgeschlossen' : st === 'run' ? fmtN(x.mastered)+' von '+fmtN(x.total)+' gemeistert' : st === 'read' ? 'nur Lesen' : 'noch nicht begonnen';
+    const sub = st === 'done' ? (x.und ? 'als verstanden markiert' : 'abgeschlossen') : st === 'run' ? fmtN(x.mastered)+' von '+fmtN(x.total)+' gemeistert' : st === 'read' ? 'nur Lesen' : 'noch nicht begonnen';
     const dot = st === 'done' ? '✓' : st === 'read' ? '–' : n;
-    return '<div class="neu-lrow '+st+(cur && cur.l.id === x.l.id ? ' cur' : '')+'" onclick="showCourseLesson('+x.l.id+')">'
-      + '<span class="dot">'+dot+'</span><span class="tx"><b>'+escHtml(cleanLessonTitle(x.l.title))+'</b><small>'+sub+(x.due ? ' · <span style="color:var(--red)">'+fmtN(x.due)+' fällig</span>' : '')+'</small>'+(st === 'run' ? bar(x) : '')+'</span><span class="chev">›</span></div>';
+    return '<div class="neu-lrow '+st+(cur && cur.l.id === x.l.id ? ' cur' : '')+(window._lastCourseLessonId === x.l.id ? ' last' : '')+'" data-id="'+x.l.id+'" onclick="showCourseLesson('+x.l.id+')">'
+      + '<span class="dot">'+dot+'</span><span class="tx"><b>'+escHtml(cleanLessonTitle(x.l.title))+'</b><small>'+sub+(x.due ? ' · <span style="color:var(--red)">'+fmtN(x.due)+' fällig</span>' : '')+'</small>'+(st === 'run' ? bar(x) : '')+(x.v.started ? '<small style="margin-top:.35rem">'+vline(x.v)+'</small>'+(st === 'run' ? vbar(x.v) : '') : '')+'</span><span class="chev">›</span></div>';
   }).join('');
   const hero = cur
     ? '<div class="neu-card"><div class="neu-cap">Als Nächstes</div><div style="font-size:1.15rem;font-weight:700;margin-top:.2rem">Lektion '+cur.l.course_number+'</div><div class="neu-sub" style="margin:.1rem 0 .7rem">'+escHtml(cleanLessonTitle(cur.l.title))+'</div>'
-      + (cur.total ? bar(cur)+'<div class="neu-sub" style="margin:.4rem 0 .8rem">'+fmtN(cur.mastered)+' von '+fmtN(cur.total)+' Übungen gemeistert'+(cur.due ? ' · '+fmtN(cur.due)+' fällig' : '')+'</div>' : '')
+      + (cur.total ? '<div class="neu-sub" style="margin-bottom:.3rem">Übungen: '+fmtN(cur.mastered)+' von '+fmtN(cur.total)+' gemeistert'+(cur.due ? ' · '+fmtN(cur.due)+' fällig' : '')+'</div>'+bar(cur) : '')
+      + (cur.v.total ? '<div class="neu-sub" style="margin:.7rem 0 .3rem">'+vline(cur.v)+'</div>'+vbar(cur.v) : '')
+      + '<div style="height:.8rem"></div>'
       + '<button class="neu-btn" onclick="showCourseLesson('+cur.l.id+')">Weiter</button></div>'
     : '';
   c.innerHTML = '<div class="neu-wrap">'
@@ -837,6 +881,10 @@ window.renderCourseOverview = function(){
     + '<div class="neu-card" style="display:flex;align-items:center;gap:.9rem">'+ring(lessonN ? doneN/lessonN : 0, 56, 6, 'var(--green)', doneN+'/'+lessonN)+'<div><div style="font-weight:700">Kurs</div><div class="neu-sub">'+doneN+' von '+lessonN+' Lektionen abgeschlossen</div></div></div>'
     + '<div class="neu-card" style="padding:.1rem .9rem">'+rows+'</div>'
     + '</div>';
+  if(window._lastCourseLessonId != null){   // zurück aus einer Lektion: dorthin scrollen
+    const row = c.querySelector('.neu-lrow[data-id="'+window._lastCourseLessonId+'"]');
+    if(row) setTimeout(() => { try{ row.scrollIntoView({block:'center', behavior:'instant'}); }catch(e){ row.scrollIntoView(); } }, 30);
+  }
 };
 
 /* ---------- Vokabelliste als Karten ---------- */
@@ -1348,15 +1396,41 @@ function lessonProg(l){
   const unlocked = items.filter(e => COURSE_EX_PROGRESS[e.id]).length;
   const mastered = items.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
   const due = items.filter(e => { const p = COURSE_EX_PROGRESS[e.id]; return p && p.next_review && isDueByDay(courseParseTs(p.next_review)); }).length;
+  if(courseUnderstood(l.id) && total) return {total, unlocked: total, mastered: total, due, und: true};
   return {total, unlocked, mastered, due};
 }
 const _scl = window.showCourseLesson;
-window.showCourseLesson = function(){ cMode = 'course'; chrome('course'); return _scl.apply(this, arguments); };
+window._lastCourseLessonId = null;   // zuletzt geöffnete Lektion: die Übersicht springt beim Zurückkommen dorthin
+window.showCourseLesson = function(id){
+  cMode = 'course'; chrome('course');
+  window._lastCourseLessonId = id; window._browseOpenTopic = null;
+  const r = _scl.apply(this, arguments);
+  try{ window.scrollTo({top:0, behavior:'instant'}); }catch(e){ window.scrollTo(0,0); }   // Lektion immer ganz oben starten
+  return r;
+};
 window.renderCourseLesson = function(){
   const c = $('exercise-content'), l = _courseCurLesson;
   if(!c || !l) return;
   const chunked = courseHasChunks(l);
   const pr = lessonProg(l);
+  const vi = courseVocabInfo(l);
+  const barHtml = (a, b, total) => '<div class="neu-lbar" style="margin-top:0"><i style="width:'+(total ? a/total*100 : 0)+'%;background:var(--green)"></i><i style="width:'+(total ? Math.max(0, b-a)/total*100 : 0)+'%;background:var(--gold)"></i></div>';
+  const statRow = (label, right, bar) => '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:.6rem;font-size:.9rem;margin:.9rem 0 .35rem"><b>'+label+'</b><span class="neu-sub">'+right+'</span></div>'+bar;
+  const due = n => n ? ' · <span style="color:var(--red)">'+fmtN(n)+' fällig</span>' : '';
+  if(chunked){
+    _courseCurTab = 'course';
+    c.innerHTML = '<div class="neu-wrap">'
+      + '<div style="margin-bottom:.6rem"><span class="neu-chip" onclick="showCourseOverview()">‹ Kurs</span></div>'
+      + '<div class="neu-card"><div style="font-size:1.15rem;font-weight:700">Lektion '+l.course_number+'</div><div class="neu-sub" style="margin-top:1px">'+escHtml(cleanLessonTitle(l.title))+'</div>'
+      + (pr.total ? statRow('Übungen', fmtN(pr.mastered)+' von '+fmtN(pr.total)+' gemeistert'+due(pr.due), barHtml(pr.mastered, pr.unlocked, pr.total)) : '')
+      + (vi.total ? statRow('Vokabeln', fmtN(vi.solid)+' von '+fmtN(vi.total)+' sicher'+due(vi.due), barHtml(vi.solid, vi.started, vi.total)) : '')
+      + '<div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem">'
+      + (vi.total ? '<span class="neu-chip" onclick="courseGoToVocab('+l.id+')">Vokabelliste</span>' : '')
+      + '<span class="neu-chip'+(pr.und ? ' on' : '')+'" onclick="courseToggleUnderstood('+l.id+')">'+(pr.und ? '✓ Verstanden' : 'Als verstanden markieren')+'</span></div>'
+      + '</div><div id="course-tab-content"></div></div>';
+    renderCourseBrowseTab($('course-tab-content'), l);
+    return;
+  }
   const frac = pr.total ? pr.mastered / pr.total : 0;
   const done = pr.total > 0 && pr.mastered >= pr.total;
   const tab = (k, label) => '<button class="'+(_courseCurTab===k?'on':'')+'" onclick="courseSetTab(\''+k+'\')">'+label+'</button>';
@@ -1366,13 +1440,13 @@ window.renderCourseLesson = function(){
     +   '<div style="flex:1;min-width:0"><div style="font-size:1.15rem;font-weight:700">Lektion '+l.course_number+'</div><div class="neu-sub" style="margin-top:1px">'+escHtml(cleanLessonTitle(l.title))+'</div>'
     +   (pr.total ? '<div style="font-size:.85rem;margin-top:.3rem;color:var(--gold2)">'+fmtN(pr.mastered)+' von '+fmtN(pr.total)+' Übungen gemeistert'+(pr.due ? ' · <span style="color:var(--red)">'+fmtN(pr.due)+' fällig</span>' : '')+'</div>' : '')
     + '</div></div>'
-    + '<div class="neu-seg" style="margin-bottom:.8rem">'+(chunked ? tab('course','Ansicht')+tab('vocab','Vokabeln') : tab('learn','Lernen')+tab('vocab','Vokabeln')+tab('test','Test'))+'</div>'
+    + '<div class="neu-seg" style="margin-bottom:.8rem">'+tab('learn','Lernen')+tab('vocab','Vokabeln')+tab('test','Test')+'</div>'
     + '<div id="course-tab-content"></div></div>';
   const tc = $('course-tab-content');
   if(_courseCurTab === 'learn') renderCourseLearnTab(tc, l);
   else if(_courseCurTab === 'vocab') renderCourseVocabTab(tc, l);
   else if(_courseCurTab === 'test') renderCourseTestTab(tc, l);
-  else if(_courseCurTab === 'course') renderCourseBrowseTab(tc, l);
+  else renderCourseLearnTab(tc, l);
 };
 /* Kurs-Ansicht nach Themen: pro Grammatik-Thema eine Zeile; aufgeklappt steht der Erklärtext einmal, darunter die
    zugehörigen Übungsgruppen. Zuordnung Gruppe → Thema: chunk.topic, sonst die erste Überschrift der Gruppe,
@@ -1403,8 +1477,9 @@ window.renderCourseBrowseTab = function(tc, l){
     const non = all.filter(e => !COURSE_SRS_TYPES.includes(e.exercise_type));
     const unlocked = courseChunkUnlocked(srs), mastered = courseChunkMastered(srs);
     const st = !srs.length ? 'read' : mastered ? 'done' : unlocked ? 'run' : 'lock';
-    const mc = srs.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 3).length;
-    return {all, srs, non, unlocked, st, mc};
+    const und = courseUnderstood(l.id) && srs.length > 0;
+    const mc = und ? srs.length : srs.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 3).length;
+    return {all, srs, non, unlocked: unlocked || und, st: und ? 'done' : st, mc};
   };
   const box = inner => '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7">'+inner+'</div>';
   let h = '<div class="neu-card" style="padding:.1rem .9rem">';
@@ -1595,10 +1670,10 @@ window.showStats = function(){
   const cb = [0,0,0,0,0,0,0,0]; let cPts = 0, cTotal = 0, cActive = 0;
   if(all){
     cTotal = courseFlattenChunks().reduce((s,ch) => s + ch.srsItems.length, 0);
-    Object.values(COURSE_EX_PROGRESS).forEach(p => {
-      const lv = Math.min(p.correct_count||0, 6); const idx = lv === 0 ? 1 : Math.min(lv+1, 7);
+    courseEffItems().forEach(it => {
+      const p = it.p, lv = it.lv; const idx = lv === 0 ? 1 : Math.min(lv+1, 7);
       cb[idx]++; cActive++; cPts += lv;
-      if(p.next_review){ const nd = courseParseTs(p.next_review); const di = dayIdx(nd); if(di < N){ fc[di]++; fcp[di][phOf(idx)]++; } if(isDueByDay(nd)) dueByBucket[idx]++; }
+      if(p && p.next_review){ const nd = courseParseTs(p.next_review); const di = dayIdx(nd); if(di < N){ fc[di]++; fcp[di][phOf(idx)]++; } if(isDueByDay(nd)) dueByBucket[idx]++; }
     });
     cb[0] = Math.max(0, cTotal - cActive);
   }
