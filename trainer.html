@@ -6526,7 +6526,8 @@ function mdLite(s, isDialog){
     if(!tbl.length) return;
     const cells = r=>r.replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
     const rows = tbl.filter(r=>!/^\|[\s:|-]+\|?$/.test(r)).map(cells);
-    html += '<div style="overflow-x:auto;max-width:100%"><table style="border-collapse:collapse;margin:.3rem 0 .8rem;font-size:.85rem">'+rows.map((r,i)=>'<tr>'+r.map(c=>'<'+(i?'td':'th')+' style="border:1px solid var(--border);padding:.2rem .4rem;text-align:center'+(i?'':';color:var(--gold2)')+'">'+bold(escLine(c))+'</'+(i?'td':'th')+'>').join('')+'</tr>').join('')+'</table></div>';
+    const colMax = rows[0].map((_,ci)=>Math.max(...rows.map(r=>(r[ci]||'').length)));   // Spalten mit langem Text linksbündig
+    html += '<div style="overflow-x:auto;margin:0 -.6rem"><table style="border-collapse:collapse;margin:.3rem 0 .8rem;font-size:'+(rows[0].length>=5?'.72rem':rows[0].length===4?'.8rem':'.85rem')+'">'+rows.map((r,i)=>'<tr>'+r.map((c,ci)=>'<'+(i?'td':'th')+' style="border:1px solid var(--border);padding:'+(rows[0].length>=5?'.12rem .22rem':'.2rem .35rem')+';text-align:'+(colMax[ci]>16?'left':'center')+(i?'':';color:var(--gold2)')+'">'+bold(escLine(c))+'</'+(i?'td':'th')+'>').join('')+'</tr>').join('')+'</table></div>';
     tbl = [];
   };
   lines.forEach(line=>{
