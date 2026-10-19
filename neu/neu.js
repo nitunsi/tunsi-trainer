@@ -870,10 +870,10 @@ window.renderCourseOverview = function(){
   const dotsRow = x => '<div class="neu-dotrow">'+(x.v.total ? dots(x.vo, 'Vokabeln') : '')+(x.total ? dots(x.ex, 'Übungen') : '')+'</div>';
   const rows = all.map(x => {
     const n = x.l.course_number, st = x.state;
-    const sub = st === 'read' ? 'nur Lesen' : st === 'lock' ? 'noch nicht begonnen' : '';
+    const sub = st === 'read' ? 'nur Lesen' : '';
     const dot = st === 'done' ? '✓' : st === 'read' ? '–' : n;
     return '<div class="neu-lrow '+st+(cur && cur.l.id === x.l.id ? ' cur' : '')+(window._lastCourseLessonId === x.l.id ? ' last' : '')+'" data-id="'+x.l.id+'" onclick="showCourseLesson('+x.l.id+')">'
-      + '<span class="dot">'+dot+'</span><span class="tx"><b>'+escHtml(cleanLessonTitle(x.l.title))+'</b>'+(sub ? '<small>'+sub+'</small>' : '')+(st === 'read' || st === 'lock' ? '' : dotsRow(x))+(x.rev.length ? '<small style="margin-top:.35rem;color:var(--gold2)">'+courseBmIcon(true, 14)+' '+x.rev.length+(x.rev.length === 1 ? ' Thema' : ' Themen')+' nochmal ansehen</small>' : '')+'</span><span class="chev">›</span></div>';
+      + '<span class="dot">'+dot+'</span><span class="tx"><b>'+escHtml(cleanLessonTitle(x.l.title))+'</b>'+(sub ? '<small>'+sub+'</small>' : '')+(st === 'read' ? '' : dotsRow(x))+(x.rev.length ? '<small style="margin-top:.35rem;color:var(--gold2)">'+courseBmIcon(true, 14)+' '+x.rev.length+(x.rev.length === 1 ? ' Thema' : ' Themen')+' nochmal ansehen</small>' : '')+'</span><span class="chev">›</span></div>';
   }).join('');
   const hero = cur
     ? '<div class="neu-card"><div class="neu-cap">Als Nächstes</div><div style="font-size:1.15rem;font-weight:700;margin-top:.2rem">Lektion '+cur.l.course_number+'</div><div class="neu-sub" style="margin:.1rem 0 .7rem">'+escHtml(cleanLessonTitle(cur.l.title))+'</div>'
