@@ -864,7 +864,7 @@ window.renderCourseOverview = function(){
   const badgesHtml = x => {
     const b = [];
     if(x.v.total){ if(x.v.solid >= x.v.total) b.push(badge('Vokabeln sicher', 'g')); else if(x.v.started >= x.v.total) b.push(badge('Vokabeln aktiviert', 'y')); }
-    if(x.total){ if(x.exDone) b.push(badge('Übungen gemeistert', 'g')); else if(x.unlocked >= x.total) b.push(badge('Übungen aktiviert', 'y')); }
+    if(x.total){ if(x.exDone) b.push(badge('Übungen sicher', 'g')); else if(x.unlocked >= x.total) b.push(badge('Übungen aktiviert', 'y')); }
     return b.length ? '<div class="neu-badges">'+b.join('')+'</div>' : '';
   };
   const rows = all.map(x => {
