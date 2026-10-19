@@ -802,3 +802,10 @@ body.neu-onstats.neu-sopen .neu-stabs{position:sticky}
 .neu-lrow .tx small{display:block;color:var(--muted);font-size:.82rem;margin-top:1px}
 .neu-lrow .chev{color:var(--muted);font-size:1.3rem}
 .neu-lrow.last .dot{box-shadow:0 0 0 3px var(--gold-soft,rgba(180,130,30,.25))}
+
+/* Abzeichen in der Kurs-Übersicht */
+.neu-badges{display:flex;flex-wrap:wrap;gap:.2rem .9rem;margin-top:.45rem}
+.neu-badge{display:inline-flex;align-items:center;gap:.35rem;font-size:.8rem;font-weight:600}
+.neu-badge::before{content:'';width:.5rem;height:.5rem;border-radius:50%;background:currentColor}
+.neu-badge.y{color:var(--gold2)}
+.neu-badge.g{color:var(--green)}
