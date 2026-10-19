@@ -1397,7 +1397,7 @@ window.renderCourseLesson = function(){
    zugehörigen Übungsgruppen. Zuordnung Gruppe → Thema: chunk.topic, sonst die erste Überschrift der Gruppe,
    sonst „Weitere Übungen“. Dialog-Gruppen gehören zu „Dialoge“. */
 window._browseOpenTopic = null;
-window.courseTopicToggle = function(t){ window._browseOpenTopic = (window._browseOpenTopic === t) ? null : t; renderCourseLesson(); };
+window.courseTopicToggle = function(i){ const t = courseTopicsOf(_courseCurLesson).order[i]; window._browseOpenTopic = (window._browseOpenTopic === t) ? null : t; renderCourseLesson(); };
 window.courseTopicsOf = function(l){
   const sections = parseGrammarSections(l.grammar_notes);
   const heads = Object.keys(sections).filter(k => k !== '__intro__' && sections[k]);
@@ -1427,7 +1427,7 @@ window.renderCourseBrowseTab = function(tc, l){
   };
   const box = inner => '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7">'+inner+'</div>';
   let h = '<div class="neu-card" style="padding:.1rem .9rem">';
-  order.forEach(t => {
+  order.forEach((t, ti) => {
     const cs = (byTopic[t] || []).filter(c => (byKey[c.key]||[]).length);
     const ss = cs.map(stat);
     const tot = ss.reduce((a,s) => a + s.srs.length, 0), mc = ss.reduce((a,s) => a + s.mc, 0);
@@ -1435,7 +1435,7 @@ window.renderCourseBrowseTab = function(tc, l){
     const open = window._browseOpenTopic === t;
     const sub = tot ? fmtN(mc)+' von '+fmtN(tot)+' Übungen · '+cs.length+(cs.length === 1 ? ' Gruppe' : ' Gruppen')
       : cs.length ? fmtN(cs.reduce((a,c) => a + (byKey[c.key]||[]).length, 0))+' zum Lesen' : 'nur Text';
-    h += '<div class="neu-chunk'+(st==='lock'?' lock':'')+'"><button class="hd" onclick="courseTopicToggle(\''+eq(t)+'\')"><span class="dot" style="background:'+dotCol[st]+'"></span><span class="tx"><b>'+escHtml(t.replace(/\s*\(.*$/,''))+'</b><small>'+sub+'</small></span><span class="chev">'+(open?'⌃':'⌄')+'</span></button>';
+    h += '<div class="neu-chunk'+(st==='lock'?' lock':'')+'"><button class="hd" onclick="courseTopicToggle('+ti+')"><span class="dot" style="background:'+dotCol[st]+'"></span><span class="tx"><b>'+escHtml(t.replace(/\s*\(.*$/,''))+'</b><small>'+sub+'</small></span><span class="chev">'+(open?'⌃':'⌄')+'</span></button>';
     if(open){
       h += '<div class="bd">';
       if(t === 'Dialoge'){
