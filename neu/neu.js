@@ -806,55 +806,36 @@ window.renderCourseOverview = function(){
   reset('course'); cMode = 'course';
   if(!COURSE_LESSONS.length){ c.innerHTML = '<div class="neu-wrap" style="text-align:center;padding:3rem;color:var(--muted)">Noch keine Kurs-Lektionen angelegt.</div>'; return; }
   const chunks = courseFlattenChunks();
-  const pc = (a,b) => b ? Math.round(100*a/b) : 0;
-  const vocStat = list => { let n=0, pts=0; list.forEach(v=>{ const p=srsProgress[v.id]; if(p && p.next_review){ n++; pts += Math.min(p.level||0,6); } }); return {n, total:list.length, pts, max:n*6}; };
-  const exStat = list => { let n=0, pts=0; list.forEach(e=>{ const p=COURSE_EX_PROGRESS[e.id]; if(p){ n++; pts += Math.min(p.correct_count||0,6); } }); return {n, total:list.length, pts, max:n*6}; };
-  const cell = (icon, a, b) => '<div class="c" style="color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+'">'+icon+' '+pc(a,b)+' %<small>'+fmtN(a)+' / '+fmtN(b)+'</small></div>';
-  const line = (label, st) => '<div class="neu-stat"><div class="l">'+label+'</div>'+cell('📅',st.n,st.total)+cell('⭐',st.pts,st.max)+'</div>';
-  const cleanTitle = t => String(t||'').replace(/^Lektion\s*\d+\s*[—–-]\s*/i, '');
-  const lessonVocab = l => { const f = parseCourseVocabRefs(l.vocab_lesson_refs); return ALL_VOCAB.filter(v => f.ids.has(v.id) || f.tr.has(v.tr)); };
-  const allV = new Map(); COURSE_LESSONS.forEach(l => lessonVocab(l).forEach(v => allV.set(v.id, v)));
-  const allItems = chunks.reduce((s,ch) => s.concat(ch.srsItems), []);
-  let nextId = null, firstOpen = null;
-  COURSE_LESSONS.forEach(l => {
+  const info = l => {
     const items = chunks.filter(ch => ch.lessonId === l.id).reduce((s,ch) => s.concat(ch.srsItems), []);
     const total = items.length;
     const unlocked = items.filter(e => COURSE_EX_PROGRESS[e.id]).length;
     const mastered = items.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
-    const st = total === 0 ? 'read' : mastered >= total ? 'done' : unlocked > 0 ? 'run' : 'lock';
-    if(st === 'run') nextId = l.id; // aktuell = höchste Lektion mit freigeschalteten, noch nicht gemeisterten Übungen
-    if(st !== 'done' && st !== 'read' && firstOpen === null) firstOpen = l.id;
-  });
-  const curId = nextId !== null ? nextId : firstOpen;
-  const nodes = COURSE_LESSONS.map(l => {
-    const lc = chunks.filter(ch => ch.lessonId === l.id);
-    const items = lc.reduce((s,ch) => s.concat(ch.srsItems), []);
-    const total = items.length;
-    const unlocked = items.filter(e => COURSE_EX_PROGRESS[e.id]).length;
-    const mastered = items.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
+    const due = items.filter(e => { const p = COURSE_EX_PROGRESS[e.id]; return p && p.next_review && isDueByDay(courseParseTs(p.next_review)); }).length;
     const state = total === 0 ? 'read' : mastered >= total ? 'done' : unlocked > 0 ? 'run' : 'lock';
-    const frac = total ? mastered / total : 0;
-    const col = state === 'done' ? 'var(--green)' : state === 'run' ? 'var(--gold)' : 'var(--border)';
-    const txt = state === 'done' ? '✓' : state === 'read' ? '–' : Math.round(frac*100);
-    const sub = state === 'read' ? 'nur Lesen' : state === 'done' ? 'abgeschlossen' : state === 'run' ? fmtN(mastered)+' von '+fmtN(total)+' Übungen gemeistert' : 'noch nicht freigeschaltet';
-    const lv = lessonVocab(l);
-    const bc = {}; items.forEach(e => { const k = e.meta && e.meta.beleg; if(COURSE_BELEG[k]) bc[k] = (bc[k]||0)+1; });
-    const belegLine = Object.keys(COURSE_BELEG).filter(k => bc[k]).map(k => '<span title="'+COURSE_BELEG[k].t+': '+COURSE_BELEG[k].tip+'">'+COURSE_BELEG[k].ic+' '+bc[k]+'</span>').join(' · ');
-    const stats = (lv.length ? line('Vokabeln', vocStat(lv)) : '') + (total ? line('Übungen', exStat(items)) : '')
-      + (belegLine ? '<div style="margin-top:.6rem;font-size:.85rem;color:var(--muted)">Beleg: '+belegLine+'</div>' : '');
-    return '<div class="neu-node'+(state==='lock'?' lock':'')+(l.id===curId?' cur':'')+'" onclick="showCourseLesson('+l.id+')">'
-      + '<div class="top">'+ring(state==='lock'?0:frac, 54, 6, col, txt)
-      + '<div class="tx"><div class="t1">Lektion '+l.course_number+(l.id===curId?' <span class="neu-chip on" style="min-height:22px;padding:0 .5rem;font-size:.72rem;vertical-align:middle">aktuell</span>':'')+'</div><div class="t2">'+escHtml(cleanTitle(l.title))+'</div><div class="t3" style="color:'+(state==='run'?'var(--gold2)':'var(--muted)')+'">'+sub+'</div></div>'
-      + '<div style="color:var(--muted);font-size:1.3rem">›</div></div>'
-      + (stats ? '<div class="st">'+stats+'</div>' : '')
-      + (lv.length ? '<div style="margin-top:.6rem"><span class="neu-chip" onclick="event.stopPropagation();courseGoToVocab('+l.id+')">Vokabeln der Lektion</span></div>' : '')
-      + '</div>';
+    return {l, total, unlocked, mastered, due, state};
+  };
+  const all = COURSE_LESSONS.map(info);
+  const cur = all.filter(x => x.state === 'run').pop() || all.find(x => x.state !== 'done' && x.state !== 'read') || null;
+  const doneN = all.filter(x => x.state === 'done').length, lessonN = all.filter(x => x.state !== 'read').length;
+  const bar = x => '<div class="neu-lbar"><i style="width:'+(x.total ? x.mastered/x.total*100 : 0)+'%;background:var(--green)"></i><i style="width:'+(x.total ? Math.max(0, x.unlocked-x.mastered)/x.total*100 : 0)+'%;background:var(--gold)"></i></div>';
+  const rows = all.map(x => {
+    const n = x.l.course_number, st = x.state;
+    const sub = st === 'done' ? 'abgeschlossen' : st === 'run' ? fmtN(x.mastered)+' von '+fmtN(x.total)+' gemeistert' : st === 'read' ? 'nur Lesen' : 'noch nicht begonnen';
+    const dot = st === 'done' ? '✓' : st === 'read' ? '–' : n;
+    return '<div class="neu-lrow '+st+(cur && cur.l.id === x.l.id ? ' cur' : '')+'" onclick="showCourseLesson('+x.l.id+')">'
+      + '<span class="dot">'+dot+'</span><span class="tx"><b>'+escHtml(cleanLessonTitle(x.l.title))+'</b><small>'+sub+(x.due ? ' · <span style="color:var(--red)">'+fmtN(x.due)+' fällig</span>' : '')+'</small>'+(st === 'run' ? bar(x) : '')+'</span><span class="chev">›</span></div>';
   }).join('');
+  const hero = cur
+    ? '<div class="neu-card"><div class="neu-cap">Als Nächstes</div><div style="font-size:1.15rem;font-weight:700;margin-top:.2rem">Lektion '+cur.l.course_number+'</div><div class="neu-sub" style="margin:.1rem 0 .7rem">'+escHtml(cleanLessonTitle(cur.l.title))+'</div>'
+      + (cur.total ? bar(cur)+'<div class="neu-sub" style="margin:.4rem 0 .8rem">'+fmtN(cur.mastered)+' von '+fmtN(cur.total)+' Übungen gemeistert'+(cur.due ? ' · '+fmtN(cur.due)+' fällig' : '')+'</div>' : '')
+      + '<button class="neu-btn" onclick="showCourseLesson('+cur.l.id+')">Weiter</button></div>'
+    : '';
   c.innerHTML = '<div class="neu-wrap">'
     + '<div style="font-size:1.5rem;font-weight:700;margin:.2rem 0 .6rem">Kurs</div>'
-    + (curId !== null ? '<button class="neu-btn" style="margin:0 0 .7rem" onclick="showCourseLesson('+curId+')">Weiter mit Lektion '+(COURSE_LESSONS.find(l => l.id === curId) || {}).course_number+'</button>' : '')
-    + '<div class="neu-card"><div class="neu-cap">Gesamt</div>'+line('Vokabeln', vocStat([...allV.values()]))+line('Übungen', exStat(allItems))+'</div>'
-    + '<div class="neu-card neu-path" style="padding:.2rem .9rem">'+nodes+'</div>'
+    + hero
+    + '<div class="neu-card" style="display:flex;align-items:center;gap:.9rem">'+ring(lessonN ? doneN/lessonN : 0, 56, 6, 'var(--green)', doneN+'/'+lessonN)+'<div><div style="font-weight:700">Kurs</div><div class="neu-sub">'+doneN+' von '+lessonN+' Lektionen abgeschlossen</div></div></div>'
+    + '<div class="neu-card" style="padding:.1rem .9rem">'+rows+'</div>'
     + '</div>';
 };
 

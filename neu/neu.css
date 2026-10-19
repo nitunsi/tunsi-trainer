@@ -788,3 +788,16 @@ body.neu-onstats.neu-sopen main{height:auto;overflow:visible}
 body.neu-onstats.neu-sopen .neu-wrap{height:auto}
 body.neu-onstats.neu-sopen .neu-sbody{display:block}
 body.neu-onstats.neu-sopen .neu-stabs{position:sticky}
+
+/* Kurs-Übersicht: schlanke Lektionszeilen */
+.neu-lbar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--border);margin-top:.5rem}
+.neu-lrow{display:flex;align-items:center;gap:.8rem;padding:.7rem 0;border-bottom:1px solid var(--border);cursor:pointer}
+.neu-lrow:last-child{border-bottom:none}
+.neu-lrow .dot{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem}
+.neu-lrow.done .dot{border-color:var(--green);color:var(--green)}
+.neu-lrow.run .dot{border-color:var(--gold)}
+.neu-lrow.lock{opacity:.55}
+.neu-lrow .tx{flex:1;min-width:0}
+.neu-lrow .tx b{display:block;font-size:.98rem;font-weight:600}
+.neu-lrow .tx small{display:block;color:var(--muted);font-size:.82rem;margin-top:1px}
+.neu-lrow .chev{color:var(--muted);font-size:1.3rem}
