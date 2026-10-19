@@ -489,8 +489,8 @@ function milesNow(streak){
   ALL_VOCAB.forEach(x => { const q = srsProgress[x.id]; if(q && q.next_review){ v++; if((q.level || 0) >= 5) p++; } });
   const o = {v, p, s: streak};
   if(_courseLoaded){   // Kurs: ohne geladene Kursdaten nichts melden, sonst wirkt der erste Stand wie ein neuer Meilenstein
-    const ps = Object.values(COURSE_EX_PROGRESS);
-    o.c = ps.length; o.q = ps.filter(q => (q.correct_count || 0) >= 5).length;
+    const ps = courseEffItems();
+    o.c = ps.length; o.q = ps.filter(q => q.lv >= 5).length;
   }
   return o;
 }
@@ -801,6 +801,32 @@ window.showRes = function(){
 };
 
 /* ---------- Kurs als Lernpfad ---------- */
+/* Lektion manuell als „verstanden“ markieren: course_progress.status = 'understood'. Zählt in Übersicht, Statistik und Meilensteinen wie gemeistert. */
+window.courseUnderstood = function(lessonId){ const r = COURSE_PROGRESS_BY_LESSON[lessonId]; return !!(r && r.status === 'understood'); };
+window.courseToggleUnderstood = async function(lessonId){
+  const row = COURSE_PROGRESS_BY_LESSON[lessonId], now = !courseUnderstood(lessonId);
+  try{
+    if(row){
+      const payload = {status: now ? 'understood' : 'in_progress', completed_at: now ? new Date().toISOString() : row.completed_at};
+      await sbApi('course_progress?id=eq.'+row.id, 'PATCH', payload);
+      Object.assign(row, payload);
+    } else {
+      const res = await sbApi('course_progress?select=*', 'POST', {user_id: currentUser.id, course_lesson_id: lessonId, status: 'understood', exercises_done: [], completed_at: new Date().toISOString()}, 'return=representation');
+      COURSE_PROGRESS_BY_LESSON[lessonId] = Array.isArray(res) ? res[0] : res;
+    }
+    showToast(now ? '✓ Lektion als verstanden markiert' : 'Markierung entfernt', 'ok');
+    renderCourseLesson();
+  }catch(e){ showToast('Fehler beim Speichern: '+e.message, 'err'); }
+};
+window.courseEffItems = function(){   // freigeschaltete Kurs-Übungen; Lektionen „verstanden“ zählen mindestens als Stufe 5 (Profi)
+  const out = [];
+  courseFlattenChunks().forEach(ch => { const und = courseUnderstood(ch.lessonId); ch.srsItems.forEach(e => {
+    const p = COURSE_EX_PROGRESS[e.id]; if(!p && !und) return;
+    const base = p ? Math.min(p.correct_count||0, 6) : 0;
+    out.push({lv: und ? Math.max(base, 5) : base, p});
+  }); });
+  return out;
+};
 window.courseVocabInfo = function(l){
   const f = parseCourseVocabRefs(l.vocab_lesson_refs);
   const list = ALL_VOCAB.filter(v => f.ids.has(v.id) || f.tr.has(v.tr));
@@ -825,8 +851,9 @@ window.renderCourseOverview = function(){
     const unlocked = items.filter(e => COURSE_EX_PROGRESS[e.id]).length;
     const mastered = items.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
     const due = items.filter(e => { const p = COURSE_EX_PROGRESS[e.id]; return p && p.next_review && isDueByDay(courseParseTs(p.next_review)); }).length;
-    const state = total === 0 ? 'read' : mastered >= total ? 'done' : unlocked > 0 ? 'run' : 'lock';
-    return {l, total, unlocked, mastered, due, state, v: courseVocabInfo(l)};
+    const und = courseUnderstood(l.id);
+    const state = und && total ? 'done' : total === 0 ? 'read' : mastered >= total ? 'done' : unlocked > 0 ? 'run' : 'lock';
+    return {l, total, unlocked, mastered, due, state, und, v: courseVocabInfo(l)};
   };
   const all = COURSE_LESSONS.map(info);
   const cur = all.filter(x => x.state === 'run').pop() || all.find(x => x.state !== 'done' && x.state !== 'read') || null;
@@ -836,7 +863,7 @@ window.renderCourseOverview = function(){
   const bar = x => '<div class="neu-lbar"><i style="width:'+(x.total ? x.mastered/x.total*100 : 0)+'%;background:var(--green)"></i><i style="width:'+(x.total ? Math.max(0, x.unlocked-x.mastered)/x.total*100 : 0)+'%;background:var(--gold)"></i></div>';
   const rows = all.map(x => {
     const n = x.l.course_number, st = x.state;
-    const sub = st === 'done' ? 'abgeschlossen' : st === 'run' ? fmtN(x.mastered)+' von '+fmtN(x.total)+' gemeistert' : st === 'read' ? 'nur Lesen' : 'noch nicht begonnen';
+    const sub = st === 'done' ? (x.und ? 'als verstanden markiert' : 'abgeschlossen') : st === 'run' ? fmtN(x.mastered)+' von '+fmtN(x.total)+' gemeistert' : st === 'read' ? 'nur Lesen' : 'noch nicht begonnen';
     const dot = st === 'done' ? '✓' : st === 'read' ? '–' : n;
     return '<div class="neu-lrow '+st+(cur && cur.l.id === x.l.id ? ' cur' : '')+(window._lastCourseLessonId === x.l.id ? ' last' : '')+'" data-id="'+x.l.id+'" onclick="showCourseLesson('+x.l.id+')">'
       + '<span class="dot">'+dot+'</span><span class="tx"><b>'+escHtml(cleanLessonTitle(x.l.title))+'</b><small>'+sub+(x.due ? ' · <span style="color:var(--red)">'+fmtN(x.due)+' fällig</span>' : '')+'</small>'+(st === 'run' ? bar(x) : '')+(x.v.started ? '<small style="margin-top:.35rem">'+vline(x.v)+'</small>'+(st === 'run' ? vbar(x.v) : '') : '')+'</span><span class="chev">›</span></div>';
@@ -1369,6 +1396,7 @@ function lessonProg(l){
   const unlocked = items.filter(e => COURSE_EX_PROGRESS[e.id]).length;
   const mastered = items.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
   const due = items.filter(e => { const p = COURSE_EX_PROGRESS[e.id]; return p && p.next_review && isDueByDay(courseParseTs(p.next_review)); }).length;
+  if(courseUnderstood(l.id) && total) return {total, unlocked: total, mastered: total, due, und: true};
   return {total, unlocked, mastered, due};
 }
 const _scl = window.showCourseLesson;
@@ -1395,8 +1423,10 @@ window.renderCourseLesson = function(){
       + '<div style="margin-bottom:.6rem"><span class="neu-chip" onclick="showCourseOverview()">‹ Kurs</span></div>'
       + '<div class="neu-card"><div style="font-size:1.15rem;font-weight:700">Lektion '+l.course_number+'</div><div class="neu-sub" style="margin-top:1px">'+escHtml(cleanLessonTitle(l.title))+'</div>'
       + (pr.total ? statRow('Übungen', fmtN(pr.mastered)+' von '+fmtN(pr.total)+' gemeistert'+due(pr.due), barHtml(pr.mastered, pr.unlocked, pr.total)) : '')
-      + (vi.total ? statRow('Vokabeln', fmtN(vi.solid)+' von '+fmtN(vi.total)+' sicher'+due(vi.due), barHtml(vi.solid, vi.started, vi.total))
-        + '<div style="display:flex;gap:.5rem;margin-top:1rem"><button class="neu-btn" style="flex:1" onclick="courseVocabPractice('+l.id+')">Vokabeln üben</button><button class="neu-btn ghost" style="flex:1" onclick="courseGoToVocab('+l.id+')">Liste</button></div>' : '')
+      + (vi.total ? statRow('Vokabeln', fmtN(vi.solid)+' von '+fmtN(vi.total)+' sicher'+due(vi.due), barHtml(vi.solid, vi.started, vi.total)) : '')
+      + '<div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem">'
+      + (vi.total ? '<span class="neu-chip" onclick="courseGoToVocab('+l.id+')">Vokabelliste</span>' : '')
+      + '<span class="neu-chip'+(pr.und ? ' on' : '')+'" onclick="courseToggleUnderstood('+l.id+')">'+(pr.und ? '✓ Verstanden' : 'Als verstanden markieren')+'</span></div>'
       + '</div><div id="course-tab-content"></div></div>';
     renderCourseBrowseTab($('course-tab-content'), l);
     return;
@@ -1447,8 +1477,9 @@ window.renderCourseBrowseTab = function(tc, l){
     const non = all.filter(e => !COURSE_SRS_TYPES.includes(e.exercise_type));
     const unlocked = courseChunkUnlocked(srs), mastered = courseChunkMastered(srs);
     const st = !srs.length ? 'read' : mastered ? 'done' : unlocked ? 'run' : 'lock';
-    const mc = srs.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 3).length;
-    return {all, srs, non, unlocked, st, mc};
+    const und = courseUnderstood(l.id) && srs.length > 0;
+    const mc = und ? srs.length : srs.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 3).length;
+    return {all, srs, non, unlocked: unlocked || und, st: und ? 'done' : st, mc};
   };
   const box = inner => '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7">'+inner+'</div>';
   let h = '<div class="neu-card" style="padding:.1rem .9rem">';
@@ -1639,10 +1670,10 @@ window.showStats = function(){
   const cb = [0,0,0,0,0,0,0,0]; let cPts = 0, cTotal = 0, cActive = 0;
   if(all){
     cTotal = courseFlattenChunks().reduce((s,ch) => s + ch.srsItems.length, 0);
-    Object.values(COURSE_EX_PROGRESS).forEach(p => {
-      const lv = Math.min(p.correct_count||0, 6); const idx = lv === 0 ? 1 : Math.min(lv+1, 7);
+    courseEffItems().forEach(it => {
+      const p = it.p, lv = it.lv; const idx = lv === 0 ? 1 : Math.min(lv+1, 7);
       cb[idx]++; cActive++; cPts += lv;
-      if(p.next_review){ const nd = courseParseTs(p.next_review); const di = dayIdx(nd); if(di < N){ fc[di]++; fcp[di][phOf(idx)]++; } if(isDueByDay(nd)) dueByBucket[idx]++; }
+      if(p && p.next_review){ const nd = courseParseTs(p.next_review); const di = dayIdx(nd); if(di < N){ fc[di]++; fcp[di][phOf(idx)]++; } if(isDueByDay(nd)) dueByBucket[idx]++; }
     });
     cb[0] = Math.max(0, cTotal - cActive);
   }
