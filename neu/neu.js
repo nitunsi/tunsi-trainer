@@ -846,7 +846,7 @@ window.renderCourseOverview = function(){
   // vier Viertel: grün = Anteil gemeistert (Level 4), gold = zusätzlich Anteil aktiv, leer = noch nicht aktiviert
   const areaLevel = (lv, total) => {
     const act = lv.length, mas = lv.filter(x => x >= 4).length;
-    const fill = total > 0 ? Math.max(act ? 1 : 0, Math.round(4 * act / total)) : 0, g = total > 0 ? Math.min(fill, Math.round(4 * mas / total)) : 0;
+    const fill = total > 0 ? Math.max(act ? 1 : 0, Math.floor(4 * act / total)) : 0, g = total > 0 ? Math.min(fill, Math.floor(4 * mas / total)) : 0;
     const dotSt = [0,1,2,3].map(i => i < g ? 'g' : i < fill ? 'y' : '');
     return {dotSt, full: total > 0 && act >= total, done: total > 0 && act >= total && mas >= Math.ceil(total * COURSE_DONE_PCT)};
   };
