@@ -1503,7 +1503,7 @@ window.renderCourseBrowseTab = function(tc, l){
       : cs.length ? fmtN(cs.reduce((a,c) => a + (byKey[c.key]||[]).length, 0))+' zum Lesen' : 'nur Text';
     h += '<div class="neu-chunk'+(st==='lock'?' lock':'')+'"><button class="hd" onclick="courseTopicToggle('+ti+')"><span class="dot" style="background:'+dotCol[st]+'"></span><span class="tx"><b>'+escHtml(t.replace(/\s*\(.*$/,''))+'</b><small>'+sub+'</small></span>'+(revT.indexOf(t) >= 0 ? courseBmIcon(true, 18) : '')+'<span class="chev">'+(open?'⌃':'⌄')+'</span></button>';
     if(open){
-      h += '<div class="bd"><div style="margin:0 0 .7rem"><span class="neu-chip'+(revT.indexOf(t) >= 0 ? ' on' : '')+'" onclick="courseToggleReview('+l.id+','+ti+')">'+courseBmIcon(revT.indexOf(t) >= 0, 16)+' Nochmal ansehen</span></div>';
+      h += '<div class="bd"><div style="margin:0 0 .7rem;display:flex;justify-content:flex-end"><span class="neu-chip'+(revT.indexOf(t) >= 0 ? ' on' : '')+'" onclick="courseToggleReview('+l.id+','+ti+')">'+courseBmIcon(revT.indexOf(t) >= 0, 16)+' Nochmal ansehen</span></div>';
       if(t === 'Dialoge'){
         if(l.dialog_text) h += box(mdLite(l.dialog_text, true));
         if(cs.some(c => (c.grammar_headings||[]).includes('__intro__')) && sections.__intro__) h += '<div style="margin-top:.6rem">'+box(mdLite(sections.__intro__))+'</div>';
