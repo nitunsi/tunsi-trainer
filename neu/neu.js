@@ -657,6 +657,9 @@ function showMore(){
     +   '<div class="neu-cap" style="margin-top:1rem">Lektion einschränken</div>'
     +   '<select id="neu-lesson" onchange="neuLesson(this.value)" style="width:100%;min-height:48px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:0 .7rem;font-size:1rem">'+lessonOpts+'</select>'
     + '</div>'
+    + '<div class="neu-h">Daten</div><div class="neu-card"><div class="neu-sub" style="margin-bottom:.5rem">Holt Vokabeln, Kurs und Lernstand frisch vom Server, zum Beispiel nach Änderungen am Kurs.</div>'
+    +   '<button class="neu-btn line" id="neu-refresh-btn" onclick="neuRefreshData()">Daten jetzt neu laden<small>Vokabeln, Kurs, Lernstand</small></button>'
+    +   '<div id="neu-refresh-result" style="font-size:.85rem;color:var(--muted);margin-top:.5rem"></div></div>'
     + '<div class="neu-h">Wartung</div><div class="neu-card"><div class="neu-sub" style="margin-bottom:.5rem">Fälligkeiten der Vokabeln ordnen</div><div style="display:flex;gap:.5rem;flex-wrap:wrap">'
     +   '<button class="neu-btn line" style="flex:1;min-width:10rem" onclick="if(confirm(\'Fälligkeiten glätten? (betrifft bis zu '+smoothMax+' Vokabeln)\'))smoothSchedule();">Glätten<small>bis zu '+fmtN(smoothMax)+' Einträge</small></button>'
     +   '<button class="neu-btn ghost" style="flex:1;min-width:10rem;border-color:var(--red);color:var(--red)" onclick="if(confirm(\'Alle Fälligkeiten neu berechnen? (betrifft bis zu '+recalcMax+' Vokabeln)\'))recalcAllNextReview();">Alle neu berechnen<small>bis zu '+fmtN(recalcMax)+' Einträge</small></button>'
@@ -680,6 +683,15 @@ function applyTheme(){
 }
 applyTheme();
 if(window.matchMedia) try{ window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme); }catch(e){}
+window.neuRefreshData = async function(){
+  const btn = $('neu-refresh-btn'), out = $('neu-refresh-result');
+  if(btn){ btn.disabled = true; btn.firstChild.nodeValue = 'Lade …'; }
+  let msg = '';
+  try{ await rcForceRefresh(); msg = '✓ Neu geladen um ' + new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}); }
+  catch(e){ msg = 'Nicht geladen: ' + e.message; }
+  if(cMode === 'more'){ showMore(); const o = $('neu-refresh-result'); if(o) o.textContent = msg; }
+  else if(out) out.textContent = msg;
+};
 window.neuSetTheme = function(v){ LS.set('neu-theme', v); applyTheme(); showMore(); };
 window.neuSetFont = function(k){ LS.set('neu-font', k); applyFont(); showMore(); };
 window.neuSetGoal = function(n){ LS.set('neu-goal', String(n)); showMore(); };

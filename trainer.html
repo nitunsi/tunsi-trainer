@@ -1564,6 +1564,24 @@ async function rcApplyIfIdle(){
   _rcMode = 'net';
   if(cMode === 'home' && window.neuGoHome) window.neuGoHome();
 }
+// Von Hand („Mehr → Daten jetzt neu laden“): alles frisch vom Server holen und sofort übernehmen,
+// ohne die 10-Minuten-Regel und auch außerhalb der Startseite. Eigene offene Antworten gehen vorher raus.
+async function rcForceRefresh(){
+  if(!currentUser || currentUser.is_partner) throw new Error('Hier nicht verfügbar');
+  if(navigator.onLine === false) throw new Error('Kein Netz');
+  if(_rcRefreshing) throw new Error('Das Auffrischen läuft schon');
+  _rcRefreshing = true;
+  try{
+    await syncFlush();
+    _rcMode = 'net';
+    await srsLoadFromSupabase();
+    await loadCourseData(true);
+    try{ await loadLessonChips(); }catch(e){}
+    try{ updateLessonChips(); }catch(e){}
+    _rcRefreshPending = false; _rcBootHit = false; _rcLastRefresh = Date.now();
+    try{ localStorage.setItem('rc-last-net', String(Date.now())); }catch(e){}
+  }finally{ _rcMode = 'net'; _rcRefreshing = false; }
+}
 window.addEventListener('online', () => { _rcOfflineSince = null; try{ if(window.neuOfflineHint) window.neuOfflineHint(null); }catch(e){} setTimeout(()=>{ if(currentUser) rcRefresh(); }, 1500); });
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'visible' && currentUser && Date.now() - _rcLastRefresh > 15*60*1000) rcRefresh();
