@@ -801,3 +801,4 @@ body.neu-onstats.neu-sopen .neu-stabs{position:sticky}
 .neu-lrow .tx b{display:block;font-size:.98rem;font-weight:600}
 .neu-lrow .tx small{display:block;color:var(--muted);font-size:.82rem;margin-top:1px}
 .neu-lrow .chev{color:var(--muted);font-size:1.3rem}
+.neu-lrow.last .dot{box-shadow:0 0 0 3px var(--gold-soft,rgba(180,130,30,.25))}

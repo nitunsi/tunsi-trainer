@@ -823,7 +823,7 @@ window.renderCourseOverview = function(){
     const n = x.l.course_number, st = x.state;
     const sub = st === 'done' ? 'abgeschlossen' : st === 'run' ? fmtN(x.mastered)+' von '+fmtN(x.total)+' gemeistert' : st === 'read' ? 'nur Lesen' : 'noch nicht begonnen';
     const dot = st === 'done' ? '✓' : st === 'read' ? '–' : n;
-    return '<div class="neu-lrow '+st+(cur && cur.l.id === x.l.id ? ' cur' : '')+'" onclick="showCourseLesson('+x.l.id+')">'
+    return '<div class="neu-lrow '+st+(cur && cur.l.id === x.l.id ? ' cur' : '')+(window._lastCourseLessonId === x.l.id ? ' last' : '')+'" data-id="'+x.l.id+'" onclick="showCourseLesson('+x.l.id+')">'
       + '<span class="dot">'+dot+'</span><span class="tx"><b>'+escHtml(cleanLessonTitle(x.l.title))+'</b><small>'+sub+(x.due ? ' · <span style="color:var(--red)">'+fmtN(x.due)+' fällig</span>' : '')+'</small>'+(st === 'run' ? bar(x) : '')+'</span><span class="chev">›</span></div>';
   }).join('');
   const hero = cur
@@ -837,6 +837,10 @@ window.renderCourseOverview = function(){
     + '<div class="neu-card" style="display:flex;align-items:center;gap:.9rem">'+ring(lessonN ? doneN/lessonN : 0, 56, 6, 'var(--green)', doneN+'/'+lessonN)+'<div><div style="font-weight:700">Kurs</div><div class="neu-sub">'+doneN+' von '+lessonN+' Lektionen abgeschlossen</div></div></div>'
     + '<div class="neu-card" style="padding:.1rem .9rem">'+rows+'</div>'
     + '</div>';
+  if(window._lastCourseLessonId != null){   // zurück aus einer Lektion: dorthin scrollen
+    const row = c.querySelector('.neu-lrow[data-id="'+window._lastCourseLessonId+'"]');
+    if(row) setTimeout(() => { try{ row.scrollIntoView({block:'center', behavior:'instant'}); }catch(e){ row.scrollIntoView(); } }, 30);
+  }
 };
 
 /* ---------- Vokabelliste als Karten ---------- */
@@ -1351,7 +1355,14 @@ function lessonProg(l){
   return {total, unlocked, mastered, due};
 }
 const _scl = window.showCourseLesson;
-window.showCourseLesson = function(){ cMode = 'course'; chrome('course'); return _scl.apply(this, arguments); };
+window._lastCourseLessonId = null;   // zuletzt geöffnete Lektion: die Übersicht springt beim Zurückkommen dorthin
+window.showCourseLesson = function(id){
+  cMode = 'course'; chrome('course');
+  window._lastCourseLessonId = id; window._browseOpenTopic = null;
+  const r = _scl.apply(this, arguments);
+  try{ window.scrollTo({top:0, behavior:'instant'}); }catch(e){ window.scrollTo(0,0); }   // Lektion immer ganz oben starten
+  return r;
+};
 window.renderCourseLesson = function(){
   const c = $('exercise-content'), l = _courseCurLesson;
   if(!c || !l) return;
