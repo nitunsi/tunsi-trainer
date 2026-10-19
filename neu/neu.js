@@ -848,8 +848,10 @@ window.renderCourseOverview = function(){
     const unlocked = items.filter(e => COURSE_EX_PROGRESS[e.id]).length;
     const mastered = items.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
     const due = items.filter(e => { const p = COURSE_EX_PROGRESS[e.id]; return p && p.next_review && isDueByDay(courseParseTs(p.next_review)); }).length;
-    const state = total === 0 ? 'read' : mastered >= total ? 'done' : unlocked > 0 ? 'run' : 'lock';
-    return {l, total, unlocked, mastered, due, state, v: courseVocabInfo(l), rev: courseReviewTopics(l.id)};
+    const v = courseVocabInfo(l);
+    const exDone = total > 0 && mastered >= total, vocDone = v.total === 0 || v.solid >= v.total;
+    const state = total === 0 ? 'read' : exDone && vocDone ? 'done' : exDone ? 'run' : unlocked > 0 ? 'run' : 'lock';
+    return {l, total, unlocked, mastered, due, state, v, rev: courseReviewTopics(l.id), exDone};
   };
   const all = COURSE_LESSONS.map(info);
   const cur = all.filter(x => x.state === 'run').pop() || all.find(x => x.state !== 'done' && x.state !== 'read') || null;
@@ -857,12 +859,20 @@ window.renderCourseOverview = function(){
   const vbar = v => '<div class="neu-lbar"><i style="width:'+(v.total ? v.solid/v.total*100 : 0)+'%;background:var(--green)"></i><i style="width:'+(v.total ? Math.max(0, v.started-v.solid)/v.total*100 : 0)+'%;background:var(--gold)"></i></div>';
   const vline = v => v.total ? 'Vokabeln: '+fmtN(v.solid)+' von '+fmtN(v.total)+' sicher'+(v.due ? ' · <span style="color:var(--red)">'+fmtN(v.due)+' fällig</span>' : '') : '';
   const bar = x => '<div class="neu-lbar"><i style="width:'+(x.total ? x.mastered/x.total*100 : 0)+'%;background:var(--green)"></i><i style="width:'+(x.total ? Math.max(0, x.unlocked-x.mastered)/x.total*100 : 0)+'%;background:var(--gold)"></i></div>';
+  // Abzeichen: Vokabeln / Übungen alle aktiviert (gold) bzw. alle sicher (grün); unabhängig voneinander
+  const badge = (txt, lvl) => '<span class="neu-badge '+lvl+'">'+txt+'</span>';
+  const badgesHtml = x => {
+    const b = [];
+    if(x.v.total){ if(x.v.solid >= x.v.total) b.push(badge('Vokabeln sicher', 'g')); else if(x.v.started >= x.v.total) b.push(badge('Vokabeln aktiviert', 'y')); }
+    if(x.total){ if(x.exDone) b.push(badge('Übungen gemeistert', 'g')); else if(x.unlocked >= x.total) b.push(badge('Übungen aktiviert', 'y')); }
+    return b.length ? '<div class="neu-badges">'+b.join('')+'</div>' : '';
+  };
   const rows = all.map(x => {
     const n = x.l.course_number, st = x.state;
     const sub = st === 'done' ? 'abgeschlossen' : st === 'run' ? fmtN(x.mastered)+' von '+fmtN(x.total)+' gemeistert' : st === 'read' ? 'nur Lesen' : 'noch nicht begonnen';
     const dot = st === 'done' ? '✓' : st === 'read' ? '–' : n;
     return '<div class="neu-lrow '+st+(cur && cur.l.id === x.l.id ? ' cur' : '')+(window._lastCourseLessonId === x.l.id ? ' last' : '')+'" data-id="'+x.l.id+'" onclick="showCourseLesson('+x.l.id+')">'
-      + '<span class="dot">'+dot+'</span><span class="tx"><b>'+escHtml(cleanLessonTitle(x.l.title))+'</b><small>'+sub+(x.due ? ' · <span style="color:var(--red)">'+fmtN(x.due)+' fällig</span>' : '')+'</small>'+(st === 'run' ? bar(x) : '')+(x.rev.length ? '<small style="margin-top:.35rem;color:var(--gold2)">'+courseBmIcon(true, 14)+' '+x.rev.length+(x.rev.length === 1 ? ' Thema' : ' Themen')+' nochmal ansehen</small>' : '')+(x.v.started ? '<small style="margin-top:.35rem">'+vline(x.v)+'</small>'+(st === 'run' ? vbar(x.v) : '') : '')+'</span><span class="chev">›</span></div>';
+      + '<span class="dot">'+dot+'</span><span class="tx"><b>'+escHtml(cleanLessonTitle(x.l.title))+'</b><small>'+sub+(x.due ? ' · <span style="color:var(--red)">'+fmtN(x.due)+' fällig</span>' : '')+'</small>'+(st === 'run' ? bar(x) : '')+(st !== 'done' ? badgesHtml(x) : '')+(x.rev.length ? '<small style="margin-top:.35rem;color:var(--gold2)">'+courseBmIcon(true, 14)+' '+x.rev.length+(x.rev.length === 1 ? ' Thema' : ' Themen')+' nochmal ansehen</small>' : '')+(x.v.started && st !== 'done' ? '<small style="margin-top:.35rem">'+vline(x.v)+'</small>'+(st === 'run' ? vbar(x.v) : '') : '')+'</span><span class="chev">›</span></div>';
   }).join('');
   const hero = cur
     ? '<div class="neu-card"><div class="neu-cap">Als Nächstes</div><div style="font-size:1.15rem;font-weight:700;margin-top:.2rem">Lektion '+cur.l.course_number+'</div><div class="neu-sub" style="margin:.1rem 0 .7rem">'+escHtml(cleanLessonTitle(cur.l.title))+'</div>'
