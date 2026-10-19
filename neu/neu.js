@@ -843,11 +843,14 @@ window.renderCourseOverview = function(){
   if(!COURSE_LESSONS.length){ c.innerHTML = '<div class="neu-wrap" style="text-align:center;padding:3rem;color:var(--muted)">Noch keine Kurs-Lektionen angelegt.</div>'; return; }
   const chunks = courseFlattenChunks();
   const COURSE_DONE_PCT = 0.9;
+  // vier Viertel: grün = Anteil gemeistert (Level 4), gold = zusätzlich Anteil aktiv, leer = noch nicht aktiviert
   const areaLevel = (lv, total) => {
-    const a = lv.slice().sort((x, y) => x - y);
-    return {level: a.length ? Math.min(4, a[Math.floor(a.length * (1 - COURSE_DONE_PCT))]) : 0, full: total > 0 && a.length >= total, any: a.length > 0};
+    const act = lv.length, mas = lv.filter(x => x >= 4).length;
+    const fill = total > 0 ? Math.max(act ? 1 : 0, Math.floor(4 * act / total)) : 0, g = total > 0 ? Math.min(fill, Math.floor(4 * mas / total)) : 0;
+    const dotSt = [0,1,2,3].map(i => i < g ? 'g' : i < fill ? 'y' : '');
+    return {dotSt, full: total > 0 && act >= total, done: total > 0 && act >= total && mas >= Math.ceil(total * COURSE_DONE_PCT)};
   };
-  const dots = (a, label) => '<span class="neu-dots'+(a.full ? ' g' : a.any ? ' y' : '')+'"><em>'+label+'</em>'+[1,2,3,4].map(i => '<i'+(i <= a.level ? ' class="on"' : '')+'></i>').join('')+'</span>';
+  const dots = (a, label) => '<span class="neu-dots"><em>'+label+'</em>'+a.dotSt.map(t => '<i'+(t ? ' class="'+t+'"' : '')+'></i>').join('')+'</span>';
   const info = l => {
     const items = chunks.filter(ch => ch.lessonId === l.id).reduce((s,ch) => s.concat(ch.srsItems), []);
     const total = items.length;
@@ -858,7 +861,7 @@ window.renderCourseOverview = function(){
     // Level je Bereich: so hoch, wie 90 % der aktivierten Karten mindestens stehen (max. 4 = sicher); grün erst, wenn alles aktiv ist
     const exLv = items.filter(e => COURSE_EX_PROGRESS[e.id]).map(e => COURSE_EX_PROGRESS[e.id].correct_count||0);
     const ex = areaLevel(exLv, total), vo = areaLevel(v.lv, v.total);
-    const exDone = total > 0 && ex.full && ex.level >= 4, vocDone = v.total === 0 || (vo.full && vo.level >= 4);
+    const exDone = total > 0 && ex.done, vocDone = v.total === 0 || (vo.done);
     const state = total === 0 ? 'read' : exDone && vocDone ? 'done' : unlocked > 0 ? 'run' : 'lock';
     return {l, total, unlocked, mastered, due, state, v, rev: courseReviewTopics(l.id), exDone, ex, vo, exLv};
   };
