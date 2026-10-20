@@ -837,6 +837,10 @@ window.courseVocabPractice = function(id){
   try{ updateLessonChips(); }catch(e){}
   setMode('flash');
 };
+window.courseJumpCur = function(id){
+  const row = document.querySelector('.neu-lrow[data-id="'+id+'"]');
+  if(row){ try{ row.scrollIntoView({block:'center', behavior:'smooth'}); }catch(e){ row.scrollIntoView(); } }
+};
 window.renderCourseOverview = function(){
   const c = $('exercise-content'); if(!c) return;
   reset('course'); cMode = 'course';
@@ -878,20 +882,14 @@ window.renderCourseOverview = function(){
     return '<div class="neu-lrow '+st+(cur && cur.l.id === x.l.id ? ' cur' : '')+(window._lastCourseLessonId === x.l.id ? ' last' : '')+'" data-id="'+x.l.id+'" onclick="showCourseLesson('+x.l.id+')">'
       + '<span class="dot">'+dot+'</span><span class="tx"><b>'+escHtml(cleanLessonTitle(x.l.title))+'</b>'+(sub ? '<small>'+sub+'</small>' : '')+(st === 'read' ? '' : dotsRow(x))+(x.rev.length ? '<small style="margin-top:.35rem;color:var(--gold2)">'+courseBmIcon(true, 14)+' '+x.rev.length+(x.rev.length === 1 ? ' Thema' : ' Themen')+' nochmal ansehen</small>' : '')+'</span><span class="chev">›</span></div>';
   }).join('');
-  const hero = cur
-    ? '<div class="neu-card"><div class="neu-cap">Als Nächstes</div><div style="font-size:1.15rem;font-weight:700;margin-top:.2rem">Lektion '+cur.l.course_number+'</div><div class="neu-sub" style="margin:.1rem 0 .7rem">'+escHtml(cleanLessonTitle(cur.l.title))+'</div>'
-      + dotsRow(cur)
-      + '<div style="height:.8rem"></div>'
-      + '<button class="neu-btn" onclick="showCourseLesson('+cur.l.id+')">Weiter</button></div>'
-    : '';
   window._revList = [];
   all.forEach(x => { const ord = courseTopicsOf(x.l).order; x.rev.forEach(t => { const idx = ord.indexOf(t); if(idx >= 0) window._revList.push({id: x.l.id, n: x.l.course_number, topic: t, idx}); }); });
   const revCard = window._revList.length
     ? '<div class="neu-card" style="padding:.7rem .9rem"><div class="neu-cap">Nochmal ansehen</div>'+window._revList.map((r, i) => '<div class="neu-lrow" style="padding:.5rem 0" onclick="courseOpenReview('+i+')">'+courseBmIcon(true, 18)+'<span class="tx"><b style="font-size:.95rem">'+escHtml(r.topic.replace(/\s*\(.*$/,''))+'</b><small>Lektion '+r.n+'</small></span><span class="chev">›</span></div>').join('')+'</div>'
     : '';
   c.innerHTML = '<div class="neu-wrap">'
-    + '<div style="font-size:1.5rem;font-weight:700;margin:.2rem 0 .6rem">Kurs</div>'
-    + hero + revCard
+    + (cur ? '<div style="display:flex;justify-content:flex-end;margin-bottom:.5rem"><span class="neu-chip" onclick="courseJumpCur('+cur.l.id+')">Zur aktuellen Lektion</span></div>' : '')
+    + revCard
     + '<div class="neu-card"><div class="neu-cap">Gesamt</div><div class="neu-dotrow" style="margin-top:.4rem">'+dots(gesV, 'Vokabeln')+dots(gesE, 'Übungen')+'</div><div class="neu-sub" style="margin-top:.5rem">'+doneN+' von '+lessonN+' Lektionen abgeschlossen</div></div>'
     + '<div class="neu-card" style="padding:.1rem .9rem">'+rows+'</div>'
     + '</div>';
