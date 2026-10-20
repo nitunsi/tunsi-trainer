@@ -6155,9 +6155,9 @@ function _courseConjViewCore(ex){
       const key = parts[i]; let val = (parts[i+1]||'').replace(/\.$/,'').trim();
       if(key==='kein pass.Part.') val = 'keines';
       if(!val) return null;
-      rows += '<div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;align-self:baseline">'+LB[key]+'</div><div style="color:var(--gold2)">'+escHtml(val)+'</div>';
+      rows += '<div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;align-self:baseline">'+LB[key]+'</div><div style="color:var(--gold2);min-width:0;overflow-wrap:anywhere">'+escHtml(val).replace(/\//g,'/<wbr>')+'</div>';
     }
-    return {prompt: word, instr, solHtml: '<div style="display:grid;grid-template-columns:5.6rem 1fr;gap:.45rem .7rem">'+rows+'</div>'};
+    return {prompt: word, instr, solHtml: '<div style="display:grid;grid-template-columns:5.6rem minmax(0,1fr);gap:.45rem .7rem">'+rows+'</div>'};
   }
   let sol = sol0, gruppe = null;
   if(suffix) sol = sol.replace(/;\s*/, '; Pl. ');
