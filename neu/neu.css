@@ -814,5 +814,5 @@ body.neu-onstats.neu-sopen .neu-stabs{position:sticky}
 .neu-dots{display:inline-flex;align-items:center;gap:.25rem;font-size:.8rem;color:var(--muted)}
 .neu-dots em{font-style:normal;margin-right:.2rem}
 .neu-dots i{width:.55rem;height:.55rem;border-radius:50%;background:var(--border)}
-.neu-dots i.y{background:var(--gold2)}
-.neu-dots i.g{background:var(--green)}
+.neu-dots i.y{background:var(--lv1)}   /* Farben wie in der Statistik: aktiv = Level 1, gemeistert = Level 4 */
+.neu-dots i.g{background:var(--lv4)}
