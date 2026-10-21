@@ -6259,6 +6259,21 @@ function courseHintFirst(exercise){
 function courseSolutionCore(solution){
   return (solution||'').split(/ — | – (?=[A-ZÄÖÜ])/)[0];
 }
+// Arabische Schrift in Kurs-Aufgaben groß darstellen (wie auf den Vokabelkarten); Größe folgt der Einstellung „Arabische Schrift“ (--ars)
+const COURSE_AR_RUN = /[\u0600-\u06FF\u0750-\u077F]+(?:[\s\u061F\u060C]+[\u0600-\u06FF\u0750-\u077F]+)*/g;
+function courseArOnly(t){ return /[\u0600-\u06FF]/.test(t||'') && !/[A-Za-z0-9]/.test(t||''); }
+function courseArPromptHtml(t){
+  t = t||'';
+  if(!/[\u0600-\u06FF]/.test(t)) return escHtml(t);
+  if(courseArOnly(t)) return '<span dir="rtl" style="display:block;font-family:var(--arf,inherit);font-size:calc(2.6rem*var(--ars,1));line-height:1.5;color:var(--gold2)">'+escHtml(t)+'</span>';
+  let out = '', last = 0, m;
+  COURSE_AR_RUN.lastIndex = 0;
+  while((m = COURSE_AR_RUN.exec(t))){
+    out += escHtml(t.slice(last, m.index)) + '<span dir="rtl" style="font-family:var(--arf,inherit);font-size:calc(1.9rem*var(--ars,1));line-height:1.5;color:var(--gold2)">'+escHtml(m[0])+'</span>';
+    last = m.index + m[0].length;
+  }
+  return out + escHtml(t.slice(last));
+}
 function rCourseEx(ex, el){
   answered = false;
   const exercise = ex.exercise;
@@ -6294,7 +6309,7 @@ function rCourseEx(ex, el){
     const vocabAudio = exercise.vocabulary && exercise.vocabulary.ninja_audio_url
       ? ' <button onclick="playVocabAudio(\''+exercise.vocabulary.ninja_audio_url.replace(/'/g,"\\'")+'\',event,'+(exercise.vocabulary.ninja_audio_start||0)+','+(exercise.vocabulary.ninja_audio_end||0)+')" title="Aussprache abspielen" style="background:none;border:1px solid var(--blue);color:var(--blue);font-size:.85rem;padding:.1rem .5rem;cursor:pointer;border-radius:3px;vertical-align:middle">🔊</button>'
       : '';
-    h += '<div style="min-height:60px;margin-bottom:.6rem;font-size:1.15rem;line-height:1.5">'+escHtml(cv ? cv.prompt : exercise.prompt)+vocabAudio+'</div>';
+    h += '<div style="min-height:60px;margin-bottom:.6rem;font-size:1.15rem;line-height:1.5'+(courseArOnly(cv ? cv.prompt : exercise.prompt) ? ';text-align:center' : '')+'">'+courseArPromptHtml(cv ? cv.prompt : exercise.prompt)+vocabAudio+'</div>';
   }
   const drillRows = exercise.exercise_type==='grammar_drill' ? parseGrammarDrillSolution(exercise.solution) : null;
 
