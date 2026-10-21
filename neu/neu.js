@@ -2007,7 +2007,7 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     const hm = de.match(/^(.*?)\s*\(Hinweis:\s*([\s\S]*)\)\s*$/);
     if(hm){
       de = hm[1];
-      hint = '<span class="l">Regeln</span><span class="de">'+hm[2].split(' · ').map(x => '• '+x.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')).join('<br>')+'</span>';
+      hint = '<span class="l">Regeln</span><span class="de">'+hm[2].split(' · ').map(x => '• '+x.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/[\u0600-\u06FF\u0750-\u077F]+/g, '<span class="neu-arx">$&</span>')).join('<br>')+'</span>';
     }
     return '<span class="neu-sol"><span class="l">Tounsi</span><span class="tn">'+tn+'</span><span class="l">Deutsch</span><span class="de">'+de+'</span>'+hint+'</span>';
   }
