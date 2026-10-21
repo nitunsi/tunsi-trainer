@@ -819,3 +819,6 @@ body.neu-onstats.neu-sopen .neu-stabs{position:sticky}
 
 /* arabische Zeichen in den Regeln der Kurs-Lösung größer, damit kleine Zeichen (shadda, sukūn) zu erkennen sind */
 .neu-sol .neu-arx{font-family:var(--arf);font-size:calc(1.8em*var(--ars,1));line-height:1}
+
+/* feste Leisten unten: Inhalt endet über der Leiste */
+body.neu-bar main{padding-bottom:calc(var(--barh,0px) + 1.2rem)!important}

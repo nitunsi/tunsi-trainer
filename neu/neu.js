@@ -2432,3 +2432,23 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
   };
   window.addEventListener('offline', () => { if(window._neuOffNote !== 1){ window._neuOffNote = 1; } });
 })();
+
+/* ---------- Platz unter den festen Leisten (Prüfen / Weiter / War doch richtig): Inhalt bleibt bis zum Ende erreichbar ---------- */
+(function(){
+  const IDS = ['flash-action-bar', 'sticky-check', 'sticky-next'];
+  function upd(){
+    let h = 0;
+    IDS.forEach(id => { const e = document.getElementById(id); if(e && getComputedStyle(e).display !== 'none') h = Math.max(h, e.offsetHeight); });
+    document.body.classList.toggle('neu-bar', h > 0);
+    document.body.style.setProperty('--barh', h + 'px');
+  }
+  function init(){
+    IDS.forEach(id => {
+      const e = document.getElementById(id); if(!e) return;
+      new MutationObserver(upd).observe(e, {attributes: true, childList: true, subtree: true});
+      if(window.ResizeObserver) new ResizeObserver(upd).observe(e);
+    });
+    upd();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
