@@ -816,3 +816,6 @@ body.neu-onstats.neu-sopen .neu-stabs{position:sticky}
 .neu-dots i{width:.55rem;height:.55rem;border-radius:50%;background:var(--border)}
 .neu-dots i.y{background:var(--lv1)}   /* Farben wie in der Statistik: aktiv = Level 1, gemeistert = Level 4 */
 .neu-dots i.g{background:var(--lv4)}
+
+/* arabische Zeichen in den Regeln der Kurs-Lösung größer, damit kleine Zeichen (shadda, sukūn) zu erkennen sind */
+.neu-sol .neu-arx{font-family:var(--arf);font-size:calc(1.8em*var(--ars,1));line-height:1}
