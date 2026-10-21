@@ -2002,7 +2002,14 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     if(ex.exercise_type === 'answer_pattern') tn = tn.replace(/ \/ /g, '<br>');   // mehrere mögliche Antworten untereinander
     tn = tn.replace(/\? – /g, '?<br>');             // Frage und Antwort auf Tounsi untereinander
     de = de.replace(/ – (?=[A-ZÄÖÜ])/g, '<br>');   // z. B. Frage und Antwort auf Deutsch untereinander
-    return '<span class="neu-sol"><span class="l">Tounsi</span><span class="tn">'+tn+'</span><span class="l">Deutsch</span><span class="de">'+de+'</span></span>';
+    // „Deutsch (Hinweis: Regel · Regel · …)“: Regeln als eigene Zeile, einzeln untereinander; **fett** = die Regel, um die es im Fall geht
+    let hint = '';
+    const hm = de.match(/^(.*?)\s*\(Hinweis:\s*([\s\S]*)\)\s*$/);
+    if(hm){
+      de = hm[1];
+      hint = '<span class="l">Regeln</span><span class="de">'+hm[2].split(' · ').map(x => '• '+x.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')).join('<br>')+'</span>';
+    }
+    return '<span class="neu-sol"><span class="l">Tounsi</span><span class="tn">'+tn+'</span><span class="l">Deutsch</span><span class="de">'+de+'</span>'+hint+'</span>';
   }
   const _sol = window.courseSolutionHtml;
   if(typeof _sol === 'function') window.courseSolutionHtml = function(ex){
