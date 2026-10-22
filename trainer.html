@@ -1540,7 +1540,7 @@ async function rcRefresh(){
   _rcRefreshing = true;
   try{ if(window.neuBusyHint) window.neuBusyHint(true); }catch(e){}
   try{
-    await syncFlush();                                                            // eigene offene Antworten zuerst senden
+    await syncFlush(false, true);                                                 // eigene offene Antworten zuerst senden
     await Promise.all([srsFetchRows(), courseFetchRows(), courseExProgressFetch()]);   // füllt nur den Zwischenspeicher (Netz)
     _rcRefreshPending = true; _rcLastRefresh = Date.now(); _rcBootHit = false;
     try{ localStorage.setItem('rc-last-net', String(Date.now())); }catch(e){}
@@ -1572,7 +1572,7 @@ async function rcForceRefresh(){
   if(_rcRefreshing) throw new Error('Das Auffrischen läuft schon');
   _rcRefreshing = true;
   try{
-    await syncFlush();
+    await syncFlush(false, true);
     _rcMode = 'net';
     await srsLoadFromSupabase();
     await loadCourseData(true);
@@ -1821,8 +1821,26 @@ async function syncUpdateIcon(){
 
 // Alle Queue-Einträge an Supabase senden
 let _syncRunning = false;
-async function syncFlush(manual=false){
-  if(_syncRunning) return;
+// Läuft schon ein Senden, wartet der Aufrufer darauf (statt sofort zurückzukehren): sonst lädt rcRefresh/Start den Stand
+// vom Server, bevor die Warteschlange fertig ist, und die gerade beantworteten Vokabeln sind wieder fällig.
+let _syncP = null, _syncSent = 0;
+function syncFlush(manual=false, noCache=false){
+  if(_syncP) return _syncP;
+  _syncP = (async () => {
+    _syncSent = 0;
+    await _syncFlushRun(manual);
+    // Nach dem Senden den Lese-Zwischenspeicher auf den Server-Stand bringen, sonst zeigt ein späterer Start ohne Netz
+    // wieder den Stand von vor dem Offline-Lernen (Warteschlange ist ja leer).
+    if(_syncSent > 0 && !noCache && navigator.onLine !== false && currentUser && !currentUser.is_partner){
+      try{ await Promise.all([
+        sbApiPaged('progress?user_id=eq.'+currentUser.id+'&select=id,vocabulary_id,correct_count,wrong_count,review_count,next_review,last_reviewed,last_correct&order=id.asc', 1000),
+        courseExProgressFetch()
+      ]); }catch(e){}
+    }
+  })().finally(() => { _syncP = null; });
+  return _syncP;
+}
+async function _syncFlushRun(manual=false){
   _syncRunning = true;
   try{
     const alle = await oqGetAll();
@@ -1871,6 +1889,7 @@ async function syncFlush(manual=false){
         break;
       }
     }
+    _syncSent = sent;
     if(manual && sent > 0) dbg('Sync: '+sent+' gespeichert', 'ok');
   } catch(e){
     dbg('Sync Fehler: '+e.message, 'err');
