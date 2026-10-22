@@ -1541,6 +1541,7 @@ async function rcRefresh(){
   try{ if(window.neuBusyHint) window.neuBusyHint(true); }catch(e){}
   try{
     await syncFlush(false, true);                                                 // eigene offene Antworten zuerst senden
+    if(await oqPendingN() > 0) throw new Error('noch nicht gesendete Antworten');   // nichts laden, solange Antworten fehlen
     await Promise.all([srsFetchRows(), courseFetchRows(), courseExProgressFetch()]);   // füllt nur den Zwischenspeicher (Netz)
     _rcRefreshPending = true; _rcLastRefresh = Date.now(); _rcBootHit = false;
     try{ localStorage.setItem('rc-last-net', String(Date.now())); }catch(e){}
@@ -1573,6 +1574,8 @@ async function rcForceRefresh(){
   _rcRefreshing = true;
   try{
     await syncFlush(false, true);
+    const _pend = await oqPendingN();
+    if(_pend > 0) throw new Error('Noch '+_pend+' Antwort'+(_pend===1?'':'en')+' nicht gesendet – erst senden, dann neu laden');
     _rcMode = 'net';
     await srsLoadFromSupabase();
     await loadCourseData(true);
@@ -1758,6 +1761,10 @@ async function oqDelete(qid){
   });
 }
 
+// Anzahl der noch zu sendenden Einträge (ohne die vom Server abgelehnten, die nie mehr gesendet werden)
+async function oqPendingN(){
+  try{ return (await oqGetAll()).filter(i => !i.failed).length; }catch(e){ return 0; }
+}
 async function oqCount(){
   const db = await oqOpen();
   return new Promise((res, rej) => {
