@@ -1541,6 +1541,7 @@ async function rcRefresh(){
   try{ if(window.neuBusyHint) window.neuBusyHint(true); }catch(e){}
   try{
     await syncFlush(false, true);                                                 // eigene offene Antworten zuerst senden
+    if(await oqPendingN() > 0) throw new Error('noch nicht gesendete Antworten');   // nichts laden, solange Antworten fehlen
     await Promise.all([srsFetchRows(), courseFetchRows(), courseExProgressFetch()]);   // füllt nur den Zwischenspeicher (Netz)
     _rcRefreshPending = true; _rcLastRefresh = Date.now(); _rcBootHit = false;
     try{ localStorage.setItem('rc-last-net', String(Date.now())); }catch(e){}
@@ -1573,6 +1574,8 @@ async function rcForceRefresh(){
   _rcRefreshing = true;
   try{
     await syncFlush(false, true);
+    const _pend = await oqPendingN();
+    if(_pend > 0) throw new Error('Noch '+_pend+' Antwort'+(_pend===1?'':'en')+' nicht gesendet – erst senden, dann neu laden');
     _rcMode = 'net';
     await srsLoadFromSupabase();
     await loadCourseData(true);
@@ -1758,6 +1761,10 @@ async function oqDelete(qid){
   });
 }
 
+// Anzahl der noch zu sendenden Einträge (ohne die vom Server abgelehnten, die nie mehr gesendet werden)
+async function oqPendingN(){
+  try{ return (await oqGetAll()).filter(i => !i.failed).length; }catch(e){ return 0; }
+}
 async function oqCount(){
   const db = await oqOpen();
   return new Promise((res, rej) => {
@@ -5765,7 +5772,7 @@ async function logCourseReview(correct, exerciseId){
 }
 
 // Korrigiert die zuletzt beantwortete Kurs-Übung nachträglich (richtig<->falsch) — Pendant zu
-// _applyFlashCorrection() bei Vokabeln, nur ohne Offline-Queue (siehe logCourseReview).
+// _applyFlashCorrection() bei Vokabeln (Fortschritt und Protokoll gehen bei fehlendem Netz in die Warteschlange).
 async function courseCorrectAnswer(exercise, toOk, orig){
   const exId = exercise.id;
   const p = COURSE_EX_PROGRESS[exId];
@@ -5785,9 +5792,27 @@ async function courseCorrectAnswer(exercise, toOk, orig){
     patch = { correct_count: 0, wrong_count: origWrongCount+1, next_review: nextReview.toISOString(), last_correct: origLastCorrectISO };
     Object.assign(p, patch);
   }
+  // Ohne Netz (oder bei einem Fehler) in die Warteschlange, sonst bleibt die ursprüngliche (falsche) Antwort stehen:
+  // Level 0, sofort fällig. Die Warteschlange läuft der Reihe nach, die Korrektur kommt also nach der Antwort.
+  let sent = false;
   if(p.id){
-    try{ await sbApi('course_exercise_progress?id=eq.'+p.id, 'PATCH', patch); }
-    catch(e){ dbg('Kurs-Korrektur FEHLER: '+e.message, 'err'); }
+    try{ await sbApi('course_exercise_progress?id=eq.'+p.id, 'PATCH', patch); sent = true; }
+    catch(e){ dbg('Kurs-Korrektur FEHLER → Offline-Queue: '+e.message, 'err'); }
+  }
+  if(!sent){
+    const iso = t => t ? new Date(t).toISOString() : null;
+    try{
+      if(p.id){
+        await oqPush({ type:'course_progress', exerciseId: exId, existing_id: p.id, is_patch: true, payload: patch });
+      } else {
+        await oqPush({ type:'course_progress', exerciseId: exId, is_patch: false, payload: {
+          user_id: currentUser.id, exercise_id: exId,
+          correct_count: p.correct_count || 0, wrong_count: p.wrong_count || 0, review_count: p.review_count || 1,
+          next_review: iso(p.next_review), last_reviewed: iso(p.last_reviewed) || new Date().toISOString(), last_correct: iso(p.last_correct)
+        }});
+      }
+      syncUpdateIcon();
+    }catch(qe){ dbg('Queue FEHLER (Kurs-Korrektur): '+qe.message, 'err'); }
   }
   courseEnsureFrontierUnlocked().catch(()=>{});
 }
@@ -5820,7 +5845,14 @@ function _applyCourseCorrection(toOk){
     if(window._lastCourseWritePromise){ try{ await window._lastCourseWritePromise; }catch(e){} }
     await courseCorrectAnswer(exercise, toOk, orig).catch(()=>{});
     if(window._lastCourseLogId){
-      sbApi('review_log?id=eq.'+window._lastCourseLogId, 'PATCH', {correct:toOk}).catch(()=>{});
+      const lid = window._lastCourseLogId;
+      sbApi('review_log?id=eq.'+lid, 'PATCH', {correct:toOk}).catch(()=>{ oqPush({ type:'log_update', existing_id: lid, payload: {correct:toOk} }).then(syncUpdateIcon).catch(()=>{}); });
+    } else {
+      // Die Antwort ging ohne Netz in die Warteschlange (noch keine id): den dort wartenden Protokoll-Eintrag umstellen
+      try{
+        const q = (await oqGetAll()).filter(i => i.type === 'log_insert' && !i.failed && i.payload && i.payload.course_exercise_id === exercise.id).pop();
+        if(q) await oqUpdatePayload(q.qid, { correct: toOk });
+      }catch(e){}
     }
   })();
   return last;
