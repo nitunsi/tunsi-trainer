@@ -353,17 +353,19 @@ function learnBuffer(part){
 }
 // Hinweis: wann neue Vokabeln / Kurs-Übungen aufgenommen werden sollten (immer nur die wichtigste Meldung)
 //  Puffer < 40: Hinweis (gold) · < 25: knapp (rot) · < 10: sehr knapp (rot)
+// text: Zeilen durch \n getrennt (feste Umbrüche); text-wrap:balance verteilt längere Zeilen gleichmäßig
 function hintCard(text, red){
-  return '<div class="neu-card" style="border-color:'+(red?'var(--red)':'var(--gold-d)')+';background:'+(red?'rgba(201,76,76,.08)':'rgba(201,168,76,.08)')+';padding:.7rem 1rem">'
-    + '<div style="font-weight:700;color:'+(red?'var(--red)':'var(--gold2)')+'">'+text+'</div></div>';
+  const col = red ? 'var(--red)' : 'var(--gold2)';
+  return '<div class="neu-card" style="border-color:'+(red?'var(--red)':'var(--gold-d)')+';background:'+(red?'rgba(201,76,76,.08)':'rgba(201,168,76,.08)')+';padding:.7rem 1rem;text-wrap:balance">'
+    + String(text).split('\n').map(l => '<div style="font-weight:700;color:'+col+'">'+l+'</div>').join('') + '</div>';
 }
 window.neuLearnBuffer = learnBuffer;
 function newStuffHint(){
   if(cLesson !== 'all') return '';
   const w = learnBuffer();
-  if(w < 10) return hintCard('Kaum noch etwas zu wiederholen. Nimm jetzt neue Vokabeln auf.', true);
-  if(w < 25) return hintCard('Der Nachschub wird knapp. Zeit, Neues zu starten.', true);
-  if(w < 40) return hintCard('Der Vorrat an Anfängerwörtern schrumpft. Zeit für Neues.', false);
+  if(w < 10) return hintCard('Kaum noch etwas zu wiederholen.\nNimm jetzt neue Vokabeln auf.', true);
+  if(w < 25) return hintCard('Der Nachschub wird knapp.\nZeit, Neues zu starten.', true);
+  if(w < 40) return hintCard('Der Vorrat an Anfängerwörtern schrumpft.\nZeit für Neues.', false);
   return '';
 }
 
@@ -436,9 +438,10 @@ function goHome(){
     +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem;border-color:#3b4f7a" '+(d.course?'':'disabled')+' onclick="setMode(\'coursesrs\')"><span class="neu-sub" style="color:var(--blue)">Kurs</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.course)+'</span><small>fällig</small></button>'
     + '</div>')
     + '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer;padding:.7rem 1rem" onclick="setMode(\'partnerqueue\')"><div style="flex:1"><span class="neu-skel" style="width:60%;height:1.1rem"></span><div style="height:.4rem"></div><span class="neu-skel" style="width:40%;height:.8rem"></span></div></div>'
+    + '<div class="neu-sub" style="text-align:center;font-size:.8rem;margin:.1rem 0 .2rem">Nachschub</div>'
     + '<div class="neu-chips" style="padding-bottom:0">'
-    +   '<span class="neu-chip" onclick="openActivateDialog()">Fällig setzen</span>'
-    +   '<span class="neu-chip" onclick="statsUnlockNextChunk()">Nächster Abschnitt</span>'
+    +   '<span class="neu-chip" onclick="openActivateDialog()">Neue Vokabeln</span>'
+    +   '<span class="neu-chip" onclick="statsUnlockNextChunk()">Kurs-Abschnitt</span>'
     +   '<span class="neu-chip" onclick="openPullForward()">Vorziehen</span>'
     + '</div>'
     + '</div>';
@@ -610,10 +613,10 @@ function dangerHtml(dc, goal, total){
     if(pf >= extra) parts.push('Noch '+b(extra)+' vorziehen');
     else{
       if(pf > 0) parts.push('Noch alle '+b(pf)+' vorziehen');
-      parts.push((pf > 0 ? '' : 'Noch ')+b(extra - pf)+' aktivieren');
+      parts.push((pf > 0 ? '' : 'Noch ')+b(extra - pf)+' neu aufnehmen');
     }
     const txt = parts.length > 1 ? parts[0] + ' und ' + parts[1] : parts[0];
-    return hintCard(txt + ', um das Tagesziel zu erreichen.', false);
+    return hintCard(txt + ',\num das Tagesziel zu erreichen.', false);
   }
   return '';
 }
@@ -750,8 +753,8 @@ function nothingDue(){
   if(d.voc > 0 && cMode !== 'flash') go.push('<button class="neu-btn" onclick="setMode(\'flash\')">Weiter mit Vokabeln · '+fmtN(d.voc)+' fällig</button>');
   if(d.course > 0 && cMode !== 'coursesrs') go.push('<button class="neu-btn blue" onclick="setMode(\'coursesrs\')">Weiter mit Kurs · '+fmtN(d.course)+' fällig</button>');
   const part = cMode === 'coursesrs' ? 'Kurs' : cMode === 'flash' ? 'Vokabeln' : 'Hier';
-  const rest = '<button class="neu-btn '+(go.length?'ghost':'')+'" onclick="openActivateDialog()">Vokabeln fällig setzen</button>'
-    + '<button class="neu-btn '+(go.length?'ghost':'blue')+'" onclick="statsUnlockNextChunk()">Nächsten Kurs-Abschnitt freischalten</button>'
+  const rest = '<button class="neu-btn '+(go.length?'ghost':'')+'" onclick="openActivateDialog()">Neue Vokabeln aufnehmen</button>'
+    + '<button class="neu-btn '+(go.length?'ghost':'blue')+'" onclick="statsUnlockNextChunk()">Neuen Kurs-Abschnitt starten</button>'
     + '<button class="neu-btn line" onclick="openPullForward()">Vorziehen</button>'
     + '<button class="neu-btn ghost" onclick="neuGoHome()">Zur Startseite</button>';
   c.innerHTML = '<div class="neu-wrap" style="text-align:center;padding-top:2rem">'
@@ -2044,7 +2047,7 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     const sel = st.picked.filter(x => !st.excluded.has(x.id)).length;
     o.querySelector('.act-list').innerHTML = rows();
     o.querySelector('.act-count').textContent = st.loading ? '' : sel+' von '+st.picked.length+' ausgewählt';
-    const go = o.querySelector('.act-go'); go.textContent = 'Fällig setzen ('+sel+')'; go.disabled = st.loading || !sel;
+    const go = o.querySelector('.act-go'); go.textContent = 'Aufnehmen ('+sel+')'; go.disabled = st.loading || !sel;
     o.querySelectorAll('.act-list input').forEach(cb => cb.onchange = () => { const id = parseInt(cb.dataset.id, 10); if(cb.checked) st.excluded.delete(id); else st.excluded.add(id); paint(); });
   }
   async function load(){
@@ -2058,12 +2061,12 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
     let n = 10; try{ n = parseInt(localStorage.getItem(LSK), 10) || 10; }catch(e){}
     st = {n, picked: [], excluded: new Set(), loading: true};
     const o = document.createElement('div'); o.id = 'act-overlay';
-    o.innerHTML = '<div class="act-box"><div class="act-head"><div style="font-size:1.1rem;font-weight:700;color:var(--gold2)">Vokabeln fällig setzen</div>'
-      + '<div class="neu-sub" style="margin:.1rem 0 .5rem">Erst Vokabeln mit Kursbezug, danach aus dem Quellenabgleich. Haken raus = nicht fällig setzen.</div>'
+    o.innerHTML = '<div class="act-box"><div class="act-head"><div style="font-size:1.1rem;font-weight:700;color:var(--gold2)">Neue Vokabeln aufnehmen</div>'
+      + '<div class="neu-sub" style="margin:.1rem 0 .5rem">Erst Vokabeln mit Kursbezug, danach aus dem Quellenabgleich. Haken raus = nicht aufnehmen.</div>'
       + '<div style="display:flex;gap:.5rem;align-items:center"><span class="neu-sub" style="white-space:nowrap">Anzahl</span><input class="act-n" type="number" inputmode="numeric" min="1" max="200" value="'+n+'"><button class="neu-btn ghost act-reload" style="min-height:44px;width:auto;padding:0 .9rem">Vorschlag laden</button></div>'
       + '<div class="act-count neu-sub" style="margin-top:.5rem"></div></div>'
       + '<div class="act-list"></div>'
-      + '<div class="act-foot"><button class="neu-btn ghost act-cancel" style="flex:1">Abbrechen</button><button class="neu-btn act-go" style="flex:1.4" disabled>Fällig setzen</button></div></div>';
+      + '<div class="act-foot"><button class="neu-btn ghost act-cancel" style="flex:1">Abbrechen</button><button class="neu-btn act-go" style="flex:1.4" disabled>Aufnehmen</button></div></div>';
     document.body.appendChild(o);
     const inp = o.querySelector('.act-n');
     const reload = () => { const v = Math.max(1, Math.min(200, parseInt(inp.value, 10) || 10)); inp.value = v; try{ localStorage.setItem(LSK, String(v)); }catch(e){} st.n = v; load(); };
