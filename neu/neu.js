@@ -1084,8 +1084,8 @@ window.renderVocabTableRows = function(){
   let h = top + '<div class="neu-vlist">';
   vocab.forEach((v,i) => {
     if(v._ex){
-      const pr = COURSE_EX_PROGRESS[v.exId] || null, lvx = pr ? Math.min(pr.correct_count||0, 6) : 0, st = !!(pr && pr.next_review);
-      const cx = st ? ['var(--lv0)','var(--lv1)','var(--lv2)','var(--lv3)','var(--lv4)','var(--lv5)','var(--lv6)'][lvx] : 'var(--border)';
+      const pr = COURSE_EX_PROGRESS[v.exId] || null, cs = cardState('c', v.exId), lvx = cs.level, st = !!(pr && pr.next_review);
+      const cx = !cs.isNew ? ['var(--lv0)','var(--lv1)','var(--lv2)','var(--lv3)','var(--lv4)','var(--lv5)','var(--lv6)'][lvx] : 'var(--border)';
       const dueNow = st && isDueByDay(courseParseTs(pr.next_review));
       const pi = {approved:'✅',rejected:'❌',unknown:'❓',pending:'⏳',skipped:'⏭',suggested:'💡'}[v.ps] || '';
       const short = t => { t = String(t||'').replace(/\s+/g,' ').trim(); return t.length > 70 ? t.slice(0,69)+'…' : t; };
@@ -1093,13 +1093,13 @@ window.renderVocabTableRows = function(){
         + '<div class="ar"></div>'
         + '<div class="mid"><div class="t1">'+hl(short(v.tr), hq)+'</div><div class="t2 neu-mono">'+hl(short((v.ex.instruction ? v.ex.instruction+' → ' : '')+v.en), hq)+'</div>'
         + '<div class="t2">Kurs · '+escHtml(v.ls)+' · '+escHtml(v.type)+(v.ex.flagged?' 🚩':'')+(pi?' · '+pi:'')+'</div></div>'
-        + '<div class="rt"><div class="lv"><span class="dot" style="background:'+cx+'"></span>'+(st?'Stufe '+lvx:'Neu')+'</div><div class="t2" style="'+(dueNow?'color:var(--red)':'')+'">'+(st?fmtDue(pr.next_review):'—')+'</div></div></div>';
+        + '<div class="rt"><div class="lv"><span class="dot" style="background:'+cx+'"></span>'+(!cs.isNew?'Stufe '+lvx:'Neu')+'</div><div class="t2" style="'+(dueNow?'color:var(--red)':'')+'">'+(st?fmtDue(pr.next_review):'—')+'</div></div></div>';
       return;
     }
     const p = v.id ? srsProgress[v.id] : null;
-    const level = p ? (p.level||0) : 0;
+    const cs = cardState('v', v.id || 0), level = cs.level;
     const started = !!(p && p.next_review);
-    const col = started ? ['var(--lv0)','var(--lv1)','var(--lv2)','var(--lv3)','var(--lv4)','var(--lv5)','var(--lv6)'][Math.min(level,6)] : 'var(--border)';
+    const col = !cs.isNew ? ['var(--lv0)','var(--lv1)','var(--lv2)','var(--lv3)','var(--lv4)','var(--lv5)','var(--lv6)'][Math.min(level,6)] : 'var(--border)';
     const due = started ? fmtDue(p.next_review) : '';
     const isDueNow = started && srsIsDue(v);
     const flag = flaggedVocab.has(v.tr) ? ' 🚩' : '';
@@ -1110,7 +1110,7 @@ window.renderVocabTableRows = function(){
     h += '<div class="neu-vrow" style="box-shadow:inset 4px 0 0 '+col+'" onclick="neuRowTap(event,'+(v.id||0)+','+i+')"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)"'+(selectedVocabIds.has(v.id)?' checked':'')+'/>'
       + '<div class="ar">'+hl(v.ar, hq, true)+'</div>'
       + '<div class="mid"><div class="t1">'+hl(v.en, hq)+'</div><div class="t2 neu-mono">'+hl(v.tr, hq)+conj+'</div><div class="t2">'+v.ls+flag+(psIcon?' · '+psIcon:'')+'</div></div>'
-      + '<div class="rt"><div class="lv"><span class="dot" style="background:'+col+'"></span>'+(started?'Stufe '+level:'Neu')+'</div><div class="t2" style="'+(isDueNow?'color:var(--red)':'')+'">'+(started?due:'—')+'</div>'+(audio?'<div style="margin-top:.3rem">'+audio+'</div>':'')+'</div></div>';
+      + '<div class="rt"><div class="lv"><span class="dot" style="background:'+col+'"></span>'+(!cs.isNew?'Stufe '+level:'Neu')+'</div><div class="t2" style="'+(isDueNow?'color:var(--red)':'')+'">'+(started?due:'—')+'</div>'+(audio?'<div style="margin-top:.3rem">'+audio+'</div>':'')+'</div></div>';
   });
   h += '</div>';
   if(vocab.length < vocabFull.length){
@@ -1127,8 +1127,10 @@ function fillSheet(id){
   const v = vById(id); if(!v) return;
   const p = srsProgress[id];
   const parts = [escHtml(v.ls||'')];
-  if(p && p.next_review) parts.push('Stufe '+(p.level||0), fmtDue(p.next_review), (p.review_count||0)+'× geübt');
-  else parts.push('noch nicht gestartet');
+  const cs = cardState('v', id);
+  parts.push(cs.isNew ? 'Neu' : 'Stufe '+cs.level);
+  if(p && p.next_review) parts.push(fmtDue(p.next_review));
+  if(!cs.isNew) parts.push('🔁 '+cs.reviews);
   const sum = $('ei-summary'); if(sum) sum.innerHTML = parts.join(' · ');
   const au = $('ei-audio'); if(au) au.style.display = v.au ? '' : 'none';
 }
@@ -1562,7 +1564,7 @@ window.renderCourseBrowseTab = function(tc, l){
     const non = all.filter(e => !COURSE_SRS_TYPES.includes(e.exercise_type));
     const unlocked = courseChunkUnlocked(srs), mastered = courseChunkMastered(srs);
     const st = !srs.length ? 'read' : mastered ? 'done' : unlocked ? 'run' : 'lock';
-    const mc = srs.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 3).length;
+    const mc = srs.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
     return {all, srs, non, unlocked, st, mc};
   };
   const box = inner => '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7">'+inner+'</div>';
@@ -2430,10 +2432,11 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
   function levelChip(){
     try{
       const ex = (typeof exList !== 'undefined' && exList) ? exList[cIdx] : null; if(!ex) return '';
-      let lvl = 0, started = false;
-      if(ex.exercise){ const p = COURSE_EX_PROGRESS[ex.exercise.id]; started = !!p; lvl = Math.min((p && p.correct_count) || 0, 6); }
-      else if(ex.v && ex.v.id){ const p = srsProgress[ex.v.id]; started = !!(p && p.next_review); lvl = (p && p.level) || 0; }
+      let st;
+      if(ex.exercise) st = cardState('c', ex.exercise.id);
+      else if(ex.v && ex.v.id) st = cardState('v', ex.v.id);
       else return '';
+      const started = !st.isNew, lvl = st.level;   // „Neu“ = noch nie beantwortet, wie in der Karte
       const col = started ? 'var(--gold)' : 'var(--border)';
       let bars = '';
       for(let k = 1; k <= 6; k++){ const h = 3 + k * 2; bars += '<rect x="'+((k-1)*4)+'" y="'+(14-h)+'" width="2.6" height="'+h+'" rx="1" fill="'+(started && k <= lvl ? 'var(--gold)' : 'var(--border)')+'"/>'; }

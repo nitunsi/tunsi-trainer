@@ -2515,26 +2515,24 @@ function fmtDue(date){
 }
 const SRS_LEVEL_COLORS = ['var(--lv0)','var(--lv1)','var(--lv2)','var(--lv3)','var(--lv4)','var(--lv5)','var(--lv6)'];
 const SRS_LEVEL_LABELS = ['L0','L1','L2','L3','L4','L5','L6'];
-function srsInfoBadge(vocab){
-  if(!vocab || !vocab.id) return '';
-  const p = srsProgress[vocab.id] || null;
-  const level = p ? (p.level||0) : 0;
-  const rc = (p && p.review_count) ? p.review_count : 0;
-  return `<span style="color:${SRS_LEVEL_COLORS[level]};font-weight:700">${SRS_LEVEL_LABELS[level]}</span>${rc ? ' · 🔁 '+rc : ''}`;
+// Gemeinsamer Zustand einer Karte, für Vokabeln ('v') und Kurs-Übungen ('c') gleich: „neu“ heißt noch nie beantwortet
+// (keine Zeile oder review_count 0). Stufe und Wiederholungen kommen aus derselben Zeile wie die Fälligkeit.
+function cardState(kind, id){
+  const p = (kind === 'c' ? COURSE_EX_PROGRESS[id] : srsProgress[id]) || null;
+  const reviews = (p && p.review_count) || 0;
+  const level = p ? Math.min((kind === 'c' ? p.correct_count : p.level) || 0, 6) : 0;
+  return {isNew: reviews === 0, level, reviews};
 }
-
-// Pendant zu srsInfoBadge fuer Kurs-Uebungen. Bewusst dieselben SRS_LEVEL_COLORS/
-// _LABELS: eine L3-Kurskarte und eine L3-Vokabel sollen gleich aussehen. Die Kurs-Stufe
-// steckt in COURSE_EX_PROGRESS.correct_count (gedeckelt bei 6, wie bei Vokabeln).
-function courseSrsInfoBadge(exercise){
-  if(!exercise || !exercise.id) return '';
-  const p = COURSE_EX_PROGRESS[exercise.id] || null;
-  if(!p) return '';                       // ohne Progress-Zeile: noch nicht freigeschaltet
-  const level = Math.min(p.correct_count || 0, 6);
-  const rc = p.review_count || 0;
-  return '<span style="color:'+SRS_LEVEL_COLORS[level]+';font-weight:700">'+SRS_LEVEL_LABELS[level]+'</span>'
-       + (rc ? ' · 🔁 '+rc : '');
+const SRS_NEU_CHIP = '<span style="flex-shrink:0;font-size:.65rem;font-weight:700;color:var(--gold);background:rgba(201,166,74,.15);border:1px solid var(--gold);padding:.1rem .45rem;border-radius:3px">🆕 Neu</span>';
+// Anzeige in der Kopfzeile der Karte: neue Karte nur „Neu“, sonst „Stufe N · 🔁 Wiederholungen“
+function cardBadgeHtml(kind, id){
+  const st = cardState(kind, id);
+  if(st.isNew) return SRS_NEU_CHIP;
+  return '<span style="color:'+SRS_LEVEL_COLORS[st.level]+';font-weight:700">Stufe '+st.level+'</span> · 🔁 '+st.reviews;
 }
+function srsInfoBadge(vocab){ return (vocab && vocab.id) ? cardBadgeHtml('v', vocab.id) : ''; }
+// Pendant für Kurs-Übungen: derselbe Aufbau und dieselben Farben (SRS_LEVEL_COLORS) wie bei Vokabeln.
+function courseSrsInfoBadge(exercise){ return (exercise && exercise.id) ? cardBadgeHtml('c', exercise.id) : ''; }
 
 const EXT_SOURCE_LABEL = { ninja: 'Derja Ninja', tunico: 'TUNICO', peacecorps: 'Peace Corps',
   // Phrasen stehen in keinem Woerterbuch als Stichwort. Belegt sind sie, wenn die exakte Wortfolge
@@ -2923,11 +2921,9 @@ function rFlash(ex,el){
   const isAudio = dir==='au2de';
   const isAr2De = dir==='ar2de' || isAudio;
   const _prog = (document.getElementById('ex-progress')||{}).textContent||'';
-  const isNew = !srsProgress[v.id];
   el.innerHTML=`
     <div class="neu-inforow" style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem">
       <span class="lesson-badge" style="margin:0;flex:0 0 48%;min-width:0;width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(v.ls+' · '+v.tp)}">${v.ls} · ${v.tp}</span>
-      ${isNew ? `<span style="flex-shrink:0;font-size:.65rem;font-weight:700;color:var(--gold);background:rgba(201,166,74,.15);border:1px solid var(--gold);padding:.1rem .45rem;border-radius:3px">🆕 Neu</span>` : ''}
       <span class="srs-info-badge" style="flex:1;min-width:0;margin:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${srsInfoBadge(v)}</span>
       ${v.ps ? `<span style="flex-shrink:0;font-size:.85rem" title="Partner: ${v.ps}">${v.ps==='approved'?'✅':v.ps==='rejected'?'❌':v.ps==='unknown'?'❓':v.ps==='pending'?'⏳':v.ps==='skipped'?'⏭':'💡'}</span>` : ''}
       ${v.au ? `<button onclick="playVocabAudio('${v.au.replace(/'/g,"\\'")}',event,${v.aus||0},${v.aue||0})" title="Aussprache abspielen" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.8rem;padding:.1rem .4rem;border-radius:3px;cursor:pointer;line-height:1.4">🔊</button>` : extConfirmIcon(v, 'flex-shrink:0;font-size:.8rem;color:var(--muted)')}
@@ -5670,7 +5666,8 @@ function courseChunkUnlocked(srsItems){
 function courseChunkMastered(srsItems){
   if(!srsItems.length) return true;
   if(!courseChunkUnlocked(srsItems)) return false;
-  const mastered = srsItems.filter(e=>(COURSE_EX_PROGRESS[e.id].correct_count||0) >= 3).length;
+  // „Gemeistert“ ab Stufe 4, wie in der Übersicht und bei den Punkten (vorher hier Stufe 3)
+  const mastered = srsItems.filter(e=>(COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
   return mastered / srsItems.length >= 0.9;
 }
 
@@ -6350,17 +6347,14 @@ function rCourseEx(ex, el){
   const lesson = COURSE_LESSONS.find(l=>l.id===exercise.course_lesson_id);
   const label = courseIsDialogQuestion(exercise) ? 'Dialogfrage' : courseTypeLabel(exercise);
   const p = COURSE_EX_PROGRESS[exercise.id];
-  const isNew = !p || !p.review_count;
   const prog = (document.getElementById('ex-progress')||{}).textContent||'';
   // Ganze Karte deutlich blau eingefärbt (statt Gold wie bei Vokabeln) — im Mix auf einen
   // Blick erkennbar, ob gerade eine Vokabel- oder eine Kurs-Karte dran ist.
   let h = '<div class="neu-ccard" style="background:rgba(76,122,201,.10);border:1px solid var(--blue);border-radius:10px;padding:1rem;margin-bottom:1.2rem">';
   h += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem;flex-wrap:wrap">';
   h += '<span style="flex-shrink:0;font-size:.65rem;font-weight:700;letter-spacing:.3px;color:#fff;background:var(--blue);padding:.15rem .55rem;border-radius:3px" title="'+escHtml((lesson?('L'+lesson.course_number):'')+' · '+label)+'">🎓 '+(lesson?('L'+lesson.course_number):'')+' · '+label+'</span>';
-  if(isNew) h += '<span style="flex-shrink:0;font-size:.65rem;font-weight:700;color:var(--gold);background:rgba(201,166,74,.15);border:1px solid var(--gold);padding:.1rem .45rem;border-radius:3px">🆕 Neu</span>';
-  // Lernstufe wie auf der Vokabelkarte. Fehlte hier bisher — man sah nur "Neu" oder gar nichts.
-  else { const lvl = courseSrsInfoBadge(exercise);
-         if(lvl) h += '<span class="srs-info-badge" style="flex-shrink:0;font-size:.7rem;margin:0">'+lvl+'</span>'; }
+  // Neu oder Stufe und Wiederholungen: gleiche Anzeige wie auf der Vokabelkarte
+  h += '<span class="srs-info-badge" style="flex-shrink:0;font-size:.7rem;margin:0">'+courseSrsInfoBadge(exercise)+'</span>';
   h += '<span style="flex:1"></span>';
   h += courseGrammarButtonHtml(exercise);
   h += '<span class="neu-prog" style="flex-shrink:0;font-size:.7rem;color:var(--muted)">'+prog+'</span>';
