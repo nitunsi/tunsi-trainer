@@ -344,28 +344,40 @@ function motivation(done, avgs){
   return null;
 }
 
-// Anfänger-Puffer (wie in der Statistik): Stufe 0 zählt 3, Stufe 1 zählt 2, Stufe 2 zählt 1, geteilt durch 3 — Vokabeln und Kurs-Übungen zusammen
-function learnBuffer(part){
-  let a = 0, b = 0, c = 0;
-  if(part !== 'course') ALL_VOCAB.forEach(v => { const p = srsProgress[v.id]; if(p && p.next_review){ const lv = p.level || 0; if(lv === 0) a++; else if(lv === 1) b++; else if(lv === 2) c++; } });
-  if(part !== 'vocab') Object.values(COURSE_EX_PROGRESS).forEach(p => { if(!p) return; const lv = Math.min(p.correct_count || 0, 6); if(lv === 0) a++; else if(lv === 1) b++; else if(lv === 2) c++; });
-  return (a * 3 + b * 2 + c) / 3;
+// Erwartete Wiederholungen pro Tag über die nächsten 7 Tage (Vokabeln und Kurs-Übungen zusammen).
+// Jede gestartete Karte kommt ab ihrem Fälligkeitstag im Abstand ihrer Stufe wieder (SRS_DAYS: 1, 1, 3, 7, 14, 30, 90 Tage);
+// überfällige zählen ab heute. Fehler und Stufenwechsel sind nicht eingerechnet. Ergebnis: Durchschnitt, Zahl je Tag, schwächster Tag.
+const FC_DAYS = 7;
+const WARN_FACTORS = [1.2, 0.75, 0.3];   // Hinweis / knapp / sehr knapp, als Anteil des Tagesziels
+function forecast7(part){
+  const idx = key => { const t = key.split('-').map(Number); return Math.round(Date.UTC(t[0], t[1] - 1, t[2]) / 86400000); };
+  const today = idx(berlinDayKey(new Date()));
+  const days = new Array(FC_DAYS).fill(0);
+  const add = (lv, nr) => {
+    if(!nr) return;
+    const d = Math.max(0, idx(berlinDayKey(nr)) - today), iv = SRS_DAYS[Math.min(lv || 0, 6)];
+    for(let k = d; k < FC_DAYS; k += iv) days[k]++;
+  };
+  if(part !== 'course') ALL_VOCAB.forEach(v => { const p = srsProgress[v.id]; if(p && p.next_review) add(p.level, p.next_review); });
+  if(part !== 'vocab') Object.values(COURSE_EX_PROGRESS).forEach(p => { if(p && p.next_review) add(p.correct_count, courseParseTs(p.next_review)); });
+  const min = Math.min.apply(null, days);
+  return {days, avg: days.reduce((a, b) => a + b, 0) / FC_DAYS, min, minDay: days.indexOf(min)};
 }
 // Hinweis: wann neue Vokabeln / Kurs-Übungen aufgenommen werden sollten (immer nur die wichtigste Meldung)
-//  Puffer < 40: Hinweis (gold) · < 25: knapp (rot) · < 10: sehr knapp (rot)
+//  Erwartete Wiederholungen pro Tag < 1,2 × Tagesziel: Hinweis (gold) · < 0,75 ×: knapp (rot) · < 0,3 ×: sehr knapp (rot)
 // text: Zeilen durch \n getrennt (feste Umbrüche); text-wrap:balance verteilt längere Zeilen gleichmäßig
 function hintCard(text, red){
   const col = red ? 'var(--red)' : 'var(--gold2)';
   return '<div class="neu-card" style="border-color:'+(red?'var(--red)':'var(--gold-d)')+';background:'+(red?'rgba(201,76,76,.08)':'rgba(201,168,76,.08)')+';padding:.7rem 1rem;text-wrap:balance">'
     + String(text).split('\n').map(l => '<div style="font-weight:700;color:'+col+'">'+l+'</div>').join('') + '</div>';
 }
-window.neuLearnBuffer = learnBuffer;
+window.neuForecast = forecast7;
 function newStuffHint(){
   if(cLesson !== 'all') return '';
-  const w = learnBuffer();
-  if(w < 10) return hintCard('Kaum noch etwas zu wiederholen.\nNimm jetzt neue Vokabeln auf.', true);
-  if(w < 25) return hintCard('Der Nachschub wird knapp.\nZeit, Neues zu starten.', true);
-  if(w < 40) return hintCard('Der Vorrat an Anfängerwörtern schrumpft.\nZeit für Neues.', false);
+  const goal = parseInt(LS.get('neu-goal', '100'), 10) || 100, w = forecast7().avg;
+  if(w < goal * WARN_FACTORS[2]) return hintCard('Kaum noch etwas zu wiederholen.\nNimm jetzt neue Vokabeln auf.', true);
+  if(w < goal * WARN_FACTORS[1]) return hintCard('Der Nachschub wird knapp.\nZeit, Neues zu starten.', true);
+  if(w < goal * WARN_FACTORS[0]) return hintCard('Der Vorrat an Anfängerwörtern schrumpft.\nZeit für Neues.', false);
   return '';
 }
 
@@ -628,6 +640,24 @@ window.neuActivity = loadActivity;
 function li(icon, label, act, extra){ return '<button onclick="'+act+'">'+IC[icon]+'<span class="sp">'+label+'</span>'+(extra||'<span class="chev">›</span>')+'</button>'; }
 function sw(on, act){ return '<span class="neu-switch'+(on?' on':'')+'" onclick="event.stopPropagation();'+act+'"><i></i></span>'; }
 function seg(opts, cur, act){ return '<div class="neu-seg">'+opts.map(([v,l]) => '<button class="'+(String(cur)===String(v)?'on':'')+'" onclick="'+act.replace('%v', v)+'">'+l+'</button>').join('')+'</div>'; }
+// Karte „Nachschub“ unter Mehr: Wert, Schwellen, Verlauf der nächsten 7 Tage und die Formel
+function nachschubCard(goal){
+  const f = forecast7(), g = parseInt(goal, 10) || 100, r = n => Math.round(n);
+  const th = WARN_FACTORS.map(x => r(g * x));
+  const wd = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+  const now = new Date();
+  const row = f.days.map((n, i) => { const d = new Date(now.getTime() + i * 86400000); return '<span style="white-space:nowrap">'+(i ? wd[d.getDay()] : 'Heute')+' <b>'+fmtN(n)+'</b></span>'; }).join(' · ');
+  return '<div class="neu-h">Nachschub</div><div class="neu-card">'
+    + '<div class="neu-cap">Erwartete Wiederholungen pro Tag (nächste 7 Tage)</div>'
+    + '<div style="font-size:1.5rem;font-weight:700;margin:.1rem 0">'+fmtN(r(f.avg))+' <span class="neu-sub" style="font-size:.9rem;font-weight:400">bei Tagesziel '+fmtN(g)+'</span></div>'
+    + '<div class="neu-sub" style="margin:.3rem 0">'+row+'</div>'
+    + '<div class="neu-sub">Schwächster Tag: <b style="color:var(--text)">'+fmtN(f.min)+'</b> ('+(f.minDay ? wd[new Date(now.getTime() + f.minDay * 86400000).getDay()] : 'heute')+'). Er löst keine Warnung aus.</div>'
+    + '<div class="neu-cap" style="margin-top:.8rem">Warnstufen (Anteil am Tagesziel)</div>'
+    + '<div class="neu-sub">Hinweis unter <b style="color:var(--text)">'+fmtN(th[0])+'</b> (1,2 ×) · knapp unter <b style="color:var(--text)">'+fmtN(th[1])+'</b> (0,75 ×) · sehr knapp unter <b style="color:var(--text)">'+fmtN(th[2])+'</b> (0,3 ×)</div>'
+    + '<div class="neu-cap" style="margin-top:.8rem">So wird gerechnet</div>'
+    + '<div class="neu-sub">Jede gestartete Karte (Vokabeln und Kurs-Übungen) kommt ab ihrem Fälligkeitstag im Abstand ihrer Stufe wieder: Stufe 0 und 1 jeden Tag, Stufe 2 alle 3 Tage, Stufe 3 alle 7, Stufe 4 alle 14, Stufe 5 alle 30, Stufe 6 alle 90 Tage. Überfälliges zählt ab heute. Alle Wiederholungen der nächsten 7 Tage, geteilt durch 7. Fehler und Stufenwechsel sind nicht eingerechnet.</div>'
+    + '</div>';
+}
 function showMore(){
   reset('more');
   const c = $('exercise-content'); if(!c) return;
@@ -660,6 +690,7 @@ function showMore(){
     +   '<div class="neu-cap" style="margin-top:1rem">Lektion einschränken</div>'
     +   '<select id="neu-lesson" onchange="neuLesson(this.value)" style="width:100%;min-height:48px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:0 .7rem;font-size:1rem">'+lessonOpts+'</select>'
     + '</div>'
+    + nachschubCard(goal)
     + '<div class="neu-h">Daten</div><div class="neu-card"><div class="neu-sub" style="margin-bottom:.5rem">Holt Vokabeln, Kurs und Lernstand frisch vom Server, zum Beispiel nach Änderungen am Kurs.</div>'
     +   '<button class="neu-btn line" id="neu-refresh-btn" onclick="neuRefreshData()">Daten jetzt neu laden<small>Vokabeln, Kurs, Lernstand</small></button>'
     +   '<div id="neu-refresh-result" style="font-size:.85rem;color:var(--muted);margin-top:.5rem"></div></div>'
