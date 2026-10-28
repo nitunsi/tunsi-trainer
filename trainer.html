@@ -3902,21 +3902,24 @@ async function pullForwardVocab(n){
 
   const nowISO = now.toISOString();
   let vocabCount = 0, courseCount = 0;
-  for(const cand of candidates){
-    try{
-      if(cand.type === 'vocab'){
-        await sbApi('progress?id=eq.'+cand.p.id, 'PATCH', { next_review: nowISO });
-        srsProgress[cand.id].next_review = now;
-        vocabCount++;
-      } else {
-        await sbApi('course_exercise_progress?id=eq.'+cand.p.id, 'PATCH', { next_review: nowISO });
-        COURSE_EX_PROGRESS[cand.id].next_review = nowISO;
-        courseCount++;
+  // Gebündelt statt je Eintrag eine Anfrage: eine Anfrage pro 150 Einträge und Tabelle, beide Tabellen gleichzeitig
+  const patchBatch = async (table, items, apply) => {
+    let done = 0;
+    for(let i = 0; i < items.length; i += 150){
+      const chunk = items.slice(i, i + 150);
+      try{
+        await sbApi(table+'?id=in.('+chunk.map(c => c.p.id).join(',')+')', 'PATCH', { next_review: nowISO });
+        chunk.forEach(apply); done += chunk.length;
+      }catch(e){
+        dbg('Fehler beim Vorziehen: '+e.message, 'warn');
       }
-    }catch(e){
-      dbg('Fehler beim Vorziehen: '+e.message, 'warn');
     }
-  }
+    return done;
+  };
+  [vocabCount, courseCount] = await Promise.all([
+    patchBatch('progress', candidates.filter(c => c.type === 'vocab'), c => { srsProgress[c.id].next_review = now; }),
+    patchBatch('course_exercise_progress', candidates.filter(c => c.type !== 'vocab'), c => { COURSE_EX_PROGRESS[c.id].next_review = nowISO; })
+  ]);
   const count = vocabCount + courseCount;
   const countDetail = courseCount > 0 ? ` (${vocabCount} Vokabeln, ${courseCount} Kurs-Übungen)` : '';
   showToast('✓ '+count+' vorgezogen'+countDetail+' — jetzt fällig','ok');
@@ -3938,8 +3941,10 @@ function openPullForward(){
   // Vorgezogen wird die höchste Stufe zuerst: nur deren Kachel ist antippbar
   const topLv = [6,5,4].find(l => perLv[l] > 0) || 0;
   // Voreinstellung: Anzahl der höchsten Stufe (4–6), die morgen fällig ist; gibt es keine, 0
-  const PF_MAX = 30;   // höchstens so viele auf einmal vorziehen (gegen Vertippen)
-  const preset = topLv ? Math.min(perLv[topLv], PF_MAX, avail) : 0;
+  const PF_MAX = 30;   // höchstens so viele auf einmal vorziehen (gegen Vertippen) – ausgenommen die zwei Zahlen darunter
+  // Von der Begrenzung ausgenommen: die Anzahl der nächsten Stufe (oberste Kachel) und die Summe der Stufen 4–6
+  const pfFree = new Set([topLv ? perLv[topLv] : 0, perLv[4] + perLv[5] + perLv[6]].filter(x => x > 0));
+  const preset = topLv ? Math.min(perLv[topLv], avail) : 0;
   const old = document.getElementById('pf-overlay'); if(old) old.remove();
   const o = document.createElement('div');
   o.id = 'pf-overlay';
@@ -3960,7 +3965,7 @@ function openPullForward(){
     const raw = parseInt(document.getElementById('pf-n').value,10);
     let n = isNaN(raw) ? 0 : Math.max(0, raw);
     if(n < 1){ showToast('Bitte eine Anzahl größer 0 eintragen','warn'); return; }
-    if(n > PF_MAX){ n = PF_MAX; showToast('Auf '+PF_MAX+' begrenzt','warn'); }
+    if(n > PF_MAX && !pfFree.has(n)){ n = PF_MAX; showToast('Auf '+PF_MAX+' begrenzt','warn'); }
     try{ localStorage.setItem('pull-forward-n', String(n)); }catch(e){}
     close();
     await pullForwardVocab(n);
