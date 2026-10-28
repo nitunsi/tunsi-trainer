@@ -116,7 +116,7 @@ self.addEventListener('push', e => {
   let d = {}; try{ d = e.data ? e.data.json() : {}; }catch(_){}
   e.waitUntil((async () => {
     if(d.badge && self.navigator && navigator.setAppBadge){ try{ await navigator.setAppBadge(d.badge); }catch(_){} }
-    await self.registration.showNotification(d.title || 'تونسي', { body: d.body || 'Es ist etwas fällig.', icon: '/neu/app/icon-192.png', badge: '/neu/app/badge-96.png', tag: 'due' });
+    await self.registration.showNotification(d.title || 'تونسي', { body: d.body || 'Es ist etwas fällig.', icon: new URL('/neu/app/icon-192.png', self.location.origin).href, badge: new URL('/neu/app/badge-96.png?v=2', self.location.origin).href, tag: 'due' });
   })());
 });
 self.addEventListener('notificationclick', e => {

@@ -659,6 +659,7 @@ function nachschubCard(goal){
     + '</div>';
 }
 function showMore(){
+  const keepY = (cMode === 'more') ? (window.scrollY || 0) : 0;   // Änderungen unter Mehr: Position behalten
   reset('more');
   const c = $('exercise-content'); if(!c) return;
   const font = LS.get('neu-font','M'), goal = LS.get('neu-goal','100'), vib = LS.get('neu-vib','0') === '1';
@@ -707,6 +708,7 @@ function showMore(){
     + '</div>';
   const sel = $('neu-lesson');
   if(sel){ sel.value = cLesson; if(sel.value !== cLesson) sel.value = 'all'; }
+  if(keepY){ try{ window.scrollTo({top:keepY, behavior:'instant'}); }catch(e){ window.scrollTo(0,keepY); } }
 }
 function applyTheme(){
   const t = LS.get('neu-theme', 'light');
