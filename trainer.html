@@ -5666,7 +5666,8 @@ function courseChunkUnlocked(srsItems){
 function courseChunkMastered(srsItems){
   if(!srsItems.length) return true;
   if(!courseChunkUnlocked(srsItems)) return false;
-  const mastered = srsItems.filter(e=>(COURSE_EX_PROGRESS[e.id].correct_count||0) >= 3).length;
+  // „Gemeistert“ ab Stufe 4, wie in der Übersicht und bei den Punkten (vorher hier Stufe 3)
+  const mastered = srsItems.filter(e=>(COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
   return mastered / srsItems.length >= 0.9;
 }
 
