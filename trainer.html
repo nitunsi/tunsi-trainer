@@ -637,16 +637,15 @@ function audioPreload(url){
   }catch(e){}
 }
 // ── Lautstärke angleichen ───────────────────────────────────────────────────
-// Ninjas Server erlaubt kein Messen im Browser (kein CORS). Ein Großteil der Aufnahmen liegt aber
-// zusätzlich im öffentlichen Supabase-Bucket „ninja-audio“. Von dort wird geladen, der Ausschnitt
-// (Start–Ende) gemessen und per Gain auf einen festen Pegel gebracht. Der Gain wird pro Aufnahme
-// einmal pro Gerät gemerkt (localStorage). Klappt irgendetwas nicht (nicht im Bucket, Fehler,
-// noch nicht fertig), läuft die Wiedergabe wie bisher direkt über das Audio-Element.
-const AUDIO_TARGET_DB = -23, AUDIO_MAX_GAIN = 8;   // Ziel-Pegel (RMS), max. +18 dB
+// Pro Aufnahme steht in vocabulary.audio_gain ein Faktor (Ziel −30 dBFS im Ausschnitt Start–Ende).
+// ≤ 1: direkt von Ninja, Lautstärke über audio.volume. > 1: Ninjas Server erlaubt kein Verstärken im
+// Browser (kein CORS), deshalb kommt die Aufnahme aus dem öffentlichen Supabase-Bucket „ninja-audio“
+// und wird per WebAudio verstärkt. Ist sie dort nicht ladbar oder noch nicht fertig, läuft sie
+// direkt von Ninja in voller Lautstärke.
+const AUDIO_GAIN = {};   // „url|start|ende“ → Faktor
+const audioKey = (u, s, e) => u + '|' + (s||0) + '|' + (e||0);
 let _audioCtx = null, _normPlayer = null;
 const _normBuf = new Map(), _normBusy = new Set(), _normFail = new Set();
-let _gainMap = {};
-try{ _gainMap = JSON.parse(localStorage.getItem('audio-gain-v1') || '{}') || {}; }catch(e){}
 function audioBucketUrl(url){
   const m = /\/recordings\/([0-9]+\.mp3)$/.exec(url || '');
   return m ? SB_URL + '/storage/v1/object/public/ninja-audio/recordings/' + m[1] : null;
@@ -656,39 +655,29 @@ function audioCtx(){
   try{ const C = window.AudioContext || window.webkitAudioContext; if(C) _audioCtx = new C(); }catch(e){}
   return _audioCtx;
 }
+// Nur für Aufnahmen mit Faktor > 1: Datei aus dem Bucket vorladen und dekodieren
 function audioNormPrepare(url, start, end){
+  const g = AUDIO_GAIN[audioKey(url, start, end)];
   const src = audioBucketUrl(url), ctx = audioCtx();
-  if(!src || !ctx || _normBuf.has(url) || _normBusy.has(url) || _normFail.has(url)) return;
+  if(!(g > 1) || !src || !ctx || _normBuf.has(url) || _normBusy.has(url) || _normFail.has(url)) return;
   _normBusy.add(url);
   (async () => {
     try{
       const r = await fetch(src); if(!r.ok) throw new Error('HTTP ' + r.status);
-      const buf = await ctx.decodeAudioData(await r.arrayBuffer());
-      const key = url + '|' + (start||0) + '|' + (end||0);
-      let g = _gainMap[key];
-      if(g === undefined){
-        const d = buf.getChannelData(0), sr = buf.sampleRate;
-        const seg = d.subarray(Math.floor((start||0) * sr), end ? Math.min(d.length, Math.floor(end * sr)) : d.length);
-        let sum = 0; for(let i=0;i<seg.length;i++) sum += seg[i]*seg[i];
-        const rms = Math.sqrt(sum / Math.max(1, seg.length));
-        g = rms > 1e-5 ? Math.min(AUDIO_MAX_GAIN, Math.pow(10, (AUDIO_TARGET_DB - 20*Math.log10(rms)) / 20)) : 1;
-        _gainMap[key] = Math.round(g * 1000) / 1000;
-        try{ localStorage.setItem('audio-gain-v1', JSON.stringify(_gainMap)); }catch(e){}
-      }
-      _normBuf.set(url, {buf, gain: _gainMap[key]});
+      _normBuf.set(url, await ctx.decodeAudioData(await r.arrayBuffer()));
       if(_normBuf.size > 12) _normBuf.delete(_normBuf.keys().next().value);
     }catch(e){ _normFail.add(url); }
     _normBusy.delete(url);
   })();
 }
 function audioNormPlay(url, start, end){
-  const ctx = audioCtx(), e = _normBuf.get(url);
-  if(!ctx || !e) return false;
+  const ctx = audioCtx(), buf = _normBuf.get(url), g = AUDIO_GAIN[audioKey(url, start, end)];
+  if(!ctx || !buf || !(g > 1)) return false;
   try{
     if(ctx.state === 'suspended') ctx.resume();
-    const src = ctx.createBufferSource(); src.buffer = e.buf;
-    const gn = ctx.createGain(); gn.gain.value = e.gain;
-    const lim = ctx.createDynamicsCompressor();   // fängt Spitzen ab, falls der Gain sie übersteuern würde
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const gn = ctx.createGain(); gn.gain.value = g;
+    const lim = ctx.createDynamicsCompressor();   // fängt Spitzen ab, falls der Faktor sie übersteuern würde
     lim.threshold.value = -3; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = 0.002; lim.release.value = 0.1;
     src.connect(gn); gn.connect(lim); lim.connect(ctx.destination);
     const st = start || 0, dur = end ? Math.max(0.05, end - st) : undefined;
@@ -724,6 +713,8 @@ function playVocabAudio(url, ev, start, end){
     if(!a) return;
     _audioPlayer = a;
     a._end = end || 0;
+    const g = AUDIO_GAIN[audioKey(url, start, end)];
+    a.volume = (g > 0 && g < 1) ? g : 1;
     const go = () => { try{ a.currentTime = start || 0; }catch(e){} a.play().catch(()=>{}); };
     if(a.readyState >= 1) go();
     else a.addEventListener('loadedmetadata', go, {once:true});
@@ -801,7 +792,7 @@ function retryLoad(){
 // Holt Vokabeln und Fortschritt (parallel). Wird auch genutzt, um den Zwischenspeicher im Hintergrund aufzufrischen.
 function srsFetchRows(onVocab, onProg){
   const loadVocabTask = sbApiPaged(
-      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,lessons(lesson_number)&order=id.asc',
+      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,audio_gain,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,lessons(lesson_number)&order=id.asc',
       1000,
       (loaded) => { if(onVocab) onVocab(loaded); }
     );
@@ -842,6 +833,7 @@ async function srsLoadFromSupabase(){
       const tp = v.topic || 'Allgemein';
       const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null, cr: !!v.conj_rotate };
       ALL_VOCAB.push(entry);
+      if(v.ninja_audio_url && v.audio_gain) AUDIO_GAIN[audioKey(v.ninja_audio_url, v.ninja_audio_start, v.ninja_audio_end)] = v.audio_gain;
       VOCAB_BY_ID[v.id] = entry;
       if(v.flagged) flaggedVocab.add(v.darija||'');
     });
