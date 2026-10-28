@@ -636,14 +636,76 @@ function audioPreload(url){
     if(_audioCache.size > 40){ _audioCache.delete(_audioCache.keys().next().value); }
   }catch(e){}
 }
+// ── Lautstärke angleichen ───────────────────────────────────────────────────
+// Ninjas Server erlaubt kein Messen im Browser (kein CORS). Ein Großteil der Aufnahmen liegt aber
+// zusätzlich im öffentlichen Supabase-Bucket „ninja-audio“. Von dort wird geladen, der Ausschnitt
+// (Start–Ende) gemessen und per Gain auf einen festen Pegel gebracht. Der Gain wird pro Aufnahme
+// einmal pro Gerät gemerkt (localStorage). Klappt irgendetwas nicht (nicht im Bucket, Fehler,
+// noch nicht fertig), läuft die Wiedergabe wie bisher direkt über das Audio-Element.
+const AUDIO_TARGET_DB = -23, AUDIO_MAX_GAIN = 8;   // Ziel-Pegel (RMS), max. +18 dB
+let _audioCtx = null, _normPlayer = null;
+const _normBuf = new Map(), _normBusy = new Set(), _normFail = new Set();
+let _gainMap = {};
+try{ _gainMap = JSON.parse(localStorage.getItem('audio-gain-v1') || '{}') || {}; }catch(e){}
+function audioBucketUrl(url){
+  const m = /\/recordings\/([0-9]+\.mp3)$/.exec(url || '');
+  return m ? SB_URL + '/storage/v1/object/public/ninja-audio/recordings/' + m[1] : null;
+}
+function audioCtx(){
+  if(_audioCtx) return _audioCtx;
+  try{ const C = window.AudioContext || window.webkitAudioContext; if(C) _audioCtx = new C(); }catch(e){}
+  return _audioCtx;
+}
+function audioNormPrepare(url, start, end){
+  const src = audioBucketUrl(url), ctx = audioCtx();
+  if(!src || !ctx || _normBuf.has(url) || _normBusy.has(url) || _normFail.has(url)) return;
+  _normBusy.add(url);
+  (async () => {
+    try{
+      const r = await fetch(src); if(!r.ok) throw new Error('HTTP ' + r.status);
+      const buf = await ctx.decodeAudioData(await r.arrayBuffer());
+      const key = url + '|' + (start||0) + '|' + (end||0);
+      let g = _gainMap[key];
+      if(g === undefined){
+        const d = buf.getChannelData(0), sr = buf.sampleRate;
+        const seg = d.subarray(Math.floor((start||0) * sr), end ? Math.min(d.length, Math.floor(end * sr)) : d.length);
+        let sum = 0; for(let i=0;i<seg.length;i++) sum += seg[i]*seg[i];
+        const rms = Math.sqrt(sum / Math.max(1, seg.length));
+        g = rms > 1e-5 ? Math.min(AUDIO_MAX_GAIN, Math.pow(10, (AUDIO_TARGET_DB - 20*Math.log10(rms)) / 20)) : 1;
+        _gainMap[key] = Math.round(g * 1000) / 1000;
+        try{ localStorage.setItem('audio-gain-v1', JSON.stringify(_gainMap)); }catch(e){}
+      }
+      _normBuf.set(url, {buf, gain: _gainMap[key]});
+      if(_normBuf.size > 12) _normBuf.delete(_normBuf.keys().next().value);
+    }catch(e){ _normFail.add(url); }
+    _normBusy.delete(url);
+  })();
+}
+function audioNormPlay(url, start, end){
+  const ctx = audioCtx(), e = _normBuf.get(url);
+  if(!ctx || !e) return false;
+  try{
+    if(ctx.state === 'suspended') ctx.resume();
+    const src = ctx.createBufferSource(); src.buffer = e.buf;
+    const gn = ctx.createGain(); gn.gain.value = e.gain;
+    const lim = ctx.createDynamicsCompressor();   // fängt Spitzen ab, falls der Gain sie übersteuern würde
+    lim.threshold.value = -3; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = 0.002; lim.release.value = 0.1;
+    src.connect(gn); gn.connect(lim); lim.connect(ctx.destination);
+    const st = start || 0, dur = end ? Math.max(0.05, end - st) : undefined;
+    if(dur !== undefined) src.start(0, st, dur); else src.start(0, st);
+    _normPlayer = src;
+    return true;
+  }catch(err){ return false; }
+}
 // Vorladen der aktuellen und der nächsten drei Karten der Session (exList/cIdx), Vokabel- und Kurs-Karten.
 function audioPreloadAhead(){
   try{
     for(let i=0;i<4;i++){
       const e = exList[cIdx+i];
       if(!e) break;
-      const u = e.v ? e.v.au : (e.exercise && e.exercise.vocabulary ? e.exercise.vocabulary.ninja_audio_url : null);
-      if(u) audioPreload(u);
+      const xv = e.exercise && e.exercise.vocabulary;
+      const u = e.v ? e.v.au : (xv ? xv.ninja_audio_url : null);
+      if(u){ audioPreload(u); if(e.v) audioNormPrepare(u, e.v.aus, e.v.aue); else audioNormPrepare(u, xv.ninja_audio_start, xv.ninja_audio_end); }
     }
   }catch(e){}
 }
@@ -654,6 +716,9 @@ function playVocabAudio(url, ev, start, end){
   if(!url) return;
   try{
     if(_audioPlayer){ _audioPlayer.pause(); _audioPlayer = null; }
+    if(_normPlayer){ try{ _normPlayer.stop(); }catch(e){} _normPlayer = null; }
+    audioNormPrepare(url, start, end);
+    if(audioNormPlay(url, start, end)) return;
     audioPreload(url);
     const a = _audioCache.get(url);
     if(!a) return;
