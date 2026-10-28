@@ -348,7 +348,7 @@ function motivation(done, avgs){
 // Jede gestartete Karte kommt ab ihrem Fälligkeitstag im Abstand ihrer Stufe wieder (SRS_DAYS: 1, 1, 3, 7, 14, 30, 90 Tage);
 // überfällige zählen ab heute. Fehler und Stufenwechsel sind nicht eingerechnet. Ergebnis: Durchschnitt, Zahl je Tag, schwächster Tag.
 const FC_DAYS = 7;
-const WARN_FACTORS = [1.2, 0.75, 0.3];   // Hinweis / knapp / sehr knapp, als Anteil des Tagesziels
+const WARN_FACTORS = [1.2, 1.0, 0.6];   // Hinweis / knapp / sehr knapp, als Anteil des Tagesziels (1,2 = nötige Versuche bei ca. 86 % Trefferquote; 1,0 = Ziel selbst mit lauter richtigen Antworten nicht erreichbar)
 function forecast7(part){
   const idx = key => { const t = key.split('-').map(Number); return Math.round(Date.UTC(t[0], t[1] - 1, t[2]) / 86400000); };
   const today = idx(berlinDayKey(new Date()));
@@ -364,7 +364,7 @@ function forecast7(part){
   return {days, avg: days.reduce((a, b) => a + b, 0) / FC_DAYS, min, minDay: days.indexOf(min)};
 }
 // Hinweis: wann neue Vokabeln / Kurs-Übungen aufgenommen werden sollten (immer nur die wichtigste Meldung)
-//  Erwartete Wiederholungen pro Tag < 1,2 × Tagesziel: Hinweis (gold) · < 0,75 ×: knapp (rot) · < 0,3 ×: sehr knapp (rot)
+//  Erwartete Wiederholungen pro Tag < 1,2 × Tagesziel: Hinweis (gold) · < 1,0 ×: knapp (rot) · < 0,6 ×: sehr knapp (rot)
 // text: Zeilen durch \n getrennt (feste Umbrüche); text-wrap:balance verteilt längere Zeilen gleichmäßig
 function hintCard(text, red){
   const col = red ? 'var(--red)' : 'var(--gold2)';
@@ -653,7 +653,7 @@ function nachschubCard(goal){
     + '<div class="neu-sub" style="margin:.3rem 0">'+row+'</div>'
     + '<div class="neu-sub">Schwächster Tag: <b style="color:var(--text)">'+fmtN(f.min)+'</b> ('+(f.minDay ? wd[new Date(now.getTime() + f.minDay * 86400000).getDay()] : 'heute')+'). Er löst keine Warnung aus.</div>'
     + '<div class="neu-cap" style="margin-top:.8rem">Warnstufen (Anteil am Tagesziel)</div>'
-    + '<div class="neu-sub">Hinweis unter <b style="color:var(--text)">'+fmtN(th[0])+'</b> (1,2 ×) · knapp unter <b style="color:var(--text)">'+fmtN(th[1])+'</b> (0,75 ×) · sehr knapp unter <b style="color:var(--text)">'+fmtN(th[2])+'</b> (0,3 ×)</div>'
+    + '<div class="neu-sub">Hinweis unter <b style="color:var(--text)">'+fmtN(th[0])+'</b> (1,2 ×) · knapp unter <b style="color:var(--text)">'+fmtN(th[1])+'</b> (1,0 ×) · sehr knapp unter <b style="color:var(--text)">'+fmtN(th[2])+'</b> (0,6 ×)</div>'
     + '<div class="neu-cap" style="margin-top:.8rem">So wird gerechnet</div>'
     + '<div class="neu-sub">Jede gestartete Karte (Vokabeln und Kurs-Übungen) kommt ab ihrem Fälligkeitstag im Abstand ihrer Stufe wieder: Stufe 0 und 1 jeden Tag, Stufe 2 alle 3 Tage, Stufe 3 alle 7, Stufe 4 alle 14, Stufe 5 alle 30, Stufe 6 alle 90 Tage. Überfälliges zählt ab heute. Alle Wiederholungen der nächsten 7 Tage, geteilt durch 7. Fehler und Stufenwechsel sind nicht eingerechnet.</div>'
     + '</div>';
