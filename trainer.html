@@ -3646,20 +3646,34 @@ async function statsActivateApply(picked){
   const now = new Date().toISOString();
   const fresh = [], existing = [];
   picked.forEach(x => { const p = srsProgress[x.id]; if(p && p.id) existing.push(x.id); else fresh.push(x.id); });
-  for(const id of existing) await sbApi('progress?id=eq.'+srsProgress[id].id, 'PATCH', { next_review: now });
+  const blank = () => ({level:0,correct_count:0,review_count:0});
+  // Gebündelt statt je Vokabel eine Anfrage: vorhandene Zeilen in einem PATCH je 150 Einträge, neue Zeilen in einem POST,
+  // alles gleichzeitig. Vorher ging pro vorhandener Zeile eine eigene Anfrage nacheinander raus.
+  const tasks = [];
+  for(let i = 0; i < existing.length; i += 150){
+    const ids = existing.slice(i, i + 150).map(id => srsProgress[id].id);
+    tasks.push(sbApi('progress?id=in.('+ids.join(',')+')', 'PATCH', { next_review: now }));
+  }
+  let res = [];
   if(fresh.length){
     const rows = fresh.map(id => ({user_id:currentUser.id, vocabulary_id:id, correct_count:0, wrong_count:0, review_count:0, next_review: now}));
-    const res = await sbApi('progress?on_conflict=user_id,vocabulary_id', 'POST', rows, 'resolution=ignore-duplicates,return=representation');
-    const got = new Map((res||[]).map(r => [r.vocabulary_id, r.id]));
-    for(const id of fresh){
-      if(got.has(id)){ srsProgress[id] = Object.assign(srsProgress[id]||{level:0,correct_count:0,review_count:0}, {id:got.get(id)}); continue; }
-      // Zeile existierte schon (Konflikt ignoriert): Id holen, dann Fälligkeit setzen
-      const f = await sbApi('progress?user_id=eq.'+currentUser.id+'&vocabulary_id=eq.'+id+'&select=id');
-      if(f && f[0]){ await sbApi('progress?id=eq.'+f[0].id, 'PATCH', { next_review: now }); srsProgress[id] = Object.assign(srsProgress[id]||{level:0,correct_count:0,review_count:0}, {id:f[0].id}); }
+    tasks.push(sbApi('progress?on_conflict=user_id,vocabulary_id', 'POST', rows, 'resolution=ignore-duplicates,return=representation').then(r => { res = r || []; }));
+  }
+  await Promise.all(tasks);
+  if(fresh.length){
+    const got = new Map(res.map(r => [r.vocabulary_id, r.id]));
+    fresh.forEach(id => { if(got.has(id)) srsProgress[id] = Object.assign(srsProgress[id]||blank(), {id:got.get(id)}); });
+    // Zeilen, die schon existierten (Konflikt ignoriert): Ids in einer Abfrage holen, dann in einem PATCH die Fälligkeit setzen
+    const missing = fresh.filter(id => !got.has(id));
+    if(missing.length){
+      const f = await sbApi('progress?user_id=eq.'+currentUser.id+'&vocabulary_id=in.('+missing.join(',')+')&select=id,vocabulary_id');
+      const rowIds = (f||[]).map(r => r.id);
+      if(rowIds.length) await sbApi('progress?id=in.('+rowIds.join(',')+')', 'PATCH', { next_review: now });
+      (f||[]).forEach(r => { srsProgress[r.vocabulary_id] = Object.assign(srsProgress[r.vocabulary_id]||blank(), {id:r.id}); });
     }
   }
   const nowDate = new Date(now);
-  picked.forEach(x => { if(!srsProgress[x.id]) srsProgress[x.id] = {level:0,correct_count:0,review_count:0}; srsProgress[x.id].next_review = nowDate; });
+  picked.forEach(x => { if(!srsProgress[x.id]) srsProgress[x.id] = blank(); srsProgress[x.id].next_review = nowDate; });
 }
 async function statsActivateVocab(n){
   if(!currentUser){ showToast('Fehler: nicht eingeloggt','err'); return; }
