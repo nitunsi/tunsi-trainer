@@ -687,6 +687,7 @@ function showMore(){
     +   '<div class="neu-cap" style="margin-top:1rem">Tagesziel (richtige Antworten pro Tag)</div>'+seg([[50,'50'],[100,'100'],[150,'150'],[200,'200']], goal, "neuSetGoal(%v)")
     +   '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Audio beim Aufdecken abspielen</span>'+sw(audioAutoplay, "toggleAudioAutoplay();showMore()")+'</div>'
     +   '<div class="li"><span class="sp">Vibration bei Richtig und Falsch</span>'+sw(vib, "neuToggleVib()")+'</div></div>'
+    +   '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Kurs-Abschnitte nach Themenblöcken vorschlagen<span class="neu-sub" style="display:block;font-size:.8rem">Aus: Reihenfolge wie im Skript. An: '+COURSE_ALT_BLOCKS+'; die Vergangenheit steht vor dem Partizip. Ändert nur den Vorschlag „Kurs-Abschnitt“ unter Lernen.</span></span>'+sw(courseAltOn(), "neuToggleCOrder()")+'</div></div>'
     +   '<div class="neu-cap" style="margin-top:1rem">Lektion einschränken</div>'
     +   '<select id="neu-lesson" onchange="neuLesson(this.value)" style="width:100%;min-height:48px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:0 .7rem;font-size:1rem">'+lessonOpts+'</select>'
     + '</div>'
@@ -773,6 +774,45 @@ window.neuPickDir = function(v, lvl){
   return Math.random() < (lvl >= 3 ? 0.3 : 0.5) ? 'au2de' : base;
 };
 window.neuToggleListen = function(){ LS.set('neu-listen', LS.get('neu-listen','1') === '1' ? '0' : '1'); showMore(); };
+
+/* ---------- Kurs-Reihenfolge: alternative Themenblöcke (ändert nur den Vorschlag „Kurs-Abschnitt“, Schalter unter Mehr) ---------- */
+// Jeder Eintrag: Kursnummer:Abschnittsschlüssel. L1–L4 bleiben vorn, was hier fehlt (z. B. Lektion 14), kommt danach in der alten Reihenfolge.
+// Blöcke: reguläre Verben im Präsens · Vergangenheit (Perfekt) der regulären Verben · schwache Verben (je Klasse Präsens, dann Perfekt) ·
+//         Partizip · Alltagssätze · Zeit und Zahlen · Nomen, Adjektive, Besitz · Wiederholung · Verbstämme II–VI · Objekte, Nebensätze, Bedingungen · Übungen.
+//         Die Vergangenheit steht vor dem Partizip.
+const COURSE_ALT_ORDER = [
+  '5:dialoge', '5:verben_gruppen_praesens', '5:verben_gruppen_negation', '5:verben_gruppen_plural', '10:dialoge_1', '10:dialoge_2',
+  '10:perfekt_konjug1', '10:perfekt_konjug2', '10:perfekt_uebersetzen', '6:dialoge_1', '6:dialoge_2', '6:verba_infirmae_konjug',
+  '6:verba_infirmae_negation', '12:dialoge', '12:perfekt_mediae_1', '12:perfekt_mediae_2', '6:geminierte_konjug', '6:geminierte_negation',
+  '11:dialoge_1', '11:dialoge_2', '11:perfekt_geminiert', '7:verba_tertiae_luecken', '7:verba_tertiae_konjug', '7:verba_tertiae_negation',
+  '11:perfekt_tertiae', '8:primae_infirmae', '8:yakul_yaxudh', '10:perfekt_primae', '11:perfekt_yaxudh', '7:yji', '11:perfekt_yzi',
+  '12:duratives_perfekt', '12:nominalsaetze', '12:modalverben_perfekt', '11:mazal', '11:maad', '12:negation', '5:verben_gruppen_partizip',
+  '5:partizip_fragen_1', '5:partizip_fragen_2', '5:partizip_luecken', '5:passives_partizip', '6:verba_infirmae_partizip', '6:geminierte_partizip',
+  '7:verba_tertiae_partizip', '5:tawwa', '5:madabb', '6:qaid_fragen1', '6:qaid_negieren', '6:qaid_fragen2', '6:modalverben_fragen1',
+  '6:modalverben_fragen2', '6:modalverben_negieren', '7:dialoge_1', '7:dialoge_2', '7:dialoge_3', '7:futur_luecken', '7:futur_fragen1',
+  '7:futur_fragen2', '8:brauchen', '9:muessen', '9:verbot', '7:uhrzeit', '7:wann', '7:sna_3am_yum_nhar', '7:hada_jayy', '7:min_hatta',
+  '5:zahlen_20_1', '5:zahlen_20_2', '9:zahlen_1000', '12:ordinalzahlen', '5:feminina', '6:demonstrativ', '6:kongruenz_gegenteil',
+  '6:kongruenz_nominalsatz', '6:kongruenz_luecken', '6:barsha_shwayya', '6:steigerung', '8:dialoge_1', '8:dialoge_2', '8:dialoge_3', '8:qaddash',
+  '8:nomen_unitatis', '8:possessivsuffixe', '8:genitivverbindung', '9:dialoge_1', '9:dialoge_2', '9:verpackung', '9:allein', '9:dual', '9:mta3',
+  '6:wiederholung_plural1', '6:wiederholung_uebersetzen1', '6:wiederholung_uebersetzen2', '6:wiederholung_plural2', '7:famma_tamma',
+  '7:wiederholung_fragen', '7:wiederholung_uebersetzen', '7:wiederholung_bild', '8:wiederholung_1', '8:wiederholung_2', '9:wiederholung',
+  '10:ii_stamm', '11:ii_stamm_schwach', '11:ii_stamm_gem', '12:iii_stamm', '12:vierradikalig', '13:dialoge_1', '13:dialoge_2', '13:dialoge_3',
+  '13:yzid', '13:v_stamm', '13:vi_stamm', '9:pronominalsuffixe_verben', '10:objektsuffixe', '10:nebensaetze', '10:ma_kan', '10:kull', '11:yxalli',
+  '11:dativobjekt', '13:objekt_kombiniert', '13:mashin', '13:bedingungssaetze', '13:fi_progressive', '12:relativpronomen', '7:verbindungswoerter',
+  '10:uebungen_luecken', '10:uebungen_zuordnung', '10:uebungen_richtigfalsch', '11:uebungen_zusatz', '12:uebungen_zusatz', '13:uebungen_zusatz'
+];
+const COURSE_ALT_BLOCKS = 'Verben im Präsens, Vergangenheit (Perfekt), schwache Verben mit Perfekt, Partizip, Alltagssätze, Zeit und Zahlen, Nomen und Besitz, Wiederholung, Verbstämme, Objekte und Nebensätze, Übungen';
+const _caRank = {}; COURSE_ALT_ORDER.forEach((k, i) => { _caRank[k] = i; });
+function courseAltOn(){ return LS.get('neu-corder', 'std') === 'alt'; }
+window.neuToggleCOrder = function(){ LS.set('neu-corder', courseAltOn() ? 'std' : 'alt'); showMore(); };
+window.statsNextLockedChunk = function(){
+  const locked = ch => ch.srsItems.length && !courseChunkUnlocked(ch.srsItems);
+  const chunks = courseFlattenChunks();
+  if(!courseAltOn()) return chunks.find(locked) || null;
+  const rank = (ch, i) => { const k = ch.lesson.course_number + ':' + ch.chunkKey; return k in _caRank ? 1000 + _caRank[k] : (ch.lesson.course_number < 5 ? 0 : 5000) + i; };
+  const f = chunks.map((ch, i) => ({ch, r: rank(ch, i)})).sort((a, b) => a.r - b.r).find(x => locked(x.ch));
+  return f ? f.ch : null;
+};
 
 /* ---------- Leerer Zustand in der Sitzung ---------- */
 function nothingDue(){
