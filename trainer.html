@@ -443,6 +443,18 @@ function homonymNote(v){
   const list = sibs.map(s=>'<br>• <b>'+s.en+'</b> <span style="color:var(--muted)">('+s.tp+' · '+s.ls+')</span>').join('');
   return '<div style="margin-top:.5rem;padding:.35rem .6rem;background:rgba(201,166,74,.12);border:1px solid var(--gold);border-radius:4px;font-size:.72rem;color:var(--gold)">⚠️ Homonym — <b>'+v.ar+'</b> hat mehrere Bedeutungen. Diese Karte: <b>'+v.en+'</b> ('+v.tp+' · '+v.ls+')'+list+'</div>';
 }
+// Partner einer mit homonym_ok markierten Karte, deren Antwort ebenfalls als richtig gilt:
+//  de = gleiche Schreibung, anderes Wort (gleiches Arabisch oder gleiche Umschrift) → deren Deutsch zählt bei Arabisch → Deutsch
+//  tn = gleiches Deutsch, andere Schreibung (Synonym) → deren Arabisch/Umschrift zählt bei Deutsch → Arabisch
+function homAcceptPartners(v){
+  if(!v || !v.hok) return {de:[], tn:[]};
+  const k = x => (x||'').trim().toLowerCase();
+  const sibs = ALL_VOCAB.filter(e => e.hok && e.id !== v.id);
+  return {
+    de: sibs.filter(e => e.en && ((e.ar && e.ar === v.ar) || (e.tr && k(e.tr) === k(v.tr))) && k(e.en) !== k(v.en)),
+    tn: sibs.filter(e => k(e.en) === k(v.en) && e.ar !== v.ar)
+  };
+}
 function synonymNote(v){
   if(!v || !v.hok) return '';
   const vEnKey = v.en.trim().toLowerCase();
@@ -2979,11 +2991,15 @@ function chkFlash(){
   const val=inp.value.trim();
   const ex=exList[cIdx];
   const v=ex.v, dir=(ex.dir==='au2de'?'ar2de':ex.dir);
-  let ok=false;
+  let ok=false, viaPartner=null;
   if(dir==='ar2de'){
     {const r=checkAnswer(val,v.en);ok=r.ok;if(ok&&!r.exact)flashFuzzy=v.en;}
+    // Homonym: das Deutsch eines Partners mit gleicher Schreibung gilt auch als richtig
+    if(!ok){ const pt = homAcceptPartners(v).de.find(e => checkAnswer(val, e.en).ok); if(pt){ ok = true; viaPartner = {p:pt, shown:pt.en}; } }
   } else {
     {const r1=checkAnswer(val,v.ar),r2=checkAnswer(val,v.tr);ok=r1.ok||r2.ok;if(ok&&!(r1.exact||r2.exact))flashFuzzy=v.ar+'('+v.tr+')';}
+    // Synonym: Arabisch/Umschrift eines Partners mit gleichem Deutsch gilt auch als richtig
+    if(!ok){ const pt = homAcceptPartners(v).tn.find(e => checkAnswer(val, e.ar).ok || checkAnswer(val, e.tr).ok); if(pt){ ok = true; viaPartner = {p:pt, shown:pt.ar+' ('+pt.tr+')'}; } }
   }
   inp.style.borderColor=ok?'var(--green)':'var(--red)';
   inp.disabled=true;
@@ -2994,7 +3010,9 @@ function chkFlash(){
   const homNote = homonymNote(v)+synonymNote(v)+schreibungNote(v);
   if(ok){
     fb.className='feedback show correct';
-    fb.innerHTML = (flashFuzzy ? '~ Fast! Richtige Schreibung: '+flashFuzzy+'<br>' : '✓ Richtig! ') + sol + homNote;
+    fb.innerHTML = (flashFuzzy ? '~ Fast! Richtige Schreibung: '+flashFuzzy+'<br>'
+      : viaPartner ? '✓ Richtig! Gilt auch: <b>'+escHtml(viaPartner.shown)+'</b> (anderes Wort mit gleicher Schreibung bzw. gleicher Bedeutung)<br>'
+      : '✓ Richtig! ') + sol + homNote;
   } else {
     fb.className='feedback show wrong';
     fb.innerHTML = '✗ ' + sol + homNote;
