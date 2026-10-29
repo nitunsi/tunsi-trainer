@@ -1703,19 +1703,9 @@ function renderActivityCard(){
     const dm = d => d.getDate()+'.'+(d.getMonth()+1)+'.';
     const sum = [['Ø pro Tag', fmtN(Math.round(avg))], ['Bester Tag', fmtN(mx)], ['Aktive Tage', act+' von '+N]];
     let items, opts = {sum};
-    if(N >= 90){
-      items = [];
-      for(let i = 0; i < list.length; i += 7){
-        const part = list.slice(i, i+7), c = part.reduce((s,x)=>s+x.c,0), per = Math.round(c / part.length);
-        items.push({v:c, num:fmtN(per), ax:dm(part[0].d), tip:'Woche ab '+dm(part[0].d)+': '+fmtN(c)+' richtig, Ø '+fmtN(per)+' pro Tag'});
-      }
-      opts.avg = items.reduce((s,x)=>s+x.v,0) / items.length; opts.avgUnit = ' / Woche';
-      opts.def = 'Balken = Woche, Zahl = Ø pro Tag. Antippen: Details';
-    } else {
-      items = list.map((x,i) => ({v:x.c, hot:i===list.length-1, label: N <= 7 ? (i===list.length-1 ? 'Heute' : WD[x.d.getDay()]) : '', ax: dm(x.d),
-        tip: (i===list.length-1 ? 'Heute' : WD[x.d.getDay()]+' '+dm(x.d))+': '+fmtN(x.c)+' richtig (von '+fmtN(x.a)+' beantwortet)'}));
-      opts.avg = avg;
-    }
+    items = list.map((x,i) => ({v:x.c, hot:i===list.length-1, label: N <= 7 ? (i===list.length-1 ? 'Heute' : WD[x.d.getDay()]) : '', ax: dm(x.d),
+      tip: (i===list.length-1 ? 'Heute' : WD[x.d.getDay()]+' '+dm(x.d))+': '+fmtN(x.c)+' richtig (von '+fmtN(x.a)+' beantwortet)'}));
+    opts.avg = avg;
     delete opts.sum; opts.H = 68;
     el.innerHTML = barChart(items, opts);
     if(window.neuStatsLock) window.neuStatsLock();
