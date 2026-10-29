@@ -897,6 +897,37 @@ const TN_ISLAMIC = [
   {m:10, d:1, n:'Eid al-Fitr (es-sghir)', desc:'Ende des Ramadan · el-3id es-sghir, „das kleine Fest“', holiday:true, ids:[1125, 1434], ov:true, sight:1},
   {m:12, d:10, n:'Eid al-Adha (el-kbir)', desc:'Opferfest · el-3id lekbir, „das große Fest“', holiday:true, ids:[1125, 1434], ov:true, sight:10}
 ];
+// Hinweise und Bräuche zu den Tagen (nur, was in den genannten Quellen steht; Schlüssel: Monat-Tag, islamische mit h davor)
+const TN_SRC = {
+  fr:  ['Wikipedia: Jours fériés en Tunisie', 'https://fr.wikipedia.org/wiki/Jours_f%C3%A9ri%C3%A9s_en_Tunisie'],
+  islw:['Islamweb: Ramadan in Tunisia', 'https://islamweb.net/en/article/153489/ramadan-in-tunisia'],
+  brik:['Carthage Magazine: Tunisian Brik', 'https://carthagemagazine.com/tunisian-brik/'],
+  vik: ['Vikidia: Fêtes en Tunisie', 'https://fr.vikidia.org/wiki/F%C3%AAtes_en_Tunisie'],
+  webdo:['Webdo: Cap sur l’Aïd el-Fitr', 'https://www.webdo.tn/fr/actualite/chroniques/cap-sur-aid-el-fitr-un-deux-trois-baklawa/204947/'],
+  city:['Cityzeum: Aïd-el-Kebir en Tunisie', 'https://www.cityzeum.com/ev/aid-el-kebir'],
+  kap: ['Kapitalis: Aïd El-Kebir, rituels, senteurs et saveurs', 'https://kapitalis.com/tunisie/2016/09/11/aid-el-kebir-rituels-senteurs-et-saveurs/'],
+  nar: ['The New Arab: Eid al-Adha in Tunisia', 'https://www.newarab.com/news/tunisias-top-religious-council-refuses-cancel-eid-al-adha'],
+  lap: ['La Presse: Le Mouled en Tunisie', 'https://www.lapresse.tn/2026/08/24/le-mouled-en-tunisie-lassida-au-coeur-dune-tradition-seculaire/']
+};
+const TN_INFO = {
+  'h9-1':  {hint:'Im Ramadan wird tagsüber gefastet und nachts gefeiert. Viele Restaurants sind tagsüber geschlossen.',
+            bra:['Die Familie trifft sich jeden Abend am selben Tisch zum Fastenbrechen (ftour). Der Monat heißt deshalb „Monat des Treffens“.', 'Auf den Tisch kommen Brik (dünner Teig mit Ei, Thunfisch und Petersilie), Chorba (Suppe), Datteln, Salate und Brot.', 'In den Städten werden Mahlzeiten für Bedürftige organisiert.'], src:['islw','brik','fr']},
+  'h10-1': {hint:'Fest zum Ende des Ramadan, das „kleine Fest“ (el-3id es-sghir). Feiertag, meist zwei Tage.',
+            bra:['Am ersten Tag besucht man Verwandte und gratuliert sich.', 'Es gibt selbst gebackene Süßigkeiten: Makroudh, Ghraiba (die gelbe aus Kichererbsen gilt als das Gebäck des Festes) und Baklawa, manche backen auch Kaak warqa und Mlabess.', 'Kinder tragen neue Kleider und bekommen Geld, die „mahba“.'], src:['vik','webdo','fr']},
+  'h12-10':{hint:'Opferfest, erinnert an das Opfer Abrahams: das „große Fest“ (el-3id lekbir), auch „Eid el-Allouche“ genannt (allouche = Schaf). Feiertag, meist zwei Tage.',
+            bra:['Man opfert ein Schaf. Das Fleisch wird in drei Teile geteilt: für die Familie, für Freunde und Nachbarn und für Bedürftige.', 'Am Tag danach gibt es traditionelle Gerichte, zum Beispiel Couscous bel osbane (mit gefülltem Darm), Hargma (aus Füßen und Kopf) oder Méchoui.', 'Das Opfern ist eine tief verwurzelte Tradition, aber laut Mufti keine Pflicht.'], src:['city','kap','nar','fr']},
+  'h3-12': {hint:'Geburtstag des Propheten Mohammed, Feiertag. In Tunis wird in der Zitouna-Moschee das Gedicht „Al-Hamzia“ gesungen, in Kairouan gibt es Feiern an der Großen Moschee.',
+            bra:['Typisch ist die Assida zgougou, ein Pudding aus den Samen der Aleppo-Kiefer, verziert mit Trockenfrüchten, Creme und kandierten Früchten. Manche machen die weiße Assida aus Mehl (mit Zucker, Olivenöl oder Honig).', 'Man besucht Nachbarn und Familie. Frauen bringen ihrer Mutter und Schwiegermutter Assida.', 'Dazu gibt es Veranstaltungen mit Koranrezitation und religiösen Gesängen.'], src:['lap','fr']},
+  'h1-1':  {hint:'Beginn des islamischen Jahres (1. Muharram), Feiertag.', bra:[], src:['fr']},
+  '1-1':   {hint:'Neujahr, Feiertag.', bra:[], src:['fr']},
+  '3-20':  {hint:'Unabhängigkeitstag: erinnert an die Unabhängigkeit von Frankreich 1956.', bra:[], src:['fr']},
+  '4-9':   {hint:'Tag der Märtyrer: erinnert an die Niederschlagung nationalistischer Demonstrationen durch französische Truppen 1938.', bra:[], src:['fr']},
+  '5-1':   {hint:'Tag der Arbeit, Feiertag.', bra:[], src:['fr']},
+  '7-25':  {hint:'Tag der Republik: erinnert an die Ausrufung der Republik 1957.', bra:[], src:['fr']},
+  '8-13':  {hint:'Frauentag: erinnert an das Gesetz zum Personenstand (Code du statut personnel) von 1956.', bra:[], src:['fr']},
+  '10-15': {hint:'Tag der Räumung: erinnert an den Abzug der letzten französischen Truppen vom Stützpunkt Bizerte 1963.', bra:[], src:['fr']},
+  '12-17': {hint:'Tag der Revolution und der Jugend: erinnert an den Beginn der Revolution 2010.', bra:[], src:['fr']}
+};
 let _hijriFmt = null;
 function hijriOf(date){
   try{
@@ -913,17 +944,17 @@ function tnDayEvents(from, span){
   const out = [], ov = tnOv();
   for(let i = 0; i <= span; i++){
     const d = new Date(from.getFullYear(), from.getMonth(), from.getDate() + i);
-    TN_FIXED.forEach(f => { if(f.m === d.getMonth() + 1 && f.d === d.getDate()) out.push({diff:i, n:f.n, holiday:true, calc:false}); });
+    TN_FIXED.forEach(f => { if(f.m === d.getMonth() + 1 && f.d === d.getDate()) out.push({diff:i, n:f.n, key:f.m + '-' + f.d, holiday:true, calc:false}); });
     const h = hijriOf(d), iso = tnIso(d);
     if(h) TN_ISLAMIC.forEach(f => {
       if(f.m !== h.month || f.d !== h.day) return;
       if(f.ov && ov[f.m + '-' + h.year]) return;   // für dieses Jahr ist ein Datum eingetragen: der errechnete Tag entfällt
-      out.push({diff:i, n:f.n, desc:f.desc, holiday:f.holiday, calc:true, ids:f.ids});
+      out.push({diff:i, n:f.n, key:'h' + f.m + '-' + f.d, desc:f.desc, holiday:f.holiday, calc:true, ids:f.ids});
     });
     Object.keys(ov).forEach(k => {
       if(ov[k] !== iso) return;
       const f = TN_ISLAMIC.find(x => x.ov && x.m === parseInt(k, 10));
-      if(f) out.push({diff:i, n:f.n, desc:f.desc, holiday:f.holiday, calc:false, set:true, ids:f.ids});
+      if(f) out.push({diff:i, n:f.n, key:'h' + f.m + '-' + f.d, desc:f.desc, holiday:f.holiday, calc:false, set:true, ids:f.ids});
     });
   }
   return out;
@@ -963,7 +994,7 @@ function tnDaysHtml(){
     byDay.forEach(g => lines.push(tnWhen(g.diff) + ': ' + g.names.join(' und ') + (g.holiday ? ' · Feiertag' : '') + (g.calc ? ' (errechnet)' : g.set ? ' (eingetragen)' : '')));
     const ids = (ev.find(e => e.ids) || {}).ids || null;
     window._tnInfo = {lines, calc: (!!ramadan && !ramSet) || ev.some(e => e.calc), ids, ramadan, ramSet, sight,
-      events: ev.map(e => ({diff:e.diff, name:e.n, desc:e.desc, holiday:e.holiday, calc:e.calc, set:e.set, date:new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + e.diff)}))};
+      events: ev.map(e => ({diff:e.diff, name:e.n, key:e.key, desc:e.desc, holiday:e.holiday, calc:e.calc, set:e.set, date:new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + e.diff)}))};
     const shown = lines.slice(0, 2);
     return '<div class="tn-box" onclick="tnTap()">' + shown.map((l, i) => '<div class="tn-l">' + escHtml(l) + (i === shown.length - 1 ? ' ▸' : '') + '</div>').join('') + '</div>';
   }catch(e){ return ''; }
@@ -982,11 +1013,22 @@ window.tnTap = function(){
   if(i.ramadan) rows.push('<div class="tnm-r"><div class="tnm-d">Heute</div><div class="tnm-n">Ramadan, Tag ' + i.ramadan + '</div>' + tag(i.ramSet ? 'eingetragen' : 'errechnet') + '</div>');
   i.events.forEach(e => rows.push('<div class="tnm-r"><div class="tnm-d">' + (e.diff === 0 ? 'Heute' : e.diff === 1 ? 'Morgen' : WD[e.date.getDay()] + ' ' + dm(e.date)) + '</div><div class="tnm-n">' + escHtml(e.name).replace(/-/g, '\u2011') + (e.desc ? '<div class="tnm-sub">' + escHtml(e.desc).replace(/-/g, '\u2011') + '</div>' : '') + '</div>'
     + (e.holiday ? tag('Feiertag') : '') + (e.calc ? tag('errechnet') : e.set ? tag('eingetragen') : '') + '</div>'));
+  const keys = [], names = {};
+  if(i.ramadan){ keys.push('h9-1'); names['h9-1'] = 'Ramadan'; }
+  i.events.forEach(e => { if(e.key && !keys.includes(e.key)){ keys.push(e.key); names[e.key] = e.name; } });
+  const infoHtml = keys.filter(k => TN_INFO[k]).map(k => {
+    const t = TN_INFO[k];
+    return '<details class="tnm-i"><summary>Hinweise und Bräuche: ' + escHtml(names[k]) + '</summary>'
+      + '<div class="tnm-ix">' + escHtml(t.hint) + '</div>'
+      + (t.bra.length ? '<div class="tnm-k" style="margin-top:.5rem">Bräuche</div><ul class="tnm-ul">' + t.bra.map(b => '<li>' + escHtml(b) + '</li>').join('') + '</ul>' : '')
+      + '<div class="tnm-src">Quellen: ' + t.src.map(q => '<a href="' + TN_SRC[q][1] + '" target="_blank" rel="noopener">' + escHtml(TN_SRC[q][0]) + '</a>').join(' · ') + '</div></details>';
+  }).join('');
   const html = '<div id="tnm-bg" class="tnm-bg" onclick="if(event.target===this)tnClose()"><div class="tnm" role="dialog" aria-label="Besondere Tage in Tunesien">'
     + '<div class="tnm-h"><span>Besondere Tage in Tunesien</span><button class="tnm-x" aria-label="Schließen" onclick="tnClose()">×</button></div>'
     + '<div class="tnm-b">' + rows.join('')
     + (i.calc ? '<div class="tnm-s">„errechnet“ heißt: nach dem Kalender berechnet. In Tunesien legt die Mondsichtung die Tage fest, deshalb kann es um einen Tag abweichen.</div>' : '')
     + ((i.sight || []).length ? '<div class="tnm-s">Den Beginn gibt der Mufti der Republik am Abend der Mondsichtung bekannt. Unter „Mehr“ steht, wo du es nachlesen kannst.</div>' : '')
+    + infoHtml
     + (nm ? '<div class="tnm-hint"><div class="tnm-k">Nachschub</div>' + nm.t.split('\n').map(escHtml).join('<br>') + '</div>' : '')
     + (ph.length ? '<div class="tnm-k" style="margin-top:.9rem">Grüße zum Üben</div>' + ph.map(v => '<div class="tnm-p"><div class="tnm-ar" dir="rtl">' + escHtml(v.ar || '') + '</div><div><b>' + escHtml(v.tr || '') + '</b> · ' + escHtml(v.en || '') + '</div></div>').join('') : '')
     + '</div><div class="tnm-f">'
