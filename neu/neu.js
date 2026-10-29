@@ -914,42 +914,40 @@ function tnDayEvents(from, span){
 function tnWhen(diff){ return diff === 0 ? 'Heute' : diff === 1 ? 'Morgen' : 'In ' + diff + ' Tagen'; }
 function tnDaysHtml(){
   try{
-    document.body.classList.remove('neu-tn-open');
+    window._tnInfo = null;
     const t0 = new Date(); t0.setHours(0, 0, 0, 0);
     // Zum Ansehen: Adresse mit ?tntest=2026-03-18 öffnet die Startseite mit diesem Datum (nur die Karte, sonst ändert sich nichts)
     try{ const q = (new URLSearchParams(location.search).get('tntest') || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); if(q) t0.setFullYear(+q[1], +q[2] - 1, +q[3]); }catch(e){}
     const ev = tnDayEvents(t0, 7), h0 = hijriOf(t0);
     const ramadan = (h0 && h0.month === 9) ? h0.day : 0;
     if(!ev.length && !ramadan) return '';
-    // je Tag eine Zeile (mehrere Ereignisse am selben Tag zusammen), höchstens zwei Zeilen, damit die Startseite ohne Scrollen passt
+    // je Tag eine Zeile (mehrere Ereignisse am selben Tag zusammen); auf der Startseite höchstens zwei Zeilen, alles Weitere beim Antippen
     const byDay = [];
-    ev.forEach(e => { let g = byDay.find(x => x.diff === e.diff); if(!g){ g = {diff:e.diff, names:[], holiday:false}; byDay.push(g); } g.names.push(e.n); if(e.holiday) g.holiday = true; });
+    ev.forEach(e => { let g = byDay.find(x => x.diff === e.diff); if(!g){ g = {diff:e.diff, names:[], holiday:false, calc:false}; byDay.push(g); } g.names.push(e.n); if(e.holiday) g.holiday = true; if(e.calc) g.calc = true; });
     const lines = [];
-    if(ramadan) lines.push('Ramadan, Tag ' + ramadan);
-    byDay.forEach(g => lines.push(tnWhen(g.diff) + ': ' + g.names.join(' und ') + (g.holiday ? ' · Feiertag' : '')));
-    const calc = !!ramadan || ev.some(e => e.calc);
+    if(ramadan) lines.push('Ramadan, Tag ' + ramadan + ' (errechnet)');
+    byDay.forEach(g => lines.push(tnWhen(g.diff) + ': ' + g.names.join(' und ') + (g.holiday ? ' · Feiertag' : '') + (g.calc ? ' (errechnet)' : '')));
     const ids = (ev.find(e => e.ids) || {}).ids || null;
-    const ph = (ids || []).map(id => vById(id)).filter(Boolean);
-    return '<div class="tn-box">'
-      + lines.slice(0, 2).map(l => '<div class="tn-l">' + escHtml(l) + '</div>').join('')
-      + (calc ? '<div class="tn-s">errechnet, in Tunesien ± 1 Tag (Mondsichtung)</div>' : '')
-      + (ph.length ? '<button class="tn-b" onclick="tnToggle()">Grüße zum Üben ▾</button>'
-        + '<div id="neu-tn-more" style="display:none;margin-top:.3rem">' + ph.map(v => '<div><span dir="rtl">' + escHtml(v.ar || '') + '</span> · <b>' + escHtml(v.tr || '') + '</b> · ' + escHtml(v.en || '') + '</div>').join('')
-        + '<button class="neu-btn ghost" style="margin-top:.4rem;min-height:40px" onclick="tnDueNow([' + ph.map(v => v.id).join(',') + '])">Zum Üben fällig setzen</button></div>' : '')
-      + '</div>';
+    window._tnInfo = {lines, calc: !!ramadan || ev.some(e => e.calc), ids};
+    const shown = lines.slice(0, 2);
+    return '<div class="tn-box" onclick="tnTap()">' + shown.map((l, i) => '<div class="tn-l">' + escHtml(l) + (i === shown.length - 1 ? ' ▸' : '') + '</div>').join('') + '</div>';
   }catch(e){ return ''; }
 }
-window.tnToggle = function(){
-  const m = $('neu-tn-more'); if(!m) return;
-  const open = m.style.display === 'none';
-  m.style.display = open ? '' : 'none';
-  document.body.classList.toggle('neu-tn-open', open);   // geöffnet: die Seite darf scrollen
+// Antippen: alle Meldungen, Hinweis zur Berechnung und, wenn vorhanden, Grüße zum Üben (mit Fälligsetzen nach Rückfrage)
+window.tnTap = function(){
+  const i = window._tnInfo; if(!i) return;
+  const ph = (i.ids || []).map(id => vById(id)).filter(Boolean);
+  let t = 'Besondere Tage in Tunesien\n\n' + i.lines.join('\n');
+  if(i.calc) t += '\n\n„errechnet“: Die islamischen Tage sind nach dem Kalender berechnet. In Tunesien werden sie nach Mondsichtung festgelegt, deshalb kann es um einen Tag abweichen.';
+  if(!ph.length){ alert(t); return; }
+  t += '\n\nGrüße zum Üben:\n' + ph.map(v => v.tr + ' – ' + v.en).join('\n') + '\n\nZum Üben fällig setzen?';
+  if(confirm(t)) window.tnDueNow(ph.map(v => v.id), true);
 };
-window.tnDueNow = async function(ids){
+window.tnDueNow = async function(ids, noAsk){
   if(!currentUser){ showToast('Fehler: nicht eingeloggt', 'err'); return; }
   const picked = (ids || []).filter(id => vById(id)).map(id => ({id}));
   if(!picked.length) return;
-  if(!confirm(picked.length + ' Vokabeln fällig setzen?\n\n' + picked.map(x => vById(x.id).tr + ' – ' + vById(x.id).en).join('\n'))) return;
+  if(!noAsk && !confirm(picked.length + ' Vokabeln fällig setzen?\n\n' + picked.map(x => vById(x.id).tr + ' – ' + vById(x.id).en).join('\n'))) return;
   try{ await statsActivateApply(picked); showToast('✓ fällig gesetzt', 'ok'); }
   catch(e){ showToast('Fehler: ' + e.message, 'err'); }
 };
