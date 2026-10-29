@@ -386,6 +386,501 @@ function newStuffHint(){
   return m ? hintCard(m.t, m.red) : '';
 }
 
+// Ring füllt sich weich vom zuletzt gezeigten Stand des Tages; beim ersten Erreichen des Tagesziels kurz feiern
+function animateRing(host, p, today, goal){
+  let last = null; try{ last = JSON.parse(LS.get('neu-ringlast', 'null')); }catch(e){}
+  const day = berlinDay(new Date());
+  const same = last && last.day === day;
+  const fromP = same ? last.p : 0, fromT = same ? last.today : 0;
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const goalEl = $('neu-goal-t');
+  const setTexts = (pp, t) => { const tx = host.querySelector('text'); if(tx) tx.textContent = fmtN(Math.round(t)); if(goalEl) goalEl.textContent = 'von ' + fmtN(goal) + ' richtigen Antworten'; };
+  const hit = p >= 1 && !(same && last.p >= 1);
+  LS.set('neu-ringlast', JSON.stringify({day, p, today}));
+  if(reduce || (Math.abs(fromP - p) < 0.005 && fromT === today)){
+    host.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', fmtN(today));
+    if(goalEl) goalEl.textContent = 'von ' + fmtN(goal) + ' richtigen Antworten';
+    return;
+  }
+  host.innerHTML = ring(fromP, 76, 8, fromP >= 1 ? 'var(--green)' : 'var(--gold)', fmtN(Math.round(fromT)));
+  const arc = host.querySelectorAll('circle')[1];
+  const circ = 2 * Math.PI * (76 - 8) / 2;
+  if(arc){
+    arc.style.transition = 'stroke-dasharray .9s cubic-bezier(.2,.8,.2,1), stroke .3s .6s';
+    requestAnimationFrame(() => requestAnimationFrame(() => { arc.setAttribute('stroke-dasharray', (circ * Math.max(0, Math.min(1, p))).toFixed(1) + ' ' + circ.toFixed(1)); arc.setAttribute('stroke', p >= 1 ? 'var(--green)' : 'var(--gold)'); }));
+  }
+  const t0 = performance.now(), dur = 900;
+  const tick = now => {
+    const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    setTexts(fromP + (p - fromP) * e, fromT + (today - fromT) * e);
+    if(k < 1 && $('neu-ring') === host) requestAnimationFrame(tick); else setTexts(p, today);
+  };
+  requestAnimationFrame(tick);
+  if(hit){
+    setTimeout(() => { if($('neu-ring') === host){ host.classList.add('neu-ring-hit'); try{ if(LS.get('neu-vib','0') === '1' && navigator.vibrate) navigator.vibrate([30, 40, 60]); }catch(e){} } }, 700);
+  }
+}
+// Gruß nach Berliner Uhrzeit: Tounsi + Deutsch, mit Sonne oder Mond
+function greetingNow(){
+  const hr = parseInt(new Intl.DateTimeFormat('de-DE', {hour:'2-digit', hour12:false, timeZone:'Europe/Berlin'}).format(new Date()), 10) % 24;
+  if(hr >= 5 && hr < 12) return {art:'sun', tn:'Sba7 lkhiyr', de:'Guten Morgen'};
+  if(hr >= 12 && hr < 18) return {art:'sun', tn:'Nharik zin', de:'Einen schönen Tag'};
+  if(hr >= 18 && hr < 22) return {art:'moon', tn:'Massik bil khir', de:'Guten Abend'};
+  return {art:'moon', tn:'Tisbe7 3ala khir', de:'Gute Nacht'};
+}
+function greetHtml(){
+  const g = greetingNow(), name = currentUser && currentUser.username ? ', '+escHtml(currentUser.username) : '';
+  return '<div class="neu-greet">'+artHtml(g.art)+'<div><div class="g1">'+g.tn+name+'</div><div class="neu-sub">'+g.de+'</div></div></div>';
+}
+function goHome(){
+  reset('home');
+  const c = $('exercise-content'); if(!c) return;
+  const d = dueCounts(), total = d.voc + d.course;
+  neuBadge(); pushRefresh();
+  const goal = parseInt(LS.get('neu-goal','100'), 10) || 100;
+  const empty = total === 0;
+  c.innerHTML = '<div class="neu-wrap neu-home">'
+    + greetHtml()
+    + lessonFilterChip()
+    + '<div class="neu-card neu-hero" style="padding:.8rem 1rem"><div class="neu-hero-in">'
+    +   '<div id="neu-ring">'+ring(0, 76, 8, 'var(--gold)', '')+'</div>'
+    +   '<div class="neu-hero-t"><div class="neu-sub">Tagesziel</div><div id="neu-goal-t" style="font-size:1.05rem;font-weight:700;margin:1px 0">von '+goal+' richtigen Antworten</div><div id="neu-streak" class="neu-sub">&nbsp;</div></div>'
+    + '</div></div>'
+    + '<div id="neu-new">'+(tnDaysHtml() || newStuffHint())+'</div>'
+    + (empty
+      ? '<div class="neu-card neu-empty">'+artHtml('tea')+'<div><div style="font-size:1.15rem;font-weight:700;color:var(--gold2)">Alles erledigt</div><div class="neu-sub" style="margin-top:.2rem">Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b>'+(d.blocked ? ' · '+fmtN(d.blocked)+' gesperrt' : '')+'</div></div></div>'
+      : '<button class="neu-btn" style="min-height:56px;font-size:1.1rem;margin:0 0 .6rem" onclick="setMode(\'mix\')">Los geht’s · '+fmtN(total)+' fällig</button>')
+    + (empty ? '' : '<div class="neu-row2" style="margin-bottom:.6rem">'
+    +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem" '+(d.voc?'':'disabled')+' onclick="setMode(\'flash\')"><span class="neu-sub">Vokabeln</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.voc)+'</span><small>fällig'+(d.blocked?' · '+fmtN(d.blocked)+' gesperrt':'')+'</small></button>'
+    +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem;border-color:#3b4f7a" '+(d.course?'':'disabled')+' onclick="setMode(\'coursesrs\')"><span class="neu-sub" style="color:var(--blue)">Kurs</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.course)+'</span><small>fällig</small></button>'
+    + '</div>')
+    + '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer;padding:.7rem 1rem" onclick="setMode(\'partnerqueue\')"><div style="flex:1"><span class="neu-skel" style="width:60%;height:1.1rem"></span><div style="height:.4rem"></div><span class="neu-skel" style="width:40%;height:.8rem"></span></div></div>'
+    + '<div class="neu-sub" style="text-align:center;font-size:.8rem;margin:.1rem 0 .2rem">Nachschub</div>'
+    + '<div class="neu-chips" style="padding-bottom:0">'
+    +   '<span class="neu-chip" onclick="openActivateDialog()">Neue Vokabeln</span>'
+    +   '<span class="neu-chip" onclick="statsUnlockNextChunk()">Kurs-Abschnitt</span>'
+    +   '<span class="neu-chip" onclick="openPullForward()">Vorziehen</span>'
+    + '</div>'
+    + '</div>';
+  loadPartnerLine();
+  if(typeof rcApplyIfIdle === 'function') setTimeout(rcApplyIfIdle, 300);   // frische Daten aus dem Hintergrund jetzt übernehmen
+  Promise.all([loadActivity(), loadDayCounts()]).then(([a, dc]) => {
+    const r = $('neu-ring'); if(!r || cMode !== 'home') return;
+    const p = dc.today / goal;
+    try{ animateRing(r, p, dc.today, goal); }
+    catch(e){ console.error('animateRing', e); r.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', fmtN(dc.today)); $('neu-goal-t').textContent = 'von ' + fmtN(goal) + ' richtigen Antworten'; }
+    setTimeout(() => { try{ milesCheck(a.streak || 0); }catch(e){} }, 600);
+    $('neu-streak').innerHTML = a.streak ? flame(a.streak) + a.streak + ' Tag' + (a.streak===1?'':'e') + ' in Folge' : 'Noch keine Serie';
+  }).catch(() => { const s = $('neu-streak'); if(s) s.textContent = ''; });
+  // Motivation: zählt nur, was heute tatsächlich geschafft (richtig beantwortet) ist — nicht, was noch geplant/fällig ist
+  loadDayCounts().then(dc => {
+    if(cMode !== 'home') return;
+    const dng = dangerHtml(dc, goal, total), nw = $('neu-new');
+    if(dng && nw) nw.innerHTML = dng;
+  }).catch(() => {});
+}
+// Serien-Flamme: ab 7, 30 und 100 Tagen in anderer Farbe
+function flame(n){
+  const col = n >= 100 ? 'var(--red)' : n >= 30 ? '#d9822b' : n >= 7 ? 'var(--gold)' : 'var(--muted)';
+  return '<svg class="neu-ic neu-flame" viewBox="0 0 24 24" fill="'+col+'" fill-opacity=".25" stroke="'+col+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3.500 5 5.500 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 .2 1.500 1 2 1.500 2C10 8 11 5 12 3z"/></svg> ';
+}
+// Meilensteine: je Kategorie die höchste erreichte Marke und wie weit es bis zur nächsten ist
+const MILES = [
+  {key:'v', name:'Vokabeln gestartet', marks:[100,250,500,1000,1500,2000,3000,4000,5000]},
+  {key:'p', name:'Profi-Vokabeln', marks:[50,100,250,500,1000,1500,2000,3000]},
+  {key:'s', name:'Tage in Folge', marks:[3,7,14,30,60,100,200,365]},
+  {key:'c', name:'Kurs-Übungen gestartet', marks:[50,100,250,500,1000,1500,2000]},
+  {key:'q', name:'Profi-Kurs-Übungen', marks:[25,50,100,250,500,1000,1500]}
+];
+function milesHtml(vals){
+  return MILES.map(m => {
+    const v = vals[m.key]; if(v == null) return '';
+    const got = m.marks.filter(x => v >= x), nxt = m.marks.find(x => v < x), last = got.length ? got[got.length - 1] : 0;
+    const pct = nxt ? Math.round((v - last) / (nxt - last) * 100) : 100;
+    return '<div class="neu-mile"><div class="neu-mile-b'+(got.length ? ' on' : '')+'"><svg class="neu-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></div>'
+      + '<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:.5rem"><b>'+m.name+'</b><span class="neu-sub">'+fmtN(v)+(nxt ? ' / '+fmtN(nxt) : '')+'</span></div>'
+      + '<div class="neu-mbar"><i style="width:'+pct+'%"></i></div>'
+      + '<div class="neu-sub" style="font-size:.78rem">'+(got.length ? 'Erreicht: '+fmtN(last)+(nxt ? ' · noch '+fmtN(nxt - v)+' bis '+fmtN(nxt) : ' · alle Marken erreicht') : 'Noch '+fmtN(nxt - v)+' bis zur ersten Marke ('+fmtN(nxt)+')')+'</div></div></div>';
+  }).join('');
+}
+// Feier bei neuer Marke: Stand pro Kategorie merken; beim allerersten Mal nur merken, nicht feiern
+function milesNow(streak){
+  let v = 0, p = 0;
+  ALL_VOCAB.forEach(x => { const q = srsProgress[x.id]; if(q && q.next_review){ v++; if((q.level || 0) >= 5) p++; } });
+  const o = {v, p, s: streak};
+  if(_courseLoaded){   // Kurs: ohne geladene Kursdaten nichts melden, sonst wirkt der erste Stand wie ein neuer Meilenstein
+    const ps = Object.values(COURSE_EX_PROGRESS);
+    o.c = ps.length; o.q = ps.filter(q => (q.correct_count || 0) >= 5).length;
+  }
+  return o;
+}
+function milesCheck(streak){
+  if(!currentUser || !ALL_VOCAB.length) return;
+  const now = milesNow(streak);
+  let seen = null; try{ seen = JSON.parse(LS.get('neu-mseen', 'null')); }catch(e){}
+  const reached = {}, fresh = [];
+  MILES.forEach(m => {
+    const val = now[m.key]; if(val == null) return;
+    const mark = m.marks.filter(x => val >= x).pop() || 0;
+    reached[m.key] = mark;
+    if(seen && (m.key in seen) && mark > seen[m.key]) fresh.push({m, mark});
+  });
+  const merged = Object.assign({}, seen || {}, reached);
+  LS.set('neu-mseen', JSON.stringify(merged));
+  if(fresh.length) showCelebration(fresh[fresh.length - 1].m, fresh[fresh.length - 1].mark);
+}
+function showCelebration(m, mark){
+  if($('neu-celeb')) return;
+  const what = m.key === 'v' ? fmtN(mark)+' Vokabeln gestartet' : m.key === 'p' ? fmtN(mark)+' Profi-Vokabeln' : m.key === 'c' ? fmtN(mark)+' Kurs-Übungen gestartet' : m.key === 'q' ? fmtN(mark)+' Profi-Kurs-Übungen' : fmtN(mark)+' Tage in Folge';
+  const o = document.createElement('div'); o.id = 'neu-celeb';
+  o.innerHTML = '<div class="neu-celeb-box"><div class="neu-art">'+ART.sun+'</div><div class="neu-celeb-h">Neuer Meilenstein!</div><div class="neu-celeb-t">'+what+'</div><div class="neu-sub" style="margin:.3rem 0 1rem">Ya3tik es-sa77a — weiter so.</div><button class="neu-btn" onclick="document.getElementById(\'neu-celeb\').remove()">Weiter</button></div>';
+  o.addEventListener('click', e => { if(e.target === o) o.remove(); });
+  document.body.appendChild(o);
+  try{ if(LS.get('neu-vib','0') === '1' && navigator.vibrate) navigator.vibrate([30, 40, 60]); }catch(e){}
+}
+window.neuMilesCheck = milesCheck;
+// Tempo: wie viele Vokabeln wurden in den letzten 30 Tagen neu gestartet (erste Antwort im Zeitraum)? Pro Tag einmal berechnet.
+async function loadPace(){
+  const day = berlinDay(new Date());
+  try{ const c = JSON.parse(LS.get('neu-pace', 'null')); if(c && c.day === day) return c.n; }catch(e){}
+  const since = new Date(Date.now() - 30*86400000).toISOString();
+  const cnt = {};
+  for(let page = 0; page < 20; page++){
+    const r = await sbApi('review_log?user_id=eq.'+currentUser.id+'&vocabulary_id=not.is.null&select=vocabulary_id&created_at=gte.'+since+'&order=id.desc&limit=1000&offset='+(page*1000));
+    (r || []).forEach(x => { cnt[x.vocabulary_id] = (cnt[x.vocabulary_id] || 0) + 1; });
+    if(!r || r.length < 1000) break;
+  }
+  let n = 0;
+  Object.keys(cnt).forEach(id => { const p = srsProgress[id]; if(p && (p.review_count || 0) <= cnt[id]) n++; });
+  LS.set('neu-pace', JSON.stringify({day, n}));
+  return n;
+}
+// Serie und Meilensteine kompakt: je eine Zeile mit Streifen bis zur nächsten Marke; die ganze Liste klappt darunter auf
+function milesRows(vals){
+  const order = ['s','v','p','c'];
+  return order.map(k => {
+    const m = MILES.find(x => x.key === k), v = vals[k]; if(!m || v == null) return '';
+    const nxt = m.marks.find(x => v < x), last = m.marks.filter(x => v >= x).pop() || 0;
+    const pct = nxt ? Math.round((v - last) / (nxt - last) * 100) : 100;
+    return '<div style="margin:.4rem 0"><div style="display:flex;justify-content:space-between;align-items:baseline;font-size:.88rem"><span>'+(k === 's' ? flame(v) : '')+'<b>'+m.name+'</b></span>'
+      + '<span class="neu-sub" style="font-size:.78rem"><b style="color:var(--gold2);font-size:.95rem">'+fmtN(v)+'</b>'+(nxt ? ' / '+fmtN(nxt) : ' · alle Marken')+'</span></div>'
+      + '<div class="neu-mbar" style="margin-top:3px"><i style="width:'+pct+'%"></i></div></div>';
+  }).join('');
+}
+function renderMilestones(vStarted, vTotal, vProfi, course){
+  const el = $('neu-miles'); if(!el) return;
+  const set = vals => { const e = $('neu-miles'); if(e) e.innerHTML = milesHtml(vals); const r = $('neu-miles-rows'); if(r) r.innerHTML = milesRows(vals); };
+  const base = Object.assign({v:vStarted, p:vProfi}, course || {});
+  set(base);
+  loadActivity().then(a => { if(cMode === 'stats') set(Object.assign({}, base, {s:a.streak || 0})); }).catch(() => {});
+  loadPace().then(n => {
+    const f = $('neu-forecast'); if(!f || cMode !== 'stats') return;
+    const left = vTotal - vStarted;
+    if(left <= 0){ f.textContent = 'Alle Vokabeln sind gestartet.'; return; }
+    if(n < 5){ f.textContent = ''; return; }
+    const perWeek = n / 30 * 7, weeks = Math.ceil(left / perWeek);
+    f.innerHTML = 'Noch <b style="color:var(--text)">'+fmtN(left)+'</b> Vokabeln nicht gestartet. In den letzten 30 Tagen waren es etwa <b style="color:var(--text)">'+fmtN(Math.round(perWeek))+'</b> neue pro Woche — bei diesem Tempo sind alle in etwa <b style="color:var(--text)">'+(weeks > 104 ? 'mehr als 2 Jahren' : weeks > 12 ? Math.round(weeks / 4.3)+' Monaten' : weeks+' Woche'+(weeks === 1 ? '' : 'n'))+'</b> gestartet.';
+  }).catch(() => {});
+}
+// Wochenstreifen: die letzten 6 Tage und heute; voll = Tagesziel erreicht, halb = etwas geschafft, leer = nichts
+function weekHtml(dc, goal){
+  const berlin = d => berlinDay(d);
+  const wd = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+  let out = '';
+  for(let i = 6; i >= 0; i--){
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const n = i === 0 ? dc.today : ((dc.days || {})[berlin(d)] || 0);
+    const cls = n >= goal ? 'full' : n > 0 ? 'part' : '';
+    const lab = wd[new Date(berlin(d) + 'T12:00:00Z').getUTCDay()];
+    out += '<div class="neu-wd'+(i === 0 ? ' today' : '')+'" title="'+fmtN(n)+' richtig"><span class="neu-wdot '+cls+'">'+(n >= goal ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.500 4.500 4.500L19 7.500"/></svg>' : '')+'</span><span>'+(i === 0 ? 'Heute' : lab)+'</span></div>';
+  }
+  return out;
+}
+// Meldung zum Durchschnitt (Startseite und Abschlussseite)
+function motivationHtml(dc, goal){
+  const card = inner => '<div class="neu-card" style="border-color:var(--gold-d);background:rgba(201,168,76,.08);padding:.7rem 1rem">'+inner+'</div>';
+  // 1) Tagesziel erreicht, aber heute noch nicht über dem niedrigsten Schnitt: zeigen, wie viel noch fehlt
+  const ws = [7, 14, 30, 90].filter(n => dc.avgs[n] > 0);
+  if(dc.today >= goal && ws.length){
+    const low = ws.reduce((b, n) => dc.avgs[n] < dc.avgs[b] ? n : b);
+    const need = Math.floor(dc.avgs[low]) + 1 - dc.today;
+    if(need > 0){
+      const title = need <= 10 ? 'Fast geschafft! Nur noch '+fmtN(need)+', dann bist du über deinem Schnitt 💪'
+        : need <= 40 ? 'Tagesziel geschafft — noch '+fmtN(need)+' und du bist über deinem Schnitt!'
+        : 'Tagesziel geschafft! Bis über deinen Schnitt sind es noch '+fmtN(need)+'.';
+      return card('<div style="font-weight:700;color:var(--gold2)">'+title+'</div>');
+    }
+  }
+  // 2) sonst: heute Geschafftes liegt über einem Schnitt
+  const m = motivation(dc.today, dc.avgs);
+  if(!m) return '';
+  return card('<div style="font-weight:700;color:var(--gold2)">Über deinem '+m.n+'-Tage-Schnitt</div><div class="neu-sub" style="margin-top:2px">Heute geschafft: <b style="color:var(--text)">'+fmtN(dc.today)+'</b> · Schnitt: '+fmtN(m.avg)+' (+'+m.pct+' %)</div>');
+}
+// Ziel in Gefahr: das Fällige reicht nicht, um das Tagesziel noch zu erreichen
+function dangerHtml(dc, goal, total){
+  const need = goal - dc.today;
+  if(dc.today < goal && total < need){
+    const extra = need - total;   // so viele fehlen, nachdem alles Fällige gelernt ist
+    // Vorziehbar = morgen fällige Einträge auf Stufe 4–6. Reichen sie nicht, bleibt der Rest zum Aktivieren.
+    const tmr = new Date(); tmr.setHours(0,0,0,0); tmr.setDate(tmr.getDate() + 1);
+    let pf = 0;
+    try{ pf = pullForwardCandidates().filter(c => c.day === tmr.getTime() && c.level >= 4 && c.level <= 6).length; }catch(e){}
+    const b = n => '<b style="color:var(--gold2)">'+fmtN(n)+'</b>';
+    const parts = [];
+    if(pf >= extra) parts.push('Noch '+b(extra)+' vorziehen');
+    else{
+      if(pf > 0) parts.push('Noch alle '+b(pf)+' vorziehen');
+      parts.push((pf > 0 ? '' : 'Noch ')+b(extra - pf)+' neu aufnehmen');
+    }
+    const txt = parts.length > 1 ? parts[0] + ' und ' + parts[1] : parts[0];
+    return hintCard(txt + ',\num das Tagesziel zu erreichen.', false);
+  }
+  return '';
+}
+window.neuGoHome = goHome;
+window.neuDayCounts = loadDayCounts;
+window.neuActivity = loadActivity;
+
+/* ---------- „Mehr“ ---------- */
+function li(icon, label, act, extra){ return '<button onclick="'+act+'">'+IC[icon]+'<span class="sp">'+label+'</span>'+(extra||'<span class="chev">›</span>')+'</button>'; }
+function sw(on, act){ return '<span class="neu-switch'+(on?' on':'')+'" onclick="event.stopPropagation();'+act+'"><i></i></span>'; }
+function seg(opts, cur, act){ return '<div class="neu-seg">'+opts.map(([v,l]) => '<button class="'+(String(cur)===String(v)?'on':'')+'" onclick="'+act.replace('%v', v)+'">'+l+'</button>').join('')+'</div>'; }
+// Karte „Nachschub“ unter Mehr: Wert, Schwellen, Verlauf der nächsten 7 Tage und die Formel
+function nachschubCard(goal){
+  const f = forecast7(), g = parseInt(goal, 10) || 100, r = n => Math.round(n);
+  const th = WARN_FACTORS.map(x => r(g * x));
+  const wd = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+  const now = new Date();
+  const row = f.days.map((n, i) => { const d = new Date(now.getTime() + i * 86400000); return '<span style="white-space:nowrap">'+(i ? wd[d.getDay()] : 'Heute')+' <b>'+fmtN(n)+'</b></span>'; }).join(' · ');
+  return '<div class="neu-h">Nachschub</div><div class="neu-card">'
+    + '<div class="neu-cap">Erwartete Wiederholungen pro Tag (nächste 7 Tage)</div>'
+    + '<div style="font-size:1.5rem;font-weight:700;margin:.1rem 0">'+fmtN(r(f.avg))+' <span class="neu-sub" style="font-size:.9rem;font-weight:400">bei Tagesziel '+fmtN(g)+'</span></div>'
+    + '<div class="neu-sub" style="margin:.3rem 0">'+row+'</div>'
+    + '<div class="neu-sub">Schwächster Tag: <b style="color:var(--text)">'+fmtN(f.min)+'</b> ('+(f.minDay ? wd[new Date(now.getTime() + f.minDay * 86400000).getDay()] : 'heute')+'). Er löst keine Warnung aus.</div>'
+    + '<div class="neu-cap" style="margin-top:.8rem">Warnstufen (Anteil am Tagesziel)</div>'
+    + '<div class="neu-sub">Hinweis unter <b style="color:var(--text)">'+fmtN(th[0])+'</b> (1,2 ×) · knapp unter <b style="color:var(--text)">'+fmtN(th[1])+'</b> (1,0 ×) · sehr knapp unter <b style="color:var(--text)">'+fmtN(th[2])+'</b> (0,6 ×)</div>'
+    + '<div class="neu-cap" style="margin-top:.8rem">So wird gerechnet</div>'
+    + '<div class="neu-sub">Jede gestartete Karte (Vokabeln und Kurs-Übungen) kommt ab ihrem Fälligkeitstag im Abstand ihrer Stufe wieder: Stufe 0 und 1 jeden Tag, Stufe 2 alle 3 Tage, Stufe 3 alle 7, Stufe 4 alle 14, Stufe 5 alle 30, Stufe 6 alle 90 Tage. Überfälliges zählt ab heute. Alle Wiederholungen der nächsten 7 Tage, geteilt durch 7. Fehler und Stufenwechsel sind nicht eingerechnet.</div>'
+    + '</div>';
+}
+function showMore(){
+  const keepY = (cMode === 'more') ? (window.scrollY || 0) : 0;   // Änderungen unter Mehr: Position behalten
+  reset('more');
+  const c = $('exercise-content'); if(!c) return;
+  const font = LS.get('neu-font','M'), goal = LS.get('neu-goal','100'), vib = LS.get('neu-vib','0') === '1';
+  const lessonOpts = (()=>{ const s = $('lesson-select'); return s ? s.innerHTML : '<option value="all">Alle Lektionen</option>'; })();
+  const smoothMax = ALL_VOCAB.filter(v => { const p = srsProgress[v.id]; return p && p.next_review && p.level >= 3; }).length;
+  const recalcMax = ALL_VOCAB.filter(v => { const p = srsProgress[v.id]; return p && p.next_review && p.last_reviewed; }).length;
+  c.innerHTML = '<div class="neu-wrap">'
+    + '<div style="font-size:1.5rem;font-weight:700;margin:.2rem 0 .4rem">Mehr</div>'
+    + '<div class="neu-h">Lernen</div><div class="neu-card neu-list" style="padding:.3rem .9rem">'
+    +   li('cards','Vokabelkarten',"setMode('flash')") + li('ear','Höraufgabe (Audio)',"setMode('listen')") + li('mic','Sprechen (Test)',"setMode('speak')") + li('repeat','Kurs-Wiederholung',"setMode('coursesrs')") + li('mix','Mix',"setMode('mix')") + li('pairs','Antwort-Paare',"setMode('pairs')")
+    + '</div>'
+    + '<div class="neu-h">Vokabeln pflegen</div><div class="neu-card neu-list" style="padding:.3rem .9rem">'
+    +   li('plus','Vokabel hinzufügen',"setMode('addvocab')") + li('bolt','Aktivierung',"setMode('activate')") + li('book','Lektionen',"setMode('lessons')")
+    + '</div>'
+    + '<div class="neu-h">Prüfen und Quellen</div><div class="neu-card neu-list" style="padding:.3rem .9rem">'
+    +   li('search','Prüfungen',"setMode('dupes')") + li('inbox','Partner-Queue',"setMode('partnerqueue')") + li('check','Partner-Check',"setMode('partnercheck')") + li('compass','Quellenabgleich',"setMode('quellen')") + li('abc','Transliterationsregeln',"setMode('translitregeln')") + li('save','Export',"setMode('export')")
+    + '</div>'
+    + '<div class="neu-h">Darstellung und Lernen</div><div class="neu-card">'
+    +   '<div class="neu-cap">Farbschema</div>'+seg([['auto','Automatisch'],['light','Hell'],['dark','Dunkel']], LS.get('neu-theme','light'), "neuSetTheme('%v')")
+    +   '<div class="neu-cap" style="margin-top:1rem">Schriftgröße</div>'+seg([['S','Klein'],['M','Mittel'],['L','Groß']], font, "neuSetFont('%v')")
+    +   '<div class="neu-cap" style="margin-top:1rem">Arabische Schrift</div>'+seg([['naskh','Naskh'],['amiri','Amiri'],['schehe','Scheherazade'],['kufi','Kufi']], LS.get('neu-arf','naskh'), "neuSetArf('%v')")
+    +   '<div style="height:.5rem"></div>'+seg([['0.85','Klein'],['1','Mittel'],['1.2','Groß'],['1.4','Sehr groß']], LS.get('neu-ars','1'), "neuSetArs('%v')")
+    +   '<div class="neu-list" style="margin-top:.4rem"><div class="li"><span class="sp">Vokalzeichen anzeigen</span>'+sw(LS.get('neu-arv','1') === '1', "neuToggleArv()")+'</div></div>'
+    +   '<div class="neu-arprev" id="neu-arprev">'+arPrev()+'</div>'
+    +   '<div class="neu-list" style="margin-top:.4rem"><div class="li"><span class="sp">Ähnlich klingende Buchstaben gelten als richtig<span class="neu-sub" style="display:block;font-size:.8rem">Aus: nur die genauen Buchstaben zählen (Vokalzeichen sind immer egal).</span></span>'+sw(LS.get('neu-tol','1') !== '0', "neuToggleTol()")+'</div></div>'
+    +   '<div class="neu-cap" style="margin-top:1rem">Tagesziel (richtige Antworten pro Tag)</div>'+seg([[50,'50'],[100,'100'],[150,'150'],[200,'200']], goal, "neuSetGoal(%v)")
+    +   '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Audio beim Aufdecken abspielen</span>'+sw(audioAutoplay, "toggleAudioAutoplay();showMore()")+'</div>'
+    +   '<div class="li"><span class="sp">Vibration bei Richtig und Falsch</span>'+sw(vib, "neuToggleVib()")+'</div></div>'
+    +   '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Kurs-Abschnitte nach Themenblöcken vorschlagen<span class="neu-sub" style="display:block;font-size:.8rem">Aus: Reihenfolge wie im Skript. An: '+COURSE_ALT_BLOCKS+'; die Vergangenheit steht vor dem Partizip. Ändert nur den Vorschlag „Kurs-Abschnitt“ unter Lernen.</span></span>'+sw(courseAltOn(), "neuToggleCOrder()")+'</div></div>'
+    +   '<div class="neu-cap" style="margin-top:1rem">Lektion einschränken</div>'
+    +   '<select id="neu-lesson" onchange="neuLesson(this.value)" style="width:100%;min-height:48px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:0 .7rem;font-size:1rem">'+lessonOpts+'</select>'
+    + '</div>'
+    + nachschubCard(goal)
+    + '<div class="neu-h">Daten</div><div class="neu-card"><div class="neu-sub" style="margin-bottom:.5rem">Holt Vokabeln, Kurs und Lernstand frisch vom Server, zum Beispiel nach Änderungen am Kurs.</div>'
+    +   '<button class="neu-btn line" id="neu-refresh-btn" onclick="neuRefreshData()">Daten jetzt neu laden<small>Vokabeln, Kurs, Lernstand</small></button>'
+    +   '<div id="neu-refresh-result" style="font-size:.85rem;color:var(--muted);margin-top:.5rem"></div></div>'
+    + '<div class="neu-h">Wartung</div><div class="neu-card"><div class="neu-sub" style="margin-bottom:.5rem">Fälligkeiten der Vokabeln ordnen</div><div style="display:flex;gap:.5rem;flex-wrap:wrap">'
+    +   '<button class="neu-btn line" style="flex:1;min-width:10rem" onclick="if(confirm(\'Fälligkeiten glätten? (betrifft bis zu '+smoothMax+' Vokabeln)\'))smoothSchedule();">Glätten<small>bis zu '+fmtN(smoothMax)+' Einträge</small></button>'
+    +   '<button class="neu-btn ghost" style="flex:1;min-width:10rem;border-color:var(--red);color:var(--red)" onclick="if(confirm(\'Alle Fälligkeiten neu berechnen? (betrifft bis zu '+recalcMax+' Vokabeln)\'))recalcAllNextReview();">Alle neu berechnen<small>bis zu '+fmtN(recalcMax)+' Einträge</small></button>'
+    + '</div><div id="smooth-result" style="font-size:.85rem;color:var(--muted);margin-top:.5rem"></div></div>'
+    + '<div class="neu-h">Konto</div><div class="neu-card neu-list" style="padding:.3rem .9rem">'
+    +   '<div class="li"><span class="sp neu-sub">'+escHtml(currentUser ? currentUser.username : '')+' · '+APP_VERSION+' (neu)</span></div>'
+    +   (pushOk() && currentUser && !currentUser.is_partner ? '<div class="li"><span class="sp">Erinnerung morgens, wenn etwas fällig ist<span class="neu-sub" style="display:block;font-size:.8rem">iPhone: nur mit App auf dem Home-Bildschirm</span></span>'+sw(_pushOn, "neuTogglePush()")+'</div>' : '')
+    +   li('bug','Debug',"toggleDebug()") + li('out','Abmelden',"doLogout()")
+    + '</div>'
+    + '</div>';
+  const sel = $('neu-lesson');
+  if(sel){ sel.value = cLesson; if(sel.value !== cLesson) sel.value = 'all'; }
+  if(keepY){ try{ window.scrollTo({top:keepY, behavior:'instant'}); }catch(e){ window.scrollTo(0,keepY); } }
+}
+function applyTheme(){
+  const t = LS.get('neu-theme', 'light');
+  const light = t === 'light' || (t === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+  document.documentElement.setAttribute('data-theme', light ? 'light' : 'dark');
+  let m = document.querySelector('meta[name="theme-color"]');
+  if(!m){ m = document.createElement('meta'); m.name = 'theme-color'; document.head.appendChild(m); }
+  m.content = light ? '#f6f1e7' : '#0e0c0a';
+}
+applyTheme();
+if(window.matchMedia) try{ window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme); }catch(e){}
+window.neuRefreshData = async function(){
+  const btn = $('neu-refresh-btn'), out = $('neu-refresh-result');
+  if(btn){ btn.disabled = true; btn.firstChild.nodeValue = 'Lade …'; }
+  let msg = '';
+  try{ await rcForceRefresh(); msg = '✓ Neu geladen um ' + new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}); }
+  catch(e){ msg = 'Nicht geladen: ' + e.message; }
+  if(cMode === 'more'){ showMore(); const o = $('neu-refresh-result'); if(o) o.textContent = msg; }
+  else if(out) out.textContent = msg;
+};
+window.neuSetTheme = function(v){ LS.set('neu-theme', v); applyTheme(); showMore(); };
+window.neuSetFont = function(k){ LS.set('neu-font', k); applyFont(); showMore(); };
+window.neuSetGoal = function(n){ LS.set('neu-goal', String(n)); showMore(); };
+window.neuToggleTol = function(){ LS.set('neu-tol', LS.get('neu-tol','1') === '0' ? '1' : '0'); showMore(); };
+window.neuToggleVib = function(){ LS.set('neu-vib', LS.get('neu-vib','0') === '1' ? '0' : '1'); if(LS.get('neu-vib') === '1' && navigator.vibrate) navigator.vibrate(30); showMore(); };
+window.neuLesson = function(v){ const s = $('lesson-select'); if(s) s.value = v; try{ filterLessonDropdown(v); }catch(e){} goHome(); };
+
+/* Vibration (Android), standardmäßig aus */
+function vibe(ok){ if(LS.get('neu-vib','0') === '1' && navigator.vibrate) navigator.vibrate(ok ? 15 : [40,40,40]); }
+const _srsAnswer = window.srsAnswer;
+// Heute richtig beantwortet: lokal mitgezählt (Gerätespeicher), damit eine zu frühe Abfrage der Datenbank
+// (Antworten sind noch unterwegs) den Tageswert nicht nach unten drückt. Zählt der Server mehr, gilt der Server.
+const berlinKey = () => berlinDay(new Date());
+const localToday = () => { try{ const o = JSON.parse(LS.get('neu-today','null')); return o && o.k === berlinKey() ? (o.n||0) : 0; }catch(e){ return 0; } };
+window.neuLocalToday = localToday;
+const adjustToday = delta => {
+  [7,14,30,90].forEach(n => { delete _cache['act' + n]; });   // Aktivitäts-Tabelle in der Statistik neu laden
+  try{ LS.set('neu-today', JSON.stringify({k: berlinKey(), n: Math.max(0, localToday() + delta)})); }catch(e){}
+  if(_cache.dc){ _cache.dc.today = Math.max(0, _cache.dc.today + delta); _cache.dc.t = Date.now(); }
+};
+const bumpToday = ok => { if(ok) adjustToday(1); };
+// Nachträgliche Korrekturen („War doch richtig/falsch“) verschieben den Tageswert um 1
+['_applyFlashCorrection', 'courseCorrectAnswer'].forEach(n => {
+  const f = window[n];
+  if(typeof f === 'function') window[n] = function(a, toOk){
+    adjustToday(toOk ? 1 : -1);
+    if(window.neuPlFix) window.neuPlFix(toOk);
+    return f.apply(this, arguments);
+  };
+});
+// Fortschrittsleiste sofort umschalten, wenn „War doch richtig/falsch“ gedrückt wird (die Datenbank-Korrektur wartet erst auf den Schreibvorgang)
+[['markFlashCorrect', () => true], ['markFlashWrong', () => false], ['courseCorrectLast', a => !!a]].forEach(([n, ok]) => {
+  const f = window[n];
+  if(typeof f === 'function') window[n] = function(){ if(window.neuPlFix) window.neuPlFix(ok.apply(null, arguments)); return f.apply(this, arguments); };
+});
+if(_srsAnswer) window.srsAnswer = function(v, ok){ vibe(ok); bumpToday(ok); if(window.neuPlRes) window.neuPlRes(ok); return _srsAnswer.apply(this, arguments); };
+const _courseExAnswer = window.courseExAnswer;
+if(_courseExAnswer) window.courseExAnswer = function(ex, ok){ vibe(ok); bumpToday(ok); if(window.neuPlRes) window.neuPlRes(ok); return _courseExAnswer.apply(this, arguments); };
+
+/* ---------- Höraufgaben im normalen Lernen (Richtung „Audio → Deutsch“) ---------- */
+// Nur bei eingeschaltetem Ton (Lautsprecher-Schalter unten) und eingeschalteter Einstellung, nur für Vokabeln mit Audio.
+window.neuPickDir = function(v, lvl){
+  const base = lvl >= 3 ? 'de2ar' : (Math.random() > .5 ? 'ar2de' : 'de2ar');
+  if(!audioAutoplay || LS.get('neu-listen','1') !== '1' || !v.au || navigator.onLine === false) return base;   // ohne Netz kein Ton: normale Karte
+  return Math.random() < (lvl >= 3 ? 0.3 : 0.5) ? 'au2de' : base;
+};
+window.neuToggleListen = function(){ LS.set('neu-listen', LS.get('neu-listen','1') === '1' ? '0' : '1'); showMore(); };
+
+/* ---------- Kurs-Reihenfolge: alternative Themenblöcke (ändert nur den Vorschlag „Kurs-Abschnitt“, Schalter unter Mehr) ---------- */
+// Jeder Eintrag: Kursnummer:Abschnittsschlüssel. L1–L4 bleiben vorn, was hier fehlt (z. B. Lektion 14), kommt danach in der alten Reihenfolge.
+// Blöcke: reguläre Verben im Präsens · Vergangenheit (Perfekt) der regulären Verben · schwache Verben (je Klasse Präsens, dann Perfekt) ·
+//         Partizip · Alltagssätze · Zeit und Zahlen · Nomen, Adjektive, Besitz · Wiederholung · Verbstämme II–VI · Objekte, Nebensätze, Bedingungen · Übungen.
+//         Die Vergangenheit steht vor dem Partizip.
+const COURSE_ALT_ORDER = [
+  '5:dialoge', '5:verben_gruppen_praesens', '5:verben_gruppen_negation', '5:verben_gruppen_plural', '10:dialoge_1', '10:dialoge_2',
+  '10:perfekt_konjug1', '10:perfekt_konjug2', '10:perfekt_uebersetzen', '6:dialoge_1', '6:dialoge_2', '6:verba_infirmae_konjug',
+  '6:verba_infirmae_negation', '12:dialoge', '12:perfekt_mediae_1', '12:perfekt_mediae_2', '6:geminierte_konjug', '6:geminierte_negation',
+  '11:dialoge_1', '11:dialoge_2', '11:perfekt_geminiert', '7:verba_tertiae_luecken', '7:verba_tertiae_konjug', '7:verba_tertiae_negation',
+  '11:perfekt_tertiae', '8:primae_infirmae', '8:yakul_yaxudh', '10:perfekt_primae', '11:perfekt_yaxudh', '7:yji', '11:perfekt_yzi',
+  '12:duratives_perfekt', '12:nominalsaetze', '12:modalverben_perfekt', '11:mazal', '11:maad', '12:negation', '5:verben_gruppen_partizip',
+  '5:partizip_fragen_1', '5:partizip_fragen_2', '5:partizip_luecken', '5:passives_partizip', '6:verba_infirmae_partizip', '6:geminierte_partizip',
+  '7:verba_tertiae_partizip', '5:tawwa', '5:madabb', '6:qaid_fragen1', '6:qaid_negieren', '6:qaid_fragen2', '6:modalverben_fragen1',
+  '6:modalverben_fragen2', '6:modalverben_negieren', '7:dialoge_1', '7:dialoge_2', '7:dialoge_3', '7:futur_luecken', '7:futur_fragen1',
+  '7:futur_fragen2', '8:brauchen', '9:muessen', '9:verbot', '7:uhrzeit', '7:wann', '7:sna_3am_yum_nhar', '7:hada_jayy', '7:min_hatta',
+  '5:zahlen_20_1', '5:zahlen_20_2', '9:zahlen_1000', '12:ordinalzahlen', '5:feminina', '6:demonstrativ', '6:kongruenz_gegenteil',
+  '6:kongruenz_nominalsatz', '6:kongruenz_luecken', '6:barsha_shwayya', '6:steigerung', '8:dialoge_1', '8:dialoge_2', '8:dialoge_3', '8:qaddash',
+  '8:nomen_unitatis', '8:possessivsuffixe', '8:genitivverbindung', '9:dialoge_1', '9:dialoge_2', '9:verpackung', '9:allein', '9:dual', '9:mta3',
+  '6:wiederholung_plural1', '6:wiederholung_uebersetzen1', '6:wiederholung_uebersetzen2', '6:wiederholung_plural2', '7:famma_tamma',
+  '7:wiederholung_fragen', '7:wiederholung_uebersetzen', '7:wiederholung_bild', '8:wiederholung_1', '8:wiederholung_2', '9:wiederholung',
+  '10:ii_stamm', '11:ii_stamm_schwach', '11:ii_stamm_gem', '12:iii_stamm', '12:vierradikalig', '13:dialoge_1', '13:dialoge_2', '13:dialoge_3',
+  '13:yzid', '13:v_stamm', '13:vi_stamm', '9:pronominalsuffixe_verben', '10:objektsuffixe', '10:nebensaetze', '10:ma_kan', '10:kull', '11:yxalli',
+  '11:dativobjekt', '13:objekt_kombiniert', '13:mashin', '13:bedingungssaetze', '13:fi_progressive', '12:relativpronomen', '7:verbindungswoerter',
+  '10:uebungen_luecken', '10:uebungen_zuordnung', '10:uebungen_richtigfalsch', '11:uebungen_zusatz', '12:uebungen_zusatz', '13:uebungen_zusatz'
+];
+const COURSE_ALT_BLOCKS = 'Verben im Präsens, Vergangenheit (Perfekt), schwache Verben mit Perfekt, Partizip, Alltagssätze, Zeit und Zahlen, Nomen und Besitz, Wiederholung, Verbstämme, Objekte und Nebensätze, Übungen';
+const _caRank = {}; COURSE_ALT_ORDER.forEach((k, i) => { _caRank[k] = i; });
+function courseAltOn(){ return LS.get('neu-corder', 'std') === 'alt'; }
+window.neuToggleCOrder = function(){ LS.set('neu-corder', courseAltOn() ? 'std' : 'alt'); showMore(); };
+window.statsNextLockedChunk = function(){
+  const locked = ch => ch.srsItems.length && !courseChunkUnlocked(ch.srsItems);
+  const chunks = courseFlattenChunks();
+  if(!courseAltOn()) return chunks.find(locked) || null;
+  const rank = (ch, i) => { const k = ch.lesson.course_number + ':' + ch.chunkKey; return k in _caRank ? 1000 + _caRank[k] : (ch.lesson.course_number < 5 ? 0 : 5000) + i; };
+  const f = chunks.map((ch, i) => ({ch, r: rank(ch, i)})).sort((a, b) => a.r - b.r).find(x => locked(x.ch));
+  return f ? f.ch : null;
+};
+
+/* ---------- Leerer Zustand in der Sitzung ---------- */
+function nothingDue(){
+  const c = $('exercise-content'); if(!c) return;
+  const sn = $('sticky-next'); if(sn) sn.style.display = 'none';
+  // Ist im anderen Bereich (Vokabeln <-> Kurs) noch etwas fällig, zuerst dorthin weiterführen statt Vorziehen anzubieten
+  const d = dueCounts();
+  const go = [];
+  if(d.voc > 0 && cMode !== 'flash') go.push('<button class="neu-btn" onclick="setMode(\'flash\')">Weiter mit Vokabeln · '+fmtN(d.voc)+' fällig</button>');
+  if(d.course > 0 && cMode !== 'coursesrs') go.push('<button class="neu-btn blue" onclick="setMode(\'coursesrs\')">Weiter mit Kurs · '+fmtN(d.course)+' fällig</button>');
+  const part = cMode === 'coursesrs' ? 'Kurs' : cMode === 'flash' ? 'Vokabeln' : 'Hier';
+  const rest = '<button class="neu-btn '+(go.length?'ghost':'')+'" onclick="openActivateDialog()">Neue Vokabeln aufnehmen</button>'
+    + '<button class="neu-btn '+(go.length?'ghost':'blue')+'" onclick="statsUnlockNextChunk()">Neuen Kurs-Abschnitt starten</button>'
+    + '<button class="neu-btn line" onclick="openPullForward()">Vorziehen</button>'
+    + '<button class="neu-btn ghost" onclick="neuGoHome()">Zur Startseite</button>';
+  c.innerHTML = '<div class="neu-wrap" style="text-align:center;padding-top:2rem">'
+    + artHtml(go.length ? 'sun' : 'cat')
+    + '<div style="font-size:1.5rem;font-weight:700;color:var(--gold2)">'+(go.length ? part+' erledigt' : 'Alles erledigt')+'</div>'
+    + '<div class="neu-sub" style="margin:.5rem 0 1.4rem">'+(go.length ? 'Im anderen Bereich ist noch etwas fällig.' : 'Nichts fällig. Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b>')+'</div>'
+    + '<div style="display:flex;flex-direction:column;gap:.7rem;text-align:left">'
+    +   go.join('')
+    +   (go.length ? '<div class="neu-sub" style="margin:.4rem 0 -.2rem;text-align:center">oder</div>' : '')
+    +   rest
+    + '</div></div>';
+  $('ex-type-label').textContent = ''; $('ex-progress').textContent = '';
+}
+window.showNothingDue = nothingDue;
+window.showCourseNothingDue = nothingDue;
+
+/* ---------- Abschluss nach einem Block ---------- */
+window.showRes = function(){
+  const pct = score.t > 0 ? Math.round(score.c / score.t * 100) : 0;
+  const msgs = pct >= 90 ? ['مَشَاءَ الله! Masha allah!', 'زِين بَرشَة! Zin barsha!']
+    : pct >= 70 ? ['مْلِيح بَرشَة Mli7 barsha!', 'هَكَّة نَعرَف! Hakka na3ref!']
+    : pct >= 50 ? ['شْوَيَّة شْوَيَّة Shwayya shwayya', 'عَاوِد مَرَّة أُخرى 3awid marra okhra']
+    : ['يَالَّة، عَاوِد! Yalla, 3awid!', 'صَبرَا جَمِيل Sabra jmil'];
+  const r = $('result-screen');
+  // Nur eine Zahlenangabe zum Block (Ring: 9 / 10); darunter, wie viel heute noch fällig ist
+  const d = dueCounts(), left = d.voc + d.course;
+  const dueRow = left
+    ? '<div class="rows"><div><span>Heute noch fällig<small>Vokabeln '+fmtN(d.voc)+' · Kurs '+fmtN(d.course)+'</small></span><b style="color:var(--gold2);font-size:1.4rem">'+fmtN(left)+'</b></div></div>'
+    : '<div class="rows"><div><span>Heute noch fällig</span><b style="color:var(--green)">nichts mehr</b></div></div>';
+  r.innerHTML = '<div class="neu-res">'
+    + ring(pct/100, 150, 12, pct >= 70 ? 'var(--green)' : 'var(--gold)', score.c + ' / ' + score.t)
+    + artHtml(pct >= 70 ? 'jasmin' : 'sun')
+    + '<div class="msg">'+(pct>=70?'Gut gemacht':'Weiter üben')+'</div>'
+    + '<div class="sub">'+msgs[Math.floor(Math.random()*msgs.length)]+'</div>'
+    + '<div id="neu-res-msg" style="width:100%"></div>'
+    + dueRow
+    + '<div style="width:100%;display:flex;flex-direction:column;gap:.7rem"><button class="neu-btn" onclick="restartExercise()">Noch einen Block</button><button class="neu-btn ghost" onclick="closeResult();neuGoHome()">Fertig für heute</button></div>'
+    + '</div>';
+  r.classList.add('show');
+  // Meldung zum Durchschnitt bzw. zum Aufnehmen von Neuem (die wichtigste), sobald die Tageswerte da sind
+  loadDayCounts().then(dc => {
+    const el = $('neu-res-msg'); if(!el) return;
+    const goal = parseInt(LS.get('neu-goal','100'), 10) || 100;
+    el.innerHTML = motivationHtml(dc, goal) || dangerHtml(dc, goal, left) || newStuffHint();
+  }).catch(() => {});
+  loadActivity().then(a => setTimeout(() => { try{ milesCheck(a.streak || 0); }catch(e){} }, 900)).catch(() => {});
+};
+
 /* ---------- Besondere Tage in Tunesien (Hinweis auf der Startseite) ---------- */
 // Feste Feiertage (gesetzlich): 1.1., 20.3., 9.4., 1.5., 25.7., 13.8., 15.10., 17.12. (Business News „Calendrier officiel des jours fériés 2026“, tuniscope).
 // Islamische Tage ändern sich jedes Jahr und werden errechnet (Kalender islamic-umalqura). Tunesien legt sie nach Mondsichtung fest: Abweichung um 1 Tag möglich.
