@@ -719,7 +719,7 @@ function showMore(){
     + '<div class="li"><span class="sp">Vibration bei Richtig und Falsch</span>'+sw(vib, "neuToggleVib()")+'</div></div>'
     + '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Kurs-Abschnitte nach Themenblöcken vorschlagen<span class="neu-sub" style="display:block;font-size:.8rem">Aus: Reihenfolge wie im Skript. An: '+COURSE_ALT_BLOCKS+'; die Vergangenheit steht vor dem Partizip. Ändert nur den Vorschlag „Kurs-Abschnitt“ unter Lernen.</span></span>'+sw(courseAltOn(), "neuToggleCOrder()")+'</div></div>';
   const erinn = '<div class="neu-list"><div class="li"><span class="sp">Erinnerung, wenn etwas fällig ist<span class="neu-sub" style="display:block;font-size:.8rem">Morgens und abends, nur wenn heute etwas fällig ist. iPhone: nur mit der App auf dem Home-Bildschirm.</span></span>'+sw(_pushOn, "neuTogglePush()")+'</div></div>';
-  const pflege = '<div class="neu-list">' + li('plus','Vokabel hinzufügen',"setMode('addvocab')") + li('search','Prüfungen',"setMode('dupes')") + li('check','Partner-Check',"setMode('partnercheck')") + li('compass','Quellenabgleich',"setMode('quellen')") + li('abc','Transliterationsregeln',"setMode('translitregeln')") + li('save','Export',"setMode('export')") + '</div>';
+  const pflege = '<div class="neu-list">' + li('plus','Vokabel hinzufügen',"setMode('addvocab')") + li('book','Vokabel-Lektionen',"setMode('lessons')") + li('search','Prüfungen',"setMode('dupes')") + li('check','Partner-Check',"setMode('partnercheck')") + li('compass','Quellenabgleich',"setMode('quellen')") + li('abc','Transliterationsregeln',"setMode('translitregeln')") + li('save','Export',"setMode('export')") + '</div>';
   const technik = '<div class="neu-sub" style="margin-bottom:.5rem">Fälligkeiten der Vokabeln ordnen</div><div style="display:flex;gap:.5rem;flex-wrap:wrap">'
     + '<button class="neu-btn line" style="flex:1;min-width:10rem" onclick="if(confirm(\'Fälligkeiten glätten? (betrifft bis zu '+smoothMax+' Vokabeln)\'))smoothSchedule();">Glätten<small>bis zu '+fmtN(smoothMax)+' Einträge</small></button>'
     + '<button class="neu-btn ghost" style="flex:1;min-width:10rem;border-color:var(--red);color:var(--red)" onclick="if(confirm(\'Alle Fälligkeiten neu berechnen? (betrifft bis zu '+recalcMax+' Vokabeln)\'))recalcAllNextReview();">Alle neu berechnen<small>bis zu '+fmtN(recalcMax)+' Einträge</small></button>'
@@ -737,7 +737,7 @@ function showMore(){
     +   moreAcc('tage', 'Besondere Tage in Tunesien', sightDue ? 'Mondsichtung eintragen <span class="tn-tag">Datum fehlt</span>' : 'Mondsichtung eintragen', noHead(tnSettingsHtml()))
     + '</div>'
     + '<div class="neu-card neu-accs" style="margin-top:.8rem">'
-    +   moreAcc('pflege', 'Pflege und Prüfung', 'Vokabel hinzufügen, Prüfungen, Quellen, Export', pflege)
+    +   moreAcc('pflege', 'Pflege und Prüfung', 'Vokabel hinzufügen, Vokabel-Lektionen, Prüfungen, Quellen, Export', pflege)
     +   moreAcc('technik', 'Technik', 'Fälligkeiten ordnen, Debug', technik)
     + '</div>'
     + '<div class="neu-h">Konto</div><div class="neu-card neu-list" style="padding:.3rem .9rem">'
