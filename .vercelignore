@@ -1,0 +1,7 @@
+# Nicht veröffentlichen: Sicherungen, Arbeitsregeln, Werkzeuge und Edge Functions
+# (die Seite braucht sie nicht, jedes Deployment wird dadurch um rund 80 % kleiner)
+exports/
+skills/
+tools/
+supabase/
+CLAUDE.md
