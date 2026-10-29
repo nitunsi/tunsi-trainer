@@ -914,26 +914,37 @@ function tnDayEvents(from, span){
 function tnWhen(diff){ return diff === 0 ? 'Heute' : diff === 1 ? 'Morgen' : 'In ' + diff + ' Tagen'; }
 function tnDaysHtml(){
   try{
+    document.body.classList.remove('neu-tn-open');
     const t0 = new Date(); t0.setHours(0, 0, 0, 0);
     // Zum Ansehen: Adresse mit ?tntest=2026-03-18 öffnet die Startseite mit diesem Datum (nur die Karte, sonst ändert sich nichts)
     try{ const q = (new URLSearchParams(location.search).get('tntest') || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); if(q) t0.setFullYear(+q[1], +q[2] - 1, +q[3]); }catch(e){}
-    const ev = tnDayEvents(t0, 7).slice(0, 3), h0 = hijriOf(t0);
+    const ev = tnDayEvents(t0, 7), h0 = hijriOf(t0);
     const ramadan = (h0 && h0.month === 9) ? h0.day : 0;
     if(!ev.length && !ramadan) return '';
-    let calc = false, ids = null;
+    // je Tag eine Zeile (mehrere Ereignisse am selben Tag zusammen), höchstens zwei Zeilen, damit die Startseite ohne Scrollen passt
+    const byDay = [];
+    ev.forEach(e => { let g = byDay.find(x => x.diff === e.diff); if(!g){ g = {diff:e.diff, names:[], holiday:false}; byDay.push(g); } g.names.push(e.n); if(e.holiday) g.holiday = true; });
     const lines = [];
-    if(ramadan){ lines.push('Heute ist Ramadan-Tag ' + ramadan + '.'); calc = true; }
-    ev.forEach(e => { lines.push(tnWhen(e.diff) + ': ' + e.n + (e.holiday ? ' (Feiertag)' : '')); if(e.calc) calc = true; if(!ids && e.ids) ids = e.ids; });
+    if(ramadan) lines.push('Ramadan, Tag ' + ramadan);
+    byDay.forEach(g => lines.push(tnWhen(g.diff) + ': ' + g.names.join(' und ') + (g.holiday ? ' · Feiertag' : '')));
+    const calc = !!ramadan || ev.some(e => e.calc);
+    const ids = (ev.find(e => e.ids) || {}).ids || null;
     const ph = (ids || []).map(id => vById(id)).filter(Boolean);
-    return '<div class="neu-card" style="border-color:var(--gold-d);background:rgba(201,168,76,.08);padding:.7rem 1rem;margin-top:.6rem;text-wrap:balance">'
-      + '<div class="neu-sub" style="margin-bottom:.15rem">Besondere Tage in Tunesien</div>'
-      + lines.map(l => '<div style="font-weight:700;color:var(--gold2)">' + escHtml(l) + '</div>').join('')
-      + (calc ? '<div class="neu-sub" style="margin-top:.15rem">Datum errechnet, in Tunesien kann es um einen Tag abweichen (Mondsichtung).</div>' : '')
-      + (ph.length ? '<div style="margin-top:.45rem;font-size:.9rem">' + ph.map(v => '<div><span dir="rtl" style="font-family:var(--ar,inherit)">' + escHtml(v.ar || '') + '</span> · <b>' + escHtml(v.tr || '') + '</b> · ' + escHtml(v.en || '') + '</div>').join('')
-        + '<button class="neu-btn ghost" style="margin-top:.45rem;min-height:40px" onclick="tnDueNow([' + ph.map(v => v.id).join(',') + '])">Zum Üben fällig setzen</button></div>' : '')
+    return '<div class="tn-box">'
+      + lines.slice(0, 2).map(l => '<div class="tn-l">' + escHtml(l) + '</div>').join('')
+      + (calc ? '<div class="tn-s">errechnet, in Tunesien ± 1 Tag (Mondsichtung)</div>' : '')
+      + (ph.length ? '<button class="tn-b" onclick="tnToggle()">Grüße zum Üben ▾</button>'
+        + '<div id="neu-tn-more" style="display:none;margin-top:.3rem">' + ph.map(v => '<div><span dir="rtl">' + escHtml(v.ar || '') + '</span> · <b>' + escHtml(v.tr || '') + '</b> · ' + escHtml(v.en || '') + '</div>').join('')
+        + '<button class="neu-btn ghost" style="margin-top:.4rem;min-height:40px" onclick="tnDueNow([' + ph.map(v => v.id).join(',') + '])">Zum Üben fällig setzen</button></div>' : '')
       + '</div>';
   }catch(e){ return ''; }
 }
+window.tnToggle = function(){
+  const m = $('neu-tn-more'); if(!m) return;
+  const open = m.style.display === 'none';
+  m.style.display = open ? '' : 'none';
+  document.body.classList.toggle('neu-tn-open', open);   // geöffnet: die Seite darf scrollen
+};
 window.tnDueNow = async function(ids){
   if(!currentUser){ showToast('Fehler: nicht eingeloggt', 'err'); return; }
   const picked = (ids || []).filter(id => vById(id)).map(id => ({id}));
