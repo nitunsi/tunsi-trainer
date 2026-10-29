@@ -847,3 +847,4 @@ body.neu-bar main{padding-bottom:calc(var(--barh,0px) + 1.2rem)!important}
 .tnm-f{display:flex;flex-direction:column;gap:.5rem;padding:.7rem 1.1rem calc(1rem + env(safe-area-inset-bottom))}
 @keyframes tnmUp{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
 @keyframes tnmFade{from{opacity:0}to{opacity:1}}
+.tnm-sub{font-size:.78rem;font-weight:400;color:var(--muted);line-height:1.35}
