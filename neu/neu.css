@@ -826,3 +826,24 @@ body.neu-bar main{padding-bottom:calc(var(--barh,0px) + 1.2rem)!important}
 /* Startseite: besondere Tage in Tunesien (zwei kleine Zeilen an der Stelle des Nachschub-Hinweises, Antippen zeigt alles) */
 .neu-home #neu-new .tn-box{text-align:center;cursor:pointer;margin:0 0 .4rem}
 .neu-home #neu-new .tn-l{color:var(--gold2);font-weight:600;font-size:.88rem;line-height:1.35}
+
+/* Besondere Tage: Fenster beim Antippen */
+.tnm-bg{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;animation:tnmFade .18s ease}
+.tnm{width:min(100%,520px);max-height:86dvh;display:flex;flex-direction:column;background:var(--surface);color:var(--text);border-radius:20px 20px 0 0;box-shadow:0 -6px 30px rgba(0,0,0,.25);animation:tnmUp .22s ease}
+.tnm-h{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:1rem 1.1rem .6rem;font-size:1.1rem;font-weight:700;color:var(--gold2)}
+.tnm-x{background:none;border:0;color:var(--muted);font-size:1.7rem;line-height:1;min-width:40px;min-height:40px;cursor:pointer}
+.tnm-b{padding:0 1.1rem .4rem;overflow:auto}
+.tnm-r{display:flex;align-items:baseline;flex-wrap:wrap;gap:.2rem .5rem;padding:.55rem 0;border-top:1px solid var(--hair,var(--border))}
+.tnm-r:first-child{border-top:0}
+.tnm-d{min-width:4.6rem;color:var(--muted);font-size:.85rem}
+.tnm-n{flex:1 1 9rem;font-weight:600}
+.tnm-t{font-size:.7rem;color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:.05rem .45rem;white-space:nowrap}
+.tnm-s{margin-top:.5rem;font-size:.8rem;line-height:1.4;color:var(--muted)}
+.tnm-hint{margin-top:.8rem;padding:.6rem .8rem;border-radius:12px;background:var(--surface2);font-size:.9rem;line-height:1.4}
+.tnm-k{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.25rem}
+.tnm-p{padding:.5rem 0;border-top:1px solid var(--hair,var(--border))}
+.tnm-p:first-of-type{border-top:0}
+.tnm-ar{font-family:var(--arf,inherit);font-size:1.5rem;line-height:1.5}
+.tnm-f{display:flex;flex-direction:column;gap:.5rem;padding:.7rem 1.1rem calc(1rem + env(safe-area-inset-bottom))}
+@keyframes tnmUp{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+@keyframes tnmFade{from{opacity:0}to{opacity:1}}
