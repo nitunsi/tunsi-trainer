@@ -663,57 +663,88 @@ function nachschubCard(goal){
     + '<div class="neu-sub">Jede gestartete Karte (Vokabeln und Kurs-Übungen) kommt ab ihrem Fälligkeitstag im Abstand ihrer Stufe wieder: Stufe 0 und 1 jeden Tag, Stufe 2 alle 3 Tage, Stufe 3 alle 7, Stufe 4 alle 14, Stufe 5 alle 30, Stufe 6 alle 90 Tage. Überfälliges zählt ab heute. Alle Wiederholungen der nächsten 7 Tage, geteilt durch 7. Fehler und Stufenwechsel sind nicht eingerechnet.</div>'
     + '</div>';
 }
+// Bereiche unter „Mehr“ zum Auf- und Zuklappen; der geöffnete Zustand bleibt erhalten (auch wenn die Seite beim Ändern neu aufgebaut wird)
+function moreOpen(){ try{ const o = JSON.parse(LS.get('neu-more-open', '[]')); return Array.isArray(o) ? o : []; }catch(e){ return []; } }
+window.neuMoreToggle = function(k, open){
+  const l = moreOpen().filter(x => x !== k); if(open) l.push(k);
+  LS.set('neu-more-open', JSON.stringify(l));
+};
+function moreAcc(k, title, sub, inner){
+  return '<details class="neu-acc"' + (moreOpen().includes(k) ? ' open' : '') + ' ontoggle="neuMoreToggle(\'' + k + '\', this.open)"><summary><span>' + title + (sub ? '<small>' + sub + '</small>' : '') + '</span></summary><div class="neu-acc-b">' + inner + '</div></details>';
+}
+const noHead = h => String(h).replace(/^<div class="neu-h">[^<]*<\/div>/, '');
+// Aktualisieren: ungesendete Eingaben abschicken, Daten frisch vom Server holen, dann die neueste App-Version laden
+window.neuUpdateAll = async function(){
+  const btn = $('neu-refresh-btn'), out = () => $('neu-refresh-result');
+  const say = t => { const o = out(); if(o) o.textContent = t; };
+  if(navigator.onLine === false){ say('Kein Internet. Aktualisieren geht nur online.'); return; }
+  if(btn){ btn.disabled = true; btn.firstChild.nodeValue = 'Aktualisiere …'; }
+  try{
+    try{ if(typeof syncFlush === 'function') await syncFlush(true); }catch(e){}
+    await rcForceRefresh();
+    LS.set('neu-upd-at', String(Date.now()));
+    say('Trainer wird neu geladen …');
+    try{ if('caches' in window){ const c = await caches.open('tounsi-shell-v1'); await Promise.all(['/trainer.html', '/neu/neu.js', '/neu/neu.css'].map(u => c.delete(u))); } }catch(e){}
+    try{ const reg = await navigator.serviceWorker.getRegistration(); if(reg) await reg.update(); }catch(e){}
+    location.reload();
+  }catch(e){
+    if(btn){ btn.disabled = false; btn.firstChild.nodeValue = 'Aktualisieren'; }
+    say('Nicht aktualisiert: ' + e.message);
+  }
+};
+function updAtText(){
+  const t = parseInt(LS.get('neu-upd-at', '0'), 10); if(!t) return '';
+  const d = new Date(t), now = new Date(), same = d.toDateString() === now.toDateString();
+  return 'Zuletzt aktualisiert: ' + (same ? 'heute' : d.getDate() + '.' + (d.getMonth() + 1) + '.') + ', ' + d.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+}
 function showMore(){
   const keepY = (cMode === 'more') ? (window.scrollY || 0) : 0;   // Änderungen unter Mehr: Position behalten
   reset('more');
   const c = $('exercise-content'); if(!c) return;
   const font = LS.get('neu-font','M'), goal = LS.get('neu-goal','100'), vib = LS.get('neu-vib','0') === '1';
-  const lessonOpts = (()=>{ const s = $('lesson-select'); return s ? s.innerHTML : '<option value="all">Alle Lektionen</option>'; })();
   const smoothMax = ALL_VOCAB.filter(v => { const p = srsProgress[v.id]; return p && p.next_review && p.level >= 3; }).length;
   const recalcMax = ALL_VOCAB.filter(v => { const p = srsProgress[v.id]; return p && p.next_review && p.last_reviewed; }).length;
+  const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+  const pushShown = pushOk() && currentUser && !currentUser.is_partner;
+  let fcAvg = ''; try{ fcAvg = 'Erwartet ' + fmtN(Math.round(forecast7().avg)) + ' pro Tag'; }catch(e){}
+  const darst = '<div class="neu-cap">Farbschema</div>'+seg([['auto','Automatisch'],['light','Hell'],['dark','Dunkel']], LS.get('neu-theme','light'), "neuSetTheme('%v')")
+    + '<div class="neu-cap" style="margin-top:1rem">Schriftgröße</div>'+seg([['S','Klein'],['M','Mittel'],['L','Groß']], font, "neuSetFont('%v')")
+    + '<div class="neu-cap" style="margin-top:1rem">Arabische Schrift</div>'+seg([['naskh','Naskh'],['amiri','Amiri'],['schehe','Scheherazade'],['kufi','Kufi']], LS.get('neu-arf','naskh'), "neuSetArf('%v')")
+    + '<div style="height:.5rem"></div>'+seg([['0.85','Klein'],['1','Mittel'],['1.2','Groß'],['1.4','Sehr groß']], LS.get('neu-ars','1'), "neuSetArs('%v')")
+    + '<div class="neu-list" style="margin-top:.4rem"><div class="li"><span class="sp">Vokalzeichen anzeigen</span>'+sw(LS.get('neu-arv','1') === '1', "neuToggleArv()")+'</div></div>'
+    + '<div class="neu-arprev" id="neu-arprev">'+arPrev()+'</div>';
+  const lernen = '<div class="neu-list"><div class="li"><span class="sp">Ähnlich klingende Buchstaben gelten als richtig<span class="neu-sub" style="display:block;font-size:.8rem">Aus: nur die genauen Buchstaben zählen (Vokalzeichen sind immer egal).</span></span>'+sw(LS.get('neu-tol','1') !== '0', "neuToggleTol()")+'</div></div>'
+    + '<div class="neu-cap" style="margin-top:1rem">Tagesziel (richtige Antworten pro Tag)</div>'+seg([[50,'50'],[100,'100'],[150,'150'],[200,'200']], goal, "neuSetGoal(%v)")
+    + '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Audio beim Aufdecken abspielen</span>'+sw(audioAutoplay, "toggleAudioAutoplay();showMore()")+'</div>'
+    + '<div class="li"><span class="sp">Vibration bei Richtig und Falsch</span>'+sw(vib, "neuToggleVib()")+'</div></div>'
+    + '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Kurs-Abschnitte nach Themenblöcken vorschlagen<span class="neu-sub" style="display:block;font-size:.8rem">Aus: Reihenfolge wie im Skript. An: '+COURSE_ALT_BLOCKS+'; die Vergangenheit steht vor dem Partizip. Ändert nur den Vorschlag „Kurs-Abschnitt“ unter Lernen.</span></span>'+sw(courseAltOn(), "neuToggleCOrder()")+'</div></div>';
+  const erinn = '<div class="neu-list"><div class="li"><span class="sp">Erinnerung, wenn etwas fällig ist<span class="neu-sub" style="display:block;font-size:.8rem">Morgens und abends, nur wenn heute etwas fällig ist. iPhone: nur mit der App auf dem Home-Bildschirm.</span></span>'+sw(_pushOn, "neuTogglePush()")+'</div></div>';
+  const pflege = '<div class="neu-list">' + li('plus','Vokabel hinzufügen',"setMode('addvocab')") + li('book','Vokabel-Lektionen',"setMode('lessons')") + li('search','Prüfungen',"setMode('dupes')") + li('check','Partner-Check',"setMode('partnercheck')") + li('compass','Quellenabgleich',"setMode('quellen')") + li('abc','Transliterationsregeln',"setMode('translitregeln')") + li('save','Export',"setMode('export')") + '</div>';
+  const technik = '<div class="neu-sub" style="margin-bottom:.5rem">Fälligkeiten der Vokabeln ordnen</div><div style="display:flex;gap:.5rem;flex-wrap:wrap">'
+    + '<button class="neu-btn line" style="flex:1;min-width:10rem" onclick="if(confirm(\'Fälligkeiten glätten? (betrifft bis zu '+smoothMax+' Vokabeln)\'))smoothSchedule();">Glätten<small>bis zu '+fmtN(smoothMax)+' Einträge</small></button>'
+    + '<button class="neu-btn ghost" style="flex:1;min-width:10rem;border-color:var(--red);color:var(--red)" onclick="if(confirm(\'Alle Fälligkeiten neu berechnen? (betrifft bis zu '+recalcMax+' Vokabeln)\'))recalcAllNextReview();">Alle neu berechnen<small>bis zu '+fmtN(recalcMax)+' Einträge</small></button>'
+    + '</div><div id="smooth-result" style="font-size:.85rem;color:var(--muted);margin:.5rem 0 .3rem"></div><div class="neu-list">' + li('bug','Debug',"toggleDebug()") + '</div>';
+  const sightDue = (() => { try{ return tnSightings(t0).length > 0; }catch(e){ return false; } })();
   c.innerHTML = '<div class="neu-wrap">'
-    + '<div style="font-size:1.5rem;font-weight:700;margin:.2rem 0 .4rem">Mehr</div>'
-    + '<div class="neu-h">Lernen</div><div class="neu-card neu-list" style="padding:.3rem .9rem">'
-    +   li('cards','Vokabelkarten',"setMode('flash')") + li('ear','Höraufgabe (Audio)',"setMode('listen')") + li('mic','Sprechen (Test)',"setMode('speak')") + li('repeat','Kurs-Wiederholung',"setMode('coursesrs')") + li('mix','Mix',"setMode('mix')") + li('pairs','Antwort-Paare',"setMode('pairs')")
+    + '<div style="font-size:1.5rem;font-weight:700;margin:.2rem 0 .6rem">Mehr</div>'
+    + '<button class="neu-btn" id="neu-refresh-btn" style="min-height:56px;width:100%;font-size:1.05rem" onclick="neuUpdateAll()">Aktualisieren<small>Daten und Trainer neu laden</small></button>'
+    + '<div id="neu-refresh-result" style="font-size:.85rem;color:var(--muted);margin:.4rem 0 .2rem">'+escHtml(updAtText())+'</div>'
+    + '<div class="neu-h">Einstellungen</div><div class="neu-card neu-accs">'
+    +   moreAcc('darst', 'Darstellung', 'Farbschema, Schrift, Arabisch', darst)
+    +   moreAcc('lernen', 'Lernen', 'Tagesziel ' + escHtml(String(goal)) + ', Audio, Vibration, Kurs-Reihenfolge', lernen)
+    +   (pushShown ? moreAcc('erinn', 'Erinnerungen', _pushOn ? 'An, morgens und abends' : 'Aus', erinn) : '')
+    +   moreAcc('nachschub', 'Nachschub und Warnstufen', escHtml(fcAvg), noHead(nachschubCard(goal)))
+    +   moreAcc('tage', 'Besondere Tage in Tunesien', sightDue ? 'Mondsichtung eintragen <span class="tn-tag">Datum fehlt</span>' : 'Mondsichtung eintragen', noHead(tnSettingsHtml()))
     + '</div>'
-    + '<div class="neu-h">Vokabeln pflegen</div><div class="neu-card neu-list" style="padding:.3rem .9rem">'
-    +   li('plus','Vokabel hinzufügen',"setMode('addvocab')") + li('bolt','Aktivierung',"setMode('activate')") + li('book','Lektionen',"setMode('lessons')")
+    + '<div class="neu-card neu-accs" style="margin-top:.8rem">'
+    +   moreAcc('pflege', 'Pflege und Prüfung', 'Vokabel hinzufügen, Vokabel-Lektionen, Prüfungen, Quellen, Export', pflege)
+    +   moreAcc('technik', 'Technik', 'Fälligkeiten ordnen, Debug', technik)
     + '</div>'
-    + '<div class="neu-h">Prüfen und Quellen</div><div class="neu-card neu-list" style="padding:.3rem .9rem">'
-    +   li('search','Prüfungen',"setMode('dupes')") + li('inbox','Partner-Queue',"setMode('partnerqueue')") + li('check','Partner-Check',"setMode('partnercheck')") + li('compass','Quellenabgleich',"setMode('quellen')") + li('abc','Transliterationsregeln',"setMode('translitregeln')") + li('save','Export',"setMode('export')")
-    + '</div>'
-    + '<div class="neu-h">Darstellung und Lernen</div><div class="neu-card">'
-    +   '<div class="neu-cap">Farbschema</div>'+seg([['auto','Automatisch'],['light','Hell'],['dark','Dunkel']], LS.get('neu-theme','light'), "neuSetTheme('%v')")
-    +   '<div class="neu-cap" style="margin-top:1rem">Schriftgröße</div>'+seg([['S','Klein'],['M','Mittel'],['L','Groß']], font, "neuSetFont('%v')")
-    +   '<div class="neu-cap" style="margin-top:1rem">Arabische Schrift</div>'+seg([['naskh','Naskh'],['amiri','Amiri'],['schehe','Scheherazade'],['kufi','Kufi']], LS.get('neu-arf','naskh'), "neuSetArf('%v')")
-    +   '<div style="height:.5rem"></div>'+seg([['0.85','Klein'],['1','Mittel'],['1.2','Groß'],['1.4','Sehr groß']], LS.get('neu-ars','1'), "neuSetArs('%v')")
-    +   '<div class="neu-list" style="margin-top:.4rem"><div class="li"><span class="sp">Vokalzeichen anzeigen</span>'+sw(LS.get('neu-arv','1') === '1', "neuToggleArv()")+'</div></div>'
-    +   '<div class="neu-arprev" id="neu-arprev">'+arPrev()+'</div>'
-    +   '<div class="neu-list" style="margin-top:.4rem"><div class="li"><span class="sp">Ähnlich klingende Buchstaben gelten als richtig<span class="neu-sub" style="display:block;font-size:.8rem">Aus: nur die genauen Buchstaben zählen (Vokalzeichen sind immer egal).</span></span>'+sw(LS.get('neu-tol','1') !== '0', "neuToggleTol()")+'</div></div>'
-    +   '<div class="neu-cap" style="margin-top:1rem">Tagesziel (richtige Antworten pro Tag)</div>'+seg([[50,'50'],[100,'100'],[150,'150'],[200,'200']], goal, "neuSetGoal(%v)")
-    +   '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Audio beim Aufdecken abspielen</span>'+sw(audioAutoplay, "toggleAudioAutoplay();showMore()")+'</div>'
-    +   '<div class="li"><span class="sp">Vibration bei Richtig und Falsch</span>'+sw(vib, "neuToggleVib()")+'</div></div>'
-    +   '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Kurs-Abschnitte nach Themenblöcken vorschlagen<span class="neu-sub" style="display:block;font-size:.8rem">Aus: Reihenfolge wie im Skript. An: '+COURSE_ALT_BLOCKS+'; die Vergangenheit steht vor dem Partizip. Ändert nur den Vorschlag „Kurs-Abschnitt“ unter Lernen.</span></span>'+sw(courseAltOn(), "neuToggleCOrder()")+'</div></div>'
-    +   '<div class="neu-cap" style="margin-top:1rem">Lektion einschränken</div>'
-    +   '<select id="neu-lesson" onchange="neuLesson(this.value)" style="width:100%;min-height:48px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:0 .7rem;font-size:1rem">'+lessonOpts+'</select>'
-    + '</div>'
-    + nachschubCard(goal)
-    + tnSettingsHtml()
-    + '<div class="neu-h">Daten</div><div class="neu-card"><div class="neu-sub" style="margin-bottom:.5rem">Holt Vokabeln, Kurs und Lernstand frisch vom Server, zum Beispiel nach Änderungen am Kurs.</div>'
-    +   '<button class="neu-btn line" id="neu-refresh-btn" onclick="neuRefreshData()">Daten jetzt neu laden<small>Vokabeln, Kurs, Lernstand</small></button>'
-    +   '<div id="neu-refresh-result" style="font-size:.85rem;color:var(--muted);margin-top:.5rem"></div></div>'
-    + '<div class="neu-h">Wartung</div><div class="neu-card"><div class="neu-sub" style="margin-bottom:.5rem">Fälligkeiten der Vokabeln ordnen</div><div style="display:flex;gap:.5rem;flex-wrap:wrap">'
-    +   '<button class="neu-btn line" style="flex:1;min-width:10rem" onclick="if(confirm(\'Fälligkeiten glätten? (betrifft bis zu '+smoothMax+' Vokabeln)\'))smoothSchedule();">Glätten<small>bis zu '+fmtN(smoothMax)+' Einträge</small></button>'
-    +   '<button class="neu-btn ghost" style="flex:1;min-width:10rem;border-color:var(--red);color:var(--red)" onclick="if(confirm(\'Alle Fälligkeiten neu berechnen? (betrifft bis zu '+recalcMax+' Vokabeln)\'))recalcAllNextReview();">Alle neu berechnen<small>bis zu '+fmtN(recalcMax)+' Einträge</small></button>'
-    + '</div><div id="smooth-result" style="font-size:.85rem;color:var(--muted);margin-top:.5rem"></div></div>'
     + '<div class="neu-h">Konto</div><div class="neu-card neu-list" style="padding:.3rem .9rem">'
     +   '<div class="li"><span class="sp neu-sub">'+escHtml(currentUser ? currentUser.username : '')+' · '+APP_VERSION+' (neu)</span></div>'
-    +   (pushOk() && currentUser && !currentUser.is_partner ? '<div class="li"><span class="sp">Erinnerung morgens, wenn etwas fällig ist<span class="neu-sub" style="display:block;font-size:.8rem">iPhone: nur mit App auf dem Home-Bildschirm</span></span>'+sw(_pushOn, "neuTogglePush()")+'</div>' : '')
-    +   li('bug','Debug',"toggleDebug()") + li('out','Abmelden',"doLogout()")
+    +   li('out','Abmelden',"doLogout()")
     + '</div>'
     + '</div>';
-  const sel = $('neu-lesson');
-  if(sel){ sel.value = cLesson; if(sel.value !== cLesson) sel.value = 'all'; }
   if(keepY){ try{ window.scrollTo({top:keepY, behavior:'instant'}); }catch(e){ window.scrollTo(0,keepY); } }
 }
 function applyTheme(){

@@ -858,3 +858,16 @@ body.neu-bar main{padding-bottom:calc(var(--barh,0px) + 1.2rem)!important}
 .tnm-ul li{margin:.25rem 0}
 .tnm-src{margin-top:.5rem;font-size:.75rem;line-height:1.5;color:var(--muted)}
 .tnm-src a{color:var(--gold2)}
+
+/* Mehr: Bereiche zum Auf- und Zuklappen */
+.neu-accs{padding:.1rem .9rem!important}
+.neu-acc{border-top:1px solid var(--hair,var(--border))}
+.neu-acc:first-child{border-top:0}
+.neu-acc>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.8rem 0;font-weight:600;min-height:48px}
+.neu-acc>summary::-webkit-details-marker{display:none}
+.neu-acc>summary::after{content:"\25BE";color:var(--muted);flex:none}
+.neu-acc[open]>summary::after{content:"\25B4"}
+.neu-acc>summary small{display:block;font-weight:400;font-size:.78rem;color:var(--muted);margin-top:.1rem}
+.neu-acc-b{padding:0 0 .9rem}
+.neu-acc-b>.neu-card{background:transparent;border:0;padding:0;margin:0;box-shadow:none}
+.tn-tag{font-size:.68rem;border:1px solid var(--border);border-radius:10px;padding:.02rem .4rem;margin-left:.3rem;color:var(--muted);white-space:nowrap}
