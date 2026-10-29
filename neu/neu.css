@@ -823,18 +823,8 @@ body.neu-onstats.neu-sopen .neu-stabs{position:sticky}
 /* feste Leisten unten: Inhalt endet über der Leiste */
 body.neu-bar main{padding-bottom:calc(var(--barh,0px) + 1.2rem)!important}
 
-/* Startseite: besondere Tage in Tunesien (kompakt, Grüße klappen auf) */
+/* Startseite: besondere Tage in Tunesien (zwei kleine Zeilen unter dem Hinweis, Antippen zeigt alles) */
 .neu-home #neu-tn{text-align:center;margin:0 0 .35rem}
-.neu-home #neu-tn .tn-l{color:var(--gold2);font-weight:600;font-size:.92rem;line-height:1.35}
-.neu-home #neu-tn .tn-s{color:var(--muted);font-size:.75rem;line-height:1.3}
-.neu-home #neu-tn .tn-b{background:none;border:0;color:var(--gold2);font:inherit;font-size:.85rem;min-height:32px;padding:0 .5rem;text-decoration:underline;cursor:pointer}
-.neu-home #neu-tn #neu-tn-more{font-size:.88rem}
-/* Karte sichtbar: die Seite darf scrollen, damit Ring und Texte nie überlappen (gilt nur an diesen Tagen) */
-body.neu-onhome:has(#neu-tn .tn-box){overflow:auto}
-body.neu-onhome:has(#neu-tn .tn-box) main{height:auto;overflow:visible}
-body.neu-onhome:has(#neu-tn .tn-box) .neu-wrap.neu-home{height:auto}
-body.neu-onhome:has(#neu-tn .tn-box) .neu-home > .neu-hero{min-height:240px}
-body.neu-onhome.neu-tn-open{overflow:auto}
-body.neu-onhome.neu-tn-open main{height:auto;overflow:visible}
-body.neu-onhome.neu-tn-open .neu-wrap.neu-home{height:auto}
-body.neu-onhome.neu-tn-open .neu-home > .neu-hero{min-height:200px}
+.neu-home #neu-tn .tn-box{cursor:pointer}
+.neu-home #neu-tn .tn-l{color:var(--gold2);font-weight:600;font-size:.88rem;line-height:1.35}
+body.neu-onhome:has(#neu-tn .tn-box) .neu-home .neu-empty .neu-art{display:none}
