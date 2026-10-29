@@ -823,8 +823,6 @@ body.neu-onstats.neu-sopen .neu-stabs{position:sticky}
 /* feste Leisten unten: Inhalt endet über der Leiste */
 body.neu-bar main{padding-bottom:calc(var(--barh,0px) + 1.2rem)!important}
 
-/* Startseite: besondere Tage in Tunesien (zwei kleine Zeilen unter dem Hinweis, Antippen zeigt alles) */
-.neu-home #neu-tn{text-align:center;margin:0 0 .35rem}
-.neu-home #neu-tn .tn-box{cursor:pointer}
-.neu-home #neu-tn .tn-l{color:var(--gold2);font-weight:600;font-size:.88rem;line-height:1.35}
-body.neu-onhome:has(#neu-tn .tn-box) .neu-home .neu-empty .neu-art{display:none}
+/* Startseite: besondere Tage in Tunesien (zwei kleine Zeilen an der Stelle des Nachschub-Hinweises, Antippen zeigt alles) */
+.neu-home #neu-new .tn-box{text-align:center;cursor:pointer;margin:0 0 .4rem}
+.neu-home #neu-new .tn-l{color:var(--gold2);font-weight:600;font-size:.88rem;line-height:1.35}
