@@ -848,3 +848,13 @@ body.neu-bar main{padding-bottom:calc(var(--barh,0px) + 1.2rem)!important}
 @keyframes tnmUp{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
 @keyframes tnmFade{from{opacity:0}to{opacity:1}}
 .tnm-sub{font-size:.78rem;font-weight:400;color:var(--muted);line-height:1.35}
+.tnm-i{margin-top:.7rem;border-top:1px solid var(--hair,var(--border));padding-top:.5rem}
+.tnm-i summary{cursor:pointer;font-weight:600;color:var(--gold2);padding:.35rem 0;list-style:none}
+.tnm-i summary::-webkit-details-marker{display:none}
+.tnm-i summary::after{content:" \25BE";color:var(--muted)}
+.tnm-i[open] summary::after{content:" \25B4"}
+.tnm-ix{font-size:.92rem;line-height:1.45}
+.tnm-ul{margin:.2rem 0 0;padding-left:1.1rem;font-size:.92rem;line-height:1.45}
+.tnm-ul li{margin:.25rem 0}
+.tnm-src{margin-top:.5rem;font-size:.75rem;line-height:1.5;color:var(--muted)}
+.tnm-src a{color:var(--gold2)}
