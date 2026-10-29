@@ -442,6 +442,7 @@ function goHome(){
     +   '<div class="neu-hero-t"><div class="neu-sub">Tagesziel</div><div id="neu-goal-t" style="font-size:1.05rem;font-weight:700;margin:1px 0">von '+goal+' richtigen Antworten</div><div id="neu-streak" class="neu-sub">&nbsp;</div></div>'
     + '</div></div>'
     + '<div id="neu-new">'+newStuffHint()+'</div>'
+    + '<div id="neu-tn">'+tnDaysHtml()+'</div>'
     + (empty
       ? '<div class="neu-card neu-empty">'+artHtml('tea')+'<div><div style="font-size:1.15rem;font-weight:700;color:var(--gold2)">Alles erledigt</div><div class="neu-sub" style="margin-top:.2rem">Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b>'+(d.blocked ? ' · '+fmtN(d.blocked)+' gesperrt' : '')+'</div></div></div>'
       : '<button class="neu-btn" style="min-height:56px;font-size:1.1rem;margin:0 0 .6rem" onclick="setMode(\'mix\')">Los geht’s · '+fmtN(total)+' fällig</button>')
@@ -874,6 +875,72 @@ window.showRes = function(){
     el.innerHTML = motivationHtml(dc, goal) || dangerHtml(dc, goal, left) || newStuffHint();
   }).catch(() => {});
   loadActivity().then(a => setTimeout(() => { try{ milesCheck(a.streak || 0); }catch(e){} }, 900)).catch(() => {});
+};
+
+/* ---------- Besondere Tage in Tunesien (Hinweis auf der Startseite) ---------- */
+// Feste Feiertage (gesetzlich): 1.1., 20.3., 9.4., 1.5., 25.7., 13.8., 15.10., 17.12. (Business News „Calendrier officiel des jours fériés 2026“, tuniscope).
+// Islamische Tage ändern sich jedes Jahr und werden errechnet (Kalender islamic-umalqura). Tunesien legt sie nach Mondsichtung fest: Abweichung um 1 Tag möglich.
+const TN_FIXED = [
+  {m:1, d:1, n:'Neujahr'}, {m:3, d:20, n:'Unabhängigkeitstag'}, {m:4, d:9, n:'Tag der Märtyrer'}, {m:5, d:1, n:'Tag der Arbeit'},
+  {m:7, d:25, n:'Tag der Republik'}, {m:8, d:13, n:'Frauentag'}, {m:10, d:15, n:'Tag der Räumung'}, {m:12, d:17, n:'Tag der Revolution und der Jugend'}
+];
+// ids: vorhandene Vokabeln zum Üben (1432 romdhanik mabrouk · 1125 3idik mabrouk · 1434 Antwort „y3ayyshik, 3lina w 3lik“)
+const TN_ISLAMIC = [
+  {m:1, d:1, n:'Islamisches Neujahr', holiday:true},
+  {m:3, d:12, n:'Mawlid (Geburtstag des Propheten)', holiday:true},
+  {m:9, d:1, n:'Beginn des Ramadan', holiday:false, ids:[1432, 1434]},
+  {m:10, d:1, n:'Eid al-Fitr (Ende des Ramadan)', holiday:true, ids:[1125, 1434]},
+  {m:12, d:10, n:'Eid al-Adha (Opferfest)', holiday:true, ids:[1125, 1434]}
+];
+let _hijriFmt = null;
+function hijriOf(date){
+  try{
+    if(!_hijriFmt) _hijriFmt = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {day:'numeric', month:'numeric', year:'numeric'});
+    const o = {}; _hijriFmt.formatToParts(date).forEach(q => { if(q.type === 'day' || q.type === 'month' || q.type === 'year') o[q.type] = parseInt(q.value, 10); });
+    return (o.month && o.day) ? o : null;
+  }catch(e){ return null; }
+}
+// Tage ab "from" (0:00 Uhr) bis from+span: [{diff, n, holiday, calc, ids}]
+function tnDayEvents(from, span){
+  const out = [];
+  for(let i = 0; i <= span; i++){
+    const d = new Date(from.getFullYear(), from.getMonth(), from.getDate() + i);
+    TN_FIXED.forEach(f => { if(f.m === d.getMonth() + 1 && f.d === d.getDate()) out.push({diff:i, n:f.n, holiday:true, calc:false}); });
+    const h = hijriOf(d);
+    if(h) TN_ISLAMIC.forEach(f => { if(f.m === h.month && f.d === h.day) out.push({diff:i, n:f.n, holiday:f.holiday, calc:true, ids:f.ids}); });
+  }
+  return out;
+}
+function tnWhen(diff){ return diff === 0 ? 'Heute' : diff === 1 ? 'Morgen' : 'In ' + diff + ' Tagen'; }
+function tnDaysHtml(){
+  try{
+    const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+    // Zum Ansehen: Adresse mit ?tntest=2026-03-18 öffnet die Startseite mit diesem Datum (nur die Karte, sonst ändert sich nichts)
+    try{ const q = (new URLSearchParams(location.search).get('tntest') || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); if(q) t0.setFullYear(+q[1], +q[2] - 1, +q[3]); }catch(e){}
+    const ev = tnDayEvents(t0, 7).slice(0, 3), h0 = hijriOf(t0);
+    const ramadan = (h0 && h0.month === 9) ? h0.day : 0;
+    if(!ev.length && !ramadan) return '';
+    let calc = false, ids = null;
+    const lines = [];
+    if(ramadan){ lines.push('Heute ist Ramadan-Tag ' + ramadan + '.'); calc = true; }
+    ev.forEach(e => { lines.push(tnWhen(e.diff) + ': ' + e.n + (e.holiday ? ' (Feiertag)' : '')); if(e.calc) calc = true; if(!ids && e.ids) ids = e.ids; });
+    const ph = (ids || []).map(id => vById(id)).filter(Boolean);
+    return '<div class="neu-card" style="border-color:var(--gold-d);background:rgba(201,168,76,.08);padding:.7rem 1rem;margin-top:.6rem;text-wrap:balance">'
+      + '<div class="neu-sub" style="margin-bottom:.15rem">Besondere Tage in Tunesien</div>'
+      + lines.map(l => '<div style="font-weight:700;color:var(--gold2)">' + escHtml(l) + '</div>').join('')
+      + (calc ? '<div class="neu-sub" style="margin-top:.15rem">Datum errechnet, in Tunesien kann es um einen Tag abweichen (Mondsichtung).</div>' : '')
+      + (ph.length ? '<div style="margin-top:.45rem;font-size:.9rem">' + ph.map(v => '<div><span dir="rtl" style="font-family:var(--ar,inherit)">' + escHtml(v.ar || '') + '</span> · <b>' + escHtml(v.tr || '') + '</b> · ' + escHtml(v.en || '') + '</div>').join('')
+        + '<button class="neu-btn ghost" style="margin-top:.45rem;min-height:40px" onclick="tnDueNow([' + ph.map(v => v.id).join(',') + '])">Zum Üben fällig setzen</button></div>' : '')
+      + '</div>';
+  }catch(e){ return ''; }
+}
+window.tnDueNow = async function(ids){
+  if(!currentUser){ showToast('Fehler: nicht eingeloggt', 'err'); return; }
+  const picked = (ids || []).filter(id => vById(id)).map(id => ({id}));
+  if(!picked.length) return;
+  if(!confirm(picked.length + ' Vokabeln fällig setzen?\n\n' + picked.map(x => vById(x.id).tr + ' – ' + vById(x.id).en).join('\n'))) return;
+  try{ await statsActivateApply(picked); showToast('✓ fällig gesetzt', 'ok'); }
+  catch(e){ showToast('Fehler: ' + e.message, 'err'); }
 };
 
 /* ---------- Kurs als Lernpfad ---------- */
