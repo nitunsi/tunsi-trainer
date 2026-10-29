@@ -894,8 +894,8 @@ const TN_ISLAMIC = [
   {m:1, d:1, n:'Islamisches Neujahr', holiday:true},
   {m:3, d:12, n:'Mawlid (Geburtstag des Propheten)', holiday:true},
   {m:9, d:1, n:'Beginn des Ramadan', holiday:false, ids:[1432, 1434], ov:true, sight:1},
-  {m:10, d:1, n:'Eid al-Fitr (Ende des Ramadan)', holiday:true, ids:[1125, 1434], ov:true, sight:1},
-  {m:12, d:10, n:'Eid al-Adha (Opferfest)', holiday:true, ids:[1125, 1434], ov:true, sight:10}
+  {m:10, d:1, n:'Eid al-Fitr (es-sghir)', desc:'Ende des Ramadan · el-3id es-sghir, „das kleine Fest“', holiday:true, ids:[1125, 1434], ov:true, sight:1},
+  {m:12, d:10, n:'Eid al-Adha (el-kbir)', desc:'Opferfest · el-3id lekbir, „das große Fest“', holiday:true, ids:[1125, 1434], ov:true, sight:10}
 ];
 let _hijriFmt = null;
 function hijriOf(date){
@@ -918,12 +918,12 @@ function tnDayEvents(from, span){
     if(h) TN_ISLAMIC.forEach(f => {
       if(f.m !== h.month || f.d !== h.day) return;
       if(f.ov && ov[f.m + '-' + h.year]) return;   // für dieses Jahr ist ein Datum eingetragen: der errechnete Tag entfällt
-      out.push({diff:i, n:f.n, holiday:f.holiday, calc:true, ids:f.ids});
+      out.push({diff:i, n:f.n, desc:f.desc, holiday:f.holiday, calc:true, ids:f.ids});
     });
     Object.keys(ov).forEach(k => {
       if(ov[k] !== iso) return;
       const f = TN_ISLAMIC.find(x => x.ov && x.m === parseInt(k, 10));
-      if(f) out.push({diff:i, n:f.n, holiday:f.holiday, calc:false, set:true, ids:f.ids});
+      if(f) out.push({diff:i, n:f.n, desc:f.desc, holiday:f.holiday, calc:false, set:true, ids:f.ids});
     });
   }
   return out;
@@ -963,7 +963,7 @@ function tnDaysHtml(){
     byDay.forEach(g => lines.push(tnWhen(g.diff) + ': ' + g.names.join(' und ') + (g.holiday ? ' · Feiertag' : '') + (g.calc ? ' (errechnet)' : g.set ? ' (eingetragen)' : '')));
     const ids = (ev.find(e => e.ids) || {}).ids || null;
     window._tnInfo = {lines, calc: (!!ramadan && !ramSet) || ev.some(e => e.calc), ids, ramadan, ramSet, sight,
-      events: ev.map(e => ({diff:e.diff, name:e.n, holiday:e.holiday, calc:e.calc, set:e.set, date:new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + e.diff)}))};
+      events: ev.map(e => ({diff:e.diff, name:e.n, desc:e.desc, holiday:e.holiday, calc:e.calc, set:e.set, date:new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + e.diff)}))};
     const shown = lines.slice(0, 2);
     return '<div class="tn-box" onclick="tnTap()">' + shown.map((l, i) => '<div class="tn-l">' + escHtml(l) + (i === shown.length - 1 ? ' ▸' : '') + '</div>').join('') + '</div>';
   }catch(e){ return ''; }
@@ -980,7 +980,7 @@ window.tnTap = function(){
   const rows = [];
   (i.sight || []).forEach(x => rows.push('<div class="tnm-r"><div class="tnm-d">' + (x.diff === 0 ? 'Heute' : x.diff === 1 ? 'Morgen' : 'In ' + x.diff + ' Tagen') + '</div><div class="tnm-n">Mondsichtung: ' + escHtml(x.n) + '</div>' + tag('Datum eintragen') + '</div>'));
   if(i.ramadan) rows.push('<div class="tnm-r"><div class="tnm-d">Heute</div><div class="tnm-n">Ramadan, Tag ' + i.ramadan + '</div>' + tag(i.ramSet ? 'eingetragen' : 'errechnet') + '</div>');
-  i.events.forEach(e => rows.push('<div class="tnm-r"><div class="tnm-d">' + (e.diff === 0 ? 'Heute' : e.diff === 1 ? 'Morgen' : WD[e.date.getDay()] + ' ' + dm(e.date)) + '</div><div class="tnm-n">' + escHtml(e.name) + '</div>'
+  i.events.forEach(e => rows.push('<div class="tnm-r"><div class="tnm-d">' + (e.diff === 0 ? 'Heute' : e.diff === 1 ? 'Morgen' : WD[e.date.getDay()] + ' ' + dm(e.date)) + '</div><div class="tnm-n">' + escHtml(e.name).replace(/-/g, '\u2011') + (e.desc ? '<div class="tnm-sub">' + escHtml(e.desc).replace(/-/g, '\u2011') + '</div>' : '') + '</div>'
     + (e.holiday ? tag('Feiertag') : '') + (e.calc ? tag('errechnet') : e.set ? tag('eingetragen') : '') + '</div>'));
   const html = '<div id="tnm-bg" class="tnm-bg" onclick="if(event.target===this)tnClose()"><div class="tnm" role="dialog" aria-label="Besondere Tage in Tunesien">'
     + '<div class="tnm-h"><span>Besondere Tage in Tunesien</span><button class="tnm-x" aria-label="Schließen" onclick="tnClose()">×</button></div>'
