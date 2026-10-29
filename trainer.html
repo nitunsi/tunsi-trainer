@@ -443,6 +443,18 @@ function homonymNote(v){
   const list = sibs.map(s=>'<br>• <b>'+s.en+'</b> <span style="color:var(--muted)">('+s.tp+' · '+s.ls+')</span>').join('');
   return '<div style="margin-top:.5rem;padding:.35rem .6rem;background:rgba(201,166,74,.12);border:1px solid var(--gold);border-radius:4px;font-size:.72rem;color:var(--gold)">⚠️ Homonym — <b>'+v.ar+'</b> hat mehrere Bedeutungen. Diese Karte: <b>'+v.en+'</b> ('+v.tp+' · '+v.ls+')'+list+'</div>';
 }
+// Partner einer mit homonym_ok markierten Karte, deren Antwort ebenfalls als richtig gilt:
+//  de = gleiche Schreibung, anderes Wort (gleiches Arabisch oder gleiche Umschrift) → deren Deutsch zählt bei Arabisch → Deutsch
+//  tn = gleiches Deutsch, andere Schreibung (Synonym) → deren Arabisch/Umschrift zählt bei Deutsch → Arabisch
+function homAcceptPartners(v){
+  if(!v || !v.hok) return {de:[], tn:[]};
+  const k = x => (x||'').trim().toLowerCase();
+  const sibs = ALL_VOCAB.filter(e => e.hok && e.id !== v.id);
+  return {
+    de: sibs.filter(e => e.en && ((e.ar && e.ar === v.ar) || (e.tr && k(e.tr) === k(v.tr))) && k(e.en) !== k(v.en)),
+    tn: sibs.filter(e => k(e.en) === k(v.en) && e.ar !== v.ar)
+  };
+}
 function synonymNote(v){
   if(!v || !v.hok) return '';
   const vEnKey = v.en.trim().toLowerCase();
@@ -624,14 +636,65 @@ function audioPreload(url){
     if(_audioCache.size > 40){ _audioCache.delete(_audioCache.keys().next().value); }
   }catch(e){}
 }
+// ── Lautstärke angleichen ───────────────────────────────────────────────────
+// Pro Aufnahme steht in vocabulary.audio_gain ein Faktor (Ziel −30 dBFS im Ausschnitt Start–Ende).
+// ≤ 1: direkt von Ninja, Lautstärke über audio.volume. > 1: Ninjas Server erlaubt kein Verstärken im
+// Browser (kein CORS), deshalb kommt die Aufnahme aus dem öffentlichen Supabase-Bucket „ninja-audio“
+// und wird per WebAudio verstärkt. Ist sie dort nicht ladbar oder noch nicht fertig, läuft sie
+// direkt von Ninja in voller Lautstärke.
+const AUDIO_GAIN = {};   // „url|start|ende“ → Faktor
+const audioKey = (u, s, e) => u + '|' + (s||0) + '|' + (e||0);
+let _audioCtx = null, _normPlayer = null;
+const _normBuf = new Map(), _normBusy = new Set(), _normFail = new Set();
+function audioBucketUrl(url){
+  const m = /\/recordings\/([0-9]+\.mp3)$/.exec(url || '');
+  return m ? SB_URL + '/storage/v1/object/public/ninja-audio/recordings/' + m[1] : null;
+}
+function audioCtx(){
+  if(_audioCtx) return _audioCtx;
+  try{ const C = window.AudioContext || window.webkitAudioContext; if(C) _audioCtx = new C(); }catch(e){}
+  return _audioCtx;
+}
+// Nur für Aufnahmen mit Faktor > 1: Datei aus dem Bucket vorladen und dekodieren
+function audioNormPrepare(url, start, end){
+  const g = AUDIO_GAIN[audioKey(url, start, end)];
+  const src = audioBucketUrl(url), ctx = audioCtx();
+  if(!(g > 1) || !src || !ctx || _normBuf.has(url) || _normBusy.has(url) || _normFail.has(url)) return;
+  _normBusy.add(url);
+  (async () => {
+    try{
+      const r = await fetch(src); if(!r.ok) throw new Error('HTTP ' + r.status);
+      _normBuf.set(url, await ctx.decodeAudioData(await r.arrayBuffer()));
+      if(_normBuf.size > 12) _normBuf.delete(_normBuf.keys().next().value);
+    }catch(e){ _normFail.add(url); }
+    _normBusy.delete(url);
+  })();
+}
+function audioNormPlay(url, start, end){
+  const ctx = audioCtx(), buf = _normBuf.get(url), g = AUDIO_GAIN[audioKey(url, start, end)];
+  if(!ctx || !buf || !(g > 1)) return false;
+  try{
+    if(ctx.state === 'suspended') ctx.resume();
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const gn = ctx.createGain(); gn.gain.value = g;
+    const lim = ctx.createDynamicsCompressor();   // fängt Spitzen ab, falls der Faktor sie übersteuern würde
+    lim.threshold.value = -3; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = 0.002; lim.release.value = 0.1;
+    src.connect(gn); gn.connect(lim); lim.connect(ctx.destination);
+    const st = start || 0, dur = end ? Math.max(0.05, end - st) : undefined;
+    if(dur !== undefined) src.start(0, st, dur); else src.start(0, st);
+    _normPlayer = src;
+    return true;
+  }catch(err){ return false; }
+}
 // Vorladen der aktuellen und der nächsten drei Karten der Session (exList/cIdx), Vokabel- und Kurs-Karten.
 function audioPreloadAhead(){
   try{
     for(let i=0;i<4;i++){
       const e = exList[cIdx+i];
       if(!e) break;
-      const u = e.v ? e.v.au : (e.exercise && e.exercise.vocabulary ? e.exercise.vocabulary.ninja_audio_url : null);
-      if(u) audioPreload(u);
+      const xv = e.exercise && e.exercise.vocabulary;
+      const u = e.v ? e.v.au : (xv ? xv.ninja_audio_url : null);
+      if(u){ audioPreload(u); if(e.v) audioNormPrepare(u, e.v.aus, e.v.aue); else audioNormPrepare(u, xv.ninja_audio_start, xv.ninja_audio_end); }
     }
   }catch(e){}
 }
@@ -642,11 +705,16 @@ function playVocabAudio(url, ev, start, end){
   if(!url) return;
   try{
     if(_audioPlayer){ _audioPlayer.pause(); _audioPlayer = null; }
+    if(_normPlayer){ try{ _normPlayer.stop(); }catch(e){} _normPlayer = null; }
+    audioNormPrepare(url, start, end);
+    if(audioNormPlay(url, start, end)) return;
     audioPreload(url);
     const a = _audioCache.get(url);
     if(!a) return;
     _audioPlayer = a;
     a._end = end || 0;
+    const g = AUDIO_GAIN[audioKey(url, start, end)];
+    a.volume = (g > 0 && g < 1) ? g : 1;
     const go = () => { try{ a.currentTime = start || 0; }catch(e){} a.play().catch(()=>{}); };
     if(a.readyState >= 1) go();
     else a.addEventListener('loadedmetadata', go, {once:true});
@@ -724,7 +792,7 @@ function retryLoad(){
 // Holt Vokabeln und Fortschritt (parallel). Wird auch genutzt, um den Zwischenspeicher im Hintergrund aufzufrischen.
 function srsFetchRows(onVocab, onProg){
   const loadVocabTask = sbApiPaged(
-      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,lessons(lesson_number)&order=id.asc',
+      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,audio_gain,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,lessons(lesson_number)&order=id.asc',
       1000,
       (loaded) => { if(onVocab) onVocab(loaded); }
     );
@@ -765,6 +833,7 @@ async function srsLoadFromSupabase(){
       const tp = v.topic || 'Allgemein';
       const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null, cr: !!v.conj_rotate };
       ALL_VOCAB.push(entry);
+      if(v.ninja_audio_url && v.audio_gain) AUDIO_GAIN[audioKey(v.ninja_audio_url, v.ninja_audio_start, v.ninja_audio_end)] = v.audio_gain;
       VOCAB_BY_ID[v.id] = entry;
       if(v.flagged) flaggedVocab.add(v.darija||'');
     });
@@ -2979,11 +3048,15 @@ function chkFlash(){
   const val=inp.value.trim();
   const ex=exList[cIdx];
   const v=ex.v, dir=(ex.dir==='au2de'?'ar2de':ex.dir);
-  let ok=false;
+  let ok=false, viaPartner=null;
   if(dir==='ar2de'){
     {const r=checkAnswer(val,v.en);ok=r.ok;if(ok&&!r.exact)flashFuzzy=v.en;}
+    // Homonym: das Deutsch eines Partners mit gleicher Schreibung gilt auch als richtig
+    if(!ok){ const pt = homAcceptPartners(v).de.find(e => checkAnswer(val, e.en).ok); if(pt){ ok = true; viaPartner = {p:pt, shown:pt.en}; } }
   } else {
     {const r1=checkAnswer(val,v.ar),r2=checkAnswer(val,v.tr);ok=r1.ok||r2.ok;if(ok&&!(r1.exact||r2.exact))flashFuzzy=v.ar+'('+v.tr+')';}
+    // Synonym: Arabisch/Umschrift eines Partners mit gleichem Deutsch gilt auch als richtig
+    if(!ok){ const pt = homAcceptPartners(v).tn.find(e => checkAnswer(val, e.ar).ok || checkAnswer(val, e.tr).ok); if(pt){ ok = true; viaPartner = {p:pt, shown:pt.ar+' ('+pt.tr+')'}; } }
   }
   inp.style.borderColor=ok?'var(--green)':'var(--red)';
   inp.disabled=true;
@@ -2994,7 +3067,9 @@ function chkFlash(){
   const homNote = homonymNote(v)+synonymNote(v)+schreibungNote(v);
   if(ok){
     fb.className='feedback show correct';
-    fb.innerHTML = (flashFuzzy ? '~ Fast! Richtige Schreibung: '+flashFuzzy+'<br>' : '✓ Richtig! ') + sol + homNote;
+    fb.innerHTML = (flashFuzzy ? '~ Fast! Richtige Schreibung: '+flashFuzzy+'<br>'
+      : viaPartner ? '✓ Richtig! Gilt auch: <b>'+escHtml(viaPartner.shown)+'</b> (anderes Wort mit gleicher Schreibung bzw. gleicher Bedeutung)<br>'
+      : '✓ Richtig! ') + sol + homNote;
   } else {
     fb.className='feedback show wrong';
     fb.innerHTML = '✗ ' + sol + homNote;
