@@ -932,22 +932,34 @@ function tnDaysHtml(){
     if(ramadan) lines.push('Ramadan, Tag ' + ramadan + ' (errechnet)');
     byDay.forEach(g => lines.push(tnWhen(g.diff) + ': ' + g.names.join(' und ') + (g.holiday ? ' · Feiertag' : '') + (g.calc ? ' (errechnet)' : '')));
     const ids = (ev.find(e => e.ids) || {}).ids || null;
-    window._tnInfo = {lines, calc: !!ramadan || ev.some(e => e.calc), ids};
+    window._tnInfo = {lines, calc: !!ramadan || ev.some(e => e.calc), ids, ramadan, events: ev.map(e => ({diff:e.diff, name:e.n, holiday:e.holiday, calc:e.calc, date:new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + e.diff)}))};
     const shown = lines.slice(0, 2);
     return '<div class="tn-box" onclick="tnTap()">' + shown.map((l, i) => '<div class="tn-l">' + escHtml(l) + (i === shown.length - 1 ? ' ▸' : '') + '</div>').join('') + '</div>';
   }catch(e){ return ''; }
 }
-// Antippen: alle Meldungen, Hinweis zur Berechnung und, wenn vorhanden, Grüße zum Üben (mit Fälligsetzen nach Rückfrage)
+// Antippen: Fenster mit allen Meldungen der nächsten 7 Tage, Erklärung zu „errechnet“, Nachschub-Hinweis und Grüßen zum Üben
+window.tnClose = function(){ const e = $('tnm-bg'); if(e) e.remove(); };
+document.addEventListener('keydown', ev => { if(ev.key === 'Escape') window.tnClose(); });
 window.tnTap = function(){
   const i = window._tnInfo; if(!i) return;
-  const ph = (i.ids || []).map(id => vById(id)).filter(Boolean);
-  const nm = newStuffMsg();
-  let t = 'Besondere Tage in Tunesien\n\n' + i.lines.join('\n');
-  if(i.calc) t += '\n\n„errechnet“: Die islamischen Tage sind nach dem Kalender berechnet. In Tunesien werden sie nach Mondsichtung festgelegt, deshalb kann es um einen Tag abweichen.';
-  if(nm) t += '\n\nHinweis zum Nachschub:\n' + nm.t;
-  if(!ph.length){ alert(t); return; }
-  t += '\n\nGrüße zum Üben:\n' + ph.map(v => v.tr + ' – ' + v.en).join('\n') + '\n\nZum Üben fällig setzen?';
-  if(confirm(t)) window.tnDueNow(ph.map(v => v.id), true);
+  window.tnClose();
+  const ph = (i.ids || []).map(id => vById(id)).filter(Boolean), nm = newStuffMsg();
+  const dm = d => d.getDate() + '.' + (d.getMonth() + 1) + '.';
+  const tag = t => '<span class="tnm-t">' + t + '</span>';
+  const rows = [];
+  if(i.ramadan) rows.push('<div class="tnm-r"><div class="tnm-d">Heute</div><div class="tnm-n">Ramadan, Tag ' + i.ramadan + '</div>' + tag('errechnet') + '</div>');
+  i.events.forEach(e => rows.push('<div class="tnm-r"><div class="tnm-d">' + (e.diff === 0 ? 'Heute' : e.diff === 1 ? 'Morgen' : WD[e.date.getDay()] + ' ' + dm(e.date)) + '</div><div class="tnm-n">' + escHtml(e.name) + '</div>'
+    + (e.holiday ? tag('Feiertag') : '') + (e.calc ? tag('errechnet') : '') + '</div>'));
+  const html = '<div id="tnm-bg" class="tnm-bg" onclick="if(event.target===this)tnClose()"><div class="tnm" role="dialog" aria-label="Besondere Tage in Tunesien">'
+    + '<div class="tnm-h"><span>Besondere Tage in Tunesien</span><button class="tnm-x" aria-label="Schließen" onclick="tnClose()">×</button></div>'
+    + '<div class="tnm-b">' + rows.join('')
+    + (i.calc ? '<div class="tnm-s">„errechnet“ heißt: nach dem Kalender berechnet. In Tunesien legt die Mondsichtung die Tage fest, deshalb kann es um einen Tag abweichen.</div>' : '')
+    + (nm ? '<div class="tnm-hint"><div class="tnm-k">Nachschub</div>' + nm.t.split('\n').map(escHtml).join('<br>') + '</div>' : '')
+    + (ph.length ? '<div class="tnm-k" style="margin-top:.9rem">Grüße zum Üben</div>' + ph.map(v => '<div class="tnm-p"><div class="tnm-ar" dir="rtl">' + escHtml(v.ar || '') + '</div><div><b>' + escHtml(v.tr || '') + '</b> · ' + escHtml(v.en || '') + '</div></div>').join('') : '')
+    + '</div><div class="tnm-f">'
+    + (ph.length ? '<button class="neu-btn" onclick="tnDueNow([' + ph.map(v => v.id).join(',') + '],true).then(tnClose)">Zum Üben fällig setzen</button>' : '')
+    + '<button class="neu-btn ghost" onclick="tnClose()">Schließen</button></div></div></div>';
+  document.body.insertAdjacentHTML('beforeend', html);
 };
 window.tnDueNow = async function(ids, noAsk){
   if(!currentUser){ showToast('Fehler: nicht eingeloggt', 'err'); return; }
