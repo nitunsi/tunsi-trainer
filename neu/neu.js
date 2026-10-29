@@ -915,6 +915,8 @@ function tnWhen(diff){ return diff === 0 ? 'Heute' : diff === 1 ? 'Morgen' : 'In
 function tnDaysHtml(){
   try{
     const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+    // Zum Ansehen: Adresse mit ?tntest=2026-03-18 öffnet die Startseite mit diesem Datum (nur die Karte, sonst ändert sich nichts)
+    try{ const q = (new URLSearchParams(location.search).get('tntest') || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); if(q) t0.setFullYear(+q[1], +q[2] - 1, +q[3]); }catch(e){}
     const ev = tnDayEvents(t0, 7).slice(0, 3), h0 = hijriOf(t0);
     const ramadan = (h0 && h0.month === 9) ? h0.day : 0;
     if(!ev.length && !ramadan) return '';
