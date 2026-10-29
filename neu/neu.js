@@ -698,6 +698,7 @@ function showMore(){
     +   '<select id="neu-lesson" onchange="neuLesson(this.value)" style="width:100%;min-height:48px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:0 .7rem;font-size:1rem">'+lessonOpts+'</select>'
     + '</div>'
     + nachschubCard(goal)
+    + tnSettingsHtml()
     + '<div class="neu-h">Daten</div><div class="neu-card"><div class="neu-sub" style="margin-bottom:.5rem">Holt Vokabeln, Kurs und Lernstand frisch vom Server, zum Beispiel nach Änderungen am Kurs.</div>'
     +   '<button class="neu-btn line" id="neu-refresh-btn" onclick="neuRefreshData()">Daten jetzt neu laden<small>Vokabeln, Kurs, Lernstand</small></button>'
     +   '<div id="neu-refresh-result" style="font-size:.85rem;color:var(--muted);margin-top:.5rem"></div></div>'
@@ -892,9 +893,9 @@ const TN_FIXED = [
 const TN_ISLAMIC = [
   {m:1, d:1, n:'Islamisches Neujahr', holiday:true},
   {m:3, d:12, n:'Mawlid (Geburtstag des Propheten)', holiday:true},
-  {m:9, d:1, n:'Beginn des Ramadan', holiday:false, ids:[1432, 1434]},
-  {m:10, d:1, n:'Eid al-Fitr (Ende des Ramadan)', holiday:true, ids:[1125, 1434]},
-  {m:12, d:10, n:'Eid al-Adha (Opferfest)', holiday:true, ids:[1125, 1434]}
+  {m:9, d:1, n:'Beginn des Ramadan', holiday:false, ids:[1432, 1434], ov:true, sight:1},
+  {m:10, d:1, n:'Eid al-Fitr (Ende des Ramadan)', holiday:true, ids:[1125, 1434], ov:true, sight:1},
+  {m:12, d:10, n:'Eid al-Adha (Opferfest)', holiday:true, ids:[1125, 1434], ov:true, sight:10}
 ];
 let _hijriFmt = null;
 function hijriOf(date){
@@ -904,14 +905,36 @@ function hijriOf(date){
     return (o.month && o.day) ? o : null;
   }catch(e){ return null; }
 }
-// Tage ab "from" (0:00 Uhr) bis from+span: [{diff, n, holiday, calc, ids}]
+// Eingetragene Daten der Mondsichtung (nur auf diesem Gerät): { "9-1448": "2027-02-09", ... }  (Monat-Jahr nach islamischem Kalender)
+function tnOv(){ try{ const o = JSON.parse(LS.get('neu-tn-ov', '{}')); return (o && typeof o === 'object') ? o : {}; }catch(e){ return {}; } }
+function tnIso(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+// Tage ab "from" (0:00 Uhr) bis from+span: [{diff, n, holiday, calc, set, ids}]; calc = errechnet, set = eingetragen
 function tnDayEvents(from, span){
-  const out = [];
+  const out = [], ov = tnOv();
   for(let i = 0; i <= span; i++){
     const d = new Date(from.getFullYear(), from.getMonth(), from.getDate() + i);
     TN_FIXED.forEach(f => { if(f.m === d.getMonth() + 1 && f.d === d.getDate()) out.push({diff:i, n:f.n, holiday:true, calc:false}); });
-    const h = hijriOf(d);
-    if(h) TN_ISLAMIC.forEach(f => { if(f.m === h.month && f.d === h.day) out.push({diff:i, n:f.n, holiday:f.holiday, calc:true, ids:f.ids}); });
+    const h = hijriOf(d), iso = tnIso(d);
+    if(h) TN_ISLAMIC.forEach(f => {
+      if(f.m !== h.month || f.d !== h.day) return;
+      if(f.ov && ov[f.m + '-' + h.year]) return;   // für dieses Jahr ist ein Datum eingetragen: der errechnete Tag entfällt
+      out.push({diff:i, n:f.n, holiday:f.holiday, calc:true, ids:f.ids});
+    });
+    Object.keys(ov).forEach(k => {
+      if(ov[k] !== iso) return;
+      const f = TN_ISLAMIC.find(x => x.ov && x.m === parseInt(k, 10));
+      if(f) out.push({diff:i, n:f.n, holiday:f.holiday, calc:false, set:true, ids:f.ids});
+    });
+  }
+  return out;
+}
+// Mondsichtung steht an: errechneter Tag liegt in den nächsten sight Tagen (Ramadan, Eid al-Fitr: 1 Tag, Eid al-Adha: 10 Tage) und es ist noch nichts eingetragen
+function tnSightings(from){
+  const out = [], ov = tnOv();
+  for(let i = 0; i <= 10; i++){
+    const d = new Date(from.getFullYear(), from.getMonth(), from.getDate() + i), h = hijriOf(d);
+    if(!h) continue;
+    TN_ISLAMIC.forEach(f => { if(f.ov && f.m === h.month && f.d === h.day && i <= f.sight && !ov[f.m + '-' + h.year]) out.push({diff:i, n:f.n}); });
   }
   return out;
 }
@@ -922,17 +945,25 @@ function tnDaysHtml(){
     const t0 = new Date(); t0.setHours(0, 0, 0, 0);
     // Zum Ansehen: Adresse mit ?tntest=2026-03-18 öffnet die Startseite mit diesem Datum (nur die Karte, sonst ändert sich nichts)
     try{ const q = (new URLSearchParams(location.search).get('tntest') || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); if(q) t0.setFullYear(+q[1], +q[2] - 1, +q[3]); }catch(e){}
-    const ev = tnDayEvents(t0, 7), h0 = hijriOf(t0);
-    const ramadan = (h0 && h0.month === 9) ? h0.day : 0;
-    if(!ev.length && !ramadan) return '';
+    const ev = tnDayEvents(t0, 7), h0 = hijriOf(t0), ov = tnOv(), sight = tnSightings(t0);
+    // Ramadan-Tag: mit eingetragenem Beginn nach diesem, sonst nach dem Kalender
+    let ramadan = 0, ramSet = false;
+    Object.keys(ov).filter(k => k.indexOf('9-') === 0).forEach(k => {
+      const st = new Date(ov[k] + 'T00:00:00'), n = Math.round((t0 - st) / 86400000);
+      if(n >= 0 && n < 30){ ramadan = n + 1; ramSet = true; }
+    });
+    if(!ramadan && h0 && h0.month === 9 && !ov['9-' + h0.year]) ramadan = h0.day;
+    if(!ev.length && !ramadan && !sight.length) return '';
     // je Tag eine Zeile (mehrere Ereignisse am selben Tag zusammen); auf der Startseite höchstens zwei Zeilen, alles Weitere beim Antippen
     const byDay = [];
-    ev.forEach(e => { let g = byDay.find(x => x.diff === e.diff); if(!g){ g = {diff:e.diff, names:[], holiday:false, calc:false}; byDay.push(g); } g.names.push(e.n); if(e.holiday) g.holiday = true; if(e.calc) g.calc = true; });
+    ev.forEach(e => { let g = byDay.find(x => x.diff === e.diff); if(!g){ g = {diff:e.diff, names:[], holiday:false, calc:false, set:false}; byDay.push(g); } g.names.push(e.n); if(e.holiday) g.holiday = true; if(e.calc) g.calc = true; if(e.set) g.set = true; });
     const lines = [];
-    if(ramadan) lines.push('Ramadan, Tag ' + ramadan + ' (errechnet)');
-    byDay.forEach(g => lines.push(tnWhen(g.diff) + ': ' + g.names.join(' und ') + (g.holiday ? ' · Feiertag' : '') + (g.calc ? ' (errechnet)' : '')));
+    sight.slice(0, 1).forEach(x => lines.push('Mondsichtung: Datum eintragen (' + x.n + ')'));
+    if(ramadan) lines.push('Ramadan, Tag ' + ramadan + (ramSet ? ' (eingetragen)' : ' (errechnet)'));
+    byDay.forEach(g => lines.push(tnWhen(g.diff) + ': ' + g.names.join(' und ') + (g.holiday ? ' · Feiertag' : '') + (g.calc ? ' (errechnet)' : g.set ? ' (eingetragen)' : '')));
     const ids = (ev.find(e => e.ids) || {}).ids || null;
-    window._tnInfo = {lines, calc: !!ramadan || ev.some(e => e.calc), ids, ramadan, events: ev.map(e => ({diff:e.diff, name:e.n, holiday:e.holiday, calc:e.calc, date:new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + e.diff)}))};
+    window._tnInfo = {lines, calc: (!!ramadan && !ramSet) || ev.some(e => e.calc), ids, ramadan, ramSet, sight,
+      events: ev.map(e => ({diff:e.diff, name:e.n, holiday:e.holiday, calc:e.calc, set:e.set, date:new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + e.diff)}))};
     const shown = lines.slice(0, 2);
     return '<div class="tn-box" onclick="tnTap()">' + shown.map((l, i) => '<div class="tn-l">' + escHtml(l) + (i === shown.length - 1 ? ' ▸' : '') + '</div>').join('') + '</div>';
   }catch(e){ return ''; }
@@ -947,17 +978,20 @@ window.tnTap = function(){
   const dm = d => d.getDate() + '.' + (d.getMonth() + 1) + '.';
   const tag = t => '<span class="tnm-t">' + t + '</span>';
   const rows = [];
-  if(i.ramadan) rows.push('<div class="tnm-r"><div class="tnm-d">Heute</div><div class="tnm-n">Ramadan, Tag ' + i.ramadan + '</div>' + tag('errechnet') + '</div>');
+  (i.sight || []).forEach(x => rows.push('<div class="tnm-r"><div class="tnm-d">' + (x.diff === 0 ? 'Heute' : x.diff === 1 ? 'Morgen' : 'In ' + x.diff + ' Tagen') + '</div><div class="tnm-n">Mondsichtung: ' + escHtml(x.n) + '</div>' + tag('Datum eintragen') + '</div>'));
+  if(i.ramadan) rows.push('<div class="tnm-r"><div class="tnm-d">Heute</div><div class="tnm-n">Ramadan, Tag ' + i.ramadan + '</div>' + tag(i.ramSet ? 'eingetragen' : 'errechnet') + '</div>');
   i.events.forEach(e => rows.push('<div class="tnm-r"><div class="tnm-d">' + (e.diff === 0 ? 'Heute' : e.diff === 1 ? 'Morgen' : WD[e.date.getDay()] + ' ' + dm(e.date)) + '</div><div class="tnm-n">' + escHtml(e.name) + '</div>'
-    + (e.holiday ? tag('Feiertag') : '') + (e.calc ? tag('errechnet') : '') + '</div>'));
+    + (e.holiday ? tag('Feiertag') : '') + (e.calc ? tag('errechnet') : e.set ? tag('eingetragen') : '') + '</div>'));
   const html = '<div id="tnm-bg" class="tnm-bg" onclick="if(event.target===this)tnClose()"><div class="tnm" role="dialog" aria-label="Besondere Tage in Tunesien">'
     + '<div class="tnm-h"><span>Besondere Tage in Tunesien</span><button class="tnm-x" aria-label="Schließen" onclick="tnClose()">×</button></div>'
     + '<div class="tnm-b">' + rows.join('')
     + (i.calc ? '<div class="tnm-s">„errechnet“ heißt: nach dem Kalender berechnet. In Tunesien legt die Mondsichtung die Tage fest, deshalb kann es um einen Tag abweichen.</div>' : '')
+    + ((i.sight || []).length ? '<div class="tnm-s">Den Beginn gibt der Mufti der Republik am Abend der Mondsichtung bekannt. Unter „Mehr“ steht, wo du es nachlesen kannst.</div>' : '')
     + (nm ? '<div class="tnm-hint"><div class="tnm-k">Nachschub</div>' + nm.t.split('\n').map(escHtml).join('<br>') + '</div>' : '')
     + (ph.length ? '<div class="tnm-k" style="margin-top:.9rem">Grüße zum Üben</div>' + ph.map(v => '<div class="tnm-p"><div class="tnm-ar" dir="rtl">' + escHtml(v.ar || '') + '</div><div><b>' + escHtml(v.tr || '') + '</b> · ' + escHtml(v.en || '') + '</div></div>').join('') : '')
     + '</div><div class="tnm-f">'
-    + (ph.length ? '<button class="neu-btn" onclick="tnDueNow([' + ph.map(v => v.id).join(',') + '],true).then(tnClose)">Zum Üben fällig setzen</button>' : '')
+    + ((i.sight || []).length ? '<button class="neu-btn" onclick="tnClose();setMode(\'more\')">Datum unter „Mehr“ eintragen</button>' : '')
+    + (ph.length ? '<button class="neu-btn' + ((i.sight || []).length ? ' ghost' : '') + '" onclick="tnDueNow([' + ph.map(v => v.id).join(',') + '],true).then(tnClose)">Zum Üben fällig setzen</button>' : '')
     + '<button class="neu-btn ghost" onclick="tnClose()">Schließen</button></div></div></div>';
   document.body.insertAdjacentHTML('beforeend', html);
 };
@@ -968,6 +1002,47 @@ window.tnDueNow = async function(ids, noAsk){
   if(!noAsk && !confirm(picked.length + ' Vokabeln fällig setzen?\n\n' + picked.map(x => vById(x.id).tr + ' – ' + vById(x.id).en).join('\n'))) return;
   try{ await statsActivateApply(picked); showToast('✓ fällig gesetzt', 'ok'); }
   catch(e){ showToast('Fehler: ' + e.message, 'err'); }
+};
+
+// Mehr: die nächsten Termine (Ramadan, Eid al-Fitr, Eid al-Adha) mit errechnetem Tag und Feld für das tatsächliche Datum
+function tnMovingList(){
+  const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+  const out = [], seen = {};
+  for(let i = -30; i <= 420; i++){
+    const d = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + i), h = hijriOf(d);
+    if(!h) continue;
+    TN_ISLAMIC.forEach(f => { if(f.ov && !seen[f.m] && f.m === h.month && f.d === h.day){ seen[f.m] = 1; out.push({f, year:h.year, calc:d}); } });
+  }
+  return out.sort((a, b) => a.calc - b.calc);
+}
+function tnSettingsHtml(){
+  try{
+    const ov = tnOv(), fmt = d => ['So','Mo','Di','Mi','Do','Fr','Sa'][d.getDay()] + ' ' + d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear();
+    const inp = 'width:100%;min-height:48px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:0 .7rem;font-size:1rem';
+    const items = tnMovingList().map(x => {
+      const key = x.f.m + '-' + x.year, val = ov[key] || '';
+      return '<div class="neu-cap" style="margin-top:1rem">' + escHtml(x.f.n) + ' ' + x.year + '</div>'
+        + '<div class="neu-sub" style="margin-bottom:.3rem">errechnet: ' + fmt(x.calc) + (val ? ' · eingetragen' : '') + '</div>'
+        + '<div style="display:flex;gap:.5rem;align-items:center"><input type="date" value="' + val + '" style="' + inp + '" onchange="tnSetOv(\'' + key + '\',this.value,\'' + tnIso(x.calc) + '\')">'
+        + (val ? '<button class="neu-btn ghost" style="width:auto;min-height:48px;padding:0 .9rem" onclick="tnSetOv(\'' + key + '\',\'\')">Zurück</button>' : '') + '</div>';
+    }).join('');
+    return '<div class="neu-h">Besondere Tage in Tunesien</div><div class="neu-card">'
+      + '<div class="neu-sub">Ramadan und die beiden Eid-Feste legt in Tunesien die Mondsichtung fest. Trag hier das tatsächliche Datum ein, sobald es bekannt ist. Bis dahin gilt der errechnete Tag, er kann um einen Tag abweichen. Die Eingabe gilt nur auf diesem Gerät.</div>'
+      + items
+      + '<div class="neu-sub" style="margin-top:1rem"><b style="color:var(--text)">So findest du es heraus:</b> Den Beginn gibt der Mufti der Republik (Diwan al-Ifta) am Abend der Mondsichtung bekannt, also am Abend vor dem Tag. Die Nachrichten (Kapitalis, La Presse, Business News) melden es am selben Abend. Beispiel: 2026 begann der Ramadan einen Tag später als errechnet (errechnet 18.2., offiziell 19.2.). Beim Eid al-Adha steht der Tag schon rund 10 Tage vorher fest, weil dann der Monat beginnt.</div>'
+      + '<div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.7rem;font-size:.95rem">'
+      + '<a href="https://diwanalifta.pm.gov.tn/" target="_blank" rel="noopener" style="color:var(--gold2)">Offizielle Seite des Muftis (Diwan al-Ifta)</a>'
+      + '<a href="https://duckduckgo.com/?q=Tunisie+mufti+d%C3%A9but+Ramadan+croissant+lunaire" target="_blank" rel="noopener" style="color:var(--gold2)">Nachrichten dazu suchen</a></div></div>';
+  }catch(e){ return ''; }
+}
+window.tnSetOv = function(key, val, calcIso){
+  const ov = tnOv();
+  if(val){
+    if(calcIso && Math.abs((new Date(val + 'T00:00:00') - new Date(calcIso + 'T00:00:00')) / 86400000) > 3){ showToast('Das Datum liegt weit vom errechneten Tag (' + calcIso.split('-').reverse().join('.') + ')', 'warn'); showMore(); return; }
+    ov[key] = val;
+  }else delete ov[key];
+  LS.set('neu-tn-ov', JSON.stringify(ov));
+  showMore();
 };
 
 /* ---------- Kurs als Lernpfad ---------- */
