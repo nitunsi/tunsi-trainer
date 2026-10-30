@@ -5534,6 +5534,27 @@ function renderLessonsAdmin(){
 }
 
 function escHtml(s){ const d=document.createElement('div');d.textContent=s||'';return d.innerHTML; }
+// Unregelmäßige Formen in Kurslösungen: meta.irr = ["kul", "qolt#o"] — "form" markiert die ganze Form,
+// "form#teil" nur den Teil. Ersetzt wird nur in Textstücken (nicht in Tags) und nur ganze Wörter.
+function irrMark(html, ex){
+  const l = ex && ex.meta && ex.meta.irr;
+  if(!l || !l.length || !html) return html;
+  const mk = x => '<b style="color:var(--red)" title="unregelmäßig">'+x+'</b>';
+  const rx = f => f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return html.split(/(<[^>]+>)/).map(seg => {
+    if(seg.charAt(0)==='<') return seg;
+    l.forEach(e => {
+      const i = e.indexOf('#'), f = escHtml(i<0 ? e : e.slice(0,i)), part = i<0 ? null : escHtml(e.slice(i+1));
+      if(!f) return;
+      seg = seg.replace(new RegExp('(^|[^\\w])('+rx(f)+')(?![\\w])','g'), (m,a,w) => {
+        if(w.indexOf('<b ')>=0) return m;
+        if(part && w.indexOf(part)>=0){ const k = w.indexOf(part); return a+w.slice(0,k)+mk(part)+w.slice(k+part.length); }
+        return a+mk(w);
+      });
+    });
+    return seg;
+  }).join('');
+}
 // Zahlen mit Tausenderpunkt (1.725)
 function fmtN(n){ return Number(n).toLocaleString('de-DE'); }
 
@@ -6385,7 +6406,7 @@ function courseExSolutionHtml(exercise){
     const drillRows = exercise.exercise_type==='grammar_drill' ? parseGrammarDrillSolution(exercise.solution) : null;
     solHtml = drillRows ? renderGrammarDrillGrid(drillRows,true) : escHtml(exercise.solution||'—');
   }
-  return solHtml + courseMetaGermanHtml(exercise) + courseBelegHtml(exercise);
+  return irrMark(solHtml, exercise) + courseMetaGermanHtml(exercise) + courseBelegHtml(exercise);
 }
 
 // Karten, deren Prompt schon die Tounsi-Wörter der Antwort enthält ("amriki – almani"), während die
@@ -7015,7 +7036,7 @@ function renderCourseTestTab(tc, l){
          + 'Wenn du das einmal laut oder schriftlich durchgespielt hast, geh weiter.'
          + '</div>';
     } else if(ex.solution){
-      h += '<div style="color:var(--gold2);font-size:.85rem;margin-bottom:1rem">'+escHtml(ex.solution)+'</div>';
+      h += '<div style="color:var(--gold2);font-size:.85rem;margin-bottom:1rem">'+irrMark(escHtml(ex.solution), ex)+'</div>';
     }
     h += '<button onclick="courseNextItem(null)" style="width:100%;padding:.6rem;background:var(--gold);border:none;color:#0e0c0a;font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">Weiter</button>';
   } else if(!t.revealed){
@@ -7037,7 +7058,7 @@ function renderCourseTestTab(tc, l){
     if(!solHtml && _tcv && _tcv.solHtml) solHtml = _tcv.solHtml;
     if(!solHtml && drillRows) solHtml = renderGrammarDrillGrid(drillRows, true);
     if(!solHtml) solHtml = escHtml(ex.solution||'—');
-    solHtml += courseMetaGermanHtml(ex) + courseBelegHtml(ex);
+    solHtml = irrMark(solHtml, ex) + courseMetaGermanHtml(ex) + courseBelegHtml(ex);
     h += '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2);margin-bottom:.8rem">'+solHtml+'</div>';
     if((ex.partner_status===null || ex.partner_status===undefined) && !(ex.meta && ex.meta.beleg)){
       h += '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.6rem">⚠️ ungeprüft — wartet auf Semias Prüfung</div>';
@@ -7322,7 +7343,7 @@ function renderPairsItem(){
   if(!_pairsRevealed){
     h += '<button onclick="pairsReveal()" style="width:100%;padding:.6rem;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;cursor:pointer;border-radius:4px">Antwort zeigen</button>';
   } else {
-    h += '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2);margin-bottom:.8rem">'+escHtml(ex.solution||'—');
+    h += '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2);margin-bottom:.8rem">'+irrMark(escHtml(ex.solution||'—'), ex);
     if(md.solution_de) h += '<div style="font-size:.72rem;color:var(--muted);margin-top:.4rem">'+escHtml(md.solution_de)+'</div>';
     h += '</div>';
     h += '<div style="display:flex;gap:.5rem">';
