@@ -2628,7 +2628,14 @@ const CONJ_PERSON_ROWS = [['ich','1sg'],['du','2sg'],['er','3sg_m'],['sie','3sg_
 function renderConjugationTable(cj){
   if(!cj) return '';
   const pr = cj.present||{}, pa = cj.past||{}, im = cj.imperative||{};
-  const d = c => (c && c.darija) ? c.darija : '–';
+  // Unregelmäßige Formen: c.irr === true markiert die ganze Form, ein String (z.B. 'o') nur diesen Teil.
+  const d = c => {
+    if(!(c && c.darija)) return '–';
+    const t = c.darija, mk = x => '<b style="color:var(--red)" title="unregelmäßig">'+x+'</b>';
+    if(c.irr === true) return mk(t);
+    if(typeof c.irr === 'string' && c.irr && t.indexOf(c.irr) >= 0){ const i = t.indexOf(c.irr); return t.slice(0,i)+mk(c.irr)+t.slice(i+c.irr.length); }
+    return t;
+  };
   let h = '<table style="width:100%;border-collapse:collapse;font-size:.8rem">';
   h += '<thead><tr style="color:var(--muted);font-size:.62rem;text-transform:uppercase;letter-spacing:.05em">';
   h += '<th style="text-align:left;padding:.2rem .4rem"></th><th style="text-align:left;padding:.2rem .4rem">Präsens</th><th style="text-align:left;padding:.2rem .4rem">Vergangenheit</th></tr></thead><tbody>';
