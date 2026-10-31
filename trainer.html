@@ -1582,10 +1582,32 @@ async function rcMarkStale(table){
     });
   }catch(e){}
 }
+// Nach eigenen Schreibzugriffen (online) den gespeicherten Lernstand nachziehen: sonst startet die App am nächsten Tag
+// ohne Netz mit dem Stand von vor der letzten Lerneinheit und fragt schon beantwortete Vokabeln noch einmal ab.
+let _rcProgDirty = false, _rcProgT = null;
+function rcProgDirtySoon(){
+  if(!currentUser || currentUser.is_partner) return;
+  _rcProgDirty = true;
+  clearTimeout(_rcProgT);
+  _rcProgT = setTimeout(rcProgRefreshNow, 45000);
+}
+async function rcProgRefreshNow(){
+  clearTimeout(_rcProgT);
+  if(!_rcProgDirty || !currentUser || currentUser.is_partner || navigator.onLine === false || _syncRunning || _syncP || _rcRefreshing) return;
+  try{
+    if(await oqPendingN() > 0) return;
+    _rcProgDirty = false;
+    await Promise.all([
+      sbApiPaged('progress?user_id=eq.'+currentUser.id+'&select=id,vocabulary_id,correct_count,wrong_count,review_count,next_review,last_reviewed,last_correct&order=id.asc', 1000),
+      courseExProgressFetch()
+    ]);
+  }catch(e){ _rcProgDirty = true; }
+}
 async function sbApi(path,method='GET',body=null,prefer=null){
   if(method !== 'GET'){
     const r = await _sbApiNet(path,method,body,prefer);
     if(/^(progress|course_exercise_progress|course_progress|vocabulary|lessons|course_lessons|course_exercises)\?/.test(path)) rcMarkStale(path.split('?')[0]);
+    if(/^(progress|course_exercise_progress)\?/.test(path)) rcProgDirtySoon();
     return r;
   }
   if(!rcCacheable(path)) return _sbApiNet(path,method,body,prefer);
@@ -1656,6 +1678,7 @@ async function rcForceRefresh(){
 }
 window.addEventListener('online', () => { _rcOfflineSince = null; try{ if(window.neuOfflineHint) window.neuOfflineHint(null); }catch(e){} setTimeout(()=>{ if(currentUser) rcRefresh(); }, 1500); });
 document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'hidden') rcProgRefreshNow();
   if(document.visibilityState === 'visible' && currentUser && Date.now() - _rcLastRefresh > 15*60*1000) rcRefresh();
 });
 // ══ ENDE LESE-CACHE ═════════════════════════════════════════════════════════
