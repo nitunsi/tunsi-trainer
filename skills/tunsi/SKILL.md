@@ -17,6 +17,8 @@ Fokus dieser Datei: bestehende Trainer-Vokabeln prüfen, neue Vokabeln nachschla
 | **Vokabeln prüfen ODER neu anlegen** — eine, ein Batch, geflaggte, fällige, ein Import, „ich brauche ein Wort für X" | **Der Prozess — ein Ablauf, zwei Eingänge.** Dasselbe Vorgehen für alle Fälle; es wechseln nur die Zeilen am Anfang und `UPDATE`/`INSERT` am Ende. |
 | Neue Vokabel nachschlagen / Quellen abgleichen | vocab_lookup — Cross-Source-Abgleich (ganz unten), das Werkzeug hinter Schritt 3 |
 | Quelle schreibt etwas anders als wir — Fehler oder nur Konvention? | **Quell-Konventionen** (in Transliteration — Ziel-Konvention). Was dort erklärt ist, ist kein Befund |
+| **Bestand prüfen — erster Blick** | **Im Trainer: Mehr → Prüfungen** (Fundstellen) bzw. die Zahl „N Treffer in den Prüfungen“ auf Lernen. Soll **0** sein. Abschnitt „Prüfungen im Trainer“ (direkt vor den SQL-Checks) sagt, was dort läuft und was nur per SQL |
+| **Neue Prüfung gewünscht oder von Hand wiederholt** | Abschnitt „Prüfungen im Trainer“ → **Immer erst überlegen, ob sie in den Trainer gehört** — und vorschlagen |
 | „alle Regeln laufen lassen" | Datenqualitäts-Checks → **A** (müssen auf 0 stehen). Das SQL dort ist nur eine Teilmenge; der vollständige Lauf geht über den Node-Harness gegen `trainer.html` |
 | Bestand nach Kandidaten durchsuchen | Datenqualitäts-Checks → **B** (Verdachtslisten mit Fehlalarmquote) — **nie im Block korrigieren** |
 | Eigene Prüfabfrage bauen | Datenqualitäts-Checks → **C** (Regeln fürs Prüfen selbst) — erst lesen, drei der Fallen dort haben schon Prüfläufe stumm wertlos gemacht |
@@ -44,12 +46,11 @@ SELECT * FROM public.qualitaets_checks WHERE treffer > 0 ORDER BY gruppe, nr;
 
 Gruppe A muss auf 0 stehen, Gruppe B sind Rückstände. Hier steht bewusst **kein** Schnappschuss mehr: die frühere Fassung nannte „Check 22/23 bei 424/36" und war zwei Tage später bei 234/0 — ein Absatz, der zum Zitieren einlädt und dabei falsch ist, richtet mehr Schaden an als eine fehlende Zahl. Die Sicht oben liefert den Stand in einer Abfrage.
 
-Was die Sicht **nicht** abdeckt und weiterhin von Hand zu ziehen ist:
+Was die Sicht **nicht** abdeckt und weiterhin von Hand zu ziehen ist (verwaiste `vocab_lesson_refs`, Audio-Grunddaten, Flaggen und Fälligkeiten prüft inzwischen der Trainer, siehe „Prüfungen im Trainer“):
 
 | Posten | wo |
 |---|---|
 | Schrägstrich im `darija` (echte Synonyme) | Datenqualitäts-Checks → B |
-| verwaiste ids in `course_lessons.vocab_lesson_refs` | Altbestand, tote Vokabel-Slots |
 | Bedeutungsverdacht gegen TUNICO | `public.bedeutungs_screen` — **keine Korrekturliste**, ~93 % Fehlalarm |
 
 - **`-ou` nach Konsonant** (113 Zeilen): Die Konjugationstabellen schreiben 511× `-u` gegen 39× `-ou`, eine Vereinheitlichung wäre also begründbar. **Bewusst nicht angefasst**, weil die Mehrheit der Treffer gar kein Plural ist, sondern das Possessivsuffix (`3andou` „er hat", `7lou` „süß"). Nur mit Wortart-Prüfung angehbar, nicht per Regex.
@@ -132,6 +133,8 @@ Drei Dinge daraus ernst nehmen:
 ### Schritt 2 — Intern prüfen (kostenlos, kein Netz)
 
 Deckt eine andere Fehlerklasse ab als der externe Abgleich: eine Vokabel kann extern bestätigt und trotzdem kaputt transliteriert sein. **Vor** Schritt 3.
+
+**Zuerst im Trainer nachsehen** (*Mehr → Prüfungen*, Zahl auf *Lernen*): Er prüft die Gruppe-A-Regeln und mehr gegen den geladenen Bestand und soll auf 0 stehen. Die SQL-Abfrage unten ist die Gegenprobe.
 
 **Eingang A — eine Abfrage, unabhängig davon, wie groß die Auswahl ist:**
 ```sql
@@ -434,6 +437,28 @@ Das gilt auch dann, wenn die Neuanlage aus einem 🚩-Auftrag herausfällt — d
 **Fehlerquelle bei Form-II/III-Verben (Gemination): unvokalisiertes `arabic_script` kollidiert leicht mit der Form-I-Wurzel.** Präzedenzfall 2026-09-06: `nwassal` („ich bringe hin", Form II von وصل) wurde zunächst unvokalisiert als نوصل eingetragen — identisch mit der bereits bestehenden Form-I-Zeile `nousil`/„ich komme an" (id 1278), vom Duplikat-Check sofort erkannt. Bei Form-II/III-Verben mit Gemination immer die Schadda setzen (نْوَصَّل, nicht نوصل), am bestehenden Präsens-Geschwister (hier `ywassal`→يْوَصَّل) orientieren — nicht komplett unvokalisiert lassen, wenn das Muster durch eine Geschwisterform schon bekannt ist.
 
 **Bei jeder Neuanlage/jedem Vokabel-Check ab jetzt:** wenn ein neues oder geprüftes Wort ein Verb ist, prüfen ob es zu einem der `tunico_corpus_verbs`-Einträge gehört (Konsonantenskelett-Match gegen `forms_chatalpha[]`) und nach obigem 3-Zeilen-Modell behandeln, nicht als isolierte Einzelform anlegen.
+
+## Prüfungen im Trainer (seit 2026-10-31)
+
+**Ziel: alle Prüfungen auf 0, und zwar dort, wo Nils sie sieht.** Der Trainer prüft seinen eigenen, geladenen Bestand und zeigt Treffer unter *Mehr → Prüfungen* (mit Fundstellen) und als Zahl auf *Lernen* („N Treffer in den Prüfungen“). Für die Arbeit heißt das: **erst dort nachsehen, ob etwas gemeldet wird** — das spart Abfragen und Kontext. Das SQL (`qualitaets_checks`) bleibt für das, was der Trainer nicht kann (unten).
+
+**Was der Trainer prüft:** die vollständige Liste steht im Code, **dort nachlesen, nicht hier** (eine Aufzählung im Skill veraltet): `TRANSLIT_RULES` (Umschrift der Vokabeln), `countDupeIssues` (Dubletten), `translitExtraChecks0()` (Konjugationstabellen, Hohlverben, Kurs-Umschrift) und `datenChecks()` (Felder, Kurs, Lerndaten) in `trainer.html`. Grob: Umschrift, Pflichtfelder und Zeichen, Dubletten und Homonyme, Konjugation, Kurs (Umschrift, Lösung gegen Tabelle, Doppelte, Quelle), Lerndaten (verwaiste Verweise, Audio-Grunddaten, Flaggen, Fälligkeit). Jede Regel liefert `{label, n, bsp}` und erscheint von selbst in der Prüfung.
+
+**Was nur per SQL geht:** alles mit der Ninja-Tabelle (Checks 11, 13, 23, Quellenabgleich), die Vokalisierungs-Kandidaten (22, bewusst nicht im Trainer: Dauerrauschen), die `chatalpha`-Gegenchecks (24–28) und Audio-Zuordnung zum Wort. Dazu die Datenbank-Pflege (Advisors, Backups). Die SQL-Gruppe A bleibt vorerst als Gegenprobe; läuft der Trainer ein paar Wochen sauber, die doppelten SQL-Checks aus der Sicht nehmen (Vorschlag an Nils) und dort nur die Ninja-Teile lassen.
+
+**Arbeitsweise bei einem Treffer:** wie jede Korrektur (Prozess, Schritt 4–5: zeigen, bestätigen, Backup, schreiben). Danach den Trainer neu laden — die Zahl muss sinken. Die Prüfung ist nicht „weg“, bloß weil ein Treffer ausgeblendet ist: Ausnahmen gehören in den Code (wie `KURS_OHNE_LOESUNG`, die vier Digraph-IDs) **mit Begründung im Kommentar**, nicht als stilles Wegfiltern.
+
+### Immer erst überlegen: gehört diese Prüfung in den Trainer?
+
+Bei **jeder** neuen Prüfung und **jeder** Abfrage, die ich zum zweiten Mal von Hand schreibe, gilt: vor dem Bauen fragen, ob der Trainer die nötigen Daten schon geladen hat (`ALL_VOCAB`, `COURSE_EX_BY_ID`, `COURSE_LESSONS`, `srsProgress`, `flaggedVocab`, `AUDIO_GAIN`, Kurs- und Konjugationsdaten). Wenn ja, **Nils vorschlagen, sie in den Trainer zu verlagern** — statt sie als SQL oder im Kopf zu halten. Das senkt, woran ich denken muss, und Nils sieht Treffer ohne mich.
+
+- **Vorschlag zeigen, nicht einbauen** (Code-Regel: nicht ohne Bestätigung). Mit Nutzen, Trefferzahl aus den echten Daten und Aufwand.
+- **Trefferzahl vorher ausrechnen:** Funktion per Node-Harness gegen die echten Daten laufen lassen (Vokabeln/Kurs mit dem Anon-Schlüssel aus `trainer.html` laden). Erst mit bekannter Zahl bauen; Fehlalarme (ganze Aufgabentypen, bewusste Sonderfälle) vorher herausnehmen. Präzedenzfälle: 58 Treffer bei „ohne Lösung“ waren alles offene `build_dialog`-Aufgaben; „Verwaiste Verweise“ fand 23 Vokabel-IDs im falschen Teil von `vocab_lesson_refs`.
+- **Wohin:** neue Regeln in `datenChecks()` (Rückgabe `{label, n, bsp}`); sie erscheinen von selbst in der Prüfung und in der Zahl auf Lernen. Syntaxprüfung per `vm.Script`.
+- **Dauerrauschen nicht aufnehmen** (wie Vokalisierung 22): Eine Prüfung, die dauerhaft Treffer zeigt, die niemand beheben will, macht die Zahl wertlos.
+- **Nicht verlagerbar:** was Ninja-Daten, Audio-Hören oder Datenbank-Einstellungen braucht — bleibt SQL bzw. Handarbeit.
+
+---
 
 ## Datenqualitäts-Checks (SQL)
 
