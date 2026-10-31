@@ -452,6 +452,10 @@ html[data-theme="light"] #act-overlay{background:rgba(40,30,15,.45)}
 .act-row .src{font-size:.72rem;color:var(--muted);white-space:nowrap}
 .act-foot{display:flex;gap:.5rem;padding:.7rem 1rem calc(.7rem + env(safe-area-inset-bottom,0px));border-top:1px solid var(--border);flex:none}
 .act-row input[type=checkbox]{accent-color:var(--gold)}
+/* Knöpfe in Dialogen wie bei „Vorziehen“: Abbrechen als Linie in Grau, Bestätigen in Gold mit dunkler Schrift */
+.act-foot .neu-btn{min-height:46px;border-radius:10px;font-size:.95rem}
+.act-foot .neu-btn.ghost{background:transparent;border:1px solid var(--border);color:var(--muted);font-weight:400}
+.act-foot .neu-btn:not(.ghost){color:#0e0c0a}
 
 /* Linien-Symbole */
 .neu-ic{width:1.1em;height:1.1em;vertical-align:-.17em;display:inline-block;flex:none}

@@ -10096,17 +10096,17 @@ function _neuDialog(msg, mode){
     const okTxt = mode === 'note' ? 'OK' : /verwerfen/i.test(titel + rest) && gefahr && !/l[öo]schen/i.test(titel) ? 'Verwerfen' : /l[öo]schen/i.test(titel) ? 'Löschen' : 'OK';
     const ov = document.createElement('div');
     ov.className = 'neu-dlg-scrim';
-    ov.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:1rem';
+    ov.style.cssText = 'position:fixed;left:0;right:0;top:var(--vvt,0px);height:var(--vvh,100%);z-index:100000;background:rgba(0,0,0,.65);display:flex;align-items:flex-start;justify-content:center;padding:.8rem 1rem;overflow-y:auto';
     const card = document.createElement('div');
     card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true');
-    card.style.cssText = 'width:100%;max-width:26rem;max-height:86vh;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-top:2px solid '+(gefahr ? 'var(--red)' : 'var(--gold)')+';border-radius:14px;box-shadow:0 12px 36px rgba(0,0,0,.6);overflow:hidden';
-    const bg = (c, f) => 'flex:1;min-height:48px;border-radius:10px;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;' + c;
+    card.style.cssText = 'width:100%;max-width:340px;max-height:86vh;display:flex;flex-direction:column;background:var(--surface);border:1px solid '+(gefahr ? 'var(--red)' : 'var(--gold)')+';border-radius:12px;padding:.8rem 1rem;overflow:hidden';   // gleiche Karte wie „Vorziehen“
+    const bg = (c) => 'flex:1;min-height:46px;outline:none;border-radius:10px;font-family:inherit;font-size:.95rem;cursor:pointer;' + c;
     card.innerHTML =
-      '<div style="padding:1rem 1.1rem .5rem;font-size:1.02rem;font-weight:700;color:var(--text);line-height:1.35">'+escHtml(titel)+'</div>'
-      + (rest ? '<div style="padding:0 1.1rem .8rem;overflow:auto;font-size:.86rem;color:var(--muted);line-height:1.5;white-space:pre-wrap;word-break:break-word">'+escHtml(rest)+'</div>' : '<div style="height:.4rem"></div>')
-      + '<div style="display:flex;gap:.6rem;padding:.8rem 1.1rem 1rem;border-top:1px solid var(--border)">'
-      + (mode === 'ask' ? '<button type="button" data-r="0" style="'+bg('background:var(--surface2);border:1px solid var(--border);color:var(--text)')+'">Abbrechen</button>' : '')
-      + '<button type="button" data-r="1" style="'+bg(gefahr ? 'background:var(--red);border:none;color:#fff' : 'background:var(--gold);border:none;color:#17120a')+'">'+okTxt+'</button></div>';
+      '<div style="font-size:1.05rem;font-weight:700;color:'+(gefahr ? 'var(--red)' : 'var(--gold)')+';line-height:1.35">'+escHtml(titel)+'</div>'
+      + (rest ? '<div style="margin:.1rem 0 .6rem;overflow:auto;font-size:.8rem;color:var(--muted);line-height:1.5;white-space:pre-wrap;word-break:break-word">'+escHtml(rest)+'</div>' : '<div style="height:.6rem"></div>')
+      + '<div style="display:flex;gap:.5rem">'
+      + (mode === 'ask' ? '<button type="button" data-r="0" style="'+bg('background:transparent;border:1px solid var(--border);color:var(--muted)')+'">Abbrechen</button>' : '')
+      + '<button type="button" data-r="1" style="'+bg(gefahr ? 'background:var(--red);border:none;color:#fff;font-weight:700' : 'background:var(--gold);border:none;color:#0e0c0a;font-weight:700')+'">'+okTxt+'</button></div>';
     ov.appendChild(card);
     const zu = r => { document.removeEventListener('keydown', key, true); ov.remove(); resolve(r); };
     const key = e => { if(e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); zu(mode === 'note'); } };
