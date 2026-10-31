@@ -5073,7 +5073,9 @@ function translitExtraChecks(){
   const alt = new Map();
   vTok.forEach(t => { if(/ou./.test(t)){ const a = t.replace(/ou/g,'u'); if(!vTok.has(a) && a !== 'nur' && a !== 'tun') alt.set(a, t); } });
   const stammIds = new Set(), stammBsp = [];
-  kursTexte.forEach(k => { toks(k.txt).some(t => { if(alt.has(t)){ if(!stammIds.has(k.id)){ stammIds.add(k.id); stammBsp.push(k.id+': '+t+' → '+alt.get(t)); } return true; } return false; }); });
+  // Kurstexte ohne Kleinschreibung: deutsches „Tunis“ am Satzanfang ist kein tunesisches „tunis“
+  const toksK = t => String(t||'').split(/[^a-z0-9]+/).filter(x => x.length > 2);
+  kursTexte.forEach(k => { toksK(k.txt).some(t => { if(alt.has(t)){ if(!stammIds.has(k.id)){ stammIds.add(k.id); stammBsp.push(k.id+': '+t+' → '+alt.get(t)); } return true; } return false; }); });
   // 4b) Suffix „sein“: -ouh und -uh am selben Stamm nebeneinander
   const suf = {};
   const sufZaehlen = t => { const m = /^(.{2,}?)(ouh|uh)$/.exec(t); if(m){ (suf[m[1]] = suf[m[1]] || {ouh:0, uh:0})[m[2]]++; } };
@@ -5102,13 +5104,34 @@ function translitExtraChecks(){
     const fehlt = formenLoes.filter(f => !tabs.some(tb => [...tb].some(z => imala(z) === imala(f))));
     if(fehlt.length){ loesIds.push(e.id); loesBsp.push(e.id+' '+m[1]+': '+[...new Set(fehlt)].join(', ')); }
   });
+  // 6) Hohlverben (3. Person Vergangenheit CaC, 1. Person mit anderem Vokal): Vokal gegen Präsens, fehlende Markierung, veraltete Markierung
+  const hVokal = [], hVokalBsp = [], hOhneIrr = [], hOhneIrrBsp = [], irrAlt = [], irrAltBsp = [];
+  const tGesehen = new Set();
+  ALL_VOCAB.forEach(v => {
+    if(!v.cj) return;
+    const key = JSON.stringify(v.cj); if(tGesehen.has(key)) return; tGesehen.add(key);
+    const g = (t, k, f) => (v.cj[t] && v.cj[t][k] && v.cj[t][k][f]) || null;
+    const pres = g('present','3sg_m','darija'), m3 = g('past','3sg_m','darija'), s1 = g('past','1sg','darija'), irr1 = g('past','1sg','irr');
+    ['present','past','imperative'].forEach(t => { const blk = v.cj[t]; if(blk && typeof blk === 'object') Object.keys(blk).forEach(k => { const c = blk[k]; if(c && typeof c.irr === 'string' && c.darija && c.darija.indexOf(c.irr) < 0) { irrAlt.push(v.id); irrAltBsp.push(v.id+' '+c.darija+' (markiert: '+c.irr+')'); } }); });
+    if(!pres || !m3 || !s1) return;
+    if(!/^[^aeiou]+a[^aeiou]+$/.test(m3) || !/^[^aeiou]+[eiou]+[^aeiou]+$/.test(s1)) return;
+    const vok = (/[aeiou]+/.exec(s1) || [''])[0];
+    if(vok === 'a') return;
+    const kl = /^y[^aeiou]*(ou|u)[^aeiou]*$/.test(pres) ? 'o' : /^y[^aeiou]*i[^aeiou]*$/.test(pres) ? 'i' : null;
+    if(kl && vok !== kl && !(kl === 'i' && vok === 'e')){ hVokal.push(v.id); hVokalBsp.push(v.id+' '+pres+' → '+s1+' (erwartet: '+kl+')'); }
+    if(!irr1){ hOhneIrr.push(v.id); hOhneIrrBsp.push(v.id+' '+m3+' → '+s1+' ohne Markierung'); }
+  });
+  ex.forEach(e => { if(e.meta && Array.isArray(e.meta.irr)) e.meta.irr.forEach(x => { const f = String(x).split('#')[0].toLowerCase(); if(f && String(e.solution||'').toLowerCase().indexOf(f) < 0){ irrAlt.push(e.id); irrAltBsp.push('Übung '+e.id+': '+x+' fehlt in der Lösung'); } }); });
   return [
     {label: 'Konjugationstabellen: Zelle verstößt gegen die Umschrift-Regeln (Zeilen)', n: zellen.length, bsp: zellenBsp},
     {label: 'Vokabel steht nicht in ihrer eigenen Konjugationstabelle (Zeilen)', n: zeile.length, bsp: zeileBsp},
     {label: geladen ? 'Kursübungen: tunesischer Text verstößt gegen die Umschrift-Regeln (von '+ex.length+')' : 'Kursübungen: Kursdaten nicht geladen', n: kurs.size, bsp: kursBsp},
     {label: 'Kurs: Wortstamm mit „u“ statt „ou“ (weicht von den Vokabeln ab)', n: stammIds.size, bsp: stammBsp},
     {label: 'Suffix „sein“: -ouh und -uh nebeneinander am selben Stamm', n: sufBsp.length, bsp: sufBsp},
-    {label: 'Kurslösung: Verbform fehlt in der Konjugationstabelle (von '+loesGeprueft+' prüfbaren Übungen)', n: loesIds.length, bsp: loesBsp}
+    {label: 'Kurslösung: Verbform fehlt in der Konjugationstabelle (von '+loesGeprueft+' prüfbaren Übungen)', n: loesIds.length, bsp: loesBsp},
+    {label: 'Hohlverb: Vokal der Vergangenheit passt nicht zum Präsens (u → o, i → i) (Tabellen)', n: hVokal.length, bsp: hVokalBsp},
+    {label: 'Hohlverb: Vokalwechsel in der Vergangenheit ohne Markierung (Tabellen)', n: hOhneIrr.length, bsp: hOhneIrrBsp},
+    {label: 'Markierung veraltet: markierter Teil steht nicht mehr in der Form/Lösung', n: irrAlt.length, bsp: irrAltBsp}
   ];
 }
 
