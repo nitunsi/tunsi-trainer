@@ -235,12 +235,19 @@ async function loadActivity(){
     // kein Netz: gespeicherte Serie (bis gestern) + heute lokal gezählt
     if(saved && Number.isInteger(saved.n)){
       const todayLocal = window.neuLocalToday ? window.neuLocalToday() : 0;
-      _cache.act = {t: Date.now() - 100000, today: todayLocal, streak: (saved.day === yKey ? saved.n : 0) + (todayLocal > 0 ? 1 : 0)};
+      // Zuletzt online berechnete Serie mit Datum: war gestern aktiv, läuft die Serie weiter (sonst zählte offline nur „1“)
+      let last = null; try{ last = JSON.parse(LS.get('neu-streak-last','null')); }catch(e2){}
+      let base = saved.day === yKey ? saved.n : 0;
+      if(last && Number.isInteger(last.n) && last.active){
+        if(last.day === yKey) base = Math.max(base, last.n);
+        else if(last.day === todayKey) base = Math.max(base, last.n - 1);
+      }
+      _cache.act = {t: Date.now() - 100000, today: todayLocal, streak: base + (todayLocal > 0 ? 1 : 0)};
       return _cache.act;
     }
     throw e;
   }
-  if(saved && saved.day === yKey && Number.isInteger(saved.n)){
+  if(saved && saved.day === yKey && Number.isInteger(saved.n) && saved.n > 0){
     upToYesterday = saved.n;
   } else {
     let page = 0, r = first;
@@ -253,8 +260,9 @@ async function loadActivity(){
       page++; r = await fetchPage(page);
     }
   }
-  LS.set('neu-streak', JSON.stringify({day:yKey, n:upToYesterday}));
+  if(upToYesterday > 0) LS.set('neu-streak', JSON.stringify({day:yKey, n:upToYesterday}));
   const streak = upToYesterday + (days.has(todayKey) ? 1 : 0);
+  LS.set('neu-streak-last', JSON.stringify({day:todayKey, n:streak, active:days.has(todayKey) || upToYesterday > 0}));
   _cache.act = {t:Date.now(), today, streak};
   return _cache.act;
 }
