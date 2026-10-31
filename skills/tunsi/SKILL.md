@@ -63,6 +63,7 @@ Jedes INSERT/UPDATE/DELETE erst als Vorschlag zeigen (betroffene Zeilen/Werte), 
 ### Datenbank-Pflege (seit 2026-10-31)
 
 - **Backup vor jeder Korrektur:** eigene Tabelle `backup_<datum>_<thema>` mit den betroffenen Zeilen, **gleich mit `enable row level security`** anlegen (ohne RLS ist sie mit dem öffentlichen Schlüssel les- und änderbar).
+- **Zugriffsrechte neuer Tabellen (Supabase-Änderung ab 30.10.2026):** Neue Tabellen in `public` bekommen nicht mehr automatisch Rechte für die Data API. Soll eine App (Trainer, Training) auf eine neue Tabelle zugreifen, braucht sie ein explizites `GRANT` in derselben Migration (`select` für `anon`, `select, insert, update, delete` für `authenticated` und `service_role`); sonst kommt „permission denied“ mit dem fehlenden Statement. **Backup-Tabellen bekommen bewusst kein `GRANT`** und bleiben damit von der API aus unerreichbar. `enable row level security` bleibt trotzdem Pflicht (schützt auch, falls die Umstellung für das Projekt später greift). Bestehende Tabellen sind nicht betroffen.
 - **Aufräumen:** Backups nach ca. 14 Tagen löschen, wenn nichts Auffälliges gemeldet wurde. `DROP TABLE` fragt im Supabase-Editor nach; Nils führt es dort aus.
 - **Einmal im Monat** die Sicherheitshinweise von Supabase ansehen (`get_advisors`, Typ `security`). Wichtig sind neue Tabellen ohne RLS; die bekannten Hinweise zu SECURITY-DEFINER-Ansichten, `search_path` und `login_user` sind bewusst offen. Dazu eine monatliche Erinnerung (geplanter Task „Monatliche Datenbank-Prüfung“).
 
