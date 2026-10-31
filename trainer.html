@@ -5146,7 +5146,8 @@ function translitExtraChecks0(){
     // Bewusst akzeptierte Varianten (Übung-ID → Formen): beide Schreibweisen sind belegt, die Prüfung meldet sie nicht.
     // 1523 wsil: wislit und waslit stehen beide bei TUNICO.
     const VARIANTEN = {1523: ['wislit']};
-    const fehlt = formenLoes.filter(f => !tabs.some(tb => [...tb].some(z => imala(z) === imala(f))) && !(VARIANTEN[e.id] || []).includes(f));
+    // Wie die SQL-Sicht (Check 36): jede Tabelle, in der das Verb vorkommt, muss die Form enthalten (nicht nur irgendeine)
+    const fehlt = formenLoes.filter(f => tabs.some(tb => ![...tb].some(z => imala(z) === imala(f))) && !(VARIANTEN[e.id] || []).includes(f));
     if(fehlt.length){ loesIds.push(e.id); loesBsp.push(e.id+' '+m[1]+': '+[...new Set(fehlt)].join(', ')); }
   });
   // 6) Hohlverben (3. Person Vergangenheit CaC, 1. Person mit anderem Vokal): Vokal gegen Präsens, fehlende Markierung, veraltete Markierung
