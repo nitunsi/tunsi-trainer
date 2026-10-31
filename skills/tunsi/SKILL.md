@@ -442,18 +442,9 @@ Das gilt auch dann, wenn die Neuanlage aus einem 🚩-Auftrag herausfällt — d
 
 **Ziel: alle Prüfungen auf 0, und zwar dort, wo Nils sie sieht.** Der Trainer prüft seinen eigenen, geladenen Bestand und zeigt Treffer unter *Mehr → Prüfungen* (mit Fundstellen) und als Zahl auf *Lernen* („N Treffer in den Prüfungen“). Für die Arbeit heißt das: **erst dort nachsehen, ob etwas gemeldet wird** — das spart Abfragen und Kontext. Das SQL (`qualitaets_checks`) bleibt für das, was der Trainer nicht kann (unten).
 
-**Was der Trainer prüft** (Code: `TRANSLIT_RULES`, `countDupeIssues`, `translitExtraChecks0()` und `datenChecks()` in `trainer.html`):
+**Was der Trainer prüft:** die vollständige Liste steht im Code, **dort nachlesen, nicht hier** (eine Aufzählung im Skill veraltet): `TRANSLIT_RULES` (Umschrift der Vokabeln), `countDupeIssues` (Dubletten), `translitExtraChecks0()` (Konjugationstabellen, Hohlverben, Kurs-Umschrift) und `datenChecks()` (Felder, Kurs, Lerndaten) in `trainer.html`. Grob: Umschrift, Pflichtfelder und Zeichen, Dubletten und Homonyme, Konjugation, Kurs (Umschrift, Lösung gegen Tabelle, Doppelte, Quelle), Lerndaten (verwaiste Verweise, Audio-Grunddaten, Flaggen, Fälligkeit). Jede Regel liefert `{label, n, bsp}` und erscheint von selbst in der Prüfung.
 
-| Bereich | Prüfungen |
-|---|---|
-| Umschrift der Vokabeln | die 23 Regeln aus `TRANSLIT_RULES` (Ziffern, ch, Großbuchstaben, Artikel, Buchstabenvergleich Arabisch ↔ Umschrift, Wortanzahl) · Plural-Endung -iou/-eou/-aou · halb verdoppelter Digraph · Klammer in der Umschrift · „(f.)“ ohne -a · Schadda auf dem ersten Buchstaben |
-| Felder | Pflichtfelder (Arabisch, Umschrift, Deutsch) · lateinische Buchstaben im Arabischen / arabische Zeichen in der Umschrift · Leerzeichen am Rand oder doppelt |
-| Dubletten | Arabisch, Umschrift, Deutsch identisch (mit `homonym_ok`) · Homonym-Markierung ohne Partner |
-| Konjugation | Tabellenzellen gegen die Umschrift-Regeln · Vokabel nicht in der eigenen Tabelle · Hohlverb-Vokal gegen Präsens · Vokalwechsel ohne `irr`-Markierung · veraltete Markierung |
-| Kurs | Umschrift der Kurstexte · Wortstamm u/ou · Suffix -ouh/-uh · Lösung gegen Konjugationstabelle · doppelte Aufgabe · -shi-Frage mit Verneinung · Übung ohne Quelle (`meta.beleg`) · ohne Aufgabentext/Lösung (offene `build_dialog`-Aufgaben und `grammar_card` ausgenommen) |
-| Lerndaten | verwaiste Verweise (Lektion `vocab_lesson_refs`, Übung, Fortschritt) · Audio ohne Lautstärke/Start/Ende · Flagge ohne Notiz · Fälligkeit passt nicht zum Level |
-
-**Was nur per SQL geht:** alles mit der Ninja-Tabelle (Checks 11, 13, 23, Quellenabgleich), die Vokalisierungs-Kandidaten (22, bewusst nicht im Trainer: Dauerrauschen), die `chatalpha`-Gegenchecks (24–28) und Audio-Zuordnung zum Wort. Dazu die Datenbank-Pflege (Advisors, Backups). Die SQL-Gruppe A bleibt als Gegenprobe gültig, doppelt prüfen ist erlaubt.
+**Was nur per SQL geht:** alles mit der Ninja-Tabelle (Checks 11, 13, 23, Quellenabgleich), die Vokalisierungs-Kandidaten (22, bewusst nicht im Trainer: Dauerrauschen), die `chatalpha`-Gegenchecks (24–28) und Audio-Zuordnung zum Wort. Dazu die Datenbank-Pflege (Advisors, Backups). Die SQL-Gruppe A bleibt vorerst als Gegenprobe; läuft der Trainer ein paar Wochen sauber, die doppelten SQL-Checks aus der Sicht nehmen (Vorschlag an Nils) und dort nur die Ninja-Teile lassen.
 
 **Arbeitsweise bei einem Treffer:** wie jede Korrektur (Prozess, Schritt 4–5: zeigen, bestätigen, Backup, schreiben). Danach den Trainer neu laden — die Zahl muss sinken. Die Prüfung ist nicht „weg“, bloß weil ein Treffer ausgeblendet ist: Ausnahmen gehören in den Code (wie `KURS_OHNE_LOESUNG`, die vier Digraph-IDs) **mit Begründung im Kommentar**, nicht als stilles Wegfiltern.
 
@@ -466,7 +457,6 @@ Bei **jeder** neuen Prüfung und **jeder** Abfrage, die ich zum zweiten Mal von 
 - **Wohin:** neue Regeln in `datenChecks()` (Rückgabe `{label, n, bsp}`); sie erscheinen von selbst in der Prüfung und in der Zahl auf Lernen. Syntaxprüfung per `vm.Script`.
 - **Dauerrauschen nicht aufnehmen** (wie Vokalisierung 22): Eine Prüfung, die dauerhaft Treffer zeigt, die niemand beheben will, macht die Zahl wertlos.
 - **Nicht verlagerbar:** was Ninja-Daten, Audio-Hören oder Datenbank-Einstellungen braucht — bleibt SQL bzw. Handarbeit.
-- Prüfungen, die der Trainer übernommen hat, in der Tabelle oben nachtragen.
 
 ---
 
