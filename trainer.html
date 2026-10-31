@@ -2062,7 +2062,7 @@ async function syncReviewFailed(failed){
   const art = i => i.type==='log_insert' ? 'Antwort-Protokoll' : i.type==='log_update' ? 'Protokoll-Korrektur' : 'Lernstand';
   const zeilen = failed.slice(0,5).map(i => '  · '+art(i)+(i.vocabId?' (Vokabel '+i.vocabId+')':'')+': '+String(i.error||'').slice(0,90)).join('\n');
   const mehr = failed.length > 5 ? '\n  … und '+(failed.length-5)+' weitere' : '';
-  const ok = confirm(failed.length+' Eintrag/Einträge konnten nicht gespeichert werden, weil der Server sie ablehnt '
+  const ok = await neuAsk(failed.length+' Eintrag/Einträge konnten nicht gespeichert werden, weil der Server sie ablehnt '
     + '(meist: Vokabel wurde inzwischen gelöscht):\n'+zeilen+mehr
     + '\n\nVerwerfen? Sie werden dann nie mehr gesendet.');
   if(ok){ for(const i of failed){ try{ await oqDelete(i.qid); }catch(e){} } showToast('✓ '+failed.length+' verworfen','ok'); }
@@ -3715,8 +3715,8 @@ function showStats(){
     <details style="margin-bottom:.6rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.7rem .9rem;">
       <summary style="cursor:pointer;font-size:.85rem;color:var(--muted)">Weitere Werkzeuge</summary>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.7rem;">
-        <button onclick="if(confirm('Fälligkeiten glätten? (betrifft bis zu ${smoothMax} Vokabeln)'))smoothSchedule();" style="flex:1;min-width:10rem;background:transparent;border:1px solid var(--blue);color:var(--blue);padding:.5rem;cursor:pointer;font-weight:700;font-size:.8rem;font-family:'IBM Plex Mono',monospace;border-radius:4px;">Glätten<br><span style="font-weight:400;font-size:.72rem">bis zu ${smoothMax} Einträge</span></button>
-        <button onclick="if(confirm('Alle Fälligkeiten neu berechnen? (betrifft bis zu ${recalcMax} Vokabeln)'))recalcAllNextReview();" style="flex:1;min-width:10rem;background:transparent;border:1px solid var(--red);color:var(--red);padding:.5rem;cursor:pointer;font-size:.8rem;font-family:'IBM Plex Mono',monospace;border-radius:4px;">Alle neu berechnen<br><span style="font-size:.72rem">bis zu ${recalcMax} Einträge</span></button>
+        <button onclick="neuAsk('Fälligkeiten glätten?\\n(betrifft bis zu ${smoothMax} Vokabeln)').then(ok=>{if(ok)smoothSchedule();});" style="flex:1;min-width:10rem;background:transparent;border:1px solid var(--blue);color:var(--blue);padding:.5rem;cursor:pointer;font-weight:700;font-size:.8rem;font-family:'IBM Plex Mono',monospace;border-radius:4px;">Glätten<br><span style="font-weight:400;font-size:.72rem">bis zu ${smoothMax} Einträge</span></button>
+        <button onclick="neuAsk('Alle Fälligkeiten neu berechnen?\\n(betrifft bis zu ${recalcMax} Vokabeln)').then(ok=>{if(ok)recalcAllNextReview();});" style="flex:1;min-width:10rem;background:transparent;border:1px solid var(--red);color:var(--red);padding:.5rem;cursor:pointer;font-size:.8rem;font-family:'IBM Plex Mono',monospace;border-radius:4px;">Alle neu berechnen<br><span style="font-size:.72rem">bis zu ${recalcMax} Einträge</span></button>
       </div>
       <div id="smooth-result" style="font-size:.8rem;color:var(--muted);margin-top:.5rem;"></div>
     </details>
@@ -3769,7 +3769,7 @@ async function statsUnlockNextChunk(){
   const ch = statsNextLockedChunk();
   if(!ch){ showToast('Kein gesperrter Abschnitt mehr','ok'); return; }
   const txt = 'K'+ch.lesson.course_number+' · '+(ch.chunkLabel||ch.chunkKey)+' ('+ch.srsItems.length+' Übungen)';
-  if(!confirm('Abschnitt freischalten?\n'+txt)) return;
+  if(!await neuAsk('Abschnitt freischalten?\n'+txt)) return;
   await courseUnlockChunk(ch);
   showToast('✓ Freigeschaltet: '+txt,'ok');
   statsRefresh();
@@ -3814,7 +3814,7 @@ async function statsActivateVocab(n){
   try{ picked = await statsPickVocab(n); }catch(e){ showToast('Fehler: '+e.message,'err'); return; }
   if(!picked.length){ showToast('Keine passenden Vokabeln ohne Fälligkeit gefunden','warn'); return; }
   const list = picked.map(x => VOCAB_BY_ID[x.id].tr+' ('+x.src+')').join('\n');
-  if(!confirm(picked.length+' Vokabeln fällig setzen?\n\n'+list)) return;
+  if(!await neuAsk(picked.length+' Vokabeln fällig setzen?\n\n'+list)) return;
   try{
     await statsActivateApply(picked);
     showToast('✓ '+picked.length+' Vokabeln fällig gesetzt','ok');
@@ -4585,8 +4585,8 @@ async function courseExSave(exId){
 }
 async function courseExDelete(exId){
   const e = COURSE_EX_BY_ID[exId]; if(!e) return;
-  if(!confirm('Übung #'+exId+' wirklich löschen?\n\n'+(e.prompt||'').slice(0,80))) return;
-  if(!confirm('Sicher? Der Lernstand dieser Übung wird mit gelöscht. Das lässt sich nicht rückgängig machen.')) return;
+  if(!await neuAsk('Übung #'+exId+' wirklich löschen?\n\n'+(e.prompt||'').slice(0,80))) return;
+  if(!await neuAsk('Sicher? Der Lernstand dieser Übung wird mit gelöscht. Das lässt sich nicht rückgängig machen.')) return;
   try{
     await sbApi('course_exercise_progress?exercise_id=eq.'+exId, 'DELETE');
     await sbApi('course_exercises?id=eq.'+exId, 'DELETE');
@@ -5558,9 +5558,9 @@ function closeVocabEdit(){
 
 async function saveVocabEditSheet(){
   const vocabId = _editSheetVocabId;
-  if(!vocabId){ alert('Keine Vokabel ausgewählt'); return; }
+  if(!vocabId){ neuNote('Keine Vokabel ausgewählt'); return; }
   const v = vById(vocabId);
-  if(!v){ alert('Vokabel nicht gefunden'); return; }
+  if(!v){ neuNote('Vokabel nicht gefunden'); return; }
   const newAr = document.getElementById('ei-ar').value.trim();
   const newTr = document.getElementById('ei-tr').value.trim();
   const newEn = document.getElementById('ei-en').value.trim();
@@ -5568,7 +5568,7 @@ async function saveVocabEditSheet(){
   const newLs = document.getElementById('ei-ls').value.trim();
   const newNr = document.getElementById('ei-nr').value;
   const newLvl = parseInt(document.getElementById('ei-lvl').value)||0;
-  if(!newAr || !newTr || !newEn){ alert('Alle Felder ausfüllen'); return; }
+  if(!newAr || !newTr || !newEn){ neuNote('Alle Felder ausfüllen'); return; }
   const oldTr = v.tr;
   try{
     const newPs = document.getElementById('ei-ps') ? document.getElementById('ei-ps').value : null;
@@ -5604,14 +5604,14 @@ async function saveVocabEditSheet(){
     closeVocabEdit();
     filterVocabList();
     dbg('Gespeichert: '+newTr, 'ok');
-  } catch(e){ alert('Fehler: '+e.message); }
+  } catch(e){ neuNote('Fehler: '+e.message); }
 }
 
 async function clearDueDateSheet(){
   const vocabId = _editSheetVocabId;
   if(!vocabId) return;
   const p = srsProgress[vocabId];
-  if(!p || !p.id){ alert('Kein Progress-Eintrag'); return; }
+  if(!p || !p.id){ neuNote('Kein Progress-Eintrag'); return; }
   await sbApi('progress?id=eq.'+p.id, 'PATCH', { next_review: null });
   srsProgress[vocabId].next_review = null;
   document.getElementById('ei-nr').value = '';
@@ -5637,7 +5637,7 @@ async function toggleFlagSheet(){
 async function deleteVocabSheet(){
   const vocabId = _editSheetVocabId;
   if(!vocabId) return;
-  if(!confirm('Vokabel wirklich löschen?')) return;
+  if(!await neuAsk('Vokabel wirklich löschen?')) return;
   try {
     // Gleicher Weg wie deleteDupeVocab(): progress und review_log raeumt Postgres per
     // CASCADE/SET NULL selbst auf. Das fruehere Vorab-DELETE auf progress lief auch dann,
@@ -5650,7 +5650,7 @@ async function deleteVocabSheet(){
       const zeigen = verknuepft.slice(0,5)
         .map(e => '  #'+e.id+' '+(e.exercise_type||'')+': '+String(e.prompt||'').slice(0,40)).join('\n');
       const mehr = verknuepft.length > 5 ? '\n  … und '+(verknuepft.length-5)+' weitere' : '';
-      if(!confirm('An dieser Vokabel hängen '+verknuepft.length+' Kurs-Übung'+(verknuepft.length!==1?'en':'')+':\n'
+      if(!await neuAsk('An dieser Vokabel hängen '+verknuepft.length+' Kurs-Übung'+(verknuepft.length!==1?'en':'')+':\n'
                   + zeigen + mehr
                   + '\n\nDie Verknüpfung wird gelöst — die Übungen selbst bleiben erhalten,\n'
                   + 'verlieren aber Audio und die Bearbeiten-/Flaggen-Knöpfe.\n\nFortfahren?')) return;
@@ -8675,7 +8675,7 @@ async function saveDupeEdit(id){
 }
 
 async function deleteDupeVocab(vocabId, groupIdx){
-  if(!confirm('Vokabel ID '+vocabId+' wirklich l\u00f6schen?\nDieser Schritt kann nicht r\u00fcckg\u00e4ngig gemacht werden.')) return;
+  if(!await neuAsk('Vokabel ID '+vocabId+' wirklich l\u00f6schen?\nDieser Schritt kann nicht r\u00fcckg\u00e4ngig gemacht werden.')) return;
   try {
     // course_exercises.vocabulary_id steht auf ON DELETE NO ACTION. Haengt eine Kurs-Uebung
     // an der Zeile, bricht das DELETE mit einer rohen Constraint-Meldung ab, aus der niemand
@@ -8693,7 +8693,7 @@ async function deleteDupeVocab(vocabId, groupIdx){
       const zeigen = verknuepft.slice(0,5)
         .map(e => '  #'+e.id+' '+(e.exercise_type||'')+': '+String(e.prompt||'').slice(0,40)).join('\n');
       const mehr = verknuepft.length > 5 ? '\n  … und '+(verknuepft.length-5)+' weitere' : '';
-      if(!confirm('An dieser Vokabel hängen '+verknuepft.length+' Kurs-Übung'+(verknuepft.length!==1?'en':'')+':\n'
+      if(!await neuAsk('An dieser Vokabel hängen '+verknuepft.length+' Kurs-Übung'+(verknuepft.length!==1?'en':'')+':\n'
                   + zeigen + mehr
                   + '\n\nDie Verknüpfung wird gelöst — die Übungen selbst bleiben erhalten,\n'
                   + 'verlieren aber Audio und die Bearbeiten-/Flaggen-Knöpfe.\n\nFortfahren?')) return;
@@ -9278,7 +9278,7 @@ function _actUpdateStats(){
 async function _actActivate(){
   const ids=[..._actSelected];if(!ids.length)return;
   if(!currentUser){showToast('Fehler: nicht eingeloggt','err');return;}
-  if(ids.length>=10 && !confirm(`${ids.length} Vokabeln fällig setzen?`))return;
+  if(ids.length>=10 && !await neuAsk(`${ids.length} Vokabeln fällig setzen?`))return;
   const btn=document.getElementById('act-btn-go');btn.disabled=true;btn.textContent='…';
   const bar=document.getElementById('act-progress-bar');const fill=document.getElementById('act-progress-fill');
   if(bar)bar.style.display='block';
@@ -10045,6 +10045,41 @@ async function _qaNeuAnlegen(r, row){
     }catch(e){ showToast('Fehler: '+e.message,'err'); }
   });
 }
+
+// Eigene Rückfrage- und Hinweisfenster im Stil des Trainers (statt der Browser-Fenster confirm()/alert()).
+// neuAsk(text) -> Promise<boolean>; die erste Zeile ist die Überschrift, der Rest der Text.
+// neuNote(text) -> Promise<void> (nur "OK").
+function _neuDialog(msg, mode){
+  return new Promise(resolve => {
+    const lines = String(msg == null ? '' : msg).split('\n');
+    const titel = lines[0], rest = lines.slice(1).join('\n').replace(/^\n+/, '');
+    const gefahr = mode === 'ask' && /l[öo]schen|verwerfen|nicht r[üu]ckg[äa]ngig/i.test(msg);
+    const okTxt = mode === 'note' ? 'OK' : /verwerfen/i.test(titel + rest) && gefahr && !/l[öo]schen/i.test(titel) ? 'Verwerfen' : /l[öo]schen/i.test(titel) ? 'Löschen' : 'OK';
+    const ov = document.createElement('div');
+    ov.className = 'neu-dlg-scrim';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:1rem';
+    const card = document.createElement('div');
+    card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true');
+    card.style.cssText = 'width:100%;max-width:26rem;max-height:86vh;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-top:2px solid '+(gefahr ? 'var(--red)' : 'var(--gold)')+';border-radius:14px;box-shadow:0 12px 36px rgba(0,0,0,.6);overflow:hidden';
+    const bg = (c, f) => 'flex:1;min-height:48px;border-radius:10px;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;' + c;
+    card.innerHTML =
+      '<div style="padding:1rem 1.1rem .5rem;font-size:1.02rem;font-weight:700;color:var(--text);line-height:1.35">'+escHtml(titel)+'</div>'
+      + (rest ? '<div style="padding:0 1.1rem .8rem;overflow:auto;font-size:.86rem;color:var(--muted);line-height:1.5;white-space:pre-wrap;word-break:break-word">'+escHtml(rest)+'</div>' : '<div style="height:.4rem"></div>')
+      + '<div style="display:flex;gap:.6rem;padding:.8rem 1.1rem 1rem;border-top:1px solid var(--border)">'
+      + (mode === 'ask' ? '<button type="button" data-r="0" style="'+bg('background:var(--surface2);border:1px solid var(--border);color:var(--text)')+'">Abbrechen</button>' : '')
+      + '<button type="button" data-r="1" style="'+bg(gefahr ? 'background:var(--red);border:none;color:#fff' : 'background:var(--gold);border:none;color:#17120a')+'">'+okTxt+'</button></div>';
+    ov.appendChild(card);
+    const zu = r => { document.removeEventListener('keydown', key, true); ov.remove(); resolve(r); };
+    const key = e => { if(e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); zu(mode === 'note'); } };
+    ov.addEventListener('click', e => { if(e.target === ov) zu(mode === 'note'); });
+    card.addEventListener('click', e => { const b = e.target.closest('button[data-r]'); if(b) zu(b.dataset.r === '1'); });
+    document.addEventListener('keydown', key, true);
+    document.body.appendChild(ov);
+    const fok = card.querySelector(gefahr ? 'button[data-r="0"]' : 'button[data-r="1"]'); if(fok) fok.focus();
+  });
+}
+function neuAsk(msg){ return _neuDialog(msg, 'ask'); }
+function neuNote(msg){ return _neuDialog(msg, 'note'); }
 
 function showToast(msg,type){
   let el=document.getElementById('act-toast');
