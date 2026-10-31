@@ -59,6 +59,12 @@ Was die Sicht **nicht** abdeckt und weiterhin von Hand zu ziehen ist:
 
 Jedes INSERT/UPDATE/DELETE erst als Vorschlag zeigen (betroffene Zeilen/Werte), auf Bestätigung warten, dann schreiben. Gilt für jede Tabelle, jede Größenordnung — auch ein einzelnes Wort.
 
+### Datenbank-Pflege (seit 2026-10-31)
+
+- **Backup vor jeder Korrektur:** eigene Tabelle `backup_<datum>_<thema>` mit den betroffenen Zeilen, **gleich mit `enable row level security`** anlegen (ohne RLS ist sie mit dem öffentlichen Schlüssel les- und änderbar).
+- **Aufräumen:** Backups nach ca. 14 Tagen löschen, wenn nichts Auffälliges gemeldet wurde. `DROP TABLE` fragt im Supabase-Editor nach; Nils führt es dort aus.
+- **Einmal im Monat** die Sicherheitshinweise von Supabase ansehen (`get_advisors`, Typ `security`). Wichtig sind neue Tabellen ohne RLS; die bekannten Hinweise zu SECURITY-DEFINER-Ansichten, `search_path` und `login_user` sind bewusst offen. Dazu eine monatliche Erinnerung (geplanter Task „Monatliche Datenbank-Prüfung“).
+
 ## Projektwissen-Datei
 
 Die Datei `tounsi_db_YYYY-MM-DD.md` im Projektwissen ist die primäre Datenquelle, wenn kein Live-Supabase-Zugriff besteht. Sie enthält Schema, Lessons-Mapping, Users, Vocabulary. Duplikat-Check läuft dann gegen diese Datei via `project_knowledge_search` (Ablauf/Kriterien siehe „Der Prozess", Schritt 1, Eingang B).
