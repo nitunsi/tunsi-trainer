@@ -5051,7 +5051,7 @@ function translitExtraChecks(){
     [/(iou|eou|aou)([^a-z]|$)/, 'Endung -iou/-eou/-aou'], [/(^|[^a-z0-9])[a-z]{0,2}-?(el|il)-(th|sh|d|t|z|s|j|n|r)[a-z]/i, 'Artikel nicht verschmolzen']
   ];
   const tn = t => String(t||'').split(/ — | – | \(| „/)[0];
-  const kurs = new Set(), kursBsp = [];
+  const kurs = new Set(), kursBsp = [], kursTexte = [];
   const ex = Object.values(typeof COURSE_EX_BY_ID !== 'undefined' ? COURSE_EX_BY_ID : {});
   ex.forEach(e => {
     const felder = [];
@@ -5060,15 +5060,55 @@ function translitExtraChecks(){
     if(['fixed_response','answer_pattern'].includes(e.exercise_type)) felder.push(e.prompt);
     felder.forEach(f => {
       const txt = tn(f); if(!txt) return;
+      kursTexte.push({id: e.id, txt});
       const r = kursRegeln.find(rg => rg[0].test(txt));
       if(r && !kurs.has(e.id)){ kurs.add(e.id); kursBsp.push(e.id+': '+txt.slice(0,60)+' ('+r[1]+')'); }
     });
   });
   const geladen = ex.length > 0;
+  const toks = t => String(t||'').toLowerCase().split(/[^a-z0-9]+/).filter(x => x.length > 2);
+  // 4a) Wortstamm mit „u“ statt „ou“: Schreibung, die es mit „ou“ in den Vokabeln gibt, mit „u“ aber nirgends
+  const vTok = new Set();
+  ALL_VOCAB.forEach(v => { toks(v.tr).forEach(t => vTok.add(t)); });
+  const alt = new Map();
+  vTok.forEach(t => { if(/ou./.test(t)){ const a = t.replace(/ou/g,'u'); if(!vTok.has(a) && a !== 'nur' && a !== 'tun') alt.set(a, t); } });
+  const stammIds = new Set(), stammBsp = [];
+  kursTexte.forEach(k => { toks(k.txt).some(t => { if(alt.has(t)){ if(!stammIds.has(k.id)){ stammIds.add(k.id); stammBsp.push(k.id+': '+t+' → '+alt.get(t)); } return true; } return false; }); });
+  // 4b) Suffix „sein“: -ouh und -uh am selben Stamm nebeneinander
+  const suf = {};
+  const sufZaehlen = t => { const m = /^(.{2,}?)(ouh|uh)$/.exec(t); if(m){ (suf[m[1]] = suf[m[1]] || {ouh:0, uh:0})[m[2]]++; } };
+  ALL_VOCAB.forEach(v => toks(v.tr).forEach(sufZaehlen));
+  kursTexte.forEach(k => toks(k.txt).forEach(sufZaehlen));
+  const sufBsp = Object.keys(suf).filter(k => suf[k].ouh && suf[k].uh).map(k => k+': -ouh '+suf[k].ouh+'× / -uh '+suf[k].uh+'×');
+  // 5) Kurslösung gegen die Konjugationstabelle des Verbs (Imala -et/-at gilt als gleich)
+  const imala = f => f.replace(/[ae]t$/, 'at');
+  const tabellen = new Map();   // Verb -> [Set(Formen), ...]
+  const gesehen = new Set();
+  ALL_VOCAB.forEach(v => {
+    if(!v.cj) return;
+    const formen = new Set();
+    ['present','past','imperative'].forEach(t => { const blk = v.cj[t]; if(blk && typeof blk === 'object') Object.keys(blk).forEach(k => { const c = blk[k]; if(c && c.darija) formen.add(String(c.darija).trim().toLowerCase()); }); });
+    const key = [...formen].sort().join('|'); if(gesehen.has(key)) return; gesehen.add(key);
+    formen.forEach(f => { (tabellen.get(f) || tabellen.set(f, []).get(f)).push(formen); });
+  });
+  const loesIds = [], loesBsp = []; let loesGeprueft = 0;
+  ex.forEach(e => {
+    if(e.exercise_type !== 'grammar_drill') return;
+    const m = /^([a-z0-9']+) \((Perfekt|Präsens) konjugieren/.exec(e.prompt || ''); if(!m) return;
+    const tabs = tabellen.get(m[1].toLowerCase()); if(!tabs) return;
+    loesGeprueft++;
+    const sol = String(e.solution || '').replace(/Pl\./g, '').replace(/[.]\s*$/, '');
+    const formenLoes = sol.split(/[,;]/).map(x => x.trim().toLowerCase()).filter(Boolean);
+    const fehlt = formenLoes.filter(f => !tabs.some(tb => [...tb].some(z => imala(z) === imala(f))));
+    if(fehlt.length){ loesIds.push(e.id); loesBsp.push(e.id+' '+m[1]+': '+[...new Set(fehlt)].join(', ')); }
+  });
   return [
     {label: 'Konjugationstabellen: Zelle verstößt gegen die Umschrift-Regeln (Zeilen)', n: zellen.length, bsp: zellenBsp},
     {label: 'Vokabel steht nicht in ihrer eigenen Konjugationstabelle (Zeilen)', n: zeile.length, bsp: zeileBsp},
-    {label: geladen ? 'Kursübungen: tunesischer Text verstößt gegen die Umschrift-Regeln (von '+ex.length+')' : 'Kursübungen: Kursdaten nicht geladen', n: kurs.size, bsp: kursBsp}
+    {label: geladen ? 'Kursübungen: tunesischer Text verstößt gegen die Umschrift-Regeln (von '+ex.length+')' : 'Kursübungen: Kursdaten nicht geladen', n: kurs.size, bsp: kursBsp},
+    {label: 'Kurs: Wortstamm mit „u“ statt „ou“ (weicht von den Vokabeln ab)', n: stammIds.size, bsp: stammBsp},
+    {label: 'Suffix „sein“: -ouh und -uh nebeneinander am selben Stamm', n: sufBsp.length, bsp: sufBsp},
+    {label: 'Kurslösung: Verbform fehlt in der Konjugationstabelle (von '+loesGeprueft+' prüfbaren Übungen)', n: loesIds.length, bsp: loesBsp}
   ];
 }
 
@@ -8285,7 +8325,9 @@ function countTranslitIssues(){
     if(!v.tr) return;
     if(TRANSLIT_RULES.some(r => r.test(v))) ids.add(v.id);
   });
-  return ids.size;
+  let extra = 0;
+  try{ extra = translitExtraChecks().reduce((s, r) => s + r.n, 0); }catch(e){}
+  return ids.size + extra;
 }
 
 function countDupeIssues(){
@@ -8329,7 +8371,9 @@ function renderTranslitCheck(c){
   const fuss = geprueft + ' von ' + ALL_VOCAB.length + ' Vokabeln gepr\u00fcft \u00b7 '
              + TRANSLIT_RULES.length + ' Regeln';
 
-  if(!groups.length){
+  const extraR = translitExtraChecks();
+  const extraN = extraR.reduce((s, r) => s + r.n, 0);
+  if(!groups.length && !extraN){
     c.innerHTML = '<div style="padding:2rem;text-align:center">'
       + '<div style="font-size:2rem;margin-bottom:.8rem">\u2705</div>'
       + '<div style="color:var(--green);font-size:.9rem">Keine Transliterations-Auff\u00e4lligkeiten gefunden</div>'
@@ -8337,7 +8381,7 @@ function renderTranslitCheck(c){
     return;
   }
 
-  const total = groups.reduce((s,g)=>s+g.entries.length,0);
+  const total = groups.reduce((s,g)=>s+g.entries.length,0) + extraN;
   let html = '<div>'
     + '<div style="color:var(--gold2);font-size:1rem;font-weight:700;margin-bottom:.4rem">\ud83d\udd24 Transliterations-Pr\u00fcfung</div>'
     + '<div style="color:var(--muted);font-size:.78rem;margin-bottom:1.2rem">'+total+' Auff\u00e4lligkeit'+(total!==1?'en':'')+' in '+groups.length+' Kategorie'+(groups.length!==1?'n':'')+' \u00b7 '+fuss+'</div>';
@@ -8347,6 +8391,13 @@ function renderTranslitCheck(c){
       + '<div style="background:var(--surface2);padding:.5rem .8rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);border-bottom:1px solid var(--border)">'+g.type+' \u00b7 '+g.entries.length+'</div>';
     g.entries.forEach(v => { html += dupeEntryHtml(v); });
     html += '</div>';
+  });
+
+  extraR.filter(r => r.n > 0).forEach(r => {
+    html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;margin-bottom:1rem;overflow:hidden">'
+      + '<div style="background:var(--surface2);padding:.5rem .8rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);border-bottom:1px solid var(--border)">'+escHtml(r.label)+' \u00b7 '+r.n+'</div>'
+      + '<div style="padding:.5rem .8rem;font-size:.78rem;font-family:\'IBM Plex Mono\',monospace;line-height:1.6">'
+      + r.bsp.slice(0, 40).map(b => escHtml(b)).join('<br>') + (r.bsp.length > 40 ? '<br>\u2026 und '+(r.bsp.length-40)+' weitere' : '') + '</div></div>';
   });
 
   html += '</div>';
