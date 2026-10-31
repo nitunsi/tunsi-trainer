@@ -859,6 +859,8 @@ function courseAltLessonRank(cn){
   return best >= 0 ? 1000 + best : 5000 + cn;
 }
 function courseAltOn(){ return LS.get('neu-corder', 'std') === 'alt'; }
+// neu.js liegt in einer Funktion: trainer.html (Neue Vokabeln) sieht diese zwei nur über window
+window.courseAltOn = courseAltOn; window.courseAltLessonRank = courseAltLessonRank;
 window.neuToggleCOrder = function(){ LS.set('neu-corder', courseAltOn() ? 'std' : 'alt'); showMore(); };
 window.statsNextLockedChunk = function(){
   const locked = ch => ch.srsItems.length && !courseChunkUnlocked(ch.srsItems);
