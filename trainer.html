@@ -3735,11 +3735,14 @@ function showStats(){
 function statsNextLockedChunk(){
   return courseFlattenChunks().find(ch => ch.srsItems.length && !courseChunkUnlocked(ch.srsItems)) || null;
 }
-// Vokabeln mit Kursbezug, die noch keine Fälligkeit haben: Kurs-Lektion 1, 2, 3 …, innerhalb in der Reihenfolge der Lektion
+// Vokabeln mit Kursbezug, die noch keine Fälligkeit haben: Kurs-Lektion 1, 2, 3 … (bei eingeschalteter alternativer Kurs-Reihenfolge in deren Reihenfolge), innerhalb in der Reihenfolge der Lektion
 function statsCourseVocabQueue(){
   const have = id => { const p = srsProgress[id]; return p && p.next_review; };
   const out = [], seen = new Set();
-  [...COURSE_LESSONS].sort((a,b)=>a.course_number-b.course_number).forEach(l=>{
+  // Mit der alternativen Kurs-Reihenfolge (Mehr → Lernen) folgen die Vokabeln den Lektionen in dieser Reihenfolge
+  const alt = typeof courseAltOn === 'function' && courseAltOn() && typeof courseAltLessonRank === 'function';
+  const rk = l => alt ? courseAltLessonRank(l.course_number) : l.course_number;
+  [...COURSE_LESSONS].sort((a,b)=>rk(a)-rk(b) || a.course_number-b.course_number).forEach(l=>{
     const f = parseCourseVocabRefs(l.vocab_lesson_refs);
     const ids = [...f.ids];
     f.tr.forEach(t => ALL_VOCAB.forEach(v => { if(v.tr === t) ids.push(v.id); }));
@@ -5188,6 +5191,7 @@ function datenChecks(){
   (typeof COURSE_LESSONS !== 'undefined' ? COURSE_LESSONS : []).forEach(l => {
     const f = parseCourseVocabRefs(l.vocab_lesson_refs);
     const lek = 'Lektion K'+l.skript+'.'+l.course_number;
+    String(l.vocab_lesson_refs || '').split('|').forEach(teil => { if(/^ids:/.test(teil)) teil.slice(4).split(',').filter(Boolean).forEach(t => { if(!/^\d+$/.test(t.trim())) verw.push(lek+': ungültiger Eintrag „'+t+'“ in ids:'); }); });
     [...f.ids].filter(i => !VOCAB_BY_ID[i]).forEach(i => verw.push(lek+': ID '+i+' gibt es nicht mehr'));
     [...f.tr].filter(t => !trSet.has(t)).forEach(t => verw.push(lek+': '+t+(/^\d+$/.test(t) ? (VOCAB_BY_ID[t] ? ' = Vokabel „'+VOCAB_BY_ID[t].tr+'“ steht unter darija: statt ids:' : ' ist keine Vokabel') : ' (Name nicht mehr in den Vokabeln)')));
   });

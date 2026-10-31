@@ -850,6 +850,14 @@ const COURSE_ALT_ORDER = [
 ];
 const COURSE_ALT_BLOCKS = 'Verben im Präsens, Vergangenheit (Perfekt), schwache Verben mit Perfekt, Partizip, Alltagssätze, Zeit und Zahlen, Nomen und Besitz, Wiederholung, Verbstämme, Objekte und Nebensätze, Übungen';
 const _caRank = {}; COURSE_ALT_ORDER.forEach((k, i) => { _caRank[k] = i; });
+// Rang einer Kurs-Lektion in der alternativen Reihenfolge: dort, wo ihr erster Abschnitt in COURSE_ALT_ORDER steht.
+// L1–L4 bleiben vorn (Rang = Kursnummer), Lektionen ohne Eintrag (z. B. 14) kommen danach in der alten Reihenfolge.
+function courseAltLessonRank(cn){
+  if(cn < 5) return cn;
+  let best = -1;
+  COURSE_ALT_ORDER.forEach((k, i) => { if(best < 0 && k.indexOf(cn + ':') === 0) best = i; });
+  return best >= 0 ? 1000 + best : 5000 + cn;
+}
 function courseAltOn(){ return LS.get('neu-corder', 'std') === 'alt'; }
 window.neuToggleCOrder = function(){ LS.set('neu-corder', courseAltOn() ? 'std' : 'alt'); showMore(); };
 window.statsNextLockedChunk = function(){
