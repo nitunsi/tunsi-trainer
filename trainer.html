@@ -1541,28 +1541,45 @@ function rcCacheable(p){
 function rcIsNetError(e){
   return !!e && (e.name === 'TypeError' || /Zeitüberschreitung|Failed to fetch|NetworkError|Load failed/i.test(String(e.message||'')));
 }
-function rcMarkOffline(t){
-  if(_rcOfflineSince === null || t < _rcOfflineSince) _rcOfflineSince = t;
+// Der Offline-Hinweis gilt pro Abfrage: er verschwindet, sobald die Abfrage wieder frisch geladen wurde
+// (vorher blieb er nach einem einzelnen Aussetzer stehen, bis ein "online"-Ereignis kam, das bei dauerhaftem Netz nie kommt).
+const _rcOffKeys = new Map();
+function rcOfflineShow(){
+  _rcOfflineSince = _rcOffKeys.size ? Math.min(..._rcOffKeys.values()) : null;
   try{ if(window.neuOfflineHint) window.neuOfflineHint(_rcOfflineSince); }catch(e){}
+}
+let _rcOffRetry = null;
+function rcMarkOffline(t, key){
+  _rcOffKeys.set(key || '', t);
+  rcOfflineShow();
+  // Ist das Gerät laut Browser online, nach kurzer Zeit frisch nachladen; gelingt das, verschwindet der Hinweis.
+  if(!_rcOffRetry) _rcOffRetry = setTimeout(() => {
+    _rcOffRetry = null;
+    if(_rcOffKeys.size && navigator.onLine !== false && currentUser && typeof rcRefresh === 'function') rcRefresh();
+  }, 20000);
+}
+function rcMarkOnline(key){
+  if(_rcOffKeys.delete(key || '')) rcOfflineShow();
 }
 async function rcWrap(key, doFetch){
   const hit = await rcGet(key);
   if(navigator.onLine === false){
-    if(hit){ rcMarkOffline(hit.t); return hit.v; }
+    if(hit){ rcMarkOffline(hit.t, key); return hit.v; }
     throw new Error('Offline – dafür gibt es noch keine gespeicherten Daten');
   }
   if(_rcMode === 'cache' && hit && !hit.stale && (Date.now() - hit.t) < RC_BOOT_MAX_AGE){ _rcBootHit = true; return hit.v; }
   if(_rcMode === 'cache' && hit && hit.stale){   // nach eigenem Schreiben: kurz frisch versuchen, sonst alter Stand
-    try{ const v = await doFetch(3000); rcSet(key, v); return v; }
-    catch(e){ if(rcIsNetError(e)) rcMarkOffline(hit.t); return hit.v; }
+    try{ const v = await doFetch(3000); rcSet(key, v); rcMarkOnline(key); return v; }
+    catch(e){ if(rcIsNetError(e)) rcMarkOffline(hit.t, key); return hit.v; }
   }
   try{
     const v = await doFetch(hit ? 8000 : 20000);
     rcSet(key, v);                       // nicht abwarten
+    rcMarkOnline(key);
     if(key.startsWith('R|vocabulary')){ try{ localStorage.setItem('rc-last-net', String(Date.now())); }catch(e){} }   // Zeitpunkt des letzten frischen Ladens
     return v;
   }catch(e){
-    if(hit && rcIsNetError(e)){ rcMarkOffline(hit.t); return hit.v; }
+    if(hit && rcIsNetError(e)){ rcMarkOffline(hit.t, key); return hit.v; }
     throw e;
   }
 }
@@ -1676,10 +1693,10 @@ async function rcForceRefresh(){
     try{ localStorage.setItem('rc-last-net', String(Date.now())); }catch(e){}
   }finally{ _rcMode = 'net'; _rcRefreshing = false; }
 }
-window.addEventListener('online', () => { _rcOfflineSince = null; try{ if(window.neuOfflineHint) window.neuOfflineHint(null); }catch(e){} setTimeout(()=>{ if(currentUser) rcRefresh(); }, 1500); });
+window.addEventListener('online', () => { _rcOffKeys.clear(); rcOfflineShow(); setTimeout(()=>{ if(currentUser) rcRefresh(); }, 1500); });
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'hidden') rcProgRefreshNow();
-  if(document.visibilityState === 'visible' && currentUser && Date.now() - _rcLastRefresh > 15*60*1000) rcRefresh();
+  if(document.visibilityState === 'visible' && currentUser && (_rcOffKeys.size || Date.now() - _rcLastRefresh > 15*60*1000)) rcRefresh();
 });
 // ══ ENDE LESE-CACHE ═════════════════════════════════════════════════════════
 async function _sbApiNet(path,method='GET',body=null,prefer=null,timeoutMs=20000){
