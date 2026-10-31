@@ -5073,7 +5073,9 @@ function translitExtraChecks(){
   const alt = new Map();
   vTok.forEach(t => { if(/ou./.test(t)){ const a = t.replace(/ou/g,'u'); if(!vTok.has(a) && a !== 'nur' && a !== 'tun') alt.set(a, t); } });
   const stammIds = new Set(), stammBsp = [];
-  kursTexte.forEach(k => { toks(k.txt).some(t => { if(alt.has(t)){ if(!stammIds.has(k.id)){ stammIds.add(k.id); stammBsp.push(k.id+': '+t+' → '+alt.get(t)); } return true; } return false; }); });
+  // Kurstexte ohne Kleinschreibung: deutsches „Tunis“ am Satzanfang ist kein tunesisches „tunis“
+  const toksK = t => String(t||'').split(/[^a-z0-9]+/).filter(x => x.length > 2);
+  kursTexte.forEach(k => { toksK(k.txt).some(t => { if(alt.has(t)){ if(!stammIds.has(k.id)){ stammIds.add(k.id); stammBsp.push(k.id+': '+t+' → '+alt.get(t)); } return true; } return false; }); });
   // 4b) Suffix „sein“: -ouh und -uh am selben Stamm nebeneinander
   const suf = {};
   const sufZaehlen = t => { const m = /^(.{2,}?)(ouh|uh)$/.exec(t); if(m){ (suf[m[1]] = suf[m[1]] || {ouh:0, uh:0})[m[2]]++; } };
