@@ -154,13 +154,13 @@ window.neuTogglePush = async function(){
       await sbApi('push_subscriptions?endpoint=eq.'+encodeURIComponent(sub.endpoint), 'DELETE');
       await sub.unsubscribe();
     }else{
-      if(await Notification.requestPermission() !== 'granted'){ alert('Benachrichtigungen sind für diese App nicht erlaubt (Einstellungen des Geräts).'); return; }
+      if(await Notification.requestPermission() !== 'granted'){ neuNote('Benachrichtigungen sind für diese App nicht erlaubt.\nBitte in den Einstellungen des Geräts erlauben.'); return; }
       const s = await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: b64ToU8(VAPID_PUBLIC)});
       const j = s.toJSON();
       await sbApi('push_subscriptions?endpoint=eq.'+encodeURIComponent(j.endpoint), 'DELETE');
       await sbApi('push_subscriptions', 'POST', {user_id: currentUser.id, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth});
     }
-  }catch(e){ alert('Erinnerung: '+(e && e.message || e)); }
+  }catch(e){ neuNote('Erinnerung: '+(e && e.message || e)); }
   await pushRefresh(); showMore();
 };
 /* Semia: Push immer an, ohne Schalter. Die Erlaubnis fragt das Gerät einmal beim ersten Tippen; danach wird das Abo bei jedem Start erneuert. */
@@ -729,8 +729,8 @@ function showMore(){
   const erinn = '<div class="neu-list"><div class="li"><span class="sp">Erinnerung, wenn etwas fällig ist<span class="neu-sub" style="display:block;font-size:.8rem">Morgens und abends, nur wenn heute etwas fällig ist. iPhone: nur mit der App auf dem Home-Bildschirm.</span></span>'+sw(_pushOn, "neuTogglePush()")+'</div></div>';
   const pflege = '<div class="neu-list">' + li('plus','Vokabel hinzufügen',"setMode('addvocab')") + li('book','Vokabel-Lektionen',"setMode('lessons')") + li('search','Prüfungen',"setMode('dupes')") + li('check','Partner-Check',"setMode('partnercheck')") + li('compass','Quellenabgleich',"setMode('quellen')") + li('abc','Transliterationsregeln',"setMode('translitregeln')") + li('save','Export',"setMode('export')") + '</div>';
   const technik = '<div class="neu-sub" style="margin-bottom:.5rem">Fälligkeiten der Vokabeln ordnen</div><div style="display:flex;gap:.5rem;flex-wrap:wrap">'
-    + '<button class="neu-btn line" style="flex:1;min-width:10rem" onclick="if(confirm(\'Fälligkeiten glätten? (betrifft bis zu '+smoothMax+' Vokabeln)\'))smoothSchedule();">Glätten<small>bis zu '+fmtN(smoothMax)+' Einträge</small></button>'
-    + '<button class="neu-btn ghost" style="flex:1;min-width:10rem;border-color:var(--red);color:var(--red)" onclick="if(confirm(\'Alle Fälligkeiten neu berechnen? (betrifft bis zu '+recalcMax+' Vokabeln)\'))recalcAllNextReview();">Alle neu berechnen<small>bis zu '+fmtN(recalcMax)+' Einträge</small></button>'
+    + '<button class="neu-btn line" style="flex:1;min-width:10rem" onclick="neuAsk(\'Fälligkeiten glätten?\\n(betrifft bis zu '+smoothMax+' Vokabeln)\').then(ok=>{if(ok)smoothSchedule();});">Glätten<small>bis zu '+fmtN(smoothMax)+' Einträge</small></button>'
+    + '<button class="neu-btn ghost" style="flex:1;min-width:10rem;border-color:var(--red);color:var(--red)" onclick="neuAsk(\'Alle Fälligkeiten neu berechnen?\\n(betrifft bis zu '+recalcMax+' Vokabeln)\').then(ok=>{if(ok)recalcAllNextReview();});">Alle neu berechnen<small>bis zu '+fmtN(recalcMax)+' Einträge</small></button>'
     + '</div><div id="smooth-result" style="font-size:.85rem;color:var(--muted);margin:.5rem 0 .3rem"></div><div class="neu-list">' + li('bug','Debug',"toggleDebug()") + '</div>';
   const sightDue = (() => { try{ return tnSightings(t0).length > 0; }catch(e){ return false; } })();
   c.innerHTML = '<div class="neu-wrap">'
@@ -1080,7 +1080,7 @@ window.tnDueNow = async function(ids, noAsk){
   if(!currentUser){ showToast('Fehler: nicht eingeloggt', 'err'); return; }
   const picked = (ids || []).filter(id => vById(id)).map(id => ({id}));
   if(!picked.length) return;
-  if(!noAsk && !confirm(picked.length + ' Vokabeln fällig setzen?\n\n' + picked.map(x => vById(x.id).tr + ' – ' + vById(x.id).en).join('\n'))) return;
+  if(!noAsk && !await neuAsk(picked.length + ' Vokabeln fällig setzen?\n\n' + picked.map(x => vById(x.id).tr + ' – ' + vById(x.id).en).join('\n'))) return;
   try{ await statsActivateApply(picked); showToast('✓ fällig gesetzt', 'ok'); }
   catch(e){ showToast('Fehler: ' + e.message, 'err'); }
 };
