@@ -511,6 +511,10 @@ console.log("betroffen: "+ids.size+" von "+rows.length+" ("+L.TRANSLIT_RULES.len
 
 ### B · Verdachtslisten (mit Fehlalarmquote)
 
+**Kurs-Prüfungen 36 und 37 (seit 2026-10-31, in der Sicht `qualitaets_checks`, Gruppe B):**
+- **36 · Verbform in der Lösung fehlt in der Konjugationstabelle.** Für Übungen `grammar_drill` mit „(Perfekt/Präsens konjugieren)“ wird jede Form der Lösung gegen alle Zellen der Tabelle des Verbs gehalten. Prüft nur Verben, zu denen eine Tabelle existiert (gut 40 von rund 100 Übungen). **Ein Treffer ist ein Kandidat, kein Fehler**: Tabelle und Übung können beide stimmen und nur unterschiedliche Varianten führen (`jat` und `jet`). Erst Skript/TUNICO fragen, dann die falsche Seite ändern. Fehlalarme sind vor allem Lücken in der Tabelle (fehlende 1pl) und Varianten.
+- **37 · Wortstamm mit `u` statt `ou`.** Meldet Kurswörter, deren Schreibung mit `ou` im Stamm in den Vokabeln existiert, die `u`-Form aber nirgends in den Vokabeln. Fängt bewusst nicht die Plural-Endung `-u` und nicht `nur`/`tun` (deutsche Wörter). Blind für Wörter, die in den Vokabeln selbst in beiden Schreibungen vorkommen (zwei Sätze, 1747 und 2532).
+
 **Den Stand dieser Listen nie aus dem Skill zitieren — mit einer Abfrage ziehen.** Genau wie
 bei Gruppe A: hier standen bis zum 2026-09-22 neun Zahlen im Text, und fünf davon waren
 überholt (`gemination` und `konsonanten` längst auf 0, der Bedeutungs-Screen von 76 auf 151
