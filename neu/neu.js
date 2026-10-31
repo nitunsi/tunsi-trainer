@@ -1385,6 +1385,7 @@ function fillSheet(id){
   if(!cs.isNew) parts.push('🔁 '+cs.reviews);
   const sum = $('ei-summary'); if(sum) sum.innerHTML = parts.join(' · ');
   const au = $('ei-audio'); if(au) au.style.display = v.au ? '' : 'none';
+  const cjb = $('ei-conj'); if(cjb) cjb.style.display = v.cj ? '' : 'none';
 }
 window.neuEditAudio = function(){ const v = vById(_editSheetVocabId); if(v && v.au) playVocabAudio(v.au, null, v.aus||0, v.aue||0); };
 window.neuDueNow = function(){ const e = $('ei-nr'); if(e) e.value = toLocalInputDE(new Date()); };
