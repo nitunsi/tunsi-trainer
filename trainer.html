@@ -5143,7 +5143,10 @@ function translitExtraChecks0(){
     loesGeprueft++;
     const sol = String(e.solution || '').replace(/Pl\./g, '').replace(/[.]\s*$/, '');
     const formenLoes = sol.split(/[,;]/).map(x => x.trim().toLowerCase()).filter(Boolean);
-    const fehlt = formenLoes.filter(f => !tabs.some(tb => [...tb].some(z => imala(z) === imala(f))));
+    // Bewusst akzeptierte Varianten (Übung-ID → Formen): beide Schreibweisen sind belegt, die Prüfung meldet sie nicht.
+    // 1523 wsil: wislit und waslit stehen beide bei TUNICO.
+    const VARIANTEN = {1523: ['wislit']};
+    const fehlt = formenLoes.filter(f => !tabs.some(tb => [...tb].some(z => imala(z) === imala(f))) && !(VARIANTEN[e.id] || []).includes(f));
     if(fehlt.length){ loesIds.push(e.id); loesBsp.push(e.id+' '+m[1]+': '+[...new Set(fehlt)].join(', ')); }
   });
   // 6) Hohlverben (3. Person Vergangenheit CaC, 1. Person mit anderem Vokal): Vokal gegen Präsens, fehlende Markierung, veraltete Markierung
