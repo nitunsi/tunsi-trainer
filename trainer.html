@@ -5234,6 +5234,37 @@ function datenChecks(){
   out.push({label: geladen ? 'Kurs: doppelte Aufgabe (gleiche Frage und Lösung)' : 'Kurs: Kursdaten nicht geladen', n: dopp.length, bsp: dopp});
   const shi = ex.filter(e => /-shi\?|-shi /.test(e.prompt || '') && e.meta && /\b(nicht|kein|keine|keinen|keinem)\b/i.test(e.meta.prompt_de || '')).map(e => 'Übung '+e.id+': '+(e.meta.prompt_de || '').slice(0, 60));
   out.push({label: 'Kurs: -shi-Frage mit Verneinung im Deutschen (Frage ist neutral)', n: shi.length, bsp: shi});
+
+  // 6) Pflichtfelder und Zeichen der Vokabeln
+  const zeile = v => v.id+' '+(v.tr || v.ar || v.en || '?');
+  const feld = (label, test, text) => { const l = ALL_VOCAB.filter(test).map(v => zeile(v)+(text ? ' – '+text(v) : '')); out.push({label, n: l.length, bsp: l}); };
+  feld('Vokabel ohne Arabisch, Umschrift oder Deutsch', v => !String(v.ar).trim() || !String(v.tr).trim() || !String(v.en).trim(), v => [!String(v.ar).trim() ? 'Arabisch' : '', !String(v.tr).trim() ? 'Umschrift' : '', !String(v.en).trim() ? 'Deutsch' : ''].filter(Boolean).join(', ')+' fehlt');
+  feld('Arabisch-Feld mit lateinischen Buchstaben oder Umschrift mit arabischen Zeichen', v => /[A-Za-z]/.test(v.ar || '') || /[؀-ۿ]/.test(v.tr || ''), v => /[A-Za-z]/.test(v.ar || '') ? 'lateinisch im Arabischen: '+v.ar : 'arabisch in der Umschrift: '+v.tr);
+  feld('Leerzeichen am Rand oder doppelt (Arabisch, Umschrift, Deutsch)', v => [v.ar, v.tr, v.en].some(x => x && (x !== x.trim() || /\s{2,}/.test(x))), v => 'Leerzeichen in „'+[v.ar, v.tr, v.en].find(x => x && (x !== x.trim() || /\s{2,}/.test(x)))+'“');
+  feld('Klammer in der Umschrift (gehört ins Deutsche)', v => /[()]/.test(v.tr || ''), v => v.tr);
+  feld('„(f.)“ im Deutschen, Umschrift endet nicht auf -a', v => /\(f\.\)/i.test(v.en || '') && !/a$/.test(v.tr || '') && !/^(w-)?(ukht|umm|bint|saq|yidd|3in|wdin|farmasi|kar|tunis|mistir|susa|kirsh|shams|nar|dar|bit|blad|hethi|shah)(?![a-z0-9])/i.test(v.tr || ''), v => v.tr+' = '+v.en);
+  feld('Schadda auf dem ersten Buchstaben (ungültig)', v => /(^|\s)[بتثجحخدذرزسشصضطظعغفقكلمنهويائأإآةى][ًٌٍَُِْٰ]*ّ/.test(v.ar || ''), v => v.ar);
+  feld('Plural-Endung -iou/-eou/-aou statt -iw/-aw (Vokabel)', v => /(iou|eou|aou)(?![a-z0-9])/.test(v.tr || ''), v => v.tr);
+  feld('Halb verdoppelter Digraph (ddh, ssh, kkh …) in der Umschrift', v => /(ddh|tth|ssh|kkh|ggh|7h|thh)/.test(v.tr || '') && !/(dhdh|thth|shsh|khkh|ghgh|77)/.test(v.tr || '') && ![722, 3042, 3073, 4254].includes(v.id), v => v.tr);
+
+  // 7) Homonym-Markierung ohne Partner
+  const dia = /[ً-ْٰٟ]/g;
+  const arKey = v => String(v.ar || '').replace(dia, '').trim().replace(/^ال/, '');
+  const gKey = v => String(v.en || '').toLowerCase().replace(/[^a-zäöüß]/g, '');
+  const tKey = v => String(v.tr || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const mitAr = ALL_VOCAB.filter(v => v.ar);
+  const cnt = (f) => { const m = new Map(); mitAr.forEach(v => { const k = f(v); m.set(k, (m.get(k) || 0) + 1); }); return m; };
+  const cA = cnt(arKey), cG = cnt(gKey), cT = cnt(tKey);
+  const hom = mitAr.filter(v => v.hok && !(cA.get(arKey(v)) > 1 || cG.get(gKey(v)) > 1 || cT.get(tKey(v)) > 1)).map(v => zeile(v)+' – homonym_ok ohne Partner');
+  out.push({label: 'Homonym-Markierung ohne Partner (keine gleiche Schrift, Bedeutung oder Umschrift)', n: hom.length, bsp: hom});
+
+  // 8) Kurs: Quelle fehlt, Aufgabe oder Lösung leer
+  const KURS_OHNE_LOESUNG = new Set(['grammar_card', 'build_dialog']);   // Karten und offene Dialogaufgaben (eigene Sätze bilden) haben keine feste Lösung
+  const beleg = ex.filter(e => !e.meta || !String(e.meta.beleg || '').trim()).map(e => 'Übung '+e.id+' ('+e.exercise_type+'): Beleg fehlt');
+  out.push({label: geladen ? 'Kurs: Übung ohne Quelle (meta.beleg fehlt)' : 'Kurs: Kursdaten nicht geladen', n: beleg.length, bsp: beleg});
+  const ohneText = e => !String(e.prompt || '').trim() && !String(e.instruction || '').trim();
+  const leer = ex.filter(e => ohneText(e) || (!String(e.solution || '').trim() && !KURS_OHNE_LOESUNG.has(e.exercise_type))).map(e => 'Übung '+e.id+' ('+e.exercise_type+'): '+(ohneText(e) ? 'Aufgabentext' : 'Lösung')+' fehlt');
+  out.push({label: 'Kurs: Übung ohne Aufgabentext oder ohne Lösung', n: leer.length, bsp: leer});
   return out;
 }
 
