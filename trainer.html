@@ -5020,6 +5020,13 @@ function suggestTransliterationFromArabic(){
 // Zusatzprüfungen für Konjugationstabellen und Kursübungen (dieselben Umschrift-Regeln wie TRANSLIT_RULES,
 // aber auf Tabellenzellen und die tunesischen Teile der Kursübungen). Liefert [{label, n, bsp:[...]}].
 function translitExtraChecks(){
+  let r = [];
+  try{ r = translitExtraChecks0(); }catch(e){ console.warn('translitExtraChecks0', e); }
+  try{ r = r.concat(datenChecks()); }catch(e){ console.warn('datenChecks', e); }
+  return r;
+}
+
+function translitExtraChecks0(){
   const regelnZelle = [
     [/[259]/, 'Ziffer 2/5/9'], [/[A-Z]/, 'Großbuchstabe'], [/ch/, '„ch“ statt „sh“'],
     [/(^|[^a-z0-9])[a-z]{0,2}-?(el|il)-(th|sh|d|t|z|s|j|n|r)/i, 'Artikel nicht verschmolzen'],
@@ -5133,6 +5140,69 @@ function translitExtraChecks(){
     {label: 'Hohlverb: Vokalwechsel in der Vergangenheit ohne Markierung (Tabellen)', n: hOhneIrr.length, bsp: hOhneIrrBsp},
     {label: 'Markierung veraltet: markierter Teil steht nicht mehr in der Form/Lösung', n: irrAlt.length, bsp: irrAltBsp}
   ];
+}
+
+// Datenprüfungen (vorher von Hand per SQL): verwaiste Verweise, Audio-Grunddaten, Flaggen ohne Notiz,
+// Fortschritt (Fälligkeit gegen Level), Kurs-Doppelte und -shi-Fragen mit Verneinung.
+function datenChecks(){
+  const out = [];
+  if(!ALL_VOCAB.length) return out;
+  const ex = Object.values(typeof COURSE_EX_BY_ID !== 'undefined' ? COURSE_EX_BY_ID : {});
+  const geladen = ex.length > 0;
+  const trSet = new Set(ALL_VOCAB.map(v => v.tr));
+
+  // 1) Verwaiste Verweise
+  const verw = [];
+  (typeof COURSE_LESSONS !== 'undefined' ? COURSE_LESSONS : []).forEach(l => {
+    const f = parseCourseVocabRefs(l.vocab_lesson_refs);
+    const lek = 'Lektion K'+l.skript+'.'+l.course_number;
+    [...f.ids].filter(i => !VOCAB_BY_ID[i]).forEach(i => verw.push(lek+': ID '+i+' gibt es nicht mehr'));
+    [...f.tr].filter(t => !trSet.has(t)).forEach(t => verw.push(lek+': '+t+(/^\d+$/.test(t) ? (VOCAB_BY_ID[t] ? ' = Vokabel „'+VOCAB_BY_ID[t].tr+'“ steht unter darija: statt ids:' : ' ist keine Vokabel') : ' (Name nicht mehr in den Vokabeln)')));
+  });
+  ex.forEach(e => { if(e.vocabulary_id && !VOCAB_BY_ID[e.vocabulary_id]) verw.push('Übung '+e.id+' zeigt auf Vokabel '+e.vocabulary_id); });
+  Object.keys(srsProgress).forEach(i => { if(!VOCAB_BY_ID[i]) verw.push('Fortschritt für fehlende Vokabel '+i); });
+  out.push({label: 'Verwaiste Verweise (Lektion, Übung oder Fortschritt zeigt auf fehlende Vokabel)', n: verw.length, bsp: verw});
+
+  // 2) Audio-Grunddaten
+  const aud = [];
+  ALL_VOCAB.forEach(v => {
+    if(!v.au) return;
+    const fehlt = [];
+    if(!AUDIO_GAIN[audioKey(v.au, v.aus, v.aue)]) fehlt.push('Lautstärke');
+    if(!v.aue || v.aue <= v.aus) fehlt.push('Start/Ende');
+    if(fehlt.length) aud.push(v.id+' '+v.tr+': '+fehlt.join(', ')+' fehlt/ungültig');
+  });
+  out.push({label: 'Audio ohne Lautstärke oder mit ungültigem Start/Ende', n: aud.length, bsp: aud});
+
+  // 3) Flagge ohne Notiz
+  const flg = ALL_VOCAB.filter(v => flaggedVocab.has(v.tr) && !String(v.nt || '').trim()).map(v => v.id+' '+v.tr+' – geflaggt, aber ohne Notiz');
+  out.push({label: 'Geflaggte Vokabel ohne Notiz (unklar, was gemeint ist)', n: flg.length, bsp: flg});
+
+  // 4) Fortschritt: Fälligkeit passt zum Level
+  const tagB = d => d.toLocaleDateString('sv', {timeZone: 'Europe/Berlin'});
+  const tage = (a, b) => Math.round((Date.parse(tagB(b)+'T00:00:00Z') - Date.parse(tagB(a)+'T00:00:00Z')) / 86400000);
+  const prog = [];
+  Object.keys(srsProgress).forEach(i => {
+    const p = srsProgress[i];
+    if(!p || !p.next_review || !p.last_reviewed || !VOCAB_BY_ID[i]) return;
+    const lv = Math.min(p.level || 0, 6);
+    const d = tage(p.last_reviewed, p.next_review);
+    const ok = lv === 0 ? d <= 1 : Math.abs(d - SRS_DAYS[lv]) <= (SRS_JITTER[lv] || 0) + 1;
+    if(!ok) prog.push(i+' '+VOCAB_BY_ID[i].tr+': Level '+lv+', zuletzt '+tagB(p.last_reviewed)+', fällig '+tagB(p.next_review)+' ('+d+' Tage statt '+(lv === 0 ? '≤1' : SRS_DAYS[lv])+')');
+  });
+  out.push({label: 'Fortschritt: Fälligkeit passt nicht zum Level (Intervall plus Streuung)', n: prog.length, bsp: prog});
+
+  // 5) Kurs: doppelte Aufgaben, -shi-Frage mit Verneinung im Deutschen
+  const gesehen = new Map(), dopp = [];
+  ex.slice().sort((a, b) => a.id - b.id).forEach(e => {
+    if(!e.prompt || !e.solution) return;
+    const k = e.prompt + '\u0001' + e.solution;
+    if(gesehen.has(k)) dopp.push('Übung '+e.id+' doppelt zu '+gesehen.get(k)); else gesehen.set(k, e.id);
+  });
+  out.push({label: geladen ? 'Kurs: doppelte Aufgabe (gleiche Frage und Lösung)' : 'Kurs: Kursdaten nicht geladen', n: dopp.length, bsp: dopp});
+  const shi = ex.filter(e => /-shi\?|-shi /.test(e.prompt || '') && e.meta && /\b(nicht|kein|keine|keinen|keinem)\b/i.test(e.meta.prompt_de || '')).map(e => 'Übung '+e.id+': '+(e.meta.prompt_de || '').slice(0, 60));
+  out.push({label: 'Kurs: -shi-Frage mit Verneinung im Deutschen (Frage ist neutral)', n: shi.length, bsp: shi});
+  return out;
 }
 
 function showTranslitRegeln(){
