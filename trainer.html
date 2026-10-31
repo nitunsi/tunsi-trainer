@@ -1549,14 +1549,26 @@ function rcOfflineShow(){
   try{ if(window.neuOfflineHint) window.neuOfflineHint(_rcOfflineSince); }catch(e){}
 }
 let _rcOffRetry = null;
+// Jede Antwort vom Server (auch eine Fehlermeldung) beweist: das Netz ist da. Dann gibt es keinen Offline-Hinweis mehr.
+function rcNetAlive(){
+  if(_rcOffKeys.size){ _rcOffKeys.clear(); rcOfflineShow(); }
+}
+function rcArmOffRetry(ms){
+  if(_rcOffRetry) return;
+  _rcOffRetry = setTimeout(async () => {
+    _rcOffRetry = null;
+    if(!_rcOffKeys.size) return;
+    if(navigator.onLine !== false){
+      try{ await _sbApiNet('lessons?select=id&limit=1', 'GET', null, null, 8000); }catch(e){}   // kleine Probe; bei Antwort räumt rcNetAlive() auf
+      if(_rcOffKeys.size && currentUser && typeof rcRefresh === 'function') rcRefresh();
+    }
+    if(_rcOffKeys.size) rcArmOffRetry(20000);
+  }, ms);
+}
 function rcMarkOffline(t, key){
   _rcOffKeys.set(key || '', t);
   rcOfflineShow();
-  // Ist das Gerät laut Browser online, nach kurzer Zeit frisch nachladen; gelingt das, verschwindet der Hinweis.
-  if(!_rcOffRetry) _rcOffRetry = setTimeout(() => {
-    _rcOffRetry = null;
-    if(_rcOffKeys.size && navigator.onLine !== false && currentUser && typeof rcRefresh === 'function') rcRefresh();
-  }, 20000);
+  rcArmOffRetry(10000);
 }
 function rcMarkOnline(key){
   if(_rcOffKeys.delete(key || '')) rcOfflineShow();
@@ -1696,6 +1708,7 @@ async function rcForceRefresh(){
 window.addEventListener('online', () => { _rcOffKeys.clear(); rcOfflineShow(); setTimeout(()=>{ if(currentUser) rcRefresh(); }, 1500); });
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'hidden') rcProgRefreshNow();
+  if(document.visibilityState === 'visible' && _rcOffKeys.size){ if(_rcOffRetry){ clearTimeout(_rcOffRetry); _rcOffRetry = null; } rcArmOffRetry(1500); }   // nach dem Zurückkehren schnell prüfen, ob das Netz wirklich weg ist
   if(document.visibilityState === 'visible' && currentUser && (_rcOffKeys.size || Date.now() - _rcLastRefresh > 15*60*1000)) rcRefresh();
 });
 // ══ ENDE LESE-CACHE ═════════════════════════════════════════════════════════
@@ -1715,6 +1728,7 @@ async function _sbApiNet(path,method='GET',body=null,prefer=null,timeoutMs=20000
       signal: ctrl.signal
     });
     const t=await r.text();
+    rcNetAlive();
     if(!r.ok){ const err=new Error(t); err.status=r.status; throw err; }  // status: siehe syncFlush()
     return t?JSON.parse(t):null;
   }catch(e){
@@ -1741,6 +1755,7 @@ async function _sbRangeNet(basePath, batchSize, timeoutMs=20000){
       signal: ctrl.signal
     });
     const t = await r.text();
+    rcNetAlive();
     if(!r.ok) throw new Error(t);
     const data = t ? JSON.parse(t) : [];
     let total = null;
