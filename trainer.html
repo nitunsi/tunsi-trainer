@@ -5017,6 +5017,61 @@ function suggestTransliterationFromArabic(){
 // ein Schnappschuss und liefe frueher oder spaeter gegen den Code -- genau das
 // Fehlerbild, das PRECEDENTS.md unter "der eingefrorene Kandidaten-Schnappschuss"
 // beschreibt. Aendert jemand das Mapping, aendert sich diese Seite mit.
+// Zusatzprüfungen für Konjugationstabellen und Kursübungen (dieselben Umschrift-Regeln wie TRANSLIT_RULES,
+// aber auf Tabellenzellen und die tunesischen Teile der Kursübungen). Liefert [{label, n, bsp:[...]}].
+function translitExtraChecks(){
+  const regelnZelle = [
+    [/[259]/, 'Ziffer 2/5/9'], [/[A-Z]/, 'Großbuchstabe'], [/ch/, '„ch“ statt „sh“'],
+    [/(^|[^a-z0-9])[a-z]{0,2}-?(el|il)-(th|sh|d|t|z|s|j|n|r)/i, 'Artikel nicht verschmolzen'],
+    [/(iou|eou|aou)$/, 'Endung -iou/-eou/-aou statt -iw/-aw'], [/(ddh|ssh|kkh|ggh)/, 'halb verdoppelter Digraph'], [/(.)\1\1/, 'Buchstabe dreifach']
+  ];
+  // 1) Tabellenzellen
+  const zellen = [], zellenBsp = [];
+  // 2) Zeile gegen Tabelle
+  const zeile = [], zeileBsp = [];
+  ALL_VOCAB.forEach(v => {
+    if(!v.cj) return;
+    const formen = [];
+    ['present','past','imperative'].forEach(t => {
+      const blk = v.cj[t]; if(!blk || typeof blk !== 'object') return;
+      Object.keys(blk).forEach(k => { const c = blk[k]; if(c && c.darija) formen.push(String(c.darija)); });
+    });
+    let treffer = null;
+    formen.some(f => { const r = regelnZelle.find(rg => rg[0].test(f)); if(r){ treffer = f+' ('+r[1]+')'; return true; } return false; });
+    if(treffer){ zellen.push(v.id); zellenBsp.push(v.id+' '+v.tr+': '+treffer); }
+    if(!v.cr && v.tr){
+      const me = String(v.tr).trim().toLowerCase();
+      if(!formen.some(f => f.trim().toLowerCase() === me)){ zeile.push(v.id); zeileBsp.push(v.id+' '+v.tr+' – nicht in der eigenen Tabelle'); }
+    }
+  });
+  // 3) Kurs-Umschrift: nur die tunesischen Teile
+  const kursRegeln = [
+    [/[a-z][259]|[259][a-z]/i, 'Ziffer 2/5/9 im Wort'], [/[a-z0-9][A-Z]/, 'Großbuchstabe im Wort'],
+    [/(^|[^a-zA-Z0-9-])(wa|u)([^a-zA-Z0-9-]|$)/, '„wa“/„u“ statt „w-“'],
+    [/(iou|eou|aou)([^a-z]|$)/, 'Endung -iou/-eou/-aou'], [/(^|[^a-z0-9])[a-z]{0,2}-?(el|il)-(th|sh|d|t|z|s|j|n|r)[a-z]/i, 'Artikel nicht verschmolzen']
+  ];
+  const tn = t => String(t||'').split(/ — | – | \(| „/)[0];
+  const kurs = new Set(), kursBsp = [];
+  const ex = Object.values(typeof COURSE_EX_BY_ID !== 'undefined' ? COURSE_EX_BY_ID : {});
+  ex.forEach(e => {
+    const felder = [];
+    if(e.exercise_type === 'pronunciation') felder.push(e.prompt);
+    else if(['translate_de_tn','fill_blank','fixed_response','answer_pattern'].includes(e.exercise_type)) felder.push(e.solution);
+    if(['fixed_response','answer_pattern'].includes(e.exercise_type)) felder.push(e.prompt);
+    felder.forEach(f => {
+      const txt = tn(f); if(!txt) return;
+      const r = kursRegeln.find(rg => rg[0].test(txt));
+      if(r && !kurs.has(e.id)){ kurs.add(e.id); kursBsp.push(e.id+': '+txt.slice(0,60)+' ('+r[1]+')'); }
+    });
+  });
+  const geladen = ex.length > 0;
+  return [
+    {label: 'Konjugationstabellen: Zelle verstößt gegen die Umschrift-Regeln (Zeilen)', n: zellen.length, bsp: zellenBsp},
+    {label: 'Vokabel steht nicht in ihrer eigenen Konjugationstabelle (Zeilen)', n: zeile.length, bsp: zeileBsp},
+    {label: geladen ? 'Kursübungen: tunesischer Text verstößt gegen die Umschrift-Regeln (von '+ex.length+')' : 'Kursübungen: Kursdaten nicht geladen', n: kurs.size, bsp: kursBsp}
+  ];
+}
+
 function showTranslitRegeln(){
   document.getElementById('act-screen').style.display='none';
   document.getElementById('act-screen').style.pointerEvents='none';
@@ -5087,6 +5142,21 @@ function showTranslitRegeln(){
       }).join('')
     + '</div>';
 
+  const extra = translitExtraChecks();
+  const extraHtml = '<div style="display:flex;flex-direction:column;gap:.45rem">'
+    + extra.map(r => {
+        const farbe = r.n === 0 ? 'var(--green)' : 'var(--gold2)';
+        const beispiele = r.bsp.length
+          ? '<details style="margin:.1rem 0 0 3.1rem"><summary style="font-size:.68rem;color:var(--muted);cursor:pointer">Fundstellen ('+Math.min(r.bsp.length,12)+(r.n>12?' von '+r.n:'')+')</summary>'
+            + '<div style="font-size:.72rem;font-family:\'IBM Plex Mono\',monospace;line-height:1.5;margin-top:.2rem">'
+            + r.bsp.slice(0,12).map(b => escHtml(b)).join('<br>') + '</div></details>'
+          : '';
+        return '<div><div style="display:flex;gap:.5rem;align-items:baseline;font-size:.78rem">'
+          + '<span style="flex:0 0 2.6rem;text-align:right;font-family:\'IBM Plex Mono\',monospace;color:'+farbe+'">'+r.n+'</span>'
+          + '<span style="color:var(--text)">'+escHtml(r.label)+'</span></div>'+beispiele+'</div>';
+      }).join('')
+    + '</div>';
+
   c.innerHTML = '<div style="padding:.5rem 0 4rem">'
     + '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.9rem;line-height:1.55">'
     +   'Alles hier ist aus dem Code gelesen, mit dem der Trainer arbeitet — nicht abgetippt. '
@@ -5128,6 +5198,12 @@ function showTranslitRegeln(){
         geprueft + ' von ' + ALL_VOCAB.length + ' Vokabeln geprüft. Die Zahl links ist die aktuelle Trefferzahl: '
         + '<span style="color:var(--green)">grün</span> heißt sauber. Die Fundstellen selbst stehen unter '
         + '<b>🔍 Prüfungen → 🔤 Transliteration</b>.')
+
+    + kasten('Konjugation und Kurs',
+        extraHtml,
+        'Dieselben Regeln für Umschrift, angewendet auf die Zellen der Konjugationstabellen und auf die tunesischen '
+        + 'Teile der Kursübungen (Aussprache-Wörter, Lösungen; deutsche Texte werden übersprungen). '
+        + 'Die Zeile-gegen-Tabelle-Prüfung sagt, ob die <b>darija</b> einer Vokabel in ihrer eigenen Konjugationstabelle vorkommt.')
     + '</div>';
 
   const probe = document.getElementById('tr-probe');
