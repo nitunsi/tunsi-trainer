@@ -8,6 +8,10 @@ Vokabeltrainer für Tunesisch-Arabisch (Nils + Semia). Vokabeln leben in Supabas
 
 Zwei stehende Lockerungen von Nils: **Korrekturen im Batch** dürfen ohne Einzelbestätigung laufen, wenn das Verfahren vorher gezeigt wurde. **Neue Vokabeln anlegen** ist in Ordnung, wenn Formen fehlen — aber vorher fragen, und dabei auch fragen, ob fällig gesetzt werden soll.
 
+## Prüfungen gehören in den Trainer
+
+Der Trainer prüft den Bestand selbst (*Mehr → Prüfungen*, Zahl auf *Lernen*); **dort zuerst nachsehen, Ziel 0**. Bei jeder neuen Prüfung, die du baust oder von Hand wiederholst, erst überlegen, ob sie aus den im Trainer geladenen Daten machbar ist, und das Nils **vorschlagen** (nicht ohne Bestätigung einbauen). Was geprüft wird und wie: `skills/tunsi/SKILL.md` → „Prüfungen im Trainer“.
+
 ## Welche Arbeitsregeln du liest — und wann
 
 Die Regeln liegen **in diesem Repo**, nicht im gleichnamigen „tunsi"-Skill im Claude-Account: der ist ein manuell hochgeladener Snapshot und veraltet gegenüber diesem Stand. Änderungen an den Arbeitsregeln gehören hierher (committen + pushen).

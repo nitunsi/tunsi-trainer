@@ -7,6 +7,7 @@ Regeln für den Lektionen/Stepper-Bereich des Trainers (`course_lessons`/`course
 - Nicht einbauen ohne Bestätigung
 - Syntax-Prüfung via `node vm.Script()` vor Auslieferung
 - Output-Datei immer `trainer.html` (ohne Versionsnummer) — Ausnahme: bei Android-Caching-Problemen Versionsnummer erhöhen
+- **Neue Prüfung oder Prüfregel?** Gehört in den Trainer (`datenChecks()`), wenn dessen geladene Daten reichen — Abschnitt „Prüfungen im Trainer“ in SKILL.md; erst Trefferzahl mit echten Daten im Node-Harness berechnen, dann vorschlagen
 - **Bei Performance-Fixes (z.B. fehlendes `spellcheck="false"`) alle Geschwister-Inputs im selben Formular mitprüfen, nicht nur das gemeldete Feld** (Präzedenzfall: PRECEDENTS.md → Code-Änderungen)
 
 ## Offline und schneller Start (seit 2026-10)
