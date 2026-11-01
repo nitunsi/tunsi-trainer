@@ -73,6 +73,8 @@ Level in beiden Welten identisch abgeleitet: `Math.min(correct_count, 6)`; Bucke
 
 Standing rule: **bei jeder neuen Lektion erst alle referenzierten Vokabeln vollständig gegen den Bestand prüfen und importieren, danach erst die Übungen bauen.** Nicht vermischen. Jede Einzelwort-Übung (v.a. `pronunciation`) wird mit der Vokabel per `vocabulary_id` verlinkt, inkl. Audio wenn vorhanden.
 
+**Nach jeder neuen Verknüpfung oder Neuanlage von Vokabeln immer prüfen, ob sich Audio ergänzen lässt** (Nutzeranweisung 2026-11-01): die betroffenen Vokabeln ohne `ninja_audio_url` gegen Ninja (wortgleich) und Sprachenlernen24 (`sl24_import`, `sl24_inhalt` Konversation/Dialog; Arabisch gleich nach Artikel-/Vokalzeichen-Normalisierung, Bedeutung passt) abgleichen; Treffer mit Start/Ende/Lautstärke messen und als Vorschlag zeigen — erst nach Bestätigung schreiben. Gleiche Schreibung kann ein anderes Wort sein (`sana` Jahr ≠ السنّة Zahn), deshalb die Bedeutung lesen. Vor dem Anlegen eines „fehlenden“ Worts auch nach Schreibvarianten (Hamza, ص/س, ة) und nach der deutschen Bedeutung suchen; Beispiele, die es schon gab: `shkoun` (أشكون), `sama7ni`, `esh-shatt`, `el beqi`, `ena manish`.
+
 Bildbasierte Übungen werden nie umgesetzt — explizite Anweisung "Bild rausnehmen". Beim Auswerten kurz vermerken, welche Übungsnummern deshalb übersprungen wurden.
 
 ### Pflichtschritt: Item-Zählung, nicht nur Abschnitts-Existenz
