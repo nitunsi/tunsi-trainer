@@ -67,6 +67,7 @@ Level in beiden Welten identisch abgeleitet: `Math.min(correct_count, 6)`; Bucke
 | `grammar_card` | Reine Erklärkarte (Frage zur Grammatik → Erklärung als Antwort) |
 | `build_dialog` | Wort-Paare/-Tripel zum freien Dialogbau, `solution` oft `null` |
 | `pronunciation` | Einzelwort-Ausspracheübung — **muss `vocabulary_id` verlinkt haben** (inkl. Audio, wenn vorhanden) |
+| `listening` | Hörverstehen (seit 2026-11): `meta.audio_url` = Aufnahme (https), `prompt` = arabischer Text (bleibt bis „Lösung zeigen“ verborgen), `solution` = deutsche Bedeutung, `meta.beleg` = `sl24`. Selbstbewertung wie `fixed_response`, in der Kurs-Wiederholung. Die Prüfung „Hörübung ohne Aufnahme oder ohne Text“ im Trainer fängt fehlende Felder |
 
 ### Workflow: erst Vokabeln, dann Übungen
 
@@ -121,6 +122,10 @@ Vor dem Zusammenlegen zweier ähnlicher Wörter prüfen, ob eine Übung selbst e
 ### `chunk_order` — Sync-Pflicht mit `grammar_notes`
 
 **Technischer Zwang:** `chunk.grammar_headings` referenziert `### Überschrift`-Text aus `grammar_notes` per **exaktem String-Match** (`parseGrammarSections()` in trainer.html). Wird eine `###`-Überschrift umbenannt/zusammengelegt, MUSS jedes referenzierende `chunk_order`-Element mitaktualisiert werden — sonst bricht die Verknüpfung lautlos (kein Fehler, der Intro-Screen zeigt einfach nichts). Auch bei jeder Konvention-Änderung (z.B. Transliterationsregel) `chunk_order`-Labels mit durchsuchen, nicht nur `grammar_notes`/`vocabulary`.
+
+### Herkunft der Abschnitte (seit 2026-11)
+
+Kurs-Übersicht → Knöpfe **Alle / Uni Wien / Selbst gebaut / SL24** (Auswahl in `localStorage` `course-herkunft`). Die Herkunft eines Abschnitts kommt aus `chunk_order`: Feld `herkunft` (`uniwien` | `constructed` | `sl24`) gewinnt, sonst abgeleitet — Dialog oder `grammar_headings` = `uniwien`, nur Übungen = `constructed`. **Neue SL24-Abschnitte immer mit `"herkunft":"sl24"`** und ans **Ende** der Lektion anhängen; bestehende Abschnitte und Übungen bleiben unberührt. Code: `courseChunkHerkunft()` in `trainer.html`, Knöpfe in `renderCourseOverview` in `neu/neu.js`. Der Beleg `sl24` (🟣) kennzeichnet Material aus dem gekauften Sprachenlernen24-Kurs (nachrangiger Beleg, siehe IMPORTS.md).
 
 ### Position-Verschiebung beim nachträglichen Einfügen
 
