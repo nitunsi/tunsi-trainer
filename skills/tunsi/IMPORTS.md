@@ -183,6 +183,21 @@ Zwei Supabase-Tabellen, Rohextrakt aus dem "Peace Corps English-Tunisian Arabic 
 
 **Nutzen beim Prüfen:** dritte Offline-Quelle in Schritt 3 (siehe SKILL.md → Der Prozess) — nach `derja_ninja_entries` und `tunico_import` durchsuchen, v.a. bei älterem/ungewöhnlichem Lehrbuchvokabular.
 
+### Sprachenlernen24 — Tunesisch-Komplettpaket (gekaufter Kurs, seit 2026-11-01)
+
+Privater, gekaufter Online-Kurs von Nils (Konto bei Sprachenlernen24; **Zugangsdaten gehören nie ins Repo oder in Chat-Notizen**, Rohdaten und Abruf-Skripte liegen nur im Arbeitsordner der Sitzung). Nur für Nils, nicht für Semia. Abruf am 2026-11-01 per Browser (Playwright, langsam, eine Sitzung); Stand wie bei Ninja/TUNICO: **feste Momentaufnahme**, ändert sich nur durch einen neuen Abruf.
+
+- **`sl24_import`** (5.585 Zeilen): Vokabelteil, 126 Lektionen auf den Stufen A1–C2 (je 21). Spalten `niveau`, `lektion`, `lektion_titel`, `position`, `german`, `arabic`, `audio_url`, `saetze` (jsonb: `{ar, de, audio}`, insgesamt 25.035 Beispielsätze mit Übersetzung und Audio).
+- **`sl24_inhalt`** (2.736 Zeilen): `bereich` = `dialog` (126 Lektionen, 1.832 Zeilen), `konversation` (21 Lektionen, 608 Zeilen), `grammatik` (92 Seiten Text), `land` (5 Länderinfos), `pdf` (199 Seiten aus drei PDFs: Arabisch-Kurzgrammatik, Arabische Grammatik, „Die wichtigsten Verben“ mit Umschrift). Zeilen mit `deutsch`/`arabisch`/`audio_url`, bei Text- und PDF-Seiten `text`.
+- **Nicht geholt:** Satzbautrainer (benutzt die Dialogsätze), Online-Verbtrainer (steht im Verben-PDF), Lerntipps (allgemein, nicht tunesisch), Audiotrainer, Expresskurs und ZIP-Hörmaterial.
+- Beide Tabellen sind privat (RLS an, kein Zugriff für `anon`/`authenticated`). Import ohne geheimen Schlüssel: Tabelle mit Insert-Richtlinie, die einen Geheimcode im Anfrage-Kopf (`x-import-token`) verlangt, dann PostgREST-Schnellimport mit dem öffentlichen Schlüssel; die Richtlinie danach per `drop policy` entfernen (Rückfrage im Editor, Nils führt aus).
+
+**Wie belastbar:** Dritt- bis viertrangige Quelle, **keine Bestätigung allein**. Ein Autor, keine Quellenangaben, **keine lateinische Umschrift**, lockere Vokalisierung (Dehnstriche, verrutschte Zeichen, uneinheitliches Gaf `ق/ڨ/ﭬ`). A1/A2 sind echtes Tunesisch mit vielen französischen Lehnwörtern; **B2–C2 enthalten viel Hocharabisch**, die Grammatikseiten und die Arabisch-PDFs sind Hocharabisch (Musterverb *faʿala*). Belegwert: bestätigt ein Wort/eine Form nur zusammen mit Skript, TUNICO oder Ninja. Der Kurs hat sich im Abgleich einmal geirrt (*die Langeweile* = `القلق`, das heißt Sorge).
+
+**Abgleich (2026-11-01):** 1.340 von 5.585 Kurswörtern (24 %) haben bei uns dasselbe Arabische (nach Normalisierung: Vokalzeichen, Artikel, Alif-Formen, `ق/ڨ/ﭬ`), 397 nur dasselbe Deutsche, der Rest ist neu. „Neu“ ist eine Obergrenze (Schreibvarianten fallen mit hinein). Nützlich als Fehlersuche für **Formen im Satz** (Plural, Verbformen): die 25.035 Sätze nach der Schreibung suchen, `jsonb_array_elements(saetze)`.
+
+**Audio:** Die Aufnahmen sind **ohne Login öffentlich erreichbar** (Wörter unter `sprachenlernen24-onlinekurs.de/audio-tn…/NNNN.mp3`, Sätze unter `17min.io/Extra-Audios/audio-tn/tnNNN.mp3`) und werden wie Ninja-Audio verlinkt. Eintrag in die vorhandenen Felder `ninja_audio_url` / `_start` / `_end` / `audio_gain`, Start/Ende per Stille-Erkennung gemessen (Kurs-Dateien sind einzelne Wörter), `audio_gain` ≈ 0,0316 / RMS (der Trainer hebt nur Faktoren über 1 an; bei Kurs-Audio ist er daher ohne Wirkung), **Herkunft in `internal_note`** („Audio aus Sprachenlernen24 (Tunesisch-Komplettpaket)“). Zuordnung nur bei gleichem Arabisch **und** vereinbarer deutscher Bedeutung. Verben im Kurs stehen als 3. Person Präsens mit deutschem Infinitiv (`يكتب` = „schreiben“), das passt zu unseren *yiktib*-Zeilen. **Vorsicht:** Arabisch ohne Schadda trennt Formen wie *ytayyeb/ytib* oder *yti7/ytayya7* nicht; zeigen zwei Zeilen auf dieselbe Aufnahme, keine zuordnen. Falsche Treffer sind häufig (*sana* „Jahr“ ≠ „Zahn“, *jomal* ≠ „Kamel“): Ein-Buchstaben-Wörter und Treffer mit anderem Deutsch nicht blind übernehmen. Stand: 226 Vokabeln mit Kurs-Audio.
+
 ## Quellenabgleich (`quellen_abgleich`) — seit 2026-09-19
 
 Loest den alten TUNICO-Kandidaten-Screen ab. **Die Vorschlagsliste wird nicht mehr gespeichert,
