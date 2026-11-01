@@ -5273,6 +5273,9 @@ function datenChecks(){
   const ohneText = e => !String(e.prompt || '').trim() && !String(e.instruction || '').trim();
   const leer = ex.filter(e => ohneText(e) || (!String(e.solution || '').trim() && !KURS_OHNE_LOESUNG.has(e.exercise_type))).map(e => 'Übung '+e.id+' ('+e.exercise_type+'): '+(ohneText(e) ? 'Aufgabentext' : 'Lösung')+' fehlt');
   out.push({label: 'Kurs: Übung ohne Aufgabentext oder ohne Lösung', n: leer.length, bsp: leer});
+  // Hörverstehen: braucht eine erreichbare Aufnahme (meta.audio_url, https) und den arabischen Text
+  const hoer = ex.filter(e => e.exercise_type === 'listening' && (!/^https:\/\//.test(String((e.meta && e.meta.audio_url) || '')) || !String(e.prompt || '').trim())).map(e => 'Übung '+e.id+' (listening): '+(!/^https:\/\//.test(String((e.meta && e.meta.audio_url) || '')) ? 'Aufnahme (meta.audio_url) fehlt' : 'arabischer Text fehlt'));
+  out.push({label: 'Kurs: Hörübung ohne Aufnahme oder ohne Text', n: hoer.length, bsp: hoer});
   return out;
 }
 
@@ -5952,14 +5955,14 @@ let COURSE_EX_BY_ID = {};              // exercise_id -> exercise
 let COURSE_PROGRESS_BY_LESSON = {};    // course_lesson_id -> progress-Zeile des aktuellen Nutzers (oder undefined)
 let _courseLoaded = false;
 let _courseTest = null;                // aktiver Test-Durchlauf, siehe courseStartTest()
-const COURSE_GRADABLE_TYPES = ['translate_de_tn','fill_blank','answer_pattern','grammar_card','grammar_drill','fixed_response','pronunciation'];
+const COURSE_GRADABLE_TYPES = ['translate_de_tn','fill_blank','answer_pattern','grammar_card','grammar_drill','fixed_response','pronunciation','listening'];
 
 // Kurs-SRS (course_exercise_progress): Untermenge der gradable Typen, die per Wiederholung
 // abgefragt wird. pronunciation läuft weiter über das Vokabel-SRS (vocabulary_id-Kopplung),
 // grammar_card ist reine Merkkarte (nur über den Grammatik-Button erreichbar), build_dialog
 // hat keine feste Lösung — beide bleiben ohne course_exercise_progress-Zeile.
-const COURSE_SRS_TYPES = ['translate_de_tn','fill_blank','answer_pattern','grammar_drill','fixed_response'];
-const COURSE_SELF_GRADE_TYPES = ['answer_pattern','grammar_drill','fixed_response']; // Lösung zeigen + selbst bewerten statt Textprüfung
+const COURSE_SRS_TYPES = ['translate_de_tn','fill_blank','answer_pattern','grammar_drill','fixed_response','listening'];
+const COURSE_SELF_GRADE_TYPES = ['answer_pattern','grammar_drill','fixed_response','listening']; // Lösung zeigen + selbst bewerten statt Textprüfung
 let COURSE_EX_PROGRESS = {};           // exercise_id -> {id, correct_count, wrong_count, review_count, next_review, last_reviewed, last_correct}
 let _courseExProgressLoaded = false;
 
@@ -6051,13 +6054,28 @@ function courseExIsDue(exerciseId){
 // Zerlegt alle Lektionen anhand ihrer chunk_order in eine global geordnete Chunk-Liste
 // (Lektion nach course_number, darin Chunk-Reihenfolge wie hinterlegt). srsItems enthält
 // nur die per COURSE_SRS_TYPES abfragbaren Übungen dieses Chunks.
+// Herkunft eines Abschnitts: 'uniwien' (hat Skripttext: Dialog oder Grammatik-Überschrift), 'constructed'
+// (nur Übungen, selbst gebaut) oder 'sl24' (aus Sprachenlernen24). Ein Feld herkunft in chunk_order
+// gewinnt gegen die Ableitung. Nur zur Anzeige und zum Filtern, ändert nichts an Übungen oder Fortschritt.
+const COURSE_HERKUNFT = {uniwien:'Uni Wien', constructed:'Selbst gebaut', sl24:'SL24'};
+function courseChunkHerkunft(c){
+  if(c && COURSE_HERKUNFT[c.herkunft]) return c.herkunft;
+  return (c && (c.dialog || (c.grammar_headings||[]).length)) ? 'uniwien' : 'constructed';
+}
+let _courseHerkunft = 'all';
+try{ const h0 = localStorage.getItem('course-herkunft'); if(h0 === 'all' || COURSE_HERKUNFT[h0]) _courseHerkunft = h0; }catch(e){}
+function courseSetHerkunft(v){
+  _courseHerkunft = (v === 'all' || COURSE_HERKUNFT[v]) ? v : 'all';
+  try{ localStorage.setItem('course-herkunft', _courseHerkunft); }catch(e){}
+  renderCourseOverview();
+}
 function courseFlattenChunks(){
   const out = [];
   COURSE_LESSONS.forEach(l=>{
     (l.chunk_order||[]).forEach(c=>{
       const all = (COURSE_EXERCISES_BY_LESSON[l.id]||[]).filter(e=>e.chunk_key===c.key);
       const srsItems = all.filter(e=>COURSE_SRS_TYPES.includes(e.exercise_type));
-      out.push({lessonId:l.id, lesson:l, chunkKey:c.key, chunkLabel:c.label, allItems:all, srsItems});
+      out.push({lessonId:l.id, lesson:l, chunkKey:c.key, chunkLabel:c.label, allItems:all, srsItems, herkunft:courseChunkHerkunft(c)});
     });
   });
   return out;
@@ -6437,7 +6455,7 @@ async function goMix(){
   render();
 }
 
-const COURSE_TYPE_LABELS = {translate_de_tn:'Übersetzen',fill_blank:'Lücke',answer_pattern:'Antworten',grammar_drill:'Verbformen',fixed_response:'Formel',grammar_card:'Merksatz',build_dialog:'Dialog',pronunciation:'Aussprache'};
+const COURSE_TYPE_LABELS = {translate_de_tn:'Übersetzen',fill_blank:'Lücke',answer_pattern:'Antworten',grammar_drill:'Verbformen',fixed_response:'Formel',listening:'Hören',grammar_card:'Merksatz',build_dialog:'Dialog',pronunciation:'Aussprache'};
 // „Lücke füllen“ stimmt nur, wenn der Prompt wirklich eine Lücke hat (___). Ohne Lücke ist es eine
 // Umformaufgabe („Ersetze das Nomen durch …“, „Setze in den Plural“) oder eine Übersetzung.
 // Typ-Zeile nach Art der Aufgabe: erste passende Regel (Typ + Anfang der Anweisung) gewinnt, sonst der Typ.
@@ -6523,7 +6541,8 @@ const COURSE_BELEG = {
   skript:    {ic:'🟢', t:'Skript',     tip:'Original-Übung oder Satz steht wörtlich im Uni-Wien-Skript', c:'var(--green)'},
   belegt:    {ic:'🔵', t:'Belegt',     tip:'Alle Wörter stehen im Skript oder in den Vokabeln; der Satz ist selbst gebaut', c:'var(--blue)'},
   abgeleitet:{ic:'🟡', t:'Abgeleitet', tip:'Enthält regelmäßig abgeleitete Formen (z.B. Verbtabellen), die nicht direkt belegt sind', c:'var(--gold)'},
-  unsicher:  {ic:'🔴', t:'Unsicher',   tip:'Ein Wort wurde nicht gefunden oder die Form ist noch offen', c:'var(--red)'}
+  unsicher:  {ic:'🔴', t:'Unsicher',   tip:'Ein Wort wurde nicht gefunden oder die Form ist noch offen', c:'var(--red)'},
+  sl24:      {ic:'🟣', t:'SL24',       tip:'Satz und Aufnahme aus dem gekauften Sprachenlernen24-Kurs (Tunesisch-Komplettpaket); nachrangiger Beleg', c:'#9b6bd6'}
 };
 function courseBelegHtml(ex){
   const b = ex && ex.meta && COURSE_BELEG[ex.meta.beleg];
@@ -6693,7 +6712,23 @@ function _courseConjViewCore(ex){
   }
   return {prompt: word, instr, solHtml, de, gruppe};
 }
+// Hörverstehen (exercise_type 'listening'): Die Aufgabe ist die Aufnahme (meta.audio_url), prompt ist der
+// arabische Text und bleibt bis zum Aufdecken verborgen, solution die deutsche Bedeutung.
+function courseListenUrl(exercise){
+  const u = exercise && exercise.meta && exercise.meta.audio_url;
+  return (typeof u === 'string' && /^https:\/\//.test(u)) ? u : '';
+}
+function courseListenPlay(ev){
+  const ex = exList[cIdx] && exList[cIdx].exercise;
+  const u = courseListenUrl(ex);
+  if(u) playVocabAudio(u, ev, 0, 0);
+}
 function courseExSolutionHtml(exercise){
+  if(exercise.exercise_type==='listening'){
+    return (exercise.prompt ? courseArPromptHtml(exercise.prompt) : '')
+      + '<div style="margin-top:.4rem">'+escHtml(exercise.solution||'—')+'</div>'
+      + courseBelegHtml(exercise);
+  }
   const _cv = courseConjView(exercise);
   if(_cv && _cv.solHtml) return _cv.solHtml + courseMetaGermanHtml(exercise) + courseBelegHtml(exercise);
   let solHtml = null;
@@ -6775,7 +6810,14 @@ function rCourseEx(ex, el){
   const cv = courseConjView(exercise);
   if((exercise.instruction || cv) && !hintFirst) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(cv ? cv.instr : exercise.instruction)+'</div>';
   else if(courseIsDialogQuestion(exercise)) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">Beantworte die Frage anhand des Dialogs (Knopf „📖 Dialog“).</div>';
-  if(exercise.prompt && !hintFirst){
+  if(exercise.exercise_type==='listening'){
+    const lu = courseListenUrl(exercise);
+    if(lu) audioPreload(lu);
+    h += '<div style="text-align:center;margin:.4rem 0 1rem">'
+      + '<button onclick="courseListenPlay(event)" style="padding:.9rem 1.6rem;background:var(--blue);border:none;color:#fff;font-size:1.05rem;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit">'+(lu ? '▶ Anhören' : 'Keine Aufnahme')+'</button>'
+      + '<div style="font-size:.72rem;color:var(--muted);margin-top:.5rem">Beliebig oft hören, dann „Lösung zeigen“.</div></div>';
+  }
+  if(exercise.prompt && !hintFirst && exercise.exercise_type!=='listening'){
     const vocabAudio = exercise.vocabulary && exercise.vocabulary.ninja_audio_url
       ? ' <button onclick="playVocabAudio(\''+exercise.vocabulary.ninja_audio_url.replace(/'/g,"\\'")+'\',event,'+(exercise.vocabulary.ninja_audio_start||0)+','+(exercise.vocabulary.ninja_audio_end||0)+')" title="Aussprache abspielen" style="background:none;border:1px solid var(--blue);color:var(--blue);font-size:.85rem;padding:.1rem .5rem;cursor:pointer;border-radius:3px;vertical-align:middle">🔊</button>'
       : '';
@@ -7080,9 +7122,20 @@ function renderCourseOverview(){
     c.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted)">Noch keine Kurs-Lektionen angelegt.</div>';
     return;
   }
-  const chunks = courseFlattenChunks();
+  const allChunks = courseFlattenChunks();
+  const hk = _courseHerkunft;
+  const chunks = hk === 'all' ? allChunks : allChunks.filter(ch=>ch.herkunft === hk);
   let h = '<div style="padding:1rem;max-width:600px;margin:0 auto">';
   h += '<div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:1rem">Uni-Wien-Kurs</div>';
+  // Herkunft der Abschnitte: Alle / Uni Wien / Selbst gebaut / SL24, jeweils mit Zahl der Abschnitte
+  h += '<div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem">';
+  [['all','Alle']].concat(Object.keys(COURSE_HERKUNFT).map(k=>[k, COURSE_HERKUNFT[k]])).forEach(([k,lab])=>{
+    const n = k === 'all' ? allChunks.length : allChunks.filter(ch=>ch.herkunft === k).length;
+    const on = hk === k;
+    h += '<button onclick="courseSetHerkunft(\''+k+'\')" style="padding:.4rem .75rem;border-radius:999px;font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;cursor:pointer;border:1px solid '+(on ? 'var(--gold)' : 'var(--border)')+';background:'+(on ? 'var(--gold)' : 'transparent')+';color:'+(on ? '#0e0c0a' : (n ? 'var(--text)' : 'var(--muted)'))+';font-weight:'+(on ? '700' : '400')+(n || on ? '' : ';opacity:.6')+'">'+lab+' · '+n+'</button>';
+  });
+  h += '</div>';
+  if(hk !== 'all' && !chunks.length) h += '<div style="color:var(--muted);font-size:.85rem;margin-bottom:1rem">Noch keine Abschnitte mit dieser Herkunft.</div>';
   // Dieselben vier Prozentwerte wie in der Statistik (Gesamtfortschritt), getrennt nach Vokabeln
   // (nur mit Kurs-Bezug) und Kurs-Übungen: 📅 = Anteil mit Fälligkeit, ⭐ = Punkte/Maximum der gestarteten.
   const vocStat = list => { let n=0, pts=0; list.forEach(v=>{ const p=srsProgress[v.id]; if(p && p.next_review){ n++; pts += Math.min(p.level||0,6); } });
@@ -7093,18 +7146,19 @@ function renderCourseOverview(){
   // Eine Zeile: Label | 📅 Anteil mit Fälligkeit | ⭐ Punkte-Anteil (Prozent groß, Zähler klein darunter)
   const statCell = (icon, a, b) => '<div><div style="font-size:1.05rem;font-weight:700;color:'+(b && a>=b ? 'var(--green)' : 'var(--gold2)')+';line-height:1.2">'+icon+' '+pc(a,b)+' %</div><div style="font-size:.78rem;color:var(--text);opacity:.8">'+fmtN(a)+' / '+fmtN(b)+'</div></div>';
   const statRow = (label, st) => '<div style="display:grid;grid-template-columns:5.2rem 1fr 1fr;gap:.5rem;align-items:center;margin-top:.5rem"><div style="font-size:.85rem;color:var(--text)">'+label+'</div>'+statCell('📅',st.n,st.total)+statCell('⭐',st.pts,st.max)+'</div>';
-  const lessonVocab = l => { const f = parseCourseVocabRefs(l.vocab_lesson_refs); return ALL_VOCAB.filter(v=>f.ids.has(v.id)||f.tr.has(v.tr)); };
+  const lessonVocab = l => { if(hk !== 'all') return []; const f = parseCourseVocabRefs(l.vocab_lesson_refs); return ALL_VOCAB.filter(v=>f.ids.has(v.id)||f.tr.has(v.tr)); };
   const allVocabSet = new Map();
   COURSE_LESSONS.forEach(l=>lessonVocab(l).forEach(v=>allVocabSet.set(v.id,v)));
   const allItems = chunks.reduce((s,ch)=>s.concat(ch.srsItems),[]);
   h += '<div style="background:var(--surface);border:1px solid var(--gold);border-radius:6px;padding:.8rem .9rem;margin-bottom:1rem">';
-  h += '<div style="font-size:.8rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);font-weight:700">Gesamt</div>';
-  h += statRow('Vokabeln', vocStat([...allVocabSet.values()]));
+  h += '<div style="font-size:.8rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);font-weight:700">Gesamt'+(hk !== 'all' ? ' · '+COURSE_HERKUNFT[hk] : '')+'</div>';
+  if(hk === 'all') h += statRow('Vokabeln', vocStat([...allVocabSet.values()]));
   h += statRow('Übungen', exStat(allItems));
   h += '</div>';
   h += '<div style="display:flex;flex-direction:column;gap:.5rem">';
   COURSE_LESSONS.forEach(l=>{
     const lessonChunks = chunks.filter(ch=>ch.lessonId===l.id);
+    if(hk !== 'all' && !lessonChunks.length) return;
     const totalItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.length,0);
     const unlockedItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]).length,0);
     const masteredItems = lessonChunks.reduce((s,ch)=>s+ch.srsItems.filter(e=>COURSE_EX_PROGRESS[e.id]&&(COURSE_EX_PROGRESS[e.id].correct_count||0)>=4).length,0);
@@ -7833,7 +7887,7 @@ function buildKnowledgeMD(data, today){
   lines.push('Spalten: id, course_number, skript (1 oder 2), title, dialog_text, grammar_notes, vocab_lesson_refs (Format: "ids:1,2,3|darija:wort1,wort2" — verknüpfte vocabulary-Einträge)');
   lines.push('');
   lines.push('### course_exercises');
-  lines.push('Spalten: id, course_lesson_id (FK zu course_lessons.id, NULL = lektionsübergreifend), position, exercise_type (translate_de_tn/fill_blank/answer_pattern/grammar_card/grammar_drill/fixed_response/build_dialog), instruction, prompt, solution, partner_status (wie vocabulary.partner_status), partner_comment, source (original/constructed, rein informativ), meta (jsonb, z.B. prompt_de/solution_de bei fixed_response)');
+  lines.push('Spalten: id, course_lesson_id (FK zu course_lessons.id, NULL = lektionsübergreifend), position, exercise_type (translate_de_tn/fill_blank/answer_pattern/grammar_card/grammar_drill/fixed_response/build_dialog/listening; listening: prompt = arabischer Text, solution = deutsche Bedeutung, meta.audio_url = Aufnahme), instruction, prompt, solution, partner_status (wie vocabulary.partner_status), partner_comment, source (original/constructed, rein informativ), meta (jsonb, z.B. prompt_de/solution_de bei fixed_response)');
   lines.push('');
   lines.push('## Regeln');
   lines.push('- lesson_id immer frisch nachschlagen, nie hardcoden');

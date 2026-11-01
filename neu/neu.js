@@ -1181,7 +1181,10 @@ window.renderCourseOverview = function(){
   const c = $('exercise-content'); if(!c) return;
   reset('course'); cMode = 'course';
   if(!COURSE_LESSONS.length){ c.innerHTML = '<div class="neu-wrap" style="text-align:center;padding:3rem;color:var(--muted)">Noch keine Kurs-Lektionen angelegt.</div>'; return; }
-  const chunks = courseFlattenChunks();
+  // Herkunftsfilter (Alle / Uni Wien / Selbst gebaut / SL24): zeigt nur Abschnitte dieser Herkunft; "Alle" ändert nichts
+  const allChunks = courseFlattenChunks();
+  const hk = (typeof _courseHerkunft !== 'undefined') ? _courseHerkunft : 'all';
+  const chunks = hk === 'all' ? allChunks : allChunks.filter(ch => ch.herkunft === hk);
   const COURSE_DONE_PCT = 0.9;
   // fünf Fünftel (immer abgerundet): 'g' = Anteil gemeistert (Level 4), 'y' = zusätzlich Anteil aktiv, leer = noch nicht aktiviert
   const areaLevel = (lv, total) => {
@@ -1197,7 +1200,7 @@ window.renderCourseOverview = function(){
     const unlocked = items.filter(e => COURSE_EX_PROGRESS[e.id]).length;
     const mastered = items.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
     const due = items.filter(e => { const p = COURSE_EX_PROGRESS[e.id]; return p && p.next_review && isDueByDay(courseParseTs(p.next_review)); }).length;
-    const v = courseVocabInfo(l);
+    const v = hk === 'all' ? courseVocabInfo(l) : {total: 0, started: 0, solid: 0, due: 0, lv: []};
     // Level je Bereich: so hoch, wie 90 % der aktivierten Karten mindestens stehen (max. 4 = sicher); grün erst, wenn alles aktiv ist
     const exLv = items.filter(e => COURSE_EX_PROGRESS[e.id]).map(e => COURSE_EX_PROGRESS[e.id].correct_count||0);
     const ex = areaLevel(exLv, total), vo = areaLevel(v.lv, v.total);
@@ -1205,7 +1208,7 @@ window.renderCourseOverview = function(){
     const state = total === 0 ? 'read' : exDone && vocDone ? 'done' : unlocked > 0 ? 'run' : 'lock';
     return {l, total, unlocked, mastered, due, state, v, rev: courseReviewTopics(l.id), exDone, ex, vo, exLv};
   };
-  const all = COURSE_LESSONS.map(info);
+  const all = COURSE_LESSONS.filter(l => hk === 'all' || chunks.some(ch => ch.lessonId === l.id)).map(info);
   const cur = all.filter(x => x.state === 'run').pop() || all.find(x => x.state !== 'done' && x.state !== 'read') || null;
   const doneN = all.filter(x => x.state === 'done').length, lessonN = all.filter(x => x.state !== 'read').length;
   const gesV = areaLevel([].concat(...all.map(x => x.v.lv)), all.reduce((n, x) => n + x.v.total, 0));
@@ -1223,7 +1226,14 @@ window.renderCourseOverview = function(){
   const revCard = window._revList.length
     ? '<div class="neu-card" style="padding:.7rem .9rem"><div class="neu-cap">Nochmal ansehen</div>'+window._revList.map((r, i) => '<div class="neu-lrow" style="padding:.5rem 0" onclick="courseOpenReview('+i+')">'+courseBmIcon(true, 18)+'<span class="tx"><b style="font-size:.95rem">'+escHtml(r.topic.replace(/\s*\(.*$/,''))+'</b><small>Lektion '+r.n+'</small></span><span class="chev">›</span></div>').join('')+'</div>'
     : '';
+  const hkChips = '<div class="neu-chips" style="margin-bottom:.6rem">'
+    + [['all', 'Alle']].concat(Object.keys(COURSE_HERKUNFT).map(k => [k, COURSE_HERKUNFT[k]])).map(([k, lab]) => {
+      const n = k === 'all' ? allChunks.length : allChunks.filter(ch => ch.herkunft === k).length;
+      return '<span class="neu-chip'+(hk === k ? ' on' : '')+'"'+(n || hk === k ? '' : ' style="opacity:.55"')+' onclick="courseSetHerkunft(\''+k+'\')">'+lab+' · '+n+'</span>';
+    }).join('') + '</div>'
+    + (hk !== 'all' && !chunks.length ? '<div class="neu-sub" style="margin-bottom:.6rem">Noch keine Abschnitte mit dieser Herkunft.</div>' : '');
   c.innerHTML = '<div class="neu-wrap">'
+    + hkChips
     + (cur ? '<div style="display:flex;justify-content:flex-end;margin-bottom:.5rem"><span class="neu-chip" onclick="courseJumpCur('+cur.l.id+')">Zur aktuellen Lektion</span></div>' : '')
     + revCard
     + '<div class="neu-card"><div class="neu-cap">Gesamt</div><div class="neu-dotrow" style="margin-top:.4rem">'+dots(gesV, 'Vokabeln')+dots(gesE, 'Übungen')+'</div><div class="neu-sub" style="margin-top:.5rem">'+doneN+' von '+lessonN+' Lektionen abgeschlossen</div></div>'
