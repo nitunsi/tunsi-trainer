@@ -1632,7 +1632,14 @@ async function rcLocalProgSave(){
       rows[k] = { id: p.id || null, c: p.level || 0, w: p.wrong_count || 0, r: p.review_count || 0,
                   n: iso(p.next_review), l: iso(p.last_reviewed), k: iso(p.last_correct) };
     }
-    await rcSet(RC_LOCALPROG_KEY, { lt: now, u: currentUser.id, rows });
+    const ex = {};
+    for(const k in COURSE_EX_PROGRESS){
+      const p = COURSE_EX_PROGRESS[k], ts = v => v instanceof Date ? v : courseParseTs(v), lr = p.last_reviewed ? +ts(p.last_reviewed) : 0;
+      if(lr < lim) continue;
+      ex[k] = { id: p.id || null, c: p.correct_count || 0, w: p.wrong_count || 0, r: p.review_count || 0,
+                n: iso(ts(p.next_review)), l: iso(ts(p.last_reviewed)), k: p.last_correct ? iso(ts(p.last_correct)) : null };
+    }
+    await rcSet(RC_LOCALPROG_KEY, { lt: now, u: currentUser.id, rows, ex });
   }catch(e){}
 }
 async function rcLocalProgOverlay(){
@@ -1652,6 +1659,25 @@ async function rcLocalProgOverlay(){
       n++;
     }
     if(n) dbg('Lokaler Lernstand über geladenen Stand gelegt: '+n, 'info');
+  }catch(e){}
+}
+async function rcLocalCourseOverlay(){
+  try{
+    const hit = await rcGet(RC_LOCALPROG_KEY);
+    if(!hit || !hit.v || !hit.v.ex || hit.v.u !== currentUser.id || Date.now() - hit.v.lt > RC_LOCALPROG_DAYS*86400000) return;
+    let n = 0;
+    for(const k in hit.v.ex){
+      const r = hit.v.ex[k], cur = COURSE_EX_PROGRESS[k];
+      if(cur){
+        if((cur.last_reviewed ? +courseParseTs(cur.last_reviewed) : 0) > hit.v.lt) continue;   // Server hat eine neuere Antwort (anderes Gerät)
+        if(cur.id && r.id && cur.id !== r.id) continue;
+      }
+      COURSE_EX_PROGRESS[k] = Object.assign(cur || { id: r.id, exercise_id: +k, user_id: currentUser.id }, {
+        correct_count: r.c, wrong_count: r.w, review_count: r.r, next_review: r.n, last_reviewed: r.l, last_correct: r.k
+      });
+      n++;
+    }
+    if(n) dbg('Lokaler Kurs-Lernstand über geladenen Stand gelegt: '+n, 'info');
   }catch(e){}
 }
 let _rcProgDirty = false, _rcProgT = null;
@@ -1678,7 +1704,7 @@ async function sbApi(path,method='GET',body=null,prefer=null){
     const r = await _sbApiNet(path,method,body,prefer);
     if(/^(progress|course_exercise_progress|course_progress|vocabulary|lessons|course_lessons|course_exercises)\?/.test(path)) rcMarkStale(path.split('?')[0]);
     if(/^(progress|course_exercise_progress)\?/.test(path)) rcProgDirtySoon();
-    if(/^progress\?/.test(path)) rcLocalProgSoon();
+    if(/^(progress|course_exercise_progress)\?/.test(path)) rcLocalProgSoon();
     return r;
   }
   if(!rcCacheable(path)) return _sbApiNet(path,method,body,prefer);
@@ -1878,7 +1904,7 @@ function oqOpen(){
 }
 
 async function oqPush(entry){
-  if(!entry.type) rcLocalProgSoon();   // Lernstand lokal sichern (siehe rcLocalProgSave)
+  if(!entry.type || entry.type === 'course_progress') rcLocalProgSoon();   // Lernstand lokal sichern (siehe rcLocalProgSave)
   // entry: {vocabId, existing_id, payload_patch, payload_post, is_patch}
   const db = await oqOpen();
   return new Promise((res, rej) => {
@@ -6074,6 +6100,7 @@ async function loadCourseExProgress(force){
   const rows = await courseExProgressFetch();
   COURSE_EX_PROGRESS = {};
   (rows||[]).forEach(p=>{ COURSE_EX_PROGRESS[p.exercise_id] = p; });
+  await rcLocalCourseOverlay();   // lokal gesicherter Kurs-Lernstand der letzten Tage
   await oqOverlayCourse();   // noch nicht gesendete Antworten über den geladenen Stand legen
   _courseExProgressLoaded = true;
 }
