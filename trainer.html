@@ -6634,7 +6634,10 @@ function courseConjView(ex){
       : /^Konjugiere im Präsens/.test(i) ? (r.gruppe ? 'Konjugieren · Gruppe '+r.gruppe : 'Konjugieren · Präsens') : null;
   }
   const de = (ex && ex.meta && ex.meta.verb_de) || (r && r.de);
-  if(r && r.solHtml && de) r.solHtml = '<div style="font-size:.95rem;color:var(--text);margin:0 0 .55rem">'+escHtml(de)+'</div>'+r.solHtml;
+  // Perfekt-Karten: hinter der Bedeutung das Präsens 3. Pers. Sg. in Umschrift (meta.verb_pres), also „waschen – yaghsil“
+  const vp = ex && ex.meta && typeof ex.meta.verb_pres === 'string' ? ex.meta.verb_pres.trim() : '';
+  const vpHtml = (vp && /Perfekt/.test((r && r.instr) || '')) ? ' – <span style="font-family:\'IBM Plex Mono\',monospace;color:var(--gold2)">'+escHtml(vp)+'</span>' : '';
+  if(r && r.solHtml && de) r.solHtml = '<div style="font-size:.95rem;color:var(--text);margin:0 0 .55rem">'+escHtml(de)+vpHtml+'</div>'+r.solHtml;
   return r;
 }
 // Tabelle der Personen: eine Spalte (Zeit steht dann in der Anweisung) oder je Zeit eine Spalte (Perfekt | Präsens).
