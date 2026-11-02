@@ -22,8 +22,11 @@ SB = "https://lzecflvfalxkodytnwzf.supabase.co/rest/v1/audio_sicherung_liste"
 ANON = ("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6ZWNmbHZmYWx4a29keXRud3pmIiwicm9sZSI6ImFub24i"
         "LCJpYXQiOjE3NzczOTkyNjAsImV4cCI6MjA5Mjk3NTI2MH0.GdZ1KgiA8DxHan5neKnDNasO96dQxGg_PqbMIsHxOtk")  # oeffentlicher anon-Key des Trainers
 BATCH = 1000
-WORKERS = 4
-PAUSE = 0.05  # Sekunden je Anfrage und Worker, um die Server zu schonen
+WORKERS = 3
+PAUSE = 0.15  # Sekunden je Anfrage und Worker, um die Server zu schonen
+TIMEOUT = 30  # Sekunden je Anfrage
+WARTEN = (2, 5, 10, 20, 40)  # Pausen vor dem 2. bis 6. Versuch
+ENDGUELTIG = ('http403', 'http404', 'http410')  # fehlt bei der Quelle selbst: wird nicht wiederholt
 COLS = ["quelle", "bereich", "ref", "url", "arabisch", "umschrift", "deutsch_engl",
         "lektion", "t_start", "t_end", "ex_start", "ex_end"]
 
@@ -54,11 +57,11 @@ def lokaler_pfad(url):
     return "sl24_kurs/" + teile[-2] + "_" + name  # Kursordner im Dateinamen
 
 
-def laden(url, ziel):
-    for versuch in range(4):
+def laden(url, ziel, wartezeiten=WARTEN, timeout=TIMEOUT):
+    for versuch in range(len(wartezeiten) + 1):
         try:
             time.sleep(PAUSE)
-            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}), timeout=60) as r:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}), timeout=timeout) as r:
                 daten = r.read()
             if not daten:
                 raise IOError("leer")
@@ -69,10 +72,12 @@ def laden(url, ziel):
         except urllib.error.HTTPError as e:
             if e.code in (403, 404, 410):
                 return f"http{e.code}", 0
-            time.sleep(2 ** versuch)
-        except Exception:
-            time.sleep(2 ** versuch)
-    return "fehler", 0
+            status = f"http{e.code}"
+        except Exception as e:
+            status = type(e).__name__
+        if versuch < len(wartezeiten):
+            time.sleep(wartezeiten[versuch])
+    return status, 0
 
 
 def main():
@@ -120,7 +125,7 @@ def main():
                         z["deutsch_engl"], z["lektion"], z["t_start"], z["t_end"], z["ex_start"], z["ex_end"], u, len(je_url[u]) - 1])
     os.replace(mani + ".tmp", mani)
 
-    fehler, gesamt = [], 0
+    fehler, gesamt, unvollstaendig = [], 0, []
     for b in range(0, len(urls), BATCH):
         nr = b // BATCH + 1
         tar = os.path.join(ziel, f"paket_{nr:03d}.tar")
@@ -133,7 +138,24 @@ def main():
         try:
             pfade = [os.path.join(tmp, lokaler_pfad(u)) for u in teil]
             with ThreadPoolExecutor(WORKERS) as ex:
-                res = list(ex.map(laden, teil, pfade))
+                res = []
+                for i, r in enumerate(ex.map(laden, teil, pfade), 1):
+                    res.append(r)
+                    if i % 200 == 0:
+                        print(f"  Paket {nr}: {i}/{len(teil)} ...", flush=True)
+            # zweiter Durchgang fuer voruebergehende Fehler (Zeitueberschreitung, 5xx): einzeln, mit langen Pausen
+            offen = [i for i, (st, _) in enumerate(res) if st != "ok" and st not in ENDGUELTIG]
+            if offen:
+                print(f"  Paket {nr}: {len(offen)} Dateien erneut versuchen (einzeln, langsam) ...", flush=True)
+                for i in offen:
+                    time.sleep(3)
+                    res[i] = laden(teil[i], pfade[i], wartezeiten=(10, 30, 60), timeout=60)
+                offen = [i for i, (st, _) in enumerate(res) if st != "ok" and st not in ENDGUELTIG]
+            if offen:
+                # Paket NICHT abschliessen: ein spaeterer Lauf versucht es noch einmal (sonst fehlten die Dateien fuer immer)
+                print(f"Paket {nr} unvollstaendig ({len(offen)} Dateien vorerst nicht ladbar), uebersprungen; spaeter erneut starten.", flush=True)
+                unvollstaendig.append(nr)
+                continue
             for u, (s, n) in zip(teil, res):
                 if s != "ok":
                     fehler.append((u, s))
@@ -150,7 +172,10 @@ def main():
         with open(os.path.join(ziel, f"fehler_{int(time.time())}.txt"), "w") as f:
             f.write("\n".join(f"{s}\t{u}" for u, s in fehler))
         print(f"{len(fehler)} Dateien nicht ladbar (siehe fehler_*.txt)")
-    print("Fertig." if not ende or time.time() < ende else "Unterbrochen.")
+    if unvollstaendig:
+        print(f"Pakete {unvollstaendig} sind noch unvollstaendig: Zelle noch einmal starten (am besten etwas spaeter).")
+    else:
+        print("Fertig." if not ende or time.time() < ende else "Unterbrochen.")
 
 
 if __name__ == "__main__":
