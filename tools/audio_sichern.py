@@ -9,6 +9,10 @@ uebersprungen: nach einem Abbruch einfach noch einmal starten.
 Aufruf:  python3 audio_sichern.py ZIELORDNER [--test N] [--minuten M]
   --test N     nur N Dateien je Quelle (Probelauf, eigener Unterordner test_)
   --minuten M  nach M Minuten sauber aufhoeren (z. B. fuer Colab)
+  --mit-extra  auch die "Extra-Audios" laden (ca. 23.200 Dateien, auch die 348 unter sprachenlernen24-onlinekurs.de/Extra-Audios). Ohne diesen
+               Schalter werden sie weggelassen: die Dateien tragen keine Verlagskennzeichnung,
+               wurden erst im Oktober 2026 neu erzeugt (vermutlich Computerstimmen) und klingen
+               auffaellig. Die normalen SL24-Aufnahmen und Derja Ninja werden immer geladen.
 """
 import csv, io, json, os, shutil, sys, tarfile, tempfile, time, urllib.request
 from concurrent.futures import ThreadPoolExecutor
@@ -77,6 +81,7 @@ def main():
         sys.exit(__doc__)
     ziel = a[0]
     test = int(a[a.index("--test") + 1]) if "--test" in a else 0
+    mit_extra = "--mit-extra" in a
     ende = time.time() + 60 * float(a[a.index("--minuten") + 1]) if "--minuten" in a else None
     if test:
         ziel = os.path.join(ziel, "test_")
@@ -89,6 +94,10 @@ def main():
         if z["url"]:
             je_url.setdefault(z["url"], []).append(z)
     urls = sorted(je_url)
+    if not mit_extra:
+        n0 = len(urls)
+        urls = [u for u in urls if "Extra-Audios" not in u]
+        print(f"{n0 - len(urls)} Extra-Audios uebersprungen, mit --mit-extra laden")
     if test:
         gesehen, auswahl = {}, []
         for u in urls:
