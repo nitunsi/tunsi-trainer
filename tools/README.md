@@ -62,3 +62,7 @@ Reihenfolge wie in Runde 63 verwendet, jeder einzelne hat echte Fehlpaarungen ab
 Bestand und Quelltabellen per REST auf die Platte holen und in Node auswerten, nicht per
 `execute_sql` in den Kontext. Pflicht dabei: `Prefer: count=exact` mitschicken und den
 `content-range`-Header gegen die erwartete Zeilenzahl prüfen.
+
+## Audio-Sicherung (`audio_sichern.py`, `audio_sichern.ipynb`)
+
+Sichert alle Audios von Derja Ninja und Sprachenlernen24 (auch die noch nicht benutzten; ca. 47.800 Dateien, 6–7 GB) als `.tar`-Pakete plus `manifest.csv`. Läuft lokal oder in Google Colab (Notizbuch, schreibt direkt ins Drive). Die Adressen kommen aus der Ansicht `public.audio_sicherung_liste` (nur Lesen, anon). Die Ansicht enthält SL24-Texte und ist nur für die Dauer der Sicherung gedacht: danach `DROP VIEW public.audio_sicherung_liste;` (führt Nils im SQL-Editor aus). Neue Läufe überspringen fertige Pakete; für eine spätere Wiederholung die Ansicht neu anlegen.
