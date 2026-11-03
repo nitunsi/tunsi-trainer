@@ -6636,9 +6636,41 @@ const PERFEKT_REGELN = {
 };
 const PERFEKT_GRUPPEN = {1:'l3ab → yal3ab', 2:'ghsal → yaghsil', 3:'sma3 → yisma3', 4:'shrab → yushrub', 5:'ktib → yiktib (das i bleibt: kitbit)', 6:'mrud → yumrud'};
 // Formen, die bei der Verbklasse anders gebildet werden als „er“, blau und fett markieren (nur die Perfekt-Tabelle)
+// Hinweise für Präsens-Karten (meta.regel = p_…, meta.gruppe = 1–6). Besondere Formen: Plural (sie, ihr, wir).
+const PRAESENS_REGELN = {
+  p_reg:    {chg:['a7na','entouma','houma'], pl:'Ein -u kommt ans Ende, der Vokal in der Mitte fällt weg.', ex:'yal3ab → yal3bu'},
+  p_gem:    {chg:[], pl:'Ein -u kommt ans Ende, nichts fällt weg.', ex:'y7ibb → y7ibbu'},
+  p_tert:   {chg:['a7na','entouma','houma'], pl:'Statt -u kommt ein -w ans Ende.', ex:'yikri → yikriw, yaqra → yaqraw'},
+  p_primae: {chg:['a7na','entouma','houma'], pl:'Der Vokal in der Mitte fällt weg.', ex:'yuzin → yuznu'},
+  p_ii:     {chg:['a7na','entouma','houma'], pl:'Der letzte Vokal fällt weg, dann kommt -u.', ex:'y3arref → y3arrfu'},
+  p_iii:    {chg:['a7na','entouma','houma'], pl:'Der Vokal nach dem zweiten Buchstaben fällt weg, dann kommt -u.', ex:'ysafir → ysafru'}
+};
+const PRAESENS_GRUPPEN = {
+  1:'ya-a, yal3ab. Der erste Buchstabe ist oft h, 7, 3, q, kh oder gh.',
+  2:'ya-i, ya3rif. Der erste Buchstabe ist 3, 7, q, kh oder gh.',
+  3:'yi-a, yisma3. Der letzte Buchstabe ist oft h, 7, 3, q, kh oder gh.',
+  4:'yu-u, yushrub. Oft Verben mit „harten“ (emphatischen) Konsonanten.',
+  5:'yi-i, yiktib. Zwei i; auch im Perfekt steht i.',
+  6:'yu-u, yuskun. Oft ein „harter“ Konsonant; im Perfekt anders als Gruppe 4.'
+};
+function praesensHinweisHtml(ex){
+  const m = ex && ex.meta, r = m && PRAESENS_REGELN[m.regel];
+  if(!r) return '';
+  const e = x => escHtml(x), em = x => '<span style="font-family:\'IBM Plex Mono\',monospace;color:var(--gold2)">'+e(x)+'</span>';
+  let h = '<div style="margin-top:.8rem;padding:.55rem .7rem;border-left:3px solid var(--blue);background:rgba(120,140,200,.08);border-radius:4px;font-size:.82rem;line-height:1.55;color:var(--text)">'
+    + '<div style="font-size:.68rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.25rem">So wird’s gebildet</div>'
+    + '<div><b>Vorsilbe</b>: '+em('y-')+' er · '+em('t-')+' sie, du · '+em('n-')+' ich</div>'
+    + '<div><b>Plural</b> <span style="color:var(--muted)">(sie, ihr, wir)</span>: '+e(r.pl)+' '+em(r.ex)+'</div>';
+  if(r.chg.length) h += '<div style="margin-top:.3rem"><b style="color:var(--blue)">Blau</b> <span style="color:var(--muted)">= Form, die anders gebildet wird als „er“</span></div>';
+  const g = m.gruppe && PRAESENS_GRUPPEN[m.gruppe];
+  if(g) h += '<div style="margin-top:.3rem"><b>Gruppe '+e(String(m.gruppe))+'</b>: '+e(g)+'</div>';
+  if(typeof m.hinweis === 'string' && m.hinweis.trim()) h += '<div style="margin-top:.3rem;color:var(--muted)">Hinweis: '+e(m.hinweis.trim())+'</div>';
+  return h + '</div>';
+}
 function perfektMarkiere(r, ex){
-  const rg = ex && ex.meta && PERFEKT_REGELN[ex.meta.regel];
-  if(!r || !r.grids || !r.heads || !rg || !rg.chg || !/Perfekt/.test(r.instr || '')) return;
+  const rg = ex && ex.meta && (PERFEKT_REGELN[ex.meta.regel] || PRAESENS_REGELN[ex.meta.regel]);
+  const istPraes = !!(ex && ex.meta && PRAESENS_REGELN[ex.meta.regel]);
+  if(!r || !r.grids || !r.heads || !rg || !rg.chg || !rg.chg.length || (istPraes ? !/Präsens/.test(r.instr || '') || /Perfekt|verneint/.test(r.instr || '') : !/Perfekt/.test(r.instr || ''))) return;
   const idx = r.grids.length === 1 ? 0 : r.heads.indexOf('Perfekt');
   if(idx < 0) return;
   r.grids[idx].forEach(row => { if(rg.chg.indexOf(row.person) >= 0) row.mark = true; });
@@ -6681,6 +6713,7 @@ function courseConjView(ex){
   const vpHtml = (vp && /Perfekt/.test((r && r.instr) || '')) ? ' – <span style="font-family:\'IBM Plex Mono\',monospace;color:var(--gold2)">'+escHtml(vp)+'</span>' : '';
   if(r && r.solHtml && de) r.solHtml = '<div style="font-size:.95rem;color:var(--text);margin:0 0 .55rem">'+escHtml(de)+vpHtml+'</div>'+r.solHtml;
   if(r && r.solHtml && /Perfekt/.test(r.instr || '')) r.solHtml += perfektHinweisHtml(ex);
+  else if(r && r.solHtml && /Präsens/.test(r.instr || '') && !/verneint/.test(r.instr || '')) r.solHtml += praesensHinweisHtml(ex);
   return r;
 }
 // Tabelle der Personen: eine Spalte (Zeit steht dann in der Anweisung) oder je Zeit eine Spalte (Perfekt | Präsens).
