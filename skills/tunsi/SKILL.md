@@ -178,6 +178,13 @@ Drei Fallen, jede schon einmal zugeschlagen:
 - **Ein Skelett-Treffer ist kein Wort-Treffer.** `nimshiw` „wir gehen" trifft نْمَشْ „freckles". Bedeutung gegenlesen, nicht nur das Skelett.
 - **Gleiches Arabisch heißt nicht „Dublette"** — es kann auch heißen, dass eine der Zeilen inhaltlich falsch ist (Präzedenzfall `metrobbi`, PRECEDENTS.md).
 
+**„Kein Beleg“ und „die Quelle hat dazu keine Regel“ sagt man erst nach der Suche — und nennt, wo gesucht wurde (Nils, 2026-11-03).** Zwei Fehler in einer Sitzung: Das Skript hat zu `farkis` (Lektion 13, Vierradikalige Verben) und zu `tghashshish` (Lektion 14, V. Stamm, geminiert) eine vollständige Tabelle; beide Male war vorher „keine Quelle“ behauptet worden, und die Karte wurde auf die schwächere Seite (die Vokabeltabelle) angeglichen. Vor jeder Aussage „kein Beleg“, „keine Regel“ oder „abgeleitet“ gilt deshalb:
+- **Skript über alle Lektionen** durchsuchen (`course_lessons.grammar_notes`, nicht nur die Lektion der Karte; Stamm-Kapitel liegen in Lektion 13 und 14) — mit `position('wort' in grammar_notes)` und `substr`, nicht mit einem Regex über Zeilenumbrüche.
+- **TUNICO** doppelt: `tunico_corpus_verbs` (Formenlisten) und `tunico_corpus_wordforms` (Einzelformen mit Lemma), dazu `tunico_import` (Bedeutung, Wurzel).
+- **Ninja** (Lemma und Beispielsätze, auch `example_darija` mit der Schreibung ohne Vokale), **Peace Corps** (`peacecorps_dict_import`, `peacecorps_grammar_import`) und **SL24** (`sl24_inhalt`).
+- Die Antwort an Nils nennt, **welche Quellen gefunden und welche leer waren**. „Nur im Skript“ ist ein Beleg, kein Mangel.
+- Gilt auch, bevor man eine Karte an die Vokabeltabelle (oder umgekehrt) angleicht: erst die Quelle, dann die Seite.
+
 ### Schritt 4 — Zeigen und warten
 
 Immer, ausnahmslos, vor jedem Schreiben: betroffene Zeilen mit Ist-Wert, Soll-Wert und Beleg. Bei Unsicherheit `AskUserQuestion` statt raten.
