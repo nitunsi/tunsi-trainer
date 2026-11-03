@@ -5243,6 +5243,9 @@ function translitExtraChecks0(){
   });
   // 6) Hohlverben (3. Person Vergangenheit CaC, 1. Person mit anderem Vokal): Vokal gegen Präsens, fehlende Markierung, veraltete Markierung
   const hVokal = [], hVokalBsp = [], hOhneIrr = [], hOhneIrrBsp = [], irrAlt = [], irrAltBsp = [];
+  // Echt unregelmäßige Hohlverben: Vokal der Vergangenheit und des Präsens passen bewusst nicht zusammen.
+  // Schlüssel = 3. Pers. Sg. Perfekt. ja3: ji3t (i) gegen yju3 (u); TUNICO yju3, Adjektiv ji3an, Kursübung 917.
+  const HOHL_VOKAL_AUSNAHMEN = new Set(['ja3']);
   const tGesehen = new Set();
   ALL_VOCAB.forEach(v => {
     if(!v.cj) return;
@@ -5255,7 +5258,7 @@ function translitExtraChecks0(){
     const vok = (/[aeiou]+/.exec(s1) || [''])[0];
     if(vok === 'a') return;
     const kl = /^y[^aeiou]*(ou|u)[^aeiou]*$/.test(pres) ? 'o' : /^y[^aeiou]*i[^aeiou]*$/.test(pres) ? 'i' : null;
-    if(kl && vok !== kl && !(kl === 'i' && vok === 'e')){ hVokal.push(v.id); hVokalBsp.push(v.id+' '+pres+' → '+s1+' (erwartet: '+kl+')'); }
+    if(kl && vok !== kl && !(kl === 'i' && vok === 'e') && !HOHL_VOKAL_AUSNAHMEN.has(m3)){ hVokal.push(v.id); hVokalBsp.push(v.id+' '+pres+' → '+s1+' (erwartet: '+kl+')'); }
     if(!irr1){ hOhneIrr.push(v.id); hOhneIrrBsp.push(v.id+' '+m3+' → '+s1+' ohne Markierung'); }
   });
   ex.forEach(e => { if(e.meta && Array.isArray(e.meta.irr)) e.meta.irr.forEach(x => { const f = String(x).split('#')[0].toLowerCase(); if(f && String(e.solution||'').toLowerCase().indexOf(f) < 0){ irrAlt.push(e.id); irrAltBsp.push('Übung '+e.id+': '+x+' fehlt in der Lösung'); } }); });
