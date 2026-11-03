@@ -6752,8 +6752,33 @@ function perfektHinweisHtml(ex, res){
 // Plural-Formen oder gar keine), bleibt die Lösung wie bisher (solHtml null), nur Anweisung und Wort werden getrennt.
 // Daten bleiben unverändert.
 // Deutsche Bedeutung des Verbs (meta.verb_de) als erste Zeile der Lösung bei Konjugations-, Verneinungs- und Partizip-Karten
+// Formen aus der verknüpften Vokabeltabelle (meta.vocab_id → vocabulary.conjugation) statt aus dem Lösungstext:
+// Perfekt = past, Präsens = present; meta.abw {"3sg_f": "form"} ersetzt einzelne Zellen (gewollte Abweichung).
+// Ohne Verknüpfung, ohne Tabelle oder ohne die Zelle bleibt die Form aus der Lösung stehen.
+const KONJ_PERSON_KEY = {ena:'1sg', enti:'2sg', houwwa:'3sg_m', hiyya:'3sg_f', a7na:'1pl', entouma:'2pl', houma:'3pl'};
+function konjAusVokabel(r, ex){
+  const vid = ex && ex.meta && ex.meta.vocab_id;
+  const v = vid ? VOCAB_BY_ID[vid] : null;
+  if(!r || !r.grids || !r.heads || !v || !v.cj) return;
+  const abw = ex.meta.abw || {};
+  let geaendert = false;
+  r.grids.forEach((g, i) => {
+    const kopf = r.heads[i] || '';
+    const zeit = kopf === 'Perfekt' ? 'past' : kopf === 'Präsens' ? 'present'
+      : r.grids.length === 1 ? (/Perfekt/.test(r.instr || '') ? 'past' : /Präsens/.test(r.instr || '') ? 'present' : null) : null;
+    const blk = zeit && v.cj[zeit];
+    if(!blk || typeof blk !== 'object') return;
+    g.forEach(row => {
+      const k = KONJ_PERSON_KEY[row.person];
+      const f = k && (abw[k] || (blk[k] && blk[k].darija));
+      if(f && f !== row.form){ row.form = String(f); geaendert = true; }
+    });
+  });
+  if(geaendert) r.solHtml = courseConjTableHtml(r.heads, r.grids, true);
+}
 function courseConjView(ex){
   const r = _courseConjViewCore(ex) || _courseConjViewA(ex);
+  if(r && r.grids) konjAusVokabel(r, ex);
   if(r && r.grids) r.qHtml = courseConjTableHtml(r.heads, r.grids, false);
   perfektMarkiere(r, ex);
   if(r && !r.chip){
