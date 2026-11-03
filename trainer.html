@@ -6661,6 +6661,7 @@ function perfektHinweisHtml(ex){
   const g = m.gruppe && PERFEKT_GRUPPEN[m.gruppe];
   if(g) h += '<div style="margin-top:.3rem"><b>Gruppe '+e(String(m.gruppe))+'</b> <span style="color:var(--muted)">(Perfekt → Präsens)</span>: '+em(g)+'</div>';
   if(r.m) h += '<div style="margin-top:.3rem;color:var(--muted)">Merke: '+e(r.m)+'</div>';
+  if(m.regel === 'reg') h += '<div style="margin-top:.3rem;color:var(--muted)">Gruppe erkennen: Perfekt mit <b>i</b> → Gruppe 5, mit <b>u</b> → Gruppe 6. Bei <b>a</b> das Präsens ansehen: <span style="font-family:\'IBM Plex Mono\',monospace;color:var(--gold2)">ya-a</span> → 1, <span style="font-family:\'IBM Plex Mono\',monospace;color:var(--gold2)">ya-i</span> → 2, <span style="font-family:\'IBM Plex Mono\',monospace;color:var(--gold2)">yi-</span> → 3, <span style="font-family:\'IBM Plex Mono\',monospace;color:var(--gold2)">yu-</span> → 4. Das Präsens muss man mit dem Verb lernen.</div>';
   if(typeof m.hinweis === 'string' && m.hinweis.trim()) h += '<div style="margin-top:.3rem;color:var(--muted)">Hinweis: '+e(m.hinweis.trim())+'</div>';
   return h + '</div>';
 }
