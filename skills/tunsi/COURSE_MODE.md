@@ -69,6 +69,14 @@ Level in beiden Welten identisch abgeleitet: `Math.min(correct_count, 6)`; Bucke
 | `pronunciation` | Einzelwort-Ausspracheübung — **muss `vocabulary_id` verlinkt haben** (inkl. Audio, wenn vorhanden) |
 | `listening` | Hörverstehen (seit 2026-11): `meta.audio_url` = Aufnahme (https), `prompt` = arabischer Text (bleibt bis „Lösung zeigen“ verborgen), `solution` = deutsche Bedeutung, `meta.beleg` = `sl24`. Selbstbewertung wie `fixed_response`, in der Kurs-Wiederholung. Die Prüfung „Hörübung ohne Aufnahme oder ohne Text“ im Trainer fängt fehlende Felder |
 
+### Konjugationskarten: `meta` und die Verknüpfung zur Vokabeltabelle (seit 2026-11)
+Karten „(Perfekt/Präsens konjugieren)“ (`grammar_drill`) tragen in `meta`: `regel` (Verbklasse; Perfekt `reg`, `primae`, `gem`, `tert`, `med`, `ii`, `ii_schwach`, `ii_gem`, `iii`, `v`, `vi`; Präsens `p_…`), `gruppe` (1–6), `verb_de`, `verb_pres`, `ar` (arabisches Wort der Er-Form mit Vokalzeichen, der Hinweis zeigt daraus die Buchstaben), `hinweis` (Freitext), `beleg`.
+
+- **`meta.vocab_id`** verweist auf die Vokabel, deren `conjugation` die Formen der Karte führt (die Zeile, deren `darija` der Prompt ist). Absichtlich **nicht** `course_exercises.vocabulary_id`: dort hängen Audio, Lernstand und der Löschschutz dran.
+- **`meta.abw`** = gewollte Abweichung `{"<Personenschlüssel der Tabelle>": "<Form der Karte>"}`, z. B. `{"3sg_f": "waqfit"}`, wenn Skript und TUNICO anders schreiben als die Vokabel.
+- Die Prüfung steht im Trainer (*Mehr → Prüfungen*: „Kurskarte weicht von der verknüpften Vokabeltabelle ab“, `translitExtraChecks0`, Punkt 5b). Sie vergleicht je Zeit (Perfekt/Präsens) die Formen der Karte mit der Tabelle; -et/-at gelten als gleich. **Korrigiert wird zuerst die Vokabeltabelle**, dann die Karte; nur wenn die Karte bewusst anders schreibt, kommt `meta.abw` dazu.
+- Neue Karten: `meta.vocab_id` setzen, sobald es zum Verb eine Vokabel mit Tabelle gibt. Ohne Tabelle bleibt die Lösung der alleinige Bestand.
+
 ### Workflow: erst Vokabeln, dann Übungen
 
 Standing rule: **bei jeder neuen Lektion erst alle referenzierten Vokabeln vollständig gegen den Bestand prüfen und importieren, danach erst die Übungen bauen.** Nicht vermischen. Jede Einzelwort-Übung (v.a. `pronunciation`) wird mit der Vokabel per `vocabulary_id` verlinkt, inkl. Audio wenn vorhanden.

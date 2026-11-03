@@ -5219,6 +5219,28 @@ function translitExtraChecks0(){
     const fehlt = formenLoes.filter(f => tabs.some(tb => ![...tb].some(z => imala(z) === imala(f))) && !(VARIANTEN[e.id] || []).includes(f));
     if(fehlt.length){ loesIds.push(e.id); loesBsp.push(e.id+' '+m[1]+': '+[...new Set(fehlt)].join(', ')); }
   });
+  // 5b) Karte mit meta.vocab_id gegen die verknüpfte Vokabeltabelle: je Zeit (Perfekt/Präsens) dieselben Formen.
+  //     meta.abw = {"3sg_f": "waqfit"} ist eine gewollte Abweichung (Personenschlüssel der Tabelle → Form der Karte).
+  const vIds = new Set(), vBsp = []; let vGeprueft = 0;
+  ex.forEach(e => {
+    const vid = e.meta && e.meta.vocab_id; if(!vid) return;
+    vGeprueft++;
+    const v = VOCAB_BY_ID[vid];
+    if(!v || !v.cj){ vIds.add(e.id); vBsp.push(e.id+': Vokabel '+vid+' fehlt oder hat keine Tabelle'); return; }
+    const abw = e.meta.abw || {};
+    const teile = t => String(t || '').replace(/Pl\./g, '').replace(/[.]\s*$/, '').split(/[,;]/).map(x => x.trim().toLowerCase()).filter(Boolean).map(imala);
+    const sol = String(e.solution || ''), beide = /^Perf\.:/.test(sol) && /Präs\.:/.test(sol);
+    const perf = beide ? sol.split('Präs.:')[0].replace('Perf.:', '') : (/Perfekt/.test(e.prompt || '') ? sol : null);
+    const pres = beide ? sol.split('Präs.:')[1] : (/Präsens/.test(e.prompt || '') && !/Perfekt/.test(e.prompt || '') ? sol : null);
+    [['past', perf, 'Perfekt'], ['present', pres, 'Präsens']].forEach(([t, txt, nm]) => {
+      if(txt == null) return;
+      const blk = v.cj[t] || {};
+      const tab = new Set(Object.keys(blk).map(k => String(abw[k] || (blk[k] && blk[k].darija) || '').trim().toLowerCase()).filter(Boolean).map(imala));
+      const kar = new Set(teile(txt));
+      const nurK = [...kar].filter(f => !tab.has(f)), nurT = [...tab].filter(f => !kar.has(f));
+      if(nurK.length || nurT.length){ vIds.add(e.id); vBsp.push(e.id+' '+nm+': nur Karte '+(nurK.join(', ') || '–')+' · nur Tabelle '+(nurT.join(', ') || '–')); }
+    });
+  });
   // 6) Hohlverben (3. Person Vergangenheit CaC, 1. Person mit anderem Vokal): Vokal gegen Präsens, fehlende Markierung, veraltete Markierung
   const hVokal = [], hVokalBsp = [], hOhneIrr = [], hOhneIrrBsp = [], irrAlt = [], irrAltBsp = [];
   const tGesehen = new Set();
@@ -5244,6 +5266,7 @@ function translitExtraChecks0(){
     {label: 'Kurs: Wortstamm mit „u“ statt „ou“ (weicht von den Vokabeln ab)', n: stammIds.size, bsp: stammBsp},
     {label: 'Suffix „sein“: -ouh und -uh nebeneinander am selben Stamm', n: sufBsp.length, bsp: sufBsp},
     {label: 'Kurslösung: Verbform fehlt in der Konjugationstabelle (von '+loesGeprueft+' prüfbaren Übungen)', n: loesIds.length, bsp: loesBsp},
+    {label: 'Kurskarte weicht von der verknüpften Vokabeltabelle ab (von '+vGeprueft+' verknüpften Karten)', n: vIds.size, bsp: vBsp},
     {label: 'Hohlverb: Vokal der Vergangenheit passt nicht zum Präsens (u → o, i → i) (Tabellen)', n: hVokal.length, bsp: hVokalBsp},
     {label: 'Hohlverb: Vokalwechsel in der Vergangenheit ohne Markierung (Tabellen)', n: hOhneIrr.length, bsp: hOhneIrrBsp},
     {label: 'Markierung veraltet: markierter Teil steht nicht mehr in der Form/Lösung', n: irrAlt.length, bsp: irrAltBsp}
