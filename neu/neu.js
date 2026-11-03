@@ -493,12 +493,12 @@ function flame(n){
   return '<svg class="neu-ic neu-flame" viewBox="0 0 24 24" fill="'+col+'" fill-opacity=".25" stroke="'+col+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3.500 5 5.500 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 .2 1.500 1 2 1.500 2C10 8 11 5 12 3z"/></svg> ';
 }
 // Meilensteine: je Kategorie die höchste erreichte Marke und wie weit es bis zur nächsten ist
+// „Profi“ (p) zählt Vokabeln UND Kurs-Übungen zusammen (Stufe 5–6). Marken: bis 3000 alle 250, danach alle 500.
 const MILES = [
-  {key:'v', name:'Vokabeln gestartet', marks:[100,250,500,1000,1500,2000,3000,4000,5000]},
-  {key:'p', name:'Profi-Vokabeln', marks:[50,100,250,500,1000,1500,2000,3000]},
+  {key:'v', name:'Vokabeln gestartet', marks:[100,250,500,750,1000,1250,1500,1750,2000,2250,2500,2750,3000,3250,3500,3750,4000,4500,5000]},
+  {key:'p', name:'Profi gesamt (Vokabeln + Kurs)', marks:[50,100,250,500,750,1000,1250,1500,1750,2000,2250,2500,2750,3000,3500,4000,4500,5000,5500,6000]},
   {key:'s', name:'Tage in Folge', marks:[3,7,14,30,60,100,200,365]},
-  {key:'c', name:'Kurs-Übungen gestartet', marks:[50,100,250,500,1000,1500,2000]},
-  {key:'q', name:'Profi-Kurs-Übungen', marks:[25,50,100,250,500,1000,1500]}
+  {key:'c', name:'Kurs-Übungen gestartet', marks:[50,100,250,500,750,1000,1250,1500,1750,2000,2250]}
 ];
 function milesHtml(vals){
   return MILES.map(m => {
@@ -518,14 +518,16 @@ function milesNow(streak){
   const o = {v, p, s: streak};
   if(_courseLoaded){   // Kurs: ohne geladene Kursdaten nichts melden, sonst wirkt der erste Stand wie ein neuer Meilenstein
     const ps = Object.values(COURSE_EX_PROGRESS);
-    o.c = ps.length; o.q = ps.filter(q => (q.correct_count || 0) >= 5).length;
-  }
+    o.c = ps.length; o.p = p + ps.filter(q => (q.correct_count || 0) >= 5).length;   // Profi gesamt = Vokabeln + Kurs
+  } else delete o.p;
   return o;
 }
 function milesCheck(streak){
   if(!currentUser || !ALL_VOCAB.length) return;
   const now = milesNow(streak);
   let seen = null; try{ seen = JSON.parse(LS.get('neu-mseen', 'null')); }catch(e){}
+  // Umstellung: „Profi“ zählt jetzt Vokabeln + Kurs. Der alte Stand (nur Vokabeln) darf keine Feier auslösen: einmal neu merken.
+  if(seen && LS.get('neu-mver', '') !== '2'){ delete seen.p; delete seen.q; LS.set('neu-mver', '2'); }
   const reached = {}, fresh = [];
   MILES.forEach(m => {
     const val = now[m.key]; if(val == null) return;
@@ -539,7 +541,7 @@ function milesCheck(streak){
 }
 function showCelebration(m, mark){
   if($('neu-celeb')) return;
-  const what = m.key === 'v' ? fmtN(mark)+' Vokabeln gestartet' : m.key === 'p' ? fmtN(mark)+' Profi-Vokabeln' : m.key === 'c' ? fmtN(mark)+' Kurs-Übungen gestartet' : m.key === 'q' ? fmtN(mark)+' Profi-Kurs-Übungen' : fmtN(mark)+' Tage in Folge';
+  const what = m.key === 'v' ? fmtN(mark)+' Vokabeln gestartet' : m.key === 'p' ? fmtN(mark)+' Profi-Einträge (Vokabeln + Kurs)' : m.key === 'c' ? fmtN(mark)+' Kurs-Übungen gestartet' : fmtN(mark)+' Tage in Folge';
   const o = document.createElement('div'); o.id = 'neu-celeb';
   o.innerHTML = '<div class="neu-celeb-box"><div class="neu-art">'+ART.sun+'</div><div class="neu-celeb-h">Neuer Meilenstein!</div><div class="neu-celeb-t">'+what+'</div><div class="neu-sub" style="margin:.3rem 0 1rem">Ya3tik es-sa77a — weiter so.</div><button class="neu-btn" onclick="document.getElementById(\'neu-celeb\').remove()">Weiter</button></div>';
   o.addEventListener('click', e => { if(e.target === o) o.remove(); });
@@ -578,7 +580,8 @@ function milesRows(vals){
 function renderMilestones(vStarted, vTotal, vProfi, course){
   const el = $('neu-miles'); if(!el) return;
   const set = vals => { const e = $('neu-miles'); if(e) e.innerHTML = milesHtml(vals); const r = $('neu-miles-rows'); if(r) r.innerHTML = milesRows(vals); };
-  const base = Object.assign({v:vStarted, p:vProfi}, course || {});
+  const base = Object.assign({v:vStarted, p:vProfi + (course ? (course.q || 0) : 0)}, course || {});
+  delete base.q;
   set(base);
   loadActivity().then(a => { if(cMode === 'stats') set(Object.assign({}, base, {s:a.streak || 0})); }).catch(() => {});
   loadPace().then(n => {
