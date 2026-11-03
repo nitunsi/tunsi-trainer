@@ -6634,10 +6634,41 @@ function courseConjView(ex){
       : /^Konjugiere im Präsens/.test(i) ? (r.gruppe ? 'Konjugieren · Gruppe '+r.gruppe : 'Konjugieren · Präsens') : null;
   }
   const de = (ex && ex.meta && ex.meta.verb_de) || (r && r.de);
+// Hinweis zu den Perfektformen unter der Tabelle (meta.regel = Schlüssel, meta.gruppe = 1–6, meta.hinweis = Freitext).
+// Aufbau immer gleich: Regel für Vokal-Endungen (sie, sie Pl.), Regel für Konsonant-Endungen (du, ich, ihr, wir), Beispiel.
+const PERFEKT_REGELN = {
+  reg:        {v:'Der Vokal rückt nach vorn.', ve:'3raf → 3arfit, 3arfu', k:'Der Stamm bleibt.', ke:'3raft, 3raftu, 3rafna'},
+  primae:     {v:'Wie bei den regelmäßigen Verben: der Vokal rückt nach vorn.', ve:'wsil → wislit, wislu', k:'Der Stamm bleibt.', ke:'wsilt, wsiltu, wsilna'},
+  gem:        {v:'Direkt anhängen.', ve:'7abb → 7abbu', k:'Ein langes i kommt dazwischen.', ke:'7abbit, 7abbitu, 7abbina', m:'Sie, du und ich klingen gleich (7abbit).'},
+  tert:       {v:'Das -a bleibt.', ve:'kra → krat, kraw', k:'Aus -a wird -i.', ke:'krit, kritu, krina'},
+  med:        {v:'Das lange a bleibt.', ve:'shaf → shafit, shafu', k:'Ein kurzer Vokal (u oder i, je nach Verb).', ke:'shuft, shufna · bitt, bitna', m:'Den kurzen Vokal pro Verb lernen.'},
+  ii:         {v:'Der zweite Vokal fällt weg.', ve:'najjem → najjmit, najjmu', k:'Er wird zu a.', ke:'najjamt, najjamtu, najjamna'},
+  ii_schwach: {v:'Das -a bleibt.', ve:'khalla → khallat, khallaw', k:'Aus -a wird -i.', ke:'khallit, khallitu, khallina'},
+  ii_gem:     {v:'Verkürzt.', ve:'qarrar → qarrit, qarru', k:'Voller Stamm.', ke:'qarrart, qarrartu, qarrarna'},
+  iii:        {v:'Das i fällt weg.', ve:'safir → safrit, safru', k:'Das i bleibt.', ke:'safirt, safirtu, safirna'},
+  v:          {v:'Das i fällt weg.', ve:'tkallim → tkallmit, tkallmu', k:'Aus i wird a.', ke:'tkallamt, tkallamtu, tkallamna'},
+  vi:         {v:'Das i fällt weg.', ve:'tfahim → tfahmit, tfahmu', k:'Das i bleibt.', ke:'tfahimt, tfahimtu, tfahimna'}
+};
+const PERFEKT_GRUPPEN = {1:'l3ab → yal3ab', 2:'ghsal → yaghsil', 3:'sma3 → yisma3', 4:'shrab → yushrub', 5:'ktib → yiktib (das i bleibt: kitbit)', 6:'mrud → yumrud'};
+function perfektHinweisHtml(ex){
+  const m = ex && ex.meta, r = m && PERFEKT_REGELN[m.regel];
+  if(!r) return '';
+  const e = x => escHtml(x), em = x => '<span style="font-family:\'IBM Plex Mono\',monospace;color:var(--gold2)">'+e(x)+'</span>';
+  let h = '<div style="margin-top:.8rem;padding:.55rem .7rem;border-left:3px solid var(--blue);background:rgba(120,140,200,.08);border-radius:4px;font-size:.82rem;line-height:1.55;color:var(--text)">'
+    + '<div style="font-size:.68rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.25rem">So wird’s gebildet</div>'
+    + '<div><b>Vokal-Endung</b> <span style="color:var(--muted)">(sie, sie Pl.)</span>: '+e(r.v)+' '+em(r.ve)+'</div>'
+    + '<div><b>Konsonant-Endung</b> <span style="color:var(--muted)">(du, ich, ihr, wir)</span>: '+e(r.k)+' '+em(r.ke)+'</div>';
+  const g = m.gruppe && PERFEKT_GRUPPEN[m.gruppe];
+  if(g) h += '<div style="margin-top:.3rem"><b>Gruppe '+e(String(m.gruppe))+'</b> <span style="color:var(--muted)">(Perfekt → Präsens)</span>: '+em(g)+'</div>';
+  if(r.m) h += '<div style="margin-top:.3rem;color:var(--muted)">Merke: '+e(r.m)+'</div>';
+  if(typeof m.hinweis === 'string' && m.hinweis.trim()) h += '<div style="margin-top:.3rem;color:var(--muted)">Hinweis: '+e(m.hinweis.trim())+'</div>';
+  return h + '</div>';
+}
   // Perfekt-Karten: hinter der Bedeutung das Präsens 3. Pers. Sg. in Umschrift (meta.verb_pres), also „waschen – yaghsil“
   const vp = ex && ex.meta && typeof ex.meta.verb_pres === 'string' ? ex.meta.verb_pres.trim() : '';
   const vpHtml = (vp && /Perfekt/.test((r && r.instr) || '')) ? ' – <span style="font-family:\'IBM Plex Mono\',monospace;color:var(--gold2)">'+escHtml(vp)+'</span>' : '';
   if(r && r.solHtml && de) r.solHtml = '<div style="font-size:.95rem;color:var(--text);margin:0 0 .55rem">'+escHtml(de)+vpHtml+'</div>'+r.solHtml;
+  if(r && r.solHtml && /Perfekt/.test(r.instr || '')) r.solHtml += perfektHinweisHtml(ex);
   return r;
 }
 // Tabelle der Personen: eine Spalte (Zeit steht dann in der Anweisung) oder je Zeit eine Spalte (Perfekt | Präsens).
