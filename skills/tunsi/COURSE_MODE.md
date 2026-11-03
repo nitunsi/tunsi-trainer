@@ -74,6 +74,7 @@ Karten „(Perfekt/Präsens konjugieren)“ (`grammar_drill`) tragen in `meta`: 
 
 - **`meta.vocab_id`** verweist auf die Vokabel, deren `conjugation` die Formen der Karte führt (die Zeile, deren `darija` der Prompt ist). Absichtlich **nicht** `course_exercises.vocabulary_id`: dort hängen Audio, Lernstand und der Löschschutz dran.
 - **`meta.abw`** = gewollte Abweichung `{"<Personenschlüssel der Tabelle>": "<Form der Karte>"}`, z. B. `{"3sg_f": "waqfit"}`, wenn Skript und TUNICO anders schreiben als die Vokabel.
+- **Anzeige (Stufe 2, `konjAusVokabel` vor `courseConjView`):** Mit `meta.vocab_id` zeigt die Karte die Formen aus `conjugation` der Vokabel (Perfekt = `past`, Präsens = `present`), nicht aus `solution`; `meta.abw` ersetzt einzelne Zellen. Ohne Verknüpfung, ohne Tabelle oder ohne die Zelle bleibt die Form aus der Lösung. `solution` bleibt als Rückfallebene stehen und wird von der Prüfung unten gegen die Tabelle verglichen.
 - Die Prüfung steht im Trainer (*Mehr → Prüfungen*: „Kurskarte weicht von der verknüpften Vokabeltabelle ab“, `translitExtraChecks0`, Punkt 5b). Sie vergleicht je Zeit (Perfekt/Präsens) die Formen der Karte mit der Tabelle; -et/-at gelten als gleich. **Korrigiert wird zuerst die Vokabeltabelle**, dann die Karte; nur wenn die Karte bewusst anders schreibt, kommt `meta.abw` dazu.
 - Neue Karten: `meta.vocab_id` setzen, sobald es zum Verb eine Vokabel mit Tabelle gibt. Ohne Tabelle bleibt die Lösung der alleinige Bestand.
 
