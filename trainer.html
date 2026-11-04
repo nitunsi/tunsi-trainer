@@ -618,6 +618,7 @@ let srsProgress = {}; // {darija_tr: {id, level, next_review, vocabulary_id}}
 let flaggedVocab = new Set(); // vocab tr-Keys die als fehlerhaft markiert sind
 let vocabIdMap = {};  // {darija_tr: vocabulary_id}
 let VOCAB_BY_ID = {}; // {vocabulary_id: ALL_VOCAB-Eintrag} — O(1)-Lookup, kollisionsfrei (im Gegensatz zu vocabIdMap)
+let _arByTr = null;   // Cache {darija: arabic_script} für die Hinweise (Präsens-/Perfekt-Grundform in arabischen Buchstaben)
 function vById(id){ return VOCAB_BY_ID[id] || null; }
 
 // ── Audio-Wiedergabe (ninja_audio_url) ──────────────────────────────────────
@@ -828,6 +829,7 @@ async function srsLoadFromSupabase(){
     // ALL_VOCAB aus Supabase befüllen — id direkt mitspeichern
     ALL_VOCAB.length = 0;
     VOCAB_BY_ID = {};
+    _arByTr = null;
     allVocab.forEach(v => {
       const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
       const tp = v.topic || 'Allgemein';
@@ -6675,11 +6677,35 @@ function hinweisFormen(res, personen){
 function hinweisErForm(res){
   return hinweisFormen(res, ['houwwa']);
 }
-// Arabisches Wort der Karte (meta.ar) mit seinen Buchstaben, nur wenn hinterlegt
-function hinweisArabischHtml(m){
-  if(!m || typeof m.ar !== 'string' || !m.ar.trim()) return '';
-  return '<div style="margin-top:.3rem"><span dir="rtl" style="unicode-bidi:isolate;font-family:\'Playfair Display\',serif;font-size:1.15rem;color:var(--gold2)">'+escHtml(m.ar.trim())+'</span>'
-    + ' <span style="color:var(--muted)">= arabische Buchstaben:</span> <span dir="rtl" style="unicode-bidi:isolate;font-family:\'Playfair Display\',serif;font-size:1.05rem">'+escHtml(arBuchstaben(m.ar))+'</span></div>';
+// Arabisches Wort der Karte (meta.ar) mit seinen Buchstaben, nur wenn hinterlegt; label (optional) steht davor
+function hinweisArabischZeile(ar, label){
+  if(typeof ar !== 'string' || !ar.trim()) return '';
+  return '<div style="margin-top:.3rem">'+(label ? '<span style="color:var(--muted)">'+escHtml(label)+'</span> ' : '')
+    + '<span dir="rtl" style="unicode-bidi:isolate;font-family:\'Playfair Display\',serif;font-size:1.15rem;color:var(--gold2)">'+escHtml(ar.trim())+'</span>'
+    + ' <span style="color:var(--muted)">= arabische Buchstaben:</span> <span dir="rtl" style="unicode-bidi:isolate;font-family:\'Playfair Display\',serif;font-size:1.05rem">'+escHtml(arBuchstaben(ar))+'</span></div>';
+}
+function hinweisArabischHtml(m, label){
+  return hinweisArabischZeile(m && m.ar, label);
+}
+// Arabisch zu einer Transliteration aus den geladenen Vokabeln (erste Zeile mit gleichem darija und arabic_script)
+function arabischZuDarija(tr){
+  if(!tr) return '';
+  if(!_arByTr){
+    _arByTr = {};
+    Object.keys(VOCAB_BY_ID).forEach(id => { const v = VOCAB_BY_ID[id]; if(v && v.ar && v.tr && !(v.tr in _arByTr)) _arByTr[v.tr] = v.ar; });
+  }
+  return _arByTr[tr] || '';
+}
+// Grundform („er“) der anderen Zeit in arabischen Buchstaben: zeit 'present' (bei Perfekt-Karten) oder 'past' (bei Präsens-Karten).
+// Quelle: meta.ar_pres / meta.ar_perf, sonst die Vokabeltabelle der Karte (meta.vocab_id → Form → Vokabel mit Arabisch).
+function hinweisArabischAndereZeit(ex, zeit){
+  const m = ex && ex.meta; if(!m) return '';
+  const v = m.vocab_id ? VOCAB_BY_ID[m.vocab_id] : null;
+  const c = v && v.cj && v.cj[zeit] && v.cj[zeit]['3sg_m'];
+  const tr = (c && c.darija) || (zeit === 'present' && typeof m.verb_pres === 'string' ? m.verb_pres.trim() : '');
+  const eigen = zeit === 'present' ? m.ar_pres : m.ar_perf;
+  const ar = (typeof eigen === 'string' && eigen.trim()) || arabischZuDarija(tr);
+  return hinweisArabischZeile(ar, zeit === 'present' ? 'Präsens (er):' : 'Perfekt (er):');
 }
 // Formen, die bei der Verbklasse anders gebildet werden als „er“, blau und fett markieren (nur die Perfekt-Tabelle)
 // Hinweise für Präsens-Karten (meta.regel = p_…, meta.gruppe = 1–6). Besondere Formen: Plural (sie, ihr, wir).
@@ -6703,9 +6729,10 @@ function praesensHinweisHtml(ex, res){
   const m = ex && ex.meta, r = m && PRAESENS_REGELN[m.regel];
   if(!r) return '';
   const e = x => escHtml(x), em = x => '<span style="font-family:\'IBM Plex Mono\',monospace;color:var(--gold2)">'+e(x)+'</span>';
+  const andereP = hinweisArabischAndereZeit(ex, 'past');
   let h = '<div style="margin-top:.8rem;padding:.55rem .7rem;border-left:3px solid var(--blue);background:rgba(120,140,200,.08);border-radius:4px;font-size:.82rem;line-height:1.55;color:var(--text)">'
     + '<div style="font-size:.68rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.25rem">So wird’s gebildet</div>'
-    + hinweisArabischHtml(m)
+    + (andereP ? hinweisArabischHtml(m, 'Präsens (er):') + andereP : hinweisArabischHtml(m))
     + '<div><b>Vorsilbe</b>: '+em('y-')+' er · '+em('t-')+' sie, du · '+em('n-')+' ich</div>'
     + '<div><b>Plural</b> <span style="color:var(--muted)">(sie, ihr, wir)</span>: '+e(r.pl)+' '+em(hinweisFormen(res, ['houma','entouma','a7na']) ? (hinweisErForm(res) ? hinweisErForm(res)+' → ' : '')+hinweisFormen(res, ['houma','entouma','a7na']) : r.ex)+'</div>';
   if(r.chg.length) h += '<div style="margin-top:.3rem"><b style="color:var(--blue)">Blau</b> <span style="color:var(--muted)">= Form, die anders gebildet wird als „er“</span></div>';
@@ -6731,12 +6758,13 @@ function perfektHinweisHtml(ex, res){
   const gem = m.regel === 'gem';
   const vF = hinweisFormen(res, gem ? ['houma'] : ['hiyya','houma']), kF = hinweisFormen(res, gem ? ['hiyya','enti','ena','entouma','a7na'] : ['enti','ena','entouma','a7na']);
   const er = hinweisErForm(res);
+  const andere = hinweisArabischAndereZeit(ex, 'present');
   const vBlau = r.chg.indexOf('houma') >= 0 || r.chg.indexOf('hiyya') >= 0, kBlau = r.chg.indexOf('enti') >= 0 || r.chg.indexOf('ena') >= 0;
   const zeile = (wer, regel, formen, beispiel, blau) => '<div style="color:var(--muted)">'+wer+'</div><div>'+e(regel)+' '
     + (formen ? em((er ? er+' → ' : '')+formen, blau ? 'var(--blue)' : null) : em(beispiel)) + '</div>';
   let h = '<div style="margin-top:.8rem;padding:.55rem .7rem;border-left:3px solid var(--blue);background:rgba(120,140,200,.08);border-radius:4px;font-size:.82rem;line-height:1.55;color:var(--text)">'
     + '<div style="font-size:.68rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.25rem">So wird’s gebildet</div>'
-    + hinweisArabischHtml(m)
+    + (andere ? hinweisArabischHtml(m, 'Perfekt (er):') + andere : hinweisArabischHtml(m))
     + '<div style="display:grid;grid-template-columns:auto 1fr;gap:.2rem .8rem;margin-top:.35rem">'
     + zeile('sie, sie (Pl.)', r.v, vF, r.ve, vBlau)
     + zeile('du, ich, ihr, wir', r.k, kF, r.ke, kBlau)
