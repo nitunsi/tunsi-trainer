@@ -6696,13 +6696,21 @@ function arabischZuDarija(tr){
   }
   return _arByTr[tr] || '';
 }
+// Präsens 3. Pers. Sg. in Umschrift für Perfekt-Karten: aus der verknüpften Vokabeltabelle (meta.vocab_id), sonst meta.verb_pres
+function praesensErUmschrift(ex){
+  const m = ex && ex.meta; if(!m) return '';
+  const v = m.vocab_id ? VOCAB_BY_ID[m.vocab_id] : null;
+  const c = v && v.cj && v.cj.present && v.cj.present['3sg_m'];
+  if(c && c.darija) return String(c.darija);
+  return typeof m.verb_pres === 'string' ? m.verb_pres.trim() : '';
+}
 // Grundform („er“) der anderen Zeit in arabischen Buchstaben: zeit 'present' (bei Perfekt-Karten) oder 'past' (bei Präsens-Karten).
 // Quelle: meta.ar_pres / meta.ar_perf, sonst die Vokabeltabelle der Karte (meta.vocab_id → Form → Vokabel mit Arabisch).
 function hinweisArabischAndereZeit(ex, zeit){
   const m = ex && ex.meta; if(!m) return '';
   const v = m.vocab_id ? VOCAB_BY_ID[m.vocab_id] : null;
   const c = v && v.cj && v.cj[zeit] && v.cj[zeit]['3sg_m'];
-  const tr = (c && c.darija) || (zeit === 'present' && typeof m.verb_pres === 'string' ? m.verb_pres.trim() : '');
+  const tr = (c && c.darija) || (zeit === 'present' ? praesensErUmschrift(ex) : '');
   const eigen = zeit === 'present' ? m.ar_pres : m.ar_perf;
   const ar = (typeof eigen === 'string' && eigen.trim()) || arabischZuDarija(tr);
   return hinweisArabischZeile(ar, zeit === 'present' ? 'Präsens (er):' : 'Perfekt (er):');
@@ -6772,7 +6780,7 @@ function perfektHinweisHtml(ex, res){
   if(r.chg && r.chg.length) h += '<div style="margin-top:.35rem;color:var(--muted)"><b style="color:var(--blue)">Blau</b> = Form, die anders gebildet wird als „er“</div>';
   const g = m.gruppe && PERFEKT_GRUPPEN[m.gruppe];
   if(g) h += '<div style="margin-top:.3rem"><b>Gruppe '+e(String(m.gruppe))+'</b> <span style="color:var(--muted)">('+e(g)+')</span>'
-    + (er && typeof m.verb_pres === 'string' && m.verb_pres.trim() ? ': '+em(er+' → '+m.verb_pres.trim()) : '')+'</div>';
+    + (er && praesensErUmschrift(ex) ? ': '+em(er+' → '+praesensErUmschrift(ex)) : '')+'</div>';
   if(r.m) h += '<div style="margin-top:.3rem;color:var(--muted)">Merke: '+e(r.m)+'</div>';
   if(typeof m.hinweis === 'string' && m.hinweis.trim()) h += '<div style="margin-top:.3rem"><b>Hinweis:</b> '+e(m.hinweis.trim())+'</div>';
   return h + '</div>';
@@ -6818,8 +6826,8 @@ function courseConjView(ex){
       : /^Konjugiere im Präsens/.test(i) ? (r.gruppe ? 'Konjugieren · Gruppe '+r.gruppe : 'Konjugieren · Präsens') : null;
   }
   const de = (ex && ex.meta && ex.meta.verb_de) || (r && r.de);
-  // Perfekt-Karten: hinter der Bedeutung das Präsens 3. Pers. Sg. in Umschrift (meta.verb_pres), also „waschen – yaghsil“
-  const vp = ex && ex.meta && typeof ex.meta.verb_pres === 'string' ? ex.meta.verb_pres.trim() : '';
+  // Perfekt-Karten: hinter der Bedeutung das Präsens 3. Pers. Sg. in Umschrift (Vokabeltabelle, sonst meta.verb_pres), also „waschen – yaghsil“
+  const vp = praesensErUmschrift(ex);
   const vpHtml = (vp && /Perfekt/.test((r && r.instr) || '')) ? ' – <span style="font-family:\'IBM Plex Mono\',monospace;color:var(--gold2)">'+escHtml(vp)+'</span>' : '';
   if(r && r.solHtml && de) r.solHtml = '<div style="font-size:.95rem;color:var(--text);margin:0 0 .55rem">'+escHtml(de)+vpHtml+'</div>'+r.solHtml;
   if(r && r.solHtml && /Perfekt/.test(r.instr || '')) r.solHtml += perfektHinweisHtml(ex, r);
