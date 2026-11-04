@@ -3127,7 +3127,7 @@ function rFlash(ex,el){
     <div class="neu-inforow" style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem">
       <span class="lesson-badge" style="margin:0;flex:0 0 48%;min-width:0;width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(v.ls+' · '+v.tp)}">${v.ls} · ${v.tp}</span>
       <span class="srs-info-badge" style="flex:1;min-width:0;margin:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${srsInfoBadge(v)}</span>
-      ${v.ps ? `<span style="flex-shrink:0;font-size:.85rem" title="Partner: ${v.ps}">${v.ps==='approved'?'✅':v.ps==='rejected'?'❌':v.ps==='unknown'?'❓':v.ps==='pending'?'⏳':v.ps==='skipped'?'⏭':'💡'}</span>` : ''}
+      ${v.ps ? `<span style="flex-shrink:0;font-size:.85rem" title="Partner: ${v.ps}">${v.ps==='approved'?'✅':v.ps==='rejected'?'❌':v.ps==='unknown'?'❓':v.ps==='pending'?'⏳':v.ps==='skipped'?'⏭':v.ps==='accepted'?'🆗':'💡'}</span>` : ''}
       ${v.au ? `<button onclick="playVocabAudio('${v.au.replace(/'/g,"\\'")}',event,${v.aus||0},${v.aue||0})" title="Aussprache abspielen" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.8rem;padding:.1rem .4rem;border-radius:3px;cursor:pointer;line-height:1.4">🔊</button>` : extConfirmIcon(v, 'flex-shrink:0;font-size:.8rem;color:var(--muted)')}
       ${v.cj ? `<button onclick="toggleConjTable()" title="Konjugationstabelle anzeigen" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--gold2);font-size:.8rem;padding:.1rem .4rem;border-radius:3px;cursor:pointer;line-height:1.4">🔠</button>` : ''}
       <span class="neu-prog" style="flex-shrink:0;font-size:.7rem;color:var(--muted)">${_prog}</span>
@@ -4429,6 +4429,7 @@ function showVocabList(){
         <option value="unknown">❓ unknown</option>
         <option value="skipped">⏭ skipped</option>
         <option value="suggested">💡 suggested</option>
+        <option value="accepted">🆗 accepted</option>
       </select>
       <select id="vl-audio-filter" onchange="vocabAudioFilter=this.value;filterVocabList()"
         style="flex:1;min-width:110px;padding:.4rem .5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:.8rem;font-family:'IBM Plex Mono',monospace">
@@ -4894,6 +4895,7 @@ function renderVocabTableRows(){
                  : ps==='pending'?'<span title="Wartet auf Prüfung" style="color:var(--gold)">⏳</span>'
                  : ps==='skipped'?'<span title="Übersprungen" style="color:var(--muted)">⏭</span>'
                  : ps==='suggested'?'<span title="Vorschlag" style="color:var(--blue)">💡</span>'
+                 : ps==='accepted'?'<span title="Nicht von Semia bestätigt, aber ok (nicht gesperrt, nicht in Semias Warteschlange)" style="color:var(--green)">🆗</span>'
                  : '<span style="color:var(--border)">·</span>';
     h += '<td style="text-align:center;padding:.3rem">'+psIcon+'</td>';
     const audioBtn = v.au ? '<button onclick="playVocabAudio(\''+v.au.replace(/'/g,"\\'")+'\',event,'+(v.aus||0)+','+(v.aue||0)+')" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.15rem .4rem;cursor:pointer;border-radius:3px">🔊</button>' : (extConfirmIcon(v) || '<span style="color:var(--border)">·</span>');
@@ -8139,7 +8141,7 @@ function buildKnowledgeMD(data, today){
   lines.push('## Schema');
   lines.push('');
   lines.push('### vocabulary');
-  lines.push('Spalten: id, lesson_id (FK zu lessons.id — NICHT lesson_number!), arabic_script, darija, german, topic, flagged, partner_status (null/pending/approved/rejected/unknown/skipped/suggested), partner_comment, status_updated_at (Zeitpunkt der letzten partner_status-Änderung)');
+  lines.push('Spalten: id, lesson_id (FK zu lessons.id — NICHT lesson_number!), arabic_script, darija, german, topic, flagged, partner_status (null/pending/approved/rejected/unknown/skipped/suggested/accepted), partner_comment, status_updated_at (Zeitpunkt der letzten partner_status-Änderung)');
   lines.push('');
   lines.push('### lessons');
   lines.push('Spalten: id (= vocabulary.lesson_id), lesson_number, title');
@@ -8159,7 +8161,7 @@ function buildKnowledgeMD(data, today){
   lines.push('## Regeln');
   lines.push('- lesson_id immer frisch nachschlagen, nie hardcoden');
   lines.push('- Duplikat-Check über arabic_script, darija UND german separat');
-  lines.push('- partner_status null = ungeprüft, pending = wartet auf Prüfung');
+  lines.push('- partner_status null = ungeprüft, pending = wartet auf Prüfung, accepted = nicht von Semia bestätigt, aber ok (sperrt nicht, nicht in Semias Warteschlange)');
   lines.push('- Transliteration: Chat-Alphabet (3=ayin, 7=ha, q=qaf, sh=shin)');
   lines.push('- Kurs-Übungen (course_exercises) mit partner_status null erscheinen in Semias Prüf-Queue, original/approved nicht');
   lines.push('- Diese Datei entsteht immer zusammen mit einem tounsi_backup_'+today+'.sql-Vollbackup (Backup-Routine im Export-Screen) — ihr Datum zeigt also auch, dass ein Backup gemacht wurde');
@@ -10545,6 +10547,7 @@ window.addEventListener('unhandledrejection', (e) => {
       <option value="unknown">❓ unknown</option>
       <option value="skipped">⏭ skipped</option>
       <option value="suggested">💡 suggested</option>
+      <option value="accepted">🆗 accepted</option>
     </select>
     <label class="sh-l">Partner-Kommentar</label>
     <textarea id="ei-pc" class="sh-in" placeholder="Partner-Kommentar…" rows="2"></textarea>
@@ -10575,6 +10578,7 @@ window.addEventListener('unhandledrejection', (e) => {
     <option value="rejected">❌ rejected</option>
     <option value="unknown">❓ unknown</option>
     <option value="skipped">⏭ skipped</option>
+    <option value="accepted">🆗 accepted</option>
     <option value="null">· kein Status</option>
   </select>
   <button id="vl-bulk-ps-btn" onclick="bulkSetStatus()" style="padding:.45rem .7rem;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px;white-space:nowrap">→</button>
