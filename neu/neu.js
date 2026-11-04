@@ -1380,7 +1380,7 @@ window.renderVocabTableRows = function(){
     const flag = flaggedVocab.has(v.tr) ? ' 🚩' : '';
     const conj = v.cj || v.cr ? ' <button onclick="event.stopPropagation();showConjModal('+v.id+')" title="Konjugationstabelle" style="background:none;border:none;color:inherit;cursor:pointer;padding:0 .2rem;font-size:1em">🔠</button>' : '';
     const ps = v.ps;
-    const psIcon = ps==='approved'?'✅' : ps==='rejected'?'❌' : ps==='unknown'?'❓' : ps==='pending'?'⏳' : ps==='skipped'?'⏭' : ps==='suggested'?'💡' : '';
+    const psIcon = ps==='approved'?'✅' : ps==='rejected'?'❌' : ps==='unknown'?'❓' : ps==='pending'?'⏳' : ps==='skipped'?'⏭' : ps==='suggested'?'💡' : ps==='accepted'?'🆗' : '';
     const audio = v.au ? '<button class="ib" onclick="event.stopPropagation();playVocabAudio(\''+v.au.replace(/'/g,"\\'")+'\',event,'+(v.aus||0)+','+(v.aue||0)+')" title="Aussprache" aria-label="Aussprache">🔊</button>' : '';
     h += '<div class="neu-vrow" style="box-shadow:inset 4px 0 0 '+col+'" onclick="neuRowTap(event,'+(v.id||0)+','+i+')"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)"'+(selectedVocabIds.has(v.id)?' checked':'')+'/>'
       + '<div class="ar">'+hl(v.ar, hq, true)+'</div>'
