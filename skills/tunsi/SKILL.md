@@ -185,6 +185,16 @@ Drei Fallen, jede schon einmal zugeschlagen:
 - Die Antwort an Nils nennt, **welche Quellen gefunden und welche leer waren**. „Nur im Skript“ ist ein Beleg, kein Mangel.
 - Gilt auch, bevor man eine Karte an die Vokabeltabelle (oder umgekehrt) angleicht: erst die Quelle, dann die Seite.
 
+**Konjugationstabellen gegen die Quellen prüfen — was die Quellen wirklich hergeben (Nils, 2026-11-04).** Eine Sitzung hat Tabellen, Karten und Zeilen verglichen; diese Punkte kosteten jeweils einen Fehler:
+- **TUNICO hat keine Konjugationstabellen.** `tunico_import.inflected` ist nur beim Präsens 3. Sg. systematisch getaggt (`#v_pres_sg_p3`); `tunico_corpus_wordforms` und `tunico_corpus_verbs` enthalten Formen **ohne Personen- oder Tempusangabe**. Eine Form dort (z. B. `waqfu` unter `wqif`) belegt nicht, welche Zelle sie füllt. Vor „TUNICO belegt X als Imperativ" das Tag prüfen; `waqfu` war das Perfekt 3. Pl.
+- **Ninja führt ein Stichwort ohne Tempoangabe** und zitiert Form II mit dem Imperativ-/Präsensstamm (`lawwij`, `naggiz`, `sakkir`), Form I mit dem Perfekt (`tba3`, `rbat`). `ڨ` steht dort als `g`, `ق` als `9`: bei der Suche `q`, `g` und `9` probieren (`naqqaz` = `na99iz`/`naggiz`).
+- **Exakte Schreibweise reicht für die Suche nicht.** Quellen schreiben `3sar` für unser `3asser`. Mit `translit_skeleton`, mit den Konsonanten allein und über die Wortform-Tabelle suchen, dann Bedeutung gegenlesen.
+- **Karten mit `meta.beleg = 'abgeleitet'` belegen nichts.** Sie sind selbst nach einer Regel erzeugt. Eine Tabelle an so eine Karte anzugleichen ist kein Quellenabgleich.
+- **Präsens Plural starker Verben lässt den Stammvokal aus** (Skript Lektion 2: `yikhdim → yikhdmu`, `yakol → yaklu`; TUNICO: `yuq3du`, `nurqdu`, `nilbsu`). Der Imperativ Pl. ebenso (Lektion 3: `ism3u`, `iktbu`, `ushrbu`). Bleibt in einer Tabelle der Vokal, ist das ein Befund.
+- **Geminierte Verben mit `e`/`o` im 3. Sg. neben `i`/`u` sonst** (`y7ell/t7ill`) waren ein Mischmuster aus der Hausschreibung; Skript, TUNICO und Ninja schreiben durchgehend `i/u`. Seit 2026-11-04 einheitlich `i/u` (y7ill, yrudd, yquss, ylawwij), Doppelkonsonant bleibt (`n7ebb`, `y7ibbu`).
+- **Eine Tabelle pro Verb, Zeile = Wort in der Tabelle.** Ändert sich eine Form, gehören die Zeilen mit genau dieser Form umbenannt (Lernstand hängt an der ID), und die Karten mit der alten Form mit.
+- **Antwort an Nils:** pro Verb nennen, welche Quellen **gefunden und welche leer** waren, und Formen, die nur nach Hausmuster abgeleitet sind, in `internal_note` als solche markieren.
+
 ### Schritt 4 — Zeigen und warten
 
 Immer, ausnahmslos, vor jedem Schreiben: betroffene Zeilen mit Ist-Wert, Soll-Wert und Beleg. Bei Unsicherheit `AskUserQuestion` statt raten.
