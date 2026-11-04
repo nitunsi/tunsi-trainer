@@ -193,6 +193,11 @@ Drei Fallen, jede schon einmal zugeschlagen:
 - **Präsens Plural starker Verben lässt den Stammvokal aus** (Skript Lektion 2: `yikhdim → yikhdmu`, `yakol → yaklu`; TUNICO: `yuq3du`, `nurqdu`, `nilbsu`). Der Imperativ Pl. ebenso (Lektion 3: `ism3u`, `iktbu`, `ushrbu`). Bleibt in einer Tabelle der Vokal, ist das ein Befund.
 - **Geminierte Verben mit `e`/`o` im 3. Sg. neben `i`/`u` sonst** (`y7ell/t7ill`) waren ein Mischmuster aus der Hausschreibung; Skript, TUNICO und Ninja schreiben durchgehend `i/u`. Seit 2026-11-04 einheitlich `i/u` (y7ill, yrudd, yquss, ylawwij), Doppelkonsonant bleibt (`n7ebb`, `y7ibbu`).
 - **Eine Tabelle pro Verb, Zeile = Wort in der Tabelle.** Ändert sich eine Form, gehören die Zeilen mit genau dieser Form umbenannt (Lernstand hängt an der ID), und die Karten mit der alten Form mit.
+- **TUNICO hat bei Konsonanten und Verbmustern Vorrang (Nils, 2026-11-04), die Zeilenschreibung bei drei Konventionen.** Gemessen an rund 6.400 Wortpaaren (TUNICO-Lemma gegen unsere Zeile, gleiche Konsonantenfolge): 95 % haben nach der Umrechnung identische Konsonanten, der Rest weicht nur in diesen Punkten ab, und die sind **kein Befund**:
+  - **`g` in TUNICO = `q` bei uns** (TUNICO schreibt die Aussprache: `magruna`, `gribi`; wir den arabischen Buchstaben ق: `maqrouna`, `qrib`).
+  - **`ḏ̣`/`ẓ` in TUNICO = `dh` oder `th` bei uns.** TUNICO unterscheidet ض und ظ nicht (`xḏ̣āṛ`); die Entscheidung trifft der arabische Buchstabe unserer Zeile (`khodhra` = ض). Ein `th` in TUNICO gegen ein `dh` bei uns zeigt nur, dass die Quelle die beiden Buchstaben zusammenlegt.
+  - **`e` und `o`** kennt TUNICO nicht (nur `a i u`); unsere Imala-Vokale bleiben.
+  Was TUNICO dagegen liefert und übernommen wird: Konsonantenfolge, Stammvokal des Präsens (`yukhlus` statt `yikhlus`), Pluralbildung (Vokal fällt aus), Verbmuster. Bei Verben **über die Wurzel** (`root_chatalpha`, Verbalnomen, Partizipien) suchen, nicht nur über das Lemma: `saq` „fahren" steht nur indirekt da (`suqan`, `sayaq`, Wortform `sqt`).
 - **Antwort an Nils:** pro Verb nennen, welche Quellen **gefunden und welche leer** waren, und Formen, die nur nach Hausmuster abgeleitet sind, in `internal_note` als solche markieren.
 
 ### Schritt 4 — Zeigen und warten
