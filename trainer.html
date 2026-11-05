@@ -5169,6 +5169,7 @@ function translitExtraChecks0(){
   const kurs = new Set(), kursBsp = [], kursTexte = [];
   const ex = Object.values(typeof COURSE_EX_BY_ID !== 'undefined' ? COURSE_EX_BY_ID : {});
   ex.forEach(e => {
+    if(e.meta && e.meta.layout === 'regelkarte') return;   // Regelkarten erklären Vokale auf Deutsch („u“, „yi–i“), das ist kein tunesischer Satz
     const felder = [];
     if(e.exercise_type === 'pronunciation') felder.push(e.prompt);
     else if(['translate_de_tn','fill_blank','fixed_response','answer_pattern'].includes(e.exercise_type)) felder.push(e.solution);
