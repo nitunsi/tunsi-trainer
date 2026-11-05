@@ -8388,6 +8388,40 @@ async function copyExportCSV(){
 
 let pqAllResults = [];
 let pqFilter = 'all';
+let pqRecent = [];
+
+// Nur zur Info: was Semia in den letzten 7 Tagen bewertet hat (freigegeben, falsch, unklar). Keine Aktionen, ändert nichts an der Queue.
+async function pqLoadRecent(){
+  try{
+    const since = new Date(Date.now() - 7*86400000).toISOString();
+    const st = 'partner_status=in.(approved,rejected,unknown)&status_updated_at=gte.' + since;
+    const v = await sbApiPaged('vocabulary?' + st + '&select=id,darija,german,partner_status,status_updated_at&order=status_updated_at.desc', 500);
+    let x = [];
+    try{ x = await sbApiPaged('course_exercises?' + st + '&select=id,course_lesson_id,prompt,partner_status,status_updated_at&order=status_updated_at.desc', 500); }catch(e){}
+    pqRecent = v.map(r => ({t:r.status_updated_at, a:r.darija||'', b:r.german||'', s:r.partner_status}))
+      .concat(x.map(r => ({t:r.status_updated_at, a:r.prompt||'', b:'🎓 ' + courseLessonLabel(r.course_lesson_id), s:r.partner_status})));
+    pqRecent.sort((p, q) => new Date(q.t) - new Date(p.t));
+  }catch(e){ pqRecent = []; }
+}
+function pqRecentHtml(){
+  if(!pqRecent.length) return '';
+  const ic = {approved:'✅', rejected:'❌', unknown:'❓'};
+  const n = {approved:0, rejected:0, unknown:0};
+  pqRecent.forEach(r => { if(n[r.s] !== undefined) n[r.s]++; });
+  let body = '', lastDay = '';
+  pqRecent.forEach(r => {
+    const day = berlinDayKey(r.t);
+    if(day !== lastDay){
+      lastDay = day;
+      const cnt = pqRecent.filter(q => berlinDayKey(q.t) === day).length;
+      body += '<div style="font-size:.68rem;color:var(--gold);margin:.7rem 0 .25rem">' + escHtml(day.split('-').reverse().join('.')) + ' · ' + cnt + '</div>';
+    }
+    body += '<div style="display:flex;gap:.5rem;font-size:.78rem;padding:.12rem 0"><span style="flex-shrink:0">' + (ic[r.s]||'') + '</span><span style="min-width:0"><span>' + escHtml(r.a) + '</span> <span style="color:var(--muted)">' + escHtml(r.b) + '</span></span></div>';
+  });
+  return '<details style="border:1px solid var(--border);border-radius:8px;padding:.6rem .8rem;margin-bottom:1rem">'
+    + '<summary style="cursor:pointer;font-size:.75rem;color:var(--muted)">Zuletzt von Semia geprüft (7 Tage): ✅ ' + n.approved + ' · ❌ ' + n.rejected + ' · ❓ ' + n.unknown + '</summary>'
+    + body + '</details>';
+}
 
 // Springt aus der Statistik direkt in die Partner-Queue, optional vorgefiltert.
 // filter: 'all' | 'rejected' | 'suggested' | 'unknown' | 'commented'
@@ -8442,6 +8476,7 @@ async function showPartnerQueue(filter){
       }
     });
 
+    await pqLoadRecent();
     renderPartnerQueue();
   } catch(e) {
     el.innerHTML = '<div style="color:var(--red);padding:1rem">Fehler: ' + e.message + '</div>';
@@ -8531,7 +8566,7 @@ function renderPartnerQueue(){
     { k:'commented', label:'💬 Kommentar', c:counts.commented },
   ];
 
-  let h = nudgeCardHtml() + '<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.9rem">' +
+  let h = nudgeCardHtml() + pqRecentHtml() + '<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.9rem">' +
     chips.map(c => '<button onclick="setPqFilter(\'' + c.k + '\')" style="padding:.3rem .6rem;font-size:.7rem;font-family:\'IBM Plex Mono\',monospace;cursor:pointer;border-radius:3px;' +
       (pqFilter===c.k ? 'background:var(--gold);border:1px solid var(--gold);color:var(--bg);font-weight:700;' : 'background:transparent;border:1px solid var(--border);color:var(--muted);') +
       '">' + c.label + ' (' + c.c + ')</button>').join('') +
