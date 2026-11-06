@@ -7045,12 +7045,21 @@ function regelLoesungHtml(rg){
        + (f.gruppe ? '<span style="color:var(--muted);margin-left:.3rem">'+escHtml(f.gruppe)+'</span>' : '')
        + '</div>';
   }
+  if(rg.tabelle && Array.isArray(rg.tabelle.zeilen) && rg.tabelle.zeilen.length){
+    const tb = rg.tabelle, nk = (tb.kopf || []).length;
+    const zelle = (t, k, kopf) => '<td style="padding:.3rem .45rem;border-bottom:1px solid var(--border);'+(kopf?'font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:400;':'')+(k===0?'text-align:left;':'text-align:left;')+'">'
+      + (/[\u0600-\u06FF]/.test(t||'') ? '<span dir="rtl" style="font-family:var(--arf,inherit);font-size:calc(1.15rem*var(--ars,1));color:var(--gold2)">'+escHtml(t)+'</span>' : regelTextHtml(t)) + '</td>';
+    h += '<div style="overflow-x:auto;margin:.1rem 0 .2rem"><table style="border-collapse:collapse;width:100%;font-size:.95rem">'
+      + (nk ? '<tr>'+tb.kopf.map((t, k) => zelle(t, k, true)).join('')+'</tr>' : '')
+      + tb.zeilen.map(r => '<tr>'+r.map((t, k) => zelle(t, k, false)).join('')+'</tr>').join('')
+      + '</table></div>';
+  }
   if(Array.isArray(rg.schritte) && rg.schritte.length){
     h += '<div style="display:flex;flex-direction:column;gap:.45rem">';
     rg.schritte.forEach((t, i) => { h += '<div style="display:flex;gap:.6rem"><span style="color:var(--gold2);font-weight:700;flex-shrink:0;min-width:1.4rem">'+(i+1)+'.</span><span>'+regelTextHtml(t)+'</span></div>'; });
     h += '</div>';
   }
-  if(rg.text) h += '<div style="margin-top:'+((a.tr_von || a.ar_von || rg.formel || (rg.schritte && rg.schritte.length))?'.8rem':'0')+';line-height:1.6">'+regelTextHtml(rg.text)+(rg.sicher ? '<br>'+escHtml(rg.sicher) : '')+'</div>';
+  if(rg.text) h += '<div style="margin-top:'+((a.tr_von || a.ar_von || rg.formel || rg.tabelle || (rg.schritte && rg.schritte.length))?'.8rem':'0')+';line-height:1.6">'+regelTextHtml(rg.text)+(rg.sicher ? '<br>'+escHtml(rg.sicher) : '')+'</div>';
   if(Array.isArray(rg.bsp) && rg.bsp.length){
     h += '<div style="margin-top:.8rem;padding-top:.7rem;border-top:1px solid var(--border)"><div style="font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.25rem">Weitere Beispiele</div>';
     rg.bsp.forEach(b => {
