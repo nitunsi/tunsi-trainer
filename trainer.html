@@ -95,6 +95,7 @@ main{max-width:700px;margin:0 auto;padding:1.5rem 1.2rem 5rem;overflow-anchor:no
 .q-arabic{font-size:3.8rem;direction:rtl;font-family:'Playfair Display',serif;font-weight:700;color:var(--gold2);line-height:1.4;}
 .q-text{font-family:'Playfair Display',serif;font-size:1.5rem;line-height:1.4;}
 .q-sub{font-size:.78rem;color:var(--muted);margin-top:.3rem;line-height:1.5;letter-spacing:.02em;}
+.vl{color:var(--gold2);font-weight:600;}
 .q-hint{margin-top:.8rem;padding:.5rem .8rem;background:var(--surface2);border-left:2px solid var(--gold);font-size:.78rem;color:var(--muted);display:none;}
 .q-hint.visible{display:block;}
 .choices{display:flex;flex-direction:column;gap:.5rem;}
@@ -618,6 +619,59 @@ let srsProgress = {}; // {darija_tr: {id, level, next_review, vocabulary_id}}
 let flaggedVocab = new Set(); // vocab tr-Keys die als fehlerhaft markiert sind
 let vocabIdMap = {};  // {darija_tr: vocabulary_id}
 let VOCAB_BY_ID = {}; // {vocabulary_id: ALL_VOCAB-Eintrag} — O(1)-Lookup, kollisionsfrei (im Gegensatz zu vocabIdMap)
+// Vokallänge nur zur Anzeige (2026-11-07): liest lange Vokale aus dem vokalisierten arabic_script
+// (Konsonant + Fatha + ا/ى, Kasra + ي, Damma + و; teilvokalisiert: ي/و ohne Zeichen nach Konsonant ohne Sukun)
+// und setzt in der Umschrift einen Strich darüber (khtārit). Die Daten bleiben unverändert, Eingabe und
+// Antwortprüfung auch. Langvokal am Wortende gilt als kurz (shnuwwa, ma). Passt die Zahl der Vokal-Stellen
+// im Arabischen nicht zu den Vokalgruppen der Umschrift, bleibt die Umschrift wie sie ist.
+const _VL_MAC = {a:'ā',e:'ē',i:'ī',o:'ō',u:'ū',ou:'ū'};
+function laengeSlots(ar){
+  const FA='َ', DA='ُ', KA='ِ', SU='ْ';
+  const isL = c => /[ء-يپڤڨگچ]/.test(c), isH = c => /[ً-ْٰ]/.test(c);
+  const out = [];
+  for(const w of String(ar||'').split(/\s+/)){
+    if(!w) continue;
+    const u = [];
+    for(const c of w){ if(isL(c)) u.push({b:c,d:''}); else if(isH(c) && u.length) u[u.length-1].d += c; }
+    for(let i=0;i<u.length;i++){
+      const b = u[i].b, d = u[i].d, n = u[i+1];
+      if(i===0 && (b==='ا'||b==='أ'||b==='إ')){
+        if(d.includes(FA) && n && n.b==='ا' && !n.d){ out.push('L'); i++; continue; }
+        if(d.includes(FA)||d.includes(KA)||d.includes(DA)||b!=='ا'||(n&&n.b==='ل')) out.push('k');
+        continue;
+      }
+      if(b==='ة') continue;
+      const v = d.includes(FA)?'a':d.includes(KA)?'i':d.includes(DA)?'u':null;
+      const lang = n && !n.d && (((n.b==='ا'||n.b==='ى') && (v==='a' || (v===null && b!=='ا'))) || (n.b==='ي' && v==='i') || (n.b==='و' && v==='u'));
+      const bloss = !lang && v===null && !d.includes(SU) && n && !n.d && (n.b==='ي'||n.b==='و') && b!=='ا' && i>0;
+      if(lang || bloss){ out.push(i+2>=u.length ? 'k' : 'L'); i++; continue; }
+      if(v) out.push('k');
+    }
+  }
+  return out;
+}
+function laengeHtml(tr, ar){
+  tr = String(tr||'');
+  if(!tr || !/[ً-ْ]/.test(ar||'')) return tr;
+  const sl = laengeSlots(ar), re = /ou|[aeiou]+/gi, g = []; let m;
+  while((m = re.exec(tr))) g.push([m.index, m.index+m[0].length, m[0]]);
+  if(!g.length || g.length !== sl.length || !sl.includes('L')) return tr;
+  let h = '', p = 0;
+  g.forEach(([s,e,t],k) => { h += tr.slice(p,s); h += sl[k]==='L' ? '<span class="vl">'+(_VL_MAC[t.toLowerCase()]||_VL_MAC[t[0].toLowerCase()]||t)+'</span>' : t; p = e; });
+  return h + tr.slice(p);
+}
+function trL(v){ if(!v) return ''; if(v._trL === undefined) v._trL = laengeHtml(v.tr, v.ar); return v._trL; }
+// Tabellenzellen haben kein eigenes Arabisch: Länge aus der Vokabelzeile derselben Tabelle (gleiche Grundform)
+let _conjLaenge = null;
+function conjZelleL(cj, t){
+  if(!_conjLaenge){
+    _conjLaenge = {};
+    ALL_VOCAB.forEach(e => { if(!e.cj) return; const g = conjGrund(e.cj); if(g) _conjLaenge[g+'|'+e.tr] = trL(e); });
+  }
+  const g = conjGrund(cj);
+  return (g && _conjLaenge[g+'|'+t]) || t;
+}
+function conjGrund(cj){ const x = (cj && ((cj.past && cj.past['3sg_m']) || (cj.present && cj.present['3sg_m']))) || null; return x && x.darija ? String(x.darija) : ''; }
 let _arByTr = null;   // Cache {darija: arabic_script} für die Hinweise (Präsens-/Perfekt-Grundform in arabischen Buchstaben)
 function vById(id){ return VOCAB_BY_ID[id] || null; }
 
@@ -830,6 +884,7 @@ async function srsLoadFromSupabase(){
     ALL_VOCAB.length = 0;
     VOCAB_BY_ID = {};
     _arByTr = null;
+    _conjLaenge = null;
     allVocab.forEach(v => {
       const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
       const tp = v.topic || 'Allgemein';
@@ -2760,7 +2815,7 @@ function renderConjugationTable(cj){
     const t = c.darija, mk = x => '<b style="color:var(--red)" title="unregelmäßig">'+x+'</b>';
     if(c.irr === true) return mk(t);
     if(typeof c.irr === 'string' && c.irr && t.indexOf(c.irr) >= 0){ const i = t.indexOf(c.irr); return t.slice(0,i)+mk(c.irr)+t.slice(i+c.irr.length); }
-    return t;
+    return conjZelleL(cj, t);
   };
   let h = '<table style="width:100%;border-collapse:collapse;font-size:.8rem">';
   h += '<thead><tr style="color:var(--muted);font-size:.62rem;text-transform:uppercase;letter-spacing:.05em">';
@@ -3031,12 +3086,12 @@ function rMC(ex,el){
   const v=ex.v,dir=ex.dir;
   el.innerHTML=`<div class="lesson-badge">${v.ls} · ${v.tp}</div><div class="srs-info-badge">${srsInfoBadge(v)}</div>
   <div class="q-card"><div class="q-label">${dir==='ar2en'?'Was bedeutet dieses Wort?':'Welches Tounsi-Wort bedeutet:'}</div>
-  ${dir==='ar2en'?`<div class="q-arabic">${v.ar}</div><div class="q-sub latin">${v.tr}</div>`:`<div class="q-text">${v.en}</div>`}
+  ${dir==='ar2en'?`<div class="q-arabic">${v.ar}</div><div class="q-sub latin">${trL(v)}</div>`:`<div class="q-text">${v.en}</div>`}
   </div>
   <div class="choices" id="choices"></div>
   <div class="feedback" id="feedback"></div>
   <div class="btn-row" id="btn-row"><button class="btn ghost" onclick="document.getElementById('hint-box').classList.toggle('visible')">Hinweis</button><button class="flag-btn ${flaggedVocab.has(v.tr)?'flagged':''}" title="Als fehlerhaft markieren" onclick="toggleFlagById(${v.id},this)">${flaggedVocab.has(v.tr)?'🚩':'🏳️'}</button></div>
-  <div class="q-hint" id="hint-box">${dir==='ar2en'?v.en+' — '+v.tr:v.ar+' ('+v.tr+')'}</div>`;
+  <div class="q-hint" id="hint-box">${dir==='ar2en'?v.en+' — '+trL(v):v.ar+' ('+trL(v)+')'}</div>`;
   const L=['A','B','C','D'],ce=document.getElementById('choices');
   ex.opts.forEach((opt,i)=>{
     const btn=document.createElement('button');btn.className='choice-btn';
@@ -3053,7 +3108,7 @@ function aMC(btn,ok,ca,con,v){
   const fbMC=document.getElementById('feedback');
   if(fbMC){
     fbMC.className='feedback show '+(ok?'correct':'wrong');
-    const darija = v ? `<span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">${v.tr}</span>` : '';
+    const darija = v ? `<span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">${trL(v)}</span>` : '';
     const homNote = homonymNote(v)+synonymNote(v)+schreibungNote(v);
     fbMC.innerHTML='<span style="font-size:1.2rem">'+(ok?'✓ ':'✗ ')+ca+'</span>'+darija+homNote;
   }
@@ -3136,11 +3191,11 @@ function rFlash(ex,el){
       ${isAudio
         ? `<button type="button" class="neu-audioq" onclick="playVocabAudio('${String(v.au||'').replace(/'/g,"\\'")}',event,${v.aus||0},${v.aue||0})" aria-label="Abspielen">🔊</button><div class="q-sub" style="font-family:inherit!important">Hören und die Bedeutung eingeben</div>`
         : isAr2De
-        ? `<div class="q-arabic" style="font-size:2.8rem">${v.ar}</div><div class="q-sub latin">${v.tr}</div>`
+        ? `<div class="q-arabic" style="font-size:2.8rem">${v.ar}</div><div class="q-sub latin">${trL(v)}</div>`
         : `<div class="q-text" style="font-size:1.3rem">${v.en}</div>`
       }
     </div>
-    <div class="q-hint" id="flash-hint" style="margin-bottom:.6rem">${isAr2De?v.en+' — '+v.tr:v.ar+' ('+v.tr+')'}</div>
+    <div class="q-hint" id="flash-hint" style="margin-bottom:.6rem">${isAr2De?v.en+' — '+trL(v):v.ar+' ('+trL(v)+')'}</div>
     ${v.cj ? `<div id="conj-table-box" style="display:none;margin-bottom:.6rem;padding:.5rem .6rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px">${renderConjugationTable(v.cj)}</div>` : ''}
     <input id="flash-input" type="text"
       style="width:100%;box-sizing:border-box;padding:.85rem 1rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:16px;border-radius:6px;font-family:'IBM Plex Mono',monospace;margin-bottom:4rem;display:block"
@@ -3194,8 +3249,8 @@ function chkFlash(){
   inp.style.borderColor=ok?'var(--green)':'var(--red)';
   inp.disabled=true;
   const fb=document.getElementById('feedback');
-  const solAr = '<span style="font-family:\'Playfair Display\',serif;font-size:2.2rem;color:var(--gold2);display:block">'+v.ar+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+v.tr+'</span>';
-  const solDe = '<span style="font-family:\'Playfair Display\',serif;font-size:1.5rem;display:block">'+v.en+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+v.tr+'</span>';
+  const solAr = '<span style="font-family:\'Playfair Display\',serif;font-size:2.2rem;color:var(--gold2);display:block">'+v.ar+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+trL(v)+'</span>';
+  const solDe = '<span style="font-family:\'Playfair Display\',serif;font-size:1.5rem;display:block">'+v.en+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+trL(v)+'</span>';
   const sol = ex.dir==='au2de' ? solDe+'<span style="font-family:\'Playfair Display\',serif;font-size:2.2rem;color:var(--gold2);display:block;margin-top:.3rem">'+v.ar+'</span>' : (dir==='ar2de' ? solDe : solAr);
   const homNote = homonymNote(v)+synonymNote(v)+schreibungNote(v);
   if(ok){

@@ -312,6 +312,8 @@ Keine Großbuchstaben in darija — weder als Emphase-Marker noch am Satzanfang.
 
 ### Vokale & häufige Wörter
 
+**Vokallänge wird nicht geschrieben, nur angezeigt (seit 2026-11-07).** In `darija` gibt es kein ā/ī/ū; der Trainer liest die Länge aus dem vokalisierten `arabic_script` (`laengeHtml()`/`trL()` in `trainer.html`) und markiert sie in der Anzeige (khtārit, shrāb „Alkohol“ gegen shrab „er trank“). Eingabe und Antwortprüfung bleiben unverändert. Passt die Zahl der Vokalstellen im Arabischen nicht zu den Vokalgruppen der Umschrift, bleibt die Anzeige unmarkiert — eine falsche Länge in der Anzeige heißt also meist: Arabisch prüfen. Regel dahinter: kurzer Vokal rückt bei Endung mit Vokal nach vorn (ktib → kitbit), langer bleibt stehen (khtār → khtārit) und wird vor Endung mit Konsonant kurz (khtart).
+
 | Form | Korrekt | Nie |
 |---|---|---|
 | اليوم | lyoum | lyum, el-youm (als Standalone ok) |
