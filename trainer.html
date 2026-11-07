@@ -3115,12 +3115,12 @@ function rMC(ex,el){
   const v=ex.v,dir=ex.dir;
   el.innerHTML=`<div class="lesson-badge">${v.ls} · ${v.tp}</div><div class="srs-info-badge">${srsInfoBadge(v)}</div>
   <div class="q-card"><div class="q-label">${dir==='ar2en'?'Was bedeutet dieses Wort?':'Welches Tounsi-Wort bedeutet:'}</div>
-  ${dir==='ar2en'?`<div class="q-arabic">${v.ar}</div><div class="q-sub latin">${trL(v)}</div>`:`<div class="q-text">${v.en}</div>`}
+  ${dir==='ar2en'?`<div class="q-arabic">${v.ar}</div><div class="q-sub latin">${trL(v)}</div>`:`<div class="q-text">${deHtml(v)}</div>`}
   </div>
   <div class="choices" id="choices"></div>
   <div class="feedback" id="feedback"></div>
   <div class="btn-row" id="btn-row"><button class="btn ghost" onclick="document.getElementById('hint-box').classList.toggle('visible')">Hinweis</button><button class="flag-btn ${flaggedVocab.has(v.tr)?'flagged':''}" title="Als fehlerhaft markieren" onclick="toggleFlagById(${v.id},this)">${flaggedVocab.has(v.tr)?'🚩':'🏳️'}</button></div>
-  <div class="q-hint" id="hint-box">${dir==='ar2en'?v.en+' — '+trL(v):v.ar+' ('+trL(v)+')'}</div>`;
+  <div class="q-hint" id="hint-box">${dir==='ar2en'?deHtml(v)+' — '+trL(v):v.ar+' ('+trL(v)+')'}</div>`;
   const L=['A','B','C','D'],ce=document.getElementById('choices');
   ex.opts.forEach((opt,i)=>{
     const btn=document.createElement('button');btn.className='choice-btn';
@@ -3221,10 +3221,10 @@ function rFlash(ex,el){
         ? `<button type="button" class="neu-audioq" onclick="playVocabAudio('${String(v.au||'').replace(/'/g,"\\'")}',event,${v.aus||0},${v.aue||0})" aria-label="Abspielen">🔊</button><div class="q-sub" style="font-family:inherit!important">Hören und die Bedeutung eingeben</div>`
         : isAr2De
         ? `<div class="q-arabic" style="font-size:2.8rem">${v.ar}</div><div class="q-sub latin">${trL(v)}</div>`
-        : `<div class="q-text" style="font-size:1.3rem">${v.en}</div>`
+        : `<div class="q-text" style="font-size:1.3rem">${deHtml(v)}</div>`
       }
     </div>
-    <div class="q-hint" id="flash-hint" style="margin-bottom:.6rem">${isAr2De?v.en+' — '+trL(v):v.ar+' ('+trL(v)+')'}</div>
+    <div class="q-hint" id="flash-hint" style="margin-bottom:.6rem">${isAr2De?deHtml(v)+' — '+trL(v):v.ar+' ('+trL(v)+')'}</div>
     ${v.cj ? `<div id="conj-table-box" style="display:none;margin-bottom:.6rem;padding:.5rem .6rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px">${renderConjugationTable(v.cj)}</div>` : ''}
     <input id="flash-input" type="text"
       style="width:100%;box-sizing:border-box;padding:.85rem 1rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:16px;border-radius:6px;font-family:'IBM Plex Mono',monospace;margin-bottom:4rem;display:block"
@@ -3279,7 +3279,7 @@ function chkFlash(){
   inp.disabled=true;
   const fb=document.getElementById('feedback');
   const solAr = '<span style="font-family:\'Playfair Display\',serif;font-size:2.2rem;color:var(--gold2);display:block">'+v.ar+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+trL(v)+'</span>';
-  const solDe = '<span style="font-family:\'Playfair Display\',serif;font-size:1.5rem;display:block">'+v.en+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+trL(v)+'</span>';
+  const solDe = '<span style="font-family:\'Playfair Display\',serif;font-size:1.5rem;display:block">'+deHtml(v)+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+trL(v)+'</span>';
   const sol = ex.dir==='au2de' ? solDe+'<span style="font-family:\'Playfair Display\',serif;font-size:2.2rem;color:var(--gold2);display:block;margin-top:.3rem">'+v.ar+'</span>' : (dir==='ar2de' ? solDe : solAr);
   const homNote = homonymNote(v)+synonymNote(v)+schreibungNote(v);
   if(ok){
@@ -4963,7 +4963,7 @@ function renderVocabTableRows(){
       ? ' <button onclick="showConjModal('+v.id+')" title="Konjugationstabelle anzeigen — wechselt beim Lernen zwischen mehreren Personen/Zeiten" style="background:none;border:none;color:inherit;cursor:pointer;padding:0;font-size:1em;vertical-align:middle">🔀</button>'
       : (v.cj ? ' <button onclick="showConjModal('+v.id+')" title="Konjugationstabelle anzeigen" style="background:none;border:none;color:inherit;cursor:pointer;padding:0;font-size:1em;vertical-align:middle">🔠</button>' : '');
     h += '<td style="padding:.3rem;color:var(--muted);font-size:.7rem">'+v.tr+rotMark+'</td>';
-    h += '<td style="padding:.3rem">'+v.en+'</td>';
+    h += '<td style="padding:.3rem">'+deHtml(v)+'</td>';
     h += '<td style="text-align:center;padding:.3rem"><span style="color:'+color+';font-weight:700;font-size:.7rem">'+SRS_LABELS[level]+'</span></td>';
     const due = p && p.next_review ? fmtDue(p.next_review) : '—';
     const rc = p ? (p.review_count||0) : 0;
@@ -6190,6 +6190,14 @@ function renderLessonsAdmin(){
 }
 
 function escHtml(s){ const d=document.createElement('div');d.textContent=s||'';return d.innerHTML; }
+// Deutsch einer Vokabel für die Anzeige: bei Verben mit mehreren Bedeutungen (" / ") ist die erste die Hauptbedeutung
+// und wird fett gesetzt (Nils, 2026-11-07). Alle Zeilen einer Verbfamilie tragen dieselbe Liste in derselben Reihenfolge.
+function deHtml(v){
+  const t = String((v && v.en) || '');
+  const teile = t.split(' / ');
+  if(!(v && v.cj) || teile.length < 2) return t;
+  return '<b>'+escHtml(teile[0])+'</b> / '+teile.slice(1).map(escHtml).join(' / ');
+}
 // Unregelmäßige Formen in Kurslösungen: meta.irr = ["kul", "qolt#o"] — "form" markiert die ganze Form,
 // "form#teil" nur den Teil. Ersetzt wird nur in Textstücken (nicht in Tags) und nur ganze Wörter.
 function irrMark(html, ex){
