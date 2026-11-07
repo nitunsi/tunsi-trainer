@@ -55,7 +55,7 @@ Was in den Prüfungen immer wieder auftaucht (Gesamtprüfung 2026-11-07; Fallges
 3. Kursaufgaben: `course_exercises.prompt`/`solution` (ganzes Wort, `\m…\M`)
 4. Kurstexte: `course_lessons.dialog_text` und `grammar_notes` — bei geänderter `###`-Überschrift auch `chunk_order.grammar_headings`
 5. `vocab_lesson_refs` — `ids:` **und** `darija:`-Teil
-6. Regelkarten (`grammar_card`, Verb-Regeln) und Dubletten-Glossen („er sieht“ zweimal)
+6. Regelkarten (`grammar_card` und `meta.regelkarte` mit `solution`, siehe COURSE_MODE.md) und Dubletten-Glossen („er sieht“ zweimal)
 7. danach Trainer-Prüfungen laufen lassen (Ziel 0)
 
 ## Offene Punkte

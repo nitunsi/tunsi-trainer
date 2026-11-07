@@ -78,6 +78,14 @@ Karten „(Perfekt/Präsens konjugieren)“ (`grammar_drill`) tragen in `meta`: 
 - Die Prüfung steht im Trainer (*Mehr → Prüfungen*: „Kurskarte weicht von der verknüpften Vokabeltabelle ab“, `translitExtraChecks0`, Punkt 5b). Sie vergleicht je Zeit (Perfekt/Präsens) die Formen der Karte mit der Tabelle; -et/-at gelten als gleich. **Korrigiert wird zuerst die Vokabeltabelle**, dann die Karte; nur wenn die Karte bewusst anders schreibt, kommt `meta.abw` dazu.
 - Neue Karten: `meta.vocab_id` setzen, sobald es zum Verb eine Vokabel mit Tabelle gibt. Ohne Tabelle bleibt die Lösung der alleinige Bestand.
 
+### Regelkarten: `meta.layout = 'regelkarte'` (seit 2026-11)
+Merkkarten zu Verb- und Partizipregeln (`answer_pattern`, `source` `constructed`), Daten in `meta.regelkarte`: `verb` {ar, tr, de}, `frage`, `ant` {ar_von, tr_von, ar_nach, tr_nach}, `formel`, `tabelle` {kopf, zeilen}, `schritte`, `text`, `sicher`, `bsp` [{…von/nach…, ausnahme}]. `meta.beleg` = `belegt` oder `abgeleitet`, `meta.karte` = Kürzel (A1, P2, H1 …, je Lektion eindeutig).
+- **Abschnitte:** `partizip_regeln` (L5), `perfekt_praesens_a/b` (L10), `verbtypen_regeln` (L6–L11), jeweils in `chunk_order` hinter den Grammatik-Abschnitt gesetzt, zu dem sie gehören; Positionen 11xx/12xx.
+- **Freischalten** = `course_exercise_progress`-Zeile je Karte (0/0/0, `next_review now()`), bestehende nicht überschreiben.
+- **Prüfung im Trainer** (`datenChecks`, „Regelkarte: Arabisch passt nicht zur Umschrift“): vergleicht jedes ar/tr-Paar aus `verb`, `ant`, `bsp` über `transliterateArabicWord`. Bei Beispielen mit Präfix auf das Vokalzeichen achten (يِنْجَح yinja7, nicht يَنْجَح; يْرُدّ yrudd).
+- Regelkarten sind von der Prüfung „Wort in Aufgabe, aber erst in einer späteren Lektion verknüpft“ ausgenommen (Beispielverben zum Nachschlagen).
+- Ändert sich ein Beispielwort in den Vokabeln, die Karte mitziehen (SKILL.md → Folgeorte, Punkt 6): `meta.regelkarte` **und** `solution` (enthält Text und Beispiele noch einmal als Klartext).
+
 ### Workflow: erst Vokabeln, dann Übungen
 
 Standing rule: **bei jeder neuen Lektion erst alle referenzierten Vokabeln vollständig gegen den Bestand prüfen und importieren, danach erst die Übungen bauen.** Nicht vermischen. Jede Einzelwort-Übung (v.a. `pronunciation`) wird mit der Vokabel per `vocabulary_id` verlinkt, inkl. Audio wenn vorhanden.
