@@ -622,7 +622,8 @@ let VOCAB_BY_ID = {}; // {vocabulary_id: ALL_VOCAB-Eintrag} — O(1)-Lookup, kol
 // Vokallänge nur zur Anzeige (2026-11-07): liest lange Vokale aus dem vokalisierten arabic_script
 // (Konsonant + Fatha + ا/ى, Kasra + ي, Damma + و; teilvokalisiert: ي/و ohne Zeichen nach Konsonant ohne Sukun)
 // und setzt in der Umschrift einen Strich darüber (khtārit). Die Daten bleiben unverändert, Eingabe und
-// Antwortprüfung auch. Langvokal am Wortende gilt als kurz (shnuwwa, ma). Passt die Zahl der Vokal-Stellen
+// Antwortprüfung auch. Langvokal am Wortende gilt als kurz (shnuwwa, ma). Langes a neben ص ض ط ظ ق خ غ ر ح ع
+// klingt dunkel (ā), sonst hell (ǟ) — Aussprache Tunis, im Süden weniger aufgehellt. Passt die Zahl der Vokal-Stellen
 // im Arabischen nicht zu den Vokalgruppen der Umschrift, bleibt die Umschrift wie sie ist.
 const _VL_MAC = {a:'ā',e:'ē',i:'ī',o:'ō',u:'ū',ou:'ū'};
 function laengeSlots(ar){
@@ -644,7 +645,14 @@ function laengeSlots(ar){
       const v = d.includes(FA)?'a':d.includes(KA)?'i':d.includes(DA)?'u':null;
       const lang = n && !n.d && (((n.b==='ا'||n.b==='ى') && (v==='a' || (v===null && b!=='ا'))) || (n.b==='ي' && v==='i') || (n.b==='و' && v==='u'));
       const bloss = !lang && v===null && !d.includes(SU) && n && !n.d && (n.b==='ي'||n.b==='و') && b!=='ا' && i>0;
-      if(lang || bloss){ out.push(i+2>=u.length ? 'k' : 'L'); i++; continue; }
+      if(lang || bloss){
+        if(i+2>=u.length){ out.push('k'); i++; continue; }
+        // langes a: hell (ä) oder dunkel (a) nach den Nachbarkonsonanten (Aussprache Tunis)
+        const alif = n.b==='ا'||n.b==='ى', nach = u[i+2] ? u[i+2].b : '';
+        const dunkel = 'صضطظقخغرحع';
+        out.push(alif && !dunkel.includes(b) && !dunkel.includes(nach) ? 'H' : 'L');
+        i++; continue;
+      }
       if(v) out.push('k');
     }
   }
@@ -655,9 +663,16 @@ function laengeHtml(tr, ar){
   if(!tr || !/[ً-ْ]/.test(ar||'')) return tr;
   const sl = laengeSlots(ar), re = /ou|[aeiou]+/gi, g = []; let m;
   while((m = re.exec(tr))) g.push([m.index, m.index+m[0].length, m[0]]);
-  if(!g.length || g.length !== sl.length || !sl.includes('L')) return tr;
+  if(!g.length || g.length !== sl.length || !sl.some(x => x==='L'||x==='H')) return tr;
   let h = '', p = 0;
-  g.forEach(([s,e,t],k) => { h += tr.slice(p,s); h += sl[k]==='L' ? '<span class="vl">'+(_VL_MAC[t.toLowerCase()]||_VL_MAC[t[0].toLowerCase()]||t)+'</span>' : t; p = e; });
+  g.forEach(([s,e,t],k) => {
+    h += tr.slice(p,s);
+    const lt = t.toLowerCase(), mac = _VL_MAC[lt]||_VL_MAC[lt[0]]||t;
+    if(sl[k]==='H' && lt[0]==='a') h += '<span class="vl" title="lang, hell (ä)">ǟ</span>';
+    else if(sl[k]==='L'||sl[k]==='H') h += '<span class="vl" title="lang">'+mac+'</span>';
+    else h += t;
+    p = e;
+  });
   return h + tr.slice(p);
 }
 function trL(v){ if(!v) return ''; if(v._trL === undefined) v._trL = laengeHtml(v.tr, v.ar); return v._trL; }
