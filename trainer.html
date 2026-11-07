@@ -2437,7 +2437,7 @@ async function partnerInit(containerId){
   // Fälligkeit = fest der Lernstand von Nils (PARTNER_QUEUE_DUE_USER_ID), unabhängig davon, wer angemeldet
   // ist: Semia prüft, was bei Nils bald dran ist. Nach Kalendertag wie beim Lernen.
   let batch = [];
-  const cols = 'id,darija,german,partner_status,external_confirmed,external_confirmed_source,ninja_audio_url,ninja_audio_start,ninja_audio_end';
+  const cols = 'id,darija,german,arabic_script,internal_note,partner_status,external_confirmed,external_confirmed_source,ninja_audio_url,ninja_audio_start,ninja_audio_end';
   const uid = PARTNER_QUEUE_DUE_USER_ID;
   const progRows = uid
     ? await sbApiPaged('progress?user_id=eq.'+uid+'&next_review=not.is.null&select=vocabulary_id,next_review&order=id.asc', 1000)
@@ -2467,6 +2467,9 @@ async function partnerInit(containerId){
   const partnerBeleg = v => v.ninja_audio_url ? 2 : belegStufe(v);
   const stat = v => v.partner_status==='pending' ? 0 : v.partner_status==='skipped' ? 1 : 2;
   cand.sort((a,b)=>{
+    // 0. offene Fragen an Semia (Zeile „FRAGE AN SEMIA:“ in internal_note) vor allem anderen (Nils, 2026-11-07)
+    const qa = !!partnerFrage(a), qb = !!partnerFrage(b);
+    if(qa!==qb) return qa ? -1 : 1;
     if(a._due!==b._due) return a._due ? -1 : 1;
     const sa = stat(a), sb = stat(b);
     if(sa!==sb) return sa-sb;
@@ -2512,8 +2515,17 @@ function partnerShowCard(){
   partnerRenderCard(_pBatch[_pIdx], null);
 }
 
+// Frage an Semia: eine Zeile „FRAGE AN SEMIA: …“ in internal_note. Gilt nur, solange die Vokabel offen ist
+// (partner_status null/pending/skipped); Semias Antwort kommt als Kommentar zurück (partner_comment).
+function partnerFrage(v){
+  if(!v || !(v.partner_status == null || v.partner_status === 'pending' || v.partner_status === 'skipped')) return '';
+  const m = String(v.internal_note || '').match(/FRAGE AN SEMIA:\s*([^\n]+)/);
+  return m ? m[1].trim() : '';
+}
+
 // Rendert eine einzelne Prüfkarte. `existing` = bisheriges Ergebnis beim Bearbeiten, sonst null.
 function partnerRenderCard(v, existing){
+  const frage = partnerFrage(v);
   const main=_pMain();
   const statusLabel = existing ? '<span style="color:var(--gold2);font-size:.95rem">✎ wird bearbeitet</span>' :
                       v.partner_status === 'skipped' ? '<span style="color:var(--muted);font-size:.95rem">↩ übersprungen</span>' :
@@ -2525,10 +2537,12 @@ function partnerRenderCard(v, existing){
     <div class="partner-card">
       <div class="partner-card-darija">${v.darija||''}${v.ninja_audio_url ? ` <button onclick="playVocabAudio('${v.ninja_audio_url.replace(/'/g,"\\'")}',event,${v.ninja_audio_start||0},${v.ninja_audio_end||0})" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.85rem;padding:.1rem .5rem;cursor:pointer;border-radius:3px;vertical-align:middle">🔊</button>` : ''}</div>
       <div class="partner-card-german">${v.german||''}</div>
+      ${frage && v.arabic_script ? '<div dir="rtl" style="font-family:var(--arf,inherit);font-size:calc(1.6rem*var(--ars,1));color:var(--gold2);margin-top:.3rem">'+escHtml(v.arabic_script)+'</div>' : ''}
       <div class="partner-card-meta">${statusLabel}</div>
     </div>
+    ${frage ? '<div style="margin:.6rem 0;padding:.7rem .8rem;background:rgba(201,166,74,.12);border:1px solid var(--gold);border-radius:8px;font-size:1.05rem;line-height:1.5"><div style="font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:.2rem">Frage von Nils</div>'+escHtml(frage)+'<div style="font-size:.85rem;color:var(--muted);margin-top:.35rem">Bitte die Antwort ins Kommentarfeld schreiben.</div></div>' : ''}
     <div class="partner-comment-wrap">
-      <textarea class="partner-comment" id="partner-comment-input" placeholder="Kommentar (optional)…" rows="3">${escHtml(prefillComment)}</textarea>
+      <textarea class="partner-comment" id="partner-comment-input" placeholder="${frage ? 'Antwort …' : 'Kommentar (optional)…'}" rows="3">${escHtml(prefillComment)}</textarea>
     </div>
     <div class="partner-actions">
       <button class="partner-btn approve" onclick="partnerAct('approved')">✅ Stimmt</button>
