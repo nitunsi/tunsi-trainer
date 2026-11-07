@@ -375,6 +375,8 @@ body.neu-kb .neu-cq{height:5.6rem}
 .neu-cq .cq-p{font-size:1.6rem!important;line-height:1.4!important;font-weight:600;color:var(--text)}
 .neu-cq{height:11rem}
 body.neu-kb .neu-cq{height:8.6rem}
+/* Regelkarten haben keine Eingabe: Frageblock so hoch wie sein Inhalt, kein Scrollbalken */
+body .neu-cq:has(.rk-frage), body.neu-kb .neu-cq:has(.rk-frage){height:auto;overflow:visible}
 
 /* ---------- Statistik-Diagramme: lesbar bei 14/30/90 Tagen ---------- */
 .neu-chart{touch-action:pan-y}

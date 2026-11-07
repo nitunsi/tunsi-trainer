@@ -5546,6 +5546,11 @@ function datenChecks(){
     if(k.ant && (k.ant.tr_nach || k.ant.ar_nach) && !k.ant.de_nach) fehlt.push('Antwort');
     if(Array.isArray(k.bsp) && k.bsp.some(b => !b.de)) fehlt.push('Beispiele');
     if(!k.erklaerung) fehlt.push('Erklärung');
+    // Tabellenkopf nennt ein Verb (kleingeschrieben, Umschrift), das in der Frage fehlt (E3: Tabelle yakol/yakhuth, Frage nur yakol)
+    const vtr = String((k.verb && k.verb.tr) || '').toLowerCase().split(/[^a-z0-9]+/);
+    //     Nur wenn die Frage einen Teil der Tabellenverben nennt (E5: Frage im Präsens, Tabelle Perfekt kla/khtha = Antwort, kein Fehler)
+    const kv = ((k.tabelle && k.tabelle.kopf) || []).slice(1).map(c => String(c || '').split(/\s/)[0]).filter(w => /^[a-z0-9]+$/.test(w) && !['essen','nehmen'].includes(w));
+    if(kv.some(w => vtr.includes(w))) kv.filter(w => !vtr.includes(w)).forEach(w => fehlt.push('Verb '+w+' der Tabelle fehlt in der Frage'));
     if(fehlt.length) rkDe.push('Übung '+e.id+' ('+(e.meta.karte||'')+'): '+fehlt.join(', '));
   });
   out.push({label: geladen ? 'Regelkarte ohne Deutsch oder Erklärung' : 'Kurs: Kursdaten nicht geladen', n: rkDe.length, bsp: rkDe});
@@ -7252,6 +7257,9 @@ function regelTextHtml(t){
     .replace(/[\u0600-\u06FF]+(?:-[\u0600-\u06FF]+)*/g, m => '<bdi dir="rtl" style="font-family:var(--arf,inherit);color:var(--gold2)">'+m+'</bdi>');
 }
 function regelFrageHtml(rg){
+  return '<div class="rk-frage">'+regelFrageInnen(rg)+'</div>';   // .rk-frage: Fragebereich ohne feste Höhe (neu.css), Regelkarten haben keine Eingabe
+}
+function regelFrageInnen(rg){
   const v = rg.verb || {};
   if(!v.ar && !v.tr) return '<div style="font-size:1.15rem;line-height:1.5;text-align:center;margin:.3rem 0">'+regelTextHtml(rg.frage||'')+'</div>';
   // kompakt halten: der Aufgabenblock der Kurs-Karte hat eine feste Höhe (neu.css .neu-cq)
