@@ -16,13 +16,13 @@ Der Trainer prüft den Bestand selbst (*Mehr → Prüfungen*, Zahl auf *Lernen*)
 
 Die Regeln liegen **in diesem Repo**, nicht im gleichnamigen „tunsi"-Skill im Claude-Account: der ist ein manuell hochgeladener Snapshot und veraltet gegenüber diesem Stand. Änderungen an den Arbeitsregeln gehören hierher (committen + pushen).
 
-**Lies die Datei, die zu deiner Aufgabe gehört — nicht alle vier.** Zusammen sind sie rund 280 KB und füllen knapp die Hälfte eines Kontextfensters, bevor du irgendetwas getan hast.
+**Lies die Datei, die zu deiner Aufgabe gehört — nicht alle.** Zusammen füllen sie knapp die Hälfte eines Kontextfensters, bevor du irgendetwas getan hast. SKILL.md beginnt mit **„Häufige Fehler“ und den Folgeorten** — die gelten bei jeder Korrektur.
 
 | Aufgabe | lies |
 |---|---|
 | Vokabeln prüfen, korrigieren, neu anlegen | `skills/tunsi/SKILL.md` — der Prozess, Datenregeln, Transliteration, Duplikat-Check |
-| … und ein Qualitäts-Check hat getroffen | dazu in SKILL.md den Abschnitt **Datenqualitäts-Checks** (er ist ein Drittel der Datei — nur dann nötig) |
-| … und du schlägst ein Wort in den Quellen nach | dazu in SKILL.md den Abschnitt **vocab_lookup** |
+| … und ein Qualitäts-Check hat getroffen | dazu `skills/tunsi/CHECKS.md` (SQL-Checks A/B/C) |
+| … und du schlägst ein Wort in den Quellen nach | dazu `skills/tunsi/LOOKUP.md` (vocab_lookup) |
 | Code am Trainer (`trainer.html`) | `skills/tunsi/COURSE_MODE.md` → **Code-Änderungen**. SKILL.md brauchst du dafür nicht |
 | Kurs-Modus (`course_lessons`/`course_exercises`) | `skills/tunsi/COURSE_MODE.md` |
 | Neue Quelle importieren, PDF/Foto auswerten | `skills/tunsi/IMPORTS.md` |
