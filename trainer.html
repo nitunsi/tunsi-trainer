@@ -5122,7 +5122,8 @@ const AR_TRANSLIT_MAP = {
   'د':'d','ذ':'th','ر':'r','ز':'z','س':'s','ش':'sh',
   'ص':'s','ض':'dh','ط':'t','ظ':'th','ع':'3','غ':'gh',
   'ف':'f','ق':'q','ك':'k','ل':'l','م':'m','ن':'n','ه':'h',
-  'و':'w','ي':'y','ء':"'",'ؤ':"'",'ئ':"'"
+  'و':'w','ي':'y','ء':"'",'ؤ':"'",'ئ':"'",
+  'ڨ':'g','گ':'g','ڤ':'v','پ':'p'   // tunesische Zusatzbuchstaben (Lehnwörter: ڨ = g, ڤ = v, پ = p)
 };
 const AR_DIACRITIC_VOWEL = { 'َ':'a', 'ُ':'u', 'ِ':'i', 'ً':'an', 'ٌ':'un', 'ٍ':'in', 'ٰ':'a' };
 const AR_SHADDA = 'ّ', AR_SUKUN = 'ْ';
@@ -5536,6 +5537,36 @@ function datenChecks(){
     });
   });
   out.push({label: geladen ? 'Regelkarte: Arabisch passt nicht zur Umschrift' : 'Kurs: Kursdaten nicht geladen', n: rk.length, bsp: rk});
+
+  // 15) Einzelwort: Arabisch passt nicht zur Umschrift (vokalisiertes Arabisch, keine Lehnwörter, keine Sätze).
+  //     2026-11-07: 55 Zeilen angepasst (لْبَاس für labes, حَسَّ für 7ass, أشْكُونْ für shkoun). Ausnahmen in AR_TR_OK.
+  const AR_TR_AUSNAHMEN = new Set(AR_TR_OK);
+  //     Ausgeglichen wird, was nur Schreibweise ist: إ ohne Vokal = i, Schluss-Alif nach و, Artikel nach bi- (بِالطَّبِيعَة = bit-tabi3a),
+  //     و/ي zwischen Vokalen (7loua = حْلُوَة, radio = رَادْيُو), ay = ai, w/y am Ende nach Konsonant = u/i.
+  const ohneArt = w => w.replace(/^(el|il|e[a-z0-9]{1,2})-/, '');
+  const atrN = x => x.replace(/^a(?=[aiuE])/, '').replace(/uw(?=[aiuE])/g, 'u').replace(/([^aiuEy])y(?=[aiuE])/g, '$1i').replace(/([aE])y(?![aiuEy])/g, '$1i')
+    .replace(/([^aiuE])y$/, '$1i').replace(/([^aiuE])w$/, '$1u').replace(/([aiu])\1+/g, '$1').replace(/([^aiuE])\1\1+/g, '$1$1');
+  const atrMuster = t => new RegExp('^'+atrN(rkNorm(ohneArt(t), 'e').replace(/e/g, 'E')).replace(/E+/g, '[ai]')+'$');
+  const atrAr = a => a.replace(/إ(?![\u064B-\u0652])/g, 'اِ').replace(/إ/g, 'ا').replace(/(و[\u064B-\u0652]?)ا$/, '$1').replace(/^ب[\u064E\u0650]?ال(?![\u064E-\u0650])/, 'بِ');
+  const atr = [];
+  ALL_VOCAB.forEach(v => {
+    const t = String(v.tr || '').trim().toLowerCase(), a = String(v.ar || '').trim();
+    if(!t || !a || /[\s\/]/.test(t) || /\s/.test(a) || !/[\u064E\u064F\u0650\u0652]/.test(a)) return;
+    if(/(frz|engl|ital|Lehnwort)/i.test(v.en || '') || AR_TR_AUSNAHMEN.has(v.id)) return;
+    const g = transliterateArabicWord(atrAr(a));
+    if(!atrMuster(t).test(atrN(rkNorm(ohneArt(g), 'a')))) atr.push(v.id+' '+v.tr+': '+a+' liest sich „'+g+'“');
+  });
+  out.push({label: 'Einzelwort: Arabisch passt nicht zur Umschrift', n: atr.length, bsp: atr});
+
+  // 16) Präfix-Vokal: Darija beginnt mit y/t/n + Konsonant, das Arabische setzt dort einen Vokal (hocharabisches Muster,
+  //     2026-11-07 an rund 300 Zeilen korrigiert: يَصِير → يْصِيرْ für ysir).
+  const pv = [];
+  ALL_VOCAB.forEach(v => {
+    const t = String(v.tr || '').trim().toLowerCase(), a = String(v.ar || '').trim();
+    if(!/^[ytn](?![aeiouh])[a-z0-9]/.test(t) || !/^[\u064A\u062A\u0646][\u064E\u064F\u0650]/.test(a) || AR_TR_AUSNAHMEN.has(v.id)) return;
+    pv.push(v.id+' '+v.tr+': '+a.split(/\s/)[0]);
+  });
+  out.push({label: 'Präfix-Vokal: Darija ohne Vokal nach y/t/n, Arabisch mit', n: pv.length, bsp: pv});
   return out;
 }
 // Ausnahmen der Prüfungen 12 und 13 — gleich geschrieben, aber anderes Wort (jeweils mit Grund)
@@ -5551,6 +5582,15 @@ const KURS_HDT_OK = [
   'ghlit',                      // ghla „teuer werden“, nicht ghlith
   'bhar',                       // „Bab el Bhar“ als Ortsname in der deutschen Übersetzung (Übung 1319)
   'betr'                        // aus deutsch „beträgt“ (ä trennt das Wort)
+];
+// Ausnahmen der Prüfungen 15/16 (Vokabel-id) — Arabisch und Umschrift passen, der Vergleich kann es nicht sehen
+const AR_TR_OK = [
+  282, 283, 424, 928, 931, 1488, 2252, 2570, 2593, 2695,   // Lehnwörter (pièce, espadrille, kilomètre, parking, sport, souvenir, plombier, gants, plateau): p = ب, Umschrift nach dem Französischen
+  768,                          // allah: اللَّه mit Artikel geschrieben
+  738,                          // sidaliyya: صَيْدَلِيَّة wie TUNICO, markierte Fatha bleibt (SKILL.md, Lautlehre Regel 9)
+  3776,                         // lyoum: اليُوم, gesprochen lyoum
+  3220, 3223,                   // kliti-shi, jiti-shi: Bindestrich-Schreibung mit -i-, Arabisch zusammengeschrieben
+  2212, 2537, 2624, 2851, 3033  // Rückfrage Semia offen (pruefung/semia_fragen_2026-11-07.md): yi7awil, trit, tqeldi, ya3sser, ngammedh
 ];
 const KURS_VORGRIFF_OK = [
   'sin', 'bit', 'lil', 'hat', 'bank', 'allah', 'bin', // Deutsch („Französin“, „hat“, „Bank“, „ich bin“), Präposition bi-t-/lil-, Formel allah ykhallik

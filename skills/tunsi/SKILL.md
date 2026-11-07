@@ -86,8 +86,8 @@ Was die Sicht **nicht** abdeckt und weiterhin von Hand zu ziehen ist (verwaiste 
 | Schrägstrich im `darija` (echte Synonyme) | CHECKS.md → B |
 | Bedeutungsverdacht gegen TUNICO | `public.bedeutungs_screen` — **keine Korrekturliste**, ~93 % Fehlalarm |
 
-- **`-ou` nach Konsonant** (113 Zeilen): Die Konjugationstabellen schreiben 511× `-u` gegen 39× `-ou`, eine Vereinheitlichung wäre also begründbar. **Bewusst nicht angefasst**, weil die Mehrheit der Treffer gar kein Plural ist, sondern das Possessivsuffix (`3andou` „er hat", `7lou` „süß"). Nur mit Wortart-Prüfung angehbar, nicht per Regex.
-- **Verb-Modell-Abdeckung:** 181 Verbgruppen haben eine `conjugation`-Tabelle, davon erreichen 87 das 3-Zeilen-Ziel; 48 neue Zeilen würden alle auf 3 bringen. 88 Gruppen haben keine rotierende Zeile (62 davon bräuchten nur ein `conj_rotate`-Flag, keine Neuanlage). Weitere **169 Verb-Zeilen haben gar keine Tabelle** — ob das Modell auf sie ausgeweitet wird, ist offen.
+- **`-ou` nach Konsonant:** Die Konjugationstabellen schreiben überwiegend `-u`; eine Vereinheitlichung wäre begründbar, ist aber **bewusst nicht angefasst**, weil die meisten Treffer gar kein Plural sind, sondern das Possessivsuffix (`3andou` „er hat“, `7lou` „süß“). Nur mit Wortart-Prüfung angehbar, nicht per Regex. Umfang live zählen.
+- **Verb-Modell-Abdeckung:** Wie viele Verbgruppen das 3-Zeilen-Ziel erreichen und wie viele Verben gar keine `conjugation`-Tabelle haben, live zählen (Abschnitt „Verb-Konjugationsmodell“); ob das Modell auf alle Verben ausgeweitet wird, ist offen.
 
 ## Grundsatz: Nie ohne Bestätigung in Supabase schreiben
 
@@ -344,6 +344,8 @@ Keine Großbuchstaben in darija — weder als Emphase-Marker noch am Satzanfang.
 
 **Vokallänge wird nicht geschrieben, nur angezeigt (seit 2026-11-07).** In `darija` gibt es kein ā/ī/ū; der Trainer liest die Länge aus dem vokalisierten `arabic_script` (`laengeHtml()`/`trL()` in `trainer.html`) und markiert sie in der Anzeige (khtārit, shrāb „Alkohol“ gegen shrab „er trank“). Langes a wird zusätzlich nach Klang unterschieden: **ā dunkel** neben ص ض ط ظ ق خ غ ر ح ع (shrāb, nhār, sā3a), **ǟ hell** sonst (shǟf, bislǟma) — Aussprache Tunis. Unsere Schreibung `a`/`e` bildet hell/dunkel nicht verlässlich ab (2026-11-07: bei hellen Nachbarn 309× a gegen 127× e); dafür ist die Anzeige da, nicht die Daten. Eingabe und Antwortprüfung bleiben unverändert. Passt die Zahl der Vokalstellen im Arabischen nicht zu den Vokalgruppen der Umschrift, bleibt die Anzeige unmarkiert — eine falsche Länge in der Anzeige heißt also meist: Arabisch prüfen. Regel dahinter: kurzer Vokal rückt bei Endung mit Vokal nach vorn (ktib → kitbit), langer bleibt stehen (khtār → khtārit) und wird vor Endung mit Konsonant kurz (khtart).
 
+**`e` steht für helles ā oder kurzes i, auch beides im selben Wort** (mefte7 = مِفْتَاح, feded = فَادِدْ, betinjen = بَاتِنْجَانْ). Ein Vergleich Arabisch ↔ Umschrift muss jedes `e` einzeln als a **oder** i zulassen; wer alle `e` eines Wortes gleich ersetzt, erzeugt Fehlalarme (2026-11-07).
+
 | Form | Korrekt | Nie |
 |---|---|---|
 | اليوم | lyoum | lyum, el-youm (als Standalone ok) |
@@ -431,6 +433,11 @@ Aus der Uni-Wien-Lautlehre abgeleitete Prüfregeln, immer anwendbar wenn `arabic
 9. **Kolloquiale Vokal-Elision nur bei markiertem Sukun.** Reduktion nur dort, wo das Arabische selbst ein Sukun trägt (قْوِيَّة→"qwiyya"). Eine markierte Fatha/Kasra/Damma wird nicht gestrichen, auch wenn die Aussprache subjektiv reduziert klingt (صَيْدَلِيَّة→"sidaliyya").
 10. **Länderadjektiv vs. Ländername** ist eine Unterkategorie von Regel 5 — Konsonantenskelett-Match reicht nicht, Wortart genau prüfen.
 11. **Die eigene `darija` ist NIE das Vokalisierungsziel** (2026-09-15). Naheliegend wäre, das `arabic_script` so zu vokalisieren, dass `_arabic_to_chatalpha()` genau unsere `darija` zurückgibt — dann macht die Vokalisierung nur explizit, was wir ohnehin behaupten. **Gegenprobe an den 2.461 handvokalisierten Einzelwortzeilen: nur 554 hätte dieses Verfahren reproduziert.** Grund: unsere `darija` ist eine **verkürzte** Umschrift und lässt Vokale weg, die das Arabische braucht — قَلَم („qalam") steht bei uns als `qlam`, أَرْبَعَة („arba3a") als `arb3a`. Wer darauf vokalisiert, schreibt systematisch falsches Arabisch. Die `darija` darf die Vokalisierung nur **einschränken** (Konsonantenbestand, Gemination), nie bestimmen; die Vokale kommen aus TUNICO (`lemma_chatalpha`, `variants_chatalpha`, **`inflected`**) oder Peace Corps (`forms_chatalpha`). Werkzeug und Filter: `tools/README.md`.
+
+12. **Vokalisierung nach Muster — ohne direkte Quelle, aber belegt** (2026-11-07, rund 350 Zeilen). Zwei Muster sind im Bestand hundertfach belegt und dürfen angewendet werden, wenn die Quelle das Wort nicht führt:
+    - **Präfix ohne Vokal:** Präsens/Partizip mit y-, t-, n-, m- vor Konsonant trägt Sukun, wenn die `darija` dort keinen Vokal hat (يَصِير → يْصِيرْ für ysir, مُكَبَّش → مْكَبَّشْ). Ein Vokal bleibt, wo die `darija` ihn spricht (yi-, ya-: يِبْدَا yibda).
+    - **Cluster am Wortanfang:** hocharabischer Vokal auf dem ersten Konsonanten fällt weg, wenn die `darija` dort zwei Konsonanten hat (حَفِير → حْفِيرْ für 7fir, قَلَم رَصَاص → قْلَم رْصَاص).
+    Pflichtfilter: nur die Stelle, die das Muster betrifft, ändern; die übrigen Vokale bleiben (Regel 11); das UPDATE prüft per Wächter, dass das neue Arabisch wieder zur Umschrift passt; in `internal_note` steht „abgeleitet“. Nicht anwenden auf markierte Fatha mitten im Wort (Regel 9) und nicht auf Lehnwörter. Die Trainer-Prüfungen „Präfix-Vokal“ und „Einzelwort: Arabisch passt nicht zur Umschrift“ melden neue Verstöße; Ausnahmen mit Grund in `AR_TR_OK`.
 
 ## Topic (unwichtig — einfach setzen und nicht darüber reden)
 
