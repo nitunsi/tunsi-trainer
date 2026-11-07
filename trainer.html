@@ -5451,6 +5451,11 @@ function datenChecks(){
   feld('Vokabel ohne Englisch', v => !String(v.eg || '').trim());
   feld('Verb: Englisch als „he …s“ statt Infinitiv „to …“', v => v.cj && /^(he|she|it) [a-z]+s( \([^)]*\))?$/.test(v.eg || ''), v => v.eg);
 
+  // 9b) Lehnwort-Laute: v = ڤ, g = ڨ (2026-11-07 an 14 Zeilen vereinheitlicht). Zeilenweise, darum Ausnahmen mit Grund.
+  const VG_OK = {2437: 'original: frz. j-Laut, ج richtig', 3033: 'ngammedh: ڨ oder غ, Rückfrage an Semia'};
+  feld('Lehnwort: v in der Umschrift, aber ف statt ڤ im Arabischen', v => /v/.test(v.tr || '') && /ف/.test(v.ar || '') && !/[ڤڥ]/.test(v.ar || '') && !VG_OK[v.id], v => v.tr+' / '+v.ar);
+  feld('Lehnwort: g in der Umschrift, aber غ/ق/ج statt ڨ im Arabischen', v => /g(?!h)/.test(v.tr || '') && /[غقج]/.test(v.ar || '') && !/[ڨگ]/.test(v.ar || '') && !VG_OK[v.id], v => v.tr+' / '+v.ar);
+
   // 10) Konjugationstabelle: Vorschlagsvokal nur in manchen Zellen (ikhtart neben khtar, 2026-11-07)
   const vsv = [], vsvGes = new Set();
   ALL_VOCAB.forEach(v => {

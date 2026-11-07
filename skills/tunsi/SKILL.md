@@ -330,6 +330,8 @@ Bei Eingang B gehört dieselbe Begründung in die `internal_note` der neuen Zeil
 | ذ | th (ausnahmslos, seit 2026-08-07) | thekkra, thra3 (Arm), hetha (das/dieser), kaththab (Lügner) | dh oder bloßes d |
 | ث | th | thletha, thmenya | – |
 
+**Lehnwörter: v = ڤ, p = پ oder ب, g = ڨ** — nie ف für v oder غ/ق/ج für g (2026-11-07 an 14 Zeilen vereinheitlicht; Trainer-Prüfung „Lehnwort: v/g …“, Ausnahmen in `VG_OK` mit Grund, z. B. *original* mit ج).
+
 Keine Großbuchstaben in darija — weder als Emphase-Marker noch am Satzanfang. Durchgehend kleingeschrieben.
 
 **Gemination eines Digraphen: der ganze Digraph wird verdoppelt.** Bei Schadda auf ض/ظ/ذ/ش/خ/غ wird nicht nur der erste Buchstabe gedoppelt: `dhdh`, `thth`, `shsh`, `khkh`, `ghgh` — nie `ddh`, `tth`, `ssh`, `kkh`, `ggh`. Ebenso `77` für geminiertes ح, nie `7h`. Belegt an drei unabhängigen Quellen, null echte Gegenbeispiele im Bestand; die Zählungen stehen in PRECEDENTS.md → Digraph-Gemination.
