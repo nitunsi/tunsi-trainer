@@ -261,6 +261,8 @@ Bei Eingang B gehört dieselbe Begründung in die `internal_note` der neuen Zeil
 
 **Der Rückkanal von Nils** läuft über `vocabulary.partner_comment` und `partner_status` (Semias Prüfmodus im Trainer) — nicht mehr über eine eigene Tabelle. In Schritt 1 wird beides mitgelesen.
 
+**Fragen an Semia** (seit 2026-11-07) laufen über ihre Prüf-Warteschlange, nicht über eine Liste: an der Vokabel eine Zeile `FRAGE AN SEMIA: <Frage>` **vorn** in `internal_note` und `partner_status='pending'`. Der Prüfmodus zeigt die Frage (mit Arabisch) gut sichtbar und stellt solche Karten an den Anfang (`partnerFrage()`). Semia antwortet im Kommentarfeld → `partner_comment` + Status, damit landet die Zeile in Nils' Warteschlange. Frage zu einer Kursübung: an die passende Vokabel hängen. Abholen: `SELECT id, darija, partner_status, partner_comment FROM vocabulary WHERE internal_note ~ 'FRAGE AN SEMIA' AND partner_status <> 'pending';` — nach dem Umsetzen die Fragezeile aus `internal_note` entfernen (Antwort mit Datum in die Notiz).
+
 **Am Ende jeder Runde: ein Vorschlag, was als Nächstes drankommt** (Wunsch Nils, 2026-09-13). Nicht eine Liste offener Posten, sondern **einer** — der mit dem besten Ertrag pro Aufwand, kurz begründet. Der Nutzer soll „ja" sagen können, statt selbst auswählen zu müssen.
 
 **Nach dem Schreiben, Pflicht unaufgefordert** — immer bei Eingang B, bei A sobald `darija` oder `arabic_script` verändert wurde:
