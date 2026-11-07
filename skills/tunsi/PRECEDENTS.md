@@ -4,6 +4,59 @@ Ausführliche Fallgeschichten, Bug-Berichte und Nachweise hinter den Regeln in `
 
 **Wann ein Eintrag hierher gehört und wann er schrumpfen darf.** Aufnehmen, wenn ein Fehler passiert ist, den die bestehenden Regeln nicht verhindert haben. **Kürzen, sobald ein mechanischer Wächter denselben Fehler unmöglich macht** — dann bleiben nur die übertragbare Lehre und die Verweise auf den Wächter, der Fallverlauf ist Archiv. Ein Beispiel: die ڨ-Geschichte war 16 Zeilen, seit `unbekannte_arabische_zeichen` und Regel 23 sind es 8. **Nie kürzen**, wenn der Fehler weiterhin von Hand vermeidbar sein muss — die Regex-Fallen (`\y` statt `\b`, Zeichenreihenfolge Vokal-vor-Schadda, Wortgrenze an der falschen Stelle bei Präposition+Artikel), der `extract.js`-Anker und der stille Export-Abbruch bleiben deshalb in voller Länge.
 
+## Inhalt (Überschriften zum gezielten Suchen — `grep -n "^## <Stichwort>"`)
+
+- Gesamtprüfung Vokabeln, Kurs, Grammatik (2026-11-07)
+- Datenregeln — Präsens-Verben-Gloss
+- Verben — Bündelungsfehler
+- Duplikat-Check — Fallgeschichten
+- Prüfungen nach jedem Import — Fallgeschichten
+- TUNICO — Fallgeschichten
+- Abgleich mit Derja Ninja — Fallgeschichten
+- Uni-Wien-Lehrskripte — Fallgeschichten
+- Kurs-Modus — Fallgeschichten
+- „Keine Treffer" hiess in Wahrheit „nicht gesucht" (2026-09-21)
+- derja_ninja_import — abgelöst, aber nicht wertlos (bis 2026-09-02)
+- vocab_lookup — Fallgeschichten
+- vocabulary.english Backfill (2026-09-05)
+- Peace-Corps-Arabisch-Rekonstruktion (2026-09-05)
+- Digraph-Gemination — `dhdh` statt `ddh` (2026-09-12, überschreibt 2026-08-07)
+- 3ayshik / y3ayyshik — zwei Schreibungen sind hier richtig (2026-09-12)
+- Skill-Test an 10 fälligen Vokabeln (2026-09-13)
+- Was rechnet sonst noch mit diesem Feld? (2026-09-13)
+- Der Duplikat-Check nach einer Vokalisierungs-Kampagne (2026-09-13)
+- Bedeutungs-Screen: Mechanik richtig, Menge falsch (2026-09-13)
+- Sonderbuchstaben kehren in neuen Wörtern wieder — Aufzählen reicht nicht (2026-09-13)
+- chatalpha für Ninja — die Quell-Regeln vorberechnen statt anwenden (2026-09-13)
+- vocabulary_review abgeschafft (2026-09-13)
+- Quell-Konventionen waren an sechs Stellen verstreut (2026-09-13)
+- Checks nach Verbindlichkeit sortiert, nicht nach Thema (2026-09-13)
+- Mit dem Infinitiv gesucht — die Spiegelseite einer bekannten Regel (2026-09-13)
+- Ein Tippfehler in der Klammerung, 64 % des Bestands (2026-09-13)
+- Die Morphologie ist auch eine Quelle (2026-09-13)
+- Der Gegenrichtungs-Durchlauf: eine Frage an jede Regel (2026-09-13)
+- p/v ist nicht ڨ: warum zwei ähnliche Fälle verschieden entschieden wurden (2026-09-13)
+- Die Ableitung als Prüfer: was Konsonantenskelette prinzipiell nicht sehen (2026-09-13)
+- Zwei Workflows waren einer — zweimal an einem Tag (2026-09-13)
+- Skill-Audit: Regeln prüfen reicht nicht (2026-09-13)
+- Der Skill selbst war die Fehlerquelle (2026-09-13)
+- Harness-Export scheiterte still — Gateway Timeout als Array behandelt (2026-09-13)
+- scratchpad/extract.js — Anker zum zweiten Mal zu unscharf (2026-09-12)
+- Regeln prüfen Vorkommen, nicht Anzahl (2026-09-12)
+- metrobbi — gleiches Arabisch, gegenteiliger Gloss (2026-09-12)
+- Verwaiste ids in course_lessons.vocab_lesson_refs (gefunden 2026-09-12)
+- Zeichenreihenfolge im arabic_script — stille Regex-Falle (2026-09-12)
+- Waw-Gemination — erst offen gelassen, dann entschieden (2026-09-12)
+- arabic_skeleton/translit_skeleton — die Formeln und warum sie generiert gehören (2026-09-05, gekürzt 2026-09-22)
+- Der eingefrorene Kandidaten-Schnappschuss (2026-09-16)
+- Ninjas translit_skeleton folgt Ninjas Konvention, nicht unserer (2026-09-18)
+- Peace Corps forms_chatalpha/forms_skeleton — Nachbefüllung (2026-09-05)
+- Code-Änderungen — Fallgeschichte
+- Die Alif-Verschiebung — vier Fälle, ein Muster (2026-09-15)
+- Der Vokalisierungs-Solver — ein Ansatz, den die Validierung gekippt hat (2026-09-15)
+- Der Partner-Check zeigte Quellenbestätigtes zuerst (2026-09-15)
+- Artikel-Assimilation hinter einer Präposition — `\y` sieht die Wortgrenze nicht (2026-09-16)
+
 ## Datenregeln — Präsens-Verben-Gloss
 
 Präzedenzfall: beim Import von Lektion 4–7 wurden ~15 Verben doppelt angelegt, weil alte Einträge "er steht auf"-Stil hatten und die neuen "aufstehen"-Stil — der Duplikat-Check auf der German-Spalte lief dadurch ins Leere, erst ein Konsonantenskelett-Vergleich (Vokale komplett entfernt, nicht nur normalisiert) deckte sie auf.
@@ -802,3 +855,11 @@ Erweiterung ist scharf, nicht nur breiter.
 Artikel-/Präfix-Regel testen, ob das Muster auch dann noch greift, wenn ein weiteres Präfix
 (Präposition, Konjunktion) direkt davorklebt — genau die Fälle, die im Alltagstext am häufigsten
 vorkommen (`fi`, `bi`, `li`, `min` + Artikel).
+
+## Gesamtprüfung Vokabeln, Kurs, Grammatik (2026-11-07)
+
+- **h/7, d/dh, t/th in Kurstexten — dreimal nachgearbeitet.** Block 1b/2 korrigierten ~140 Stellen; ein Abgleich „Kurstext-Wort weicht nur in diesen Buchstaben von einer Vokabel ab“ fand danach noch 17 (habbit, bhar, haddrit, hyar, tfaddal …), zuletzt im L9-Dialog noch einmal hyar. Ursache: Dialoge und Grammatik wurden nie gegen die Vokabeln geprüft. Seitdem Trainer-Prüfung mit Ausnahmeliste `KURS_HDT_OK`.
+- **Gleich geschrieben ≠ Fehler:** Übung 1505 hdar „reden“ (هدر) und 1576 habb „wehen“ (هبّ) sahen wie h-statt-7-Fehler aus. Erst `meta.verb_de` zeigte, dass sie stimmen.
+- **Nur die halbe Prüfung gelaufen:** Das Prüfskript rief den ganzen Tag nur `translitExtraChecks0()` auf, nicht `datenChecks()`. Ein verwaister `darija:`-Eintrag (`yalqa` in L4, seit der Umbenennung zu „yilqa / yalqa“) blieb so unbemerkt. Immer beide aufrufen.
+- **Vokalposition ist kein Fehler bei Langvokal:** khtarit (nicht „khatrit“), weil ā lang ist und nicht wandert. Daraus entstand die Längenanzeige im Trainer (Länge aus dem Arabischen, nur Anzeige).
+- **Eigene Abschrift als Beleg:** `grammar_notes` wurde als „Skript“ zitiert und enthielt unsere eigenen Fehler. Beleg ist `uniwien_source_pages`.
