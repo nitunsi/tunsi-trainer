@@ -626,7 +626,7 @@ let VOCAB_BY_ID = {}; // {vocabulary_id: ALL_VOCAB-Eintrag} — O(1)-Lookup, kol
 // klingt dunkel (ā), sonst hell (ǟ) — Aussprache Tunis, im Süden weniger aufgehellt. Passt die Zahl der Vokal-Stellen
 // im Arabischen nicht zu den Vokalgruppen der Umschrift, bleibt die Umschrift wie sie ist.
 const _VL_MAC = {a:'ā',e:'ē',i:'ī',o:'ō',u:'ū',ou:'ū'};
-function laengeSlots(ar){
+function laengeSlots(ar, rHell){
   const FA='َ', DA='ُ', KA='ِ', SU='ْ';
   const isL = c => /[ء-يپڤڨگچ]/.test(c), isH = c => /[ً-ْٰ]/.test(c);
   const out = [];
@@ -649,7 +649,7 @@ function laengeSlots(ar){
         if(i+2>=u.length){ out.push('k'); i++; continue; }
         // langes a: hell (ä) oder dunkel (a) nach den Nachbarkonsonanten (Aussprache Tunis)
         const alif = n.b==='ا'||n.b==='ى', nach = u[i+2] ? u[i+2].b : '';
-        const dunkel = 'صضطظقخغرحع';
+        const dunkel = rHell ? 'صضطظقخغحع' : 'صضطظقخغرحع'; // r_hell: r im Wort laut TUNICO hell (vocabulary.r_hell)
         out.push(alif && !dunkel.includes(b) && !dunkel.includes(nach) ? 'H' : 'L');
         i++; continue;
       }
@@ -658,10 +658,10 @@ function laengeSlots(ar){
   }
   return out;
 }
-function laengeHtml(tr, ar){
+function laengeHtml(tr, ar, rHell){
   tr = String(tr||'');
   if(!tr || !/[ً-ْ]/.test(ar||'')) return tr;
-  const sl = laengeSlots(ar), re = /ou|[aeiou]+/gi, g = []; let m;
+  const sl = laengeSlots(ar, rHell), re = /ou|[aeiou]+/gi, g = []; let m;
   while((m = re.exec(tr))) g.push([m.index, m.index+m[0].length, m[0]]);
   if(!g.length || g.length !== sl.length || !sl.some(x => x==='L'||x==='H')) return tr;
   let h = '', p = 0;
@@ -675,7 +675,7 @@ function laengeHtml(tr, ar){
   });
   return h + tr.slice(p);
 }
-function trL(v){ if(!v) return ''; if(v._trL === undefined) v._trL = laengeHtml(v.tr, v.ar); return v._trL; }
+function trL(v){ if(!v) return ''; if(v._trL === undefined) v._trL = laengeHtml(v.tr, v.ar, v.rh); return v._trL; }
 // Tabellenzellen haben kein eigenes Arabisch: Länge aus der Vokabelzeile derselben Tabelle (gleiche Grundform)
 let _conjLaenge = null;
 function conjZelleL(cj, t){
@@ -862,7 +862,7 @@ function retryLoad(){
 // Holt Vokabeln und Fortschritt (parallel). Wird auch genutzt, um den Zwischenspeicher im Hintergrund aufzufrischen.
 function srsFetchRows(onVocab, onProg){
   const loadVocabTask = sbApiPaged(
-      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,audio_gain,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,lessons(lesson_number)&order=id.asc',
+      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,audio_gain,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,r_hell,english,lessons(lesson_number)&order=id.asc',
       1000,
       (loaded) => { if(onVocab) onVocab(loaded); }
     );
@@ -903,7 +903,7 @@ async function srsLoadFromSupabase(){
     allVocab.forEach(v => {
       const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
       const tp = v.topic || 'Allgemein';
-      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null, cr: !!v.conj_rotate };
+      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null, cr: !!v.conj_rotate, rh: v.r_hell===true, eg: v.english||'' };
       ALL_VOCAB.push(entry);
       if(v.ninja_audio_url && v.audio_gain) AUDIO_GAIN[audioKey(v.ninja_audio_url, v.ninja_audio_start, v.ninja_audio_end)] = v.audio_gain;
       VOCAB_BY_ID[v.id] = entry;
@@ -5446,8 +5446,86 @@ function datenChecks(){
   // Hörverstehen: braucht eine erreichbare Aufnahme (meta.audio_url, https) und den arabischen Text
   const hoer = ex.filter(e => e.exercise_type === 'listening' && (!/^https:\/\//.test(String((e.meta && e.meta.audio_url) || '')) || !String(e.prompt || '').trim())).map(e => 'Übung '+e.id+' (listening): '+(!/^https:\/\//.test(String((e.meta && e.meta.audio_url) || '')) ? 'Aufnahme (meta.audio_url) fehlt' : 'arabischer Text fehlt'));
   out.push({label: 'Kurs: Hörübung ohne Aufnahme oder ohne Text', n: hoer.length, bsp: hoer});
+
+  // 9) Englisch (seit 2026-11-07 vollständig; Verben im Infinitiv „to …“, Entscheidung der Gesamtprüfung)
+  feld('Vokabel ohne Englisch', v => !String(v.eg || '').trim());
+  feld('Verb: Englisch als „he …s“ statt Infinitiv „to …“', v => v.cj && /^(he|she|it) [a-z]+s( \([^)]*\))?$/.test(v.eg || ''), v => v.eg);
+
+  // 10) Konjugationstabelle: Vorschlagsvokal nur in manchen Zellen (ikhtart neben khtar, 2026-11-07)
+  const vsv = [], vsvGes = new Set();
+  ALL_VOCAB.forEach(v => {
+    const pa = v.cj && v.cj.past; const g = conjGrund(v.cj);
+    if(!pa || !g || vsvGes.has(g)) return; vsvGes.add(g);
+    const m3 = pa['3sg_m'] && pa['3sg_m'].darija;
+    if(!m3 || /^[aeiou]/.test(m3)) return;
+    const mit = Object.keys(pa).filter(k => pa[k] && /^[aeiou]/.test(String(pa[k].darija || '')));
+    if(mit.length) vsv.push(g+': '+mit.map(k => k+' '+pa[k].darija).join(', ')+' — 3sg m ohne Vokal am Anfang');
+  });
+  out.push({label: 'Konjugationstabelle: Vorschlagsvokal nur in manchen Zellen der Vergangenheit', n: vsv.length, bsp: vsv});
+
+  // 11) Grammatik-Überschrift aus chunk_order fehlt im Text (sonst bleibt das Fenster des Abschnitts leer)
+  const lekL = (typeof COURSE_LESSONS !== 'undefined' ? COURSE_LESSONS : []);
+  const ueb = [];
+  lekL.forEach(l => {
+    const sec = parseGrammarSections(l.grammar_notes);
+    (l.chunk_order || []).forEach(c => (c.grammar_headings || []).forEach(hd => { if(hd !== '__intro__' && !(hd in sec)) ueb.push('Lektion '+l.course_number+', Abschnitt '+c.key+': „'+hd+'“'); }));
+  });
+  out.push({label: geladen ? 'Kurs: Grammatik-Überschrift aus chunk_order fehlt im Text' : 'Kurs: Kursdaten nicht geladen', n: ueb.length, bsp: ueb});
+
+  // 12) Kurstext-Wort weicht nur in h/7, d/dh, t/th von einer Vokabel ab (Skript-Punkte ḥ ḍ ṯ beim
+  //     Abtippen verloren; 2026-11-07 dritte Runde mit 17 Funden). Ausnahmen: gleich geschrieben, anderes Wort.
+  const KURS_HDT_AUSNAHMEN = new Set(KURS_HDT_OK);
+  const einzel = new Set(ALL_VOCAB.map(v => String(v.tr || '').toLowerCase()).filter(t => /^[a-z0-9]+$/.test(t)));
+  const hdtKey = w => w.replace(/dh/g, 'd').replace(/th/g, 't').replace(/7/g, 'h');
+  const hdtMap = new Map(); einzel.forEach(w => { const k = hdtKey(w); if(!hdtMap.has(k)) hdtMap.set(k, new Set()); hdtMap.get(k).add(w); });
+  const hdt = new Map();
+  const hdtText = (wo, text) => String(text || '').toLowerCase().split(/[^a-z0-9]+/).forEach(w => {
+    if(w.length < 3 || einzel.has(w) || KURS_HDT_AUSNAHMEN.has(w) || !/[0-9]|dh|th|h|d|t/.test(w)) return;
+    const k = hdtKey(w); if(!hdtMap.has(k)) return;
+    if(!hdt.has(w)) hdt.set(w, {v: [...hdtMap.get(k)].join('/'), o: []}); hdt.get(w).o.push(wo);
+  });
+  lekL.forEach(l => { hdtText('L'+l.course_number+' Grammatik', l.grammar_notes); hdtText('L'+l.course_number+' Dialog', l.dialog_text); });
+  ex.forEach(e => hdtText('Übung '+e.id, (e.prompt || '')+' '+(e.solution || '')));
+  const hdtL = [...hdt.entries()].map(([w, x]) => w+' → '+x.v+' ('+x.o.slice(0, 3).join(', ')+(x.o.length > 3 ? ' …' : '')+')');
+  out.push({label: geladen ? 'Kurstext: Wort weicht nur in h/7, d/dh oder t/th von einer Vokabel ab' : 'Kurs: Kursdaten nicht geladen', n: hdtL.length, bsp: hdtL});
+
+  // 13) Wort in einer Aufgabe, das erst in einer späteren Lektion verknüpft ist (vocab_lesson_refs)
+  const ersteLek = new Map();
+  const merkeLek = (t, cn) => { t = String(t || '').toLowerCase(); if(t && (!ersteLek.has(t) || ersteLek.get(t) > cn)) ersteLek.set(t, cn); };
+  lekL.forEach(l => { const f = parseCourseVocabRefs(l.vocab_lesson_refs); f.ids.forEach(i => VOCAB_BY_ID[i] && merkeLek(VOCAB_BY_ID[i].tr, l.course_number)); f.tr.forEach(t => merkeLek(t, l.course_number)); });
+  const lekNr = {}; lekL.forEach(l => lekNr[l.id] = l.course_number);
+  const KURS_VORGRIFF_AUSNAHMEN = new Set(KURS_VORGRIFF_OK);
+  const vorg = new Map();
+  ex.forEach(e => {
+    if(e.exercise_type === 'pronunciation') return;
+    const cn = lekNr[e.course_lesson_id]; if(!cn) return;
+    String((e.prompt || '')+' '+(e.solution || '')).toLowerCase().split(/[^a-z0-9]+/).forEach(w => {
+      if(w.length < 3 || KURS_VORGRIFF_AUSNAHMEN.has(w) || !ersteLek.has(w) || ersteLek.get(w) <= cn) return;
+      const k = w+'|'+cn; if(!vorg.has(k)) vorg.set(k, 'L'+cn+': '+w+' (verknüpft erst in L'+ersteLek.get(w)+', Übung '+e.id+')');
+    });
+  });
+  out.push({label: geladen ? 'Kurs: Wort in Aufgabe, aber erst in einer späteren Lektion verknüpft' : 'Kurs: Kursdaten nicht geladen', n: vorg.size, bsp: [...vorg.values()]});
   return out;
 }
+// Ausnahmen der Prüfungen 12 und 13 — gleich geschrieben, aber anderes Wort (jeweils mit Grund)
+const KURS_HDT_OK = [
+  'ahla',                       // أهلا „willkommen“, nicht a7la „süßer“
+  'hsan',                       // Name Hsan
+  '3adhdha',                    // Partizip von y3udhdh „beißen“, nicht 3adda
+  '7out',                       // حوت „Fisch“, nicht 7outh „nimm“
+  '7dhar', 'hdart',             // ḥḍar „anwesend sein“ (Skript L10) bzw. hdar „reden“ (هدر, Übung 1505) — zwei Verben
+  'wa7dha',                     // wa7d-ha „sie allein“
+  'nikthib', 'nikthbu', 'kithbit', 'kithbu', 'kthibtu', 'kthibna',   // kthib „lügen“ (ذ), nicht ktib „schreiben“
+  'habbit',                     // habb „wehen“ (هبّ, Übung 1576), nicht 7abb
+  'ghlit',                      // ghla „teuer werden“, nicht ghlith
+  'bhar',                       // „Bab el Bhar“ als Ortsname in der deutschen Übersetzung (Übung 1319)
+  'betr'                        // aus deutsch „beträgt“ (ä trennt das Wort)
+];
+const KURS_VORGRIFF_OK = [
+  'sin', 'bit', 'lil', 'hat', 'bank', 'allah', // Deutsch („Französin“, „hat“, „Bank“), Präposition bi-t-/lil-, Formel allah ykhallik
+  'dur', 'qaddem', 'ju3', 'radd', 'hazz', '3add', 'daqq', 'bard',   // Imperativ/Partizip, gleich geschrieben wie die verknüpfte Vergangenheits- bzw. Nomenform
+  'wlid', 'ma3joun', 'skhun', 'jaww', 'yislakh' // anderes Wort gleicher Schreibung („Junge“, „geknetet“, „warm“) bzw. nur im Erklärtext
+];
 
 function showTranslitRegeln(){
   document.getElementById('act-screen').style.display='none';
@@ -8386,7 +8464,7 @@ function buildBackupSQL(data, today){
     {name:'ninja_audio_start',type:'num'},{name:'ninja_audio_end',type:'num'},{name:'ninja_checked_at',type:'str'},
     {name:'homonym_ok',type:'bool'},{name:'internal_note',type:'str'},{name:'external_confirmed',type:'bool'},
     {name:'external_confirmed_source',type:'str'},{name:'conjugation',type:'json'},
-    {name:'conj_rotate',type:'bool'},{name:'created_at',type:'str'}
+    {name:'conj_rotate',type:'bool'},{name:'r_hell',type:'bool'},{name:'created_at',type:'str'}
   ], vocab));
   parts.push('');
   parts.push('-- users ('+users.length+' Zeilen, ohne password_hash)');
