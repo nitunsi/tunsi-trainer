@@ -46,6 +46,7 @@ Was in den Prüfungen immer wieder auftaucht (Gesamtprüfung 2026-11-07; Fallges
 | **Falsche Verknüpfung** `tunico_verb_id` → `tunico_import` | zeigt auf `tunico_corpus_verbs.id` (Spaltenkommentar) |
 | **Tabelle in sich uneinheitlich** (ikhtart neben khtar) | Trainer-Prüfung „Vorschlagsvokal nur in manchen Zellen“ |
 | **Nur einen Teil der Trainer-Prüfungen laufen lassen** | im Harness `translitExtraChecks0()` **und** `datenChecks()` aufrufen |
+| **Arabisch an die Darija angeglichen, dabei neuen Fehler eingebaut** (وَاللَّهِ → walllahi; صَيْدَلِيَّة gegen Lautlehre 9 „korrigiert“) | nach jedem Schreibdurchgang Trainer **und** `qualitaets_checks` ansehen; vor einer Vokaländerung TUNICO und Lautlehre 9/11 lesen |
 | **Zahlen aus den Regeldateien zitiert** | immer live ziehen (`qualitaets_checks`, Trainer) |
 
 ### Folgeorte — nach jeder Korrektur eines Wortes
@@ -515,7 +516,7 @@ Das gilt auch dann, wenn die Neuanlage aus einem 🚩-Auftrag herausfällt — d
 
 **Was der Trainer prüft:** die vollständige Liste steht im Code, **dort nachlesen, nicht hier** (eine Aufzählung im Skill veraltet): `TRANSLIT_RULES` (Umschrift der Vokabeln), `countDupeIssues` (Dubletten), `translitExtraChecks0()` (Konjugationstabellen, Hohlverben, Kurs-Umschrift) und `datenChecks()` (Felder, Kurs, Lerndaten) in `trainer.html`. Grob: Umschrift, Pflichtfelder und Zeichen, Dubletten und Homonyme, Konjugation, Kurs (Umschrift, Lösung gegen Tabelle, Doppelte, Quelle), Lerndaten (verwaiste Verweise, Audio-Grunddaten, Flaggen, Fälligkeit). Jede Regel liefert `{label, n, bsp}` und erscheint von selbst in der Prüfung.
 
-**Was nur per SQL geht:** alles mit der Ninja-Tabelle (Checks 11, 13, 23, Quellenabgleich), die Vokalisierungs-Kandidaten (22, bewusst nicht im Trainer: Dauerrauschen), die `chatalpha`-Gegenchecks (24–28) und Audio-Zuordnung zum Wort. Dazu die Datenbank-Pflege (Advisors, Backups). Die SQL-Gruppe A bleibt vorerst als Gegenprobe; läuft der Trainer ein paar Wochen sauber, die doppelten SQL-Checks aus der Sicht nehmen (Vorschlag an Nils) und dort nur die Ninja-Teile lassen.
+**Was nur per SQL geht:** alles mit der Ninja-Tabelle (Checks 11, 13, 23, Quellenabgleich), die Vokalisierungs-Kandidaten (22, bewusst nicht im Trainer: Dauerrauschen), die `chatalpha`-Gegenchecks (24–28) und Audio-Zuordnung zum Wort. Dazu die Datenbank-Pflege (Advisors, Backups). Die SQL-Sicht bleibt **vollständig** als Gegenprobe, auch wo der Trainer dasselbe prüft (entschieden 2026-11-07): sie rechnet mit `_arabic_to_chatalpha`, der Trainer mit `transliterateArabicWord` — zwei unabhängige Wege. Am selben Tag fand Check 25 einen Fehler, den eine Korrektur gerade erst eingebaut hatte (وَاللَّهِ → „walllahi“). Nach jedem Schreibdurchgang also **beide** ansehen: Trainer-Prüfungen und `qualitaets_checks`.
 
 **Arbeitsweise bei einem Treffer:** wie jede Korrektur (Prozess, Schritt 4–5: zeigen, bestätigen, Backup, schreiben). Danach den Trainer neu laden — die Zahl muss sinken. Die Prüfung ist nicht „weg“, bloß weil ein Treffer ausgeblendet ist: Ausnahmen gehören in den Code (wie `KURS_OHNE_LOESUNG`, die vier Digraph-IDs) **mit Begründung im Kommentar**, nicht als stilles Wegfiltern.
 
