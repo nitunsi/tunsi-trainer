@@ -2482,7 +2482,12 @@ async function partnerInit(containerId){
     if(b._nextReview) return 1;
     return a._rnd - b._rnd;
   });
-  batch = cand.slice(0,10);
+  // Fragen an Semia: höchstens 2 je Block, an Position 1 und 6 (Nils, 2026-11-08: sonst zu viele auf einmal);
+  // der Rest der Fragen kommt in den folgenden Blöcken.
+  const fragen = cand.filter(v => partnerFrage(v)), uebrige = cand.filter(v => !partnerFrage(v));
+  batch = uebrige.slice(0, 10 - Math.min(2, fragen.length));
+  if(fragen[0]) batch.splice(0, 0, fragen[0]);
+  if(fragen[1]) batch.splice(Math.min(5, batch.length), 0, fragen[1]);
 
   _pBatch = batch;
   _pIdx = 0;
