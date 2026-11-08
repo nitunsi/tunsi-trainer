@@ -7303,6 +7303,13 @@ const GLOSSAR = [
   {k:'schwaches Ende', re:'schwach(?:es|en|er)? Ende', t:'Der letzte Wurzelbuchstabe ist ein y oder w (ein „schwacher“ Buchstabe). Dadurch ändern sich die Endungen: im Perfekt -a/-at/-it/-aw, im Präsens oft -i.', bsp:'khalla „er ließ“ → ykhalli „er lässt“'},
   {k:'Hohlverb', re:'Hohlverb\\w*', t:'Ein Verb mit w oder y in der Mitte der Wurzel. Der lange Vokal ersetzt den Konsonanten; in manchen Formen kommt er wieder.', bsp:'shaf „er sah“ → shuft „ich sah“'},
   {k:'Kehllaut', re:'Kehllaut\\w*', t:'Die Rachenlaute 3, 7, kh, gh, q. Sie färben die Vokale in der Nachbarschaft (ya- statt yi-).', bsp:'ya3rif statt yi3rif'},
+  {k:'Gruppe', re:'Gruppen? [1-6]|Gruppen', t:'Unsere Einteilung der regelmäßigen Verben nach dem Vokal im Perfekt und im Präsens (Gruppe 1 bis 6). Sie ist eine Merkhilfe, keine feste Regel: Perfekt und Präsens am besten zusammen lernen.', bsp:'sma3 / yisma3, ktib / yiktib, l3ab / yal3ab'},
+  {k:'Vorsilbe', re:'Vorsilbe\\w*', t:'Der Buchstabe vorn am Präsens, der die Person anzeigt: y- (er, sie Pl.), t- (sie, du, ihr), n- (ich, wir).', bsp:'y-iktib „er schreibt“, n-iktib „ich schreibe“'},
+  {k:'Endung', re:'Endung\\w*', t:'Der Buchstabe oder die Silbe hinten am Verb, die die Person anzeigt, etwa -t, -it, -u, -na im Perfekt.', bsp:'ktib-t „ich schrieb“, ktib-na „wir schrieben“'},
+  {k:'defektiv', re:'[Dd]efektiv\\w*', t:'Ein Verb, dessen letzter Wurzelbuchstabe schwach ist (w oder y) und am Wortende zum Vokal wird. Gleiche Bedeutung wie „schwaches Ende“.', bsp:'qra „er las“, kra „er mietete“'},
+  {k:'emphatisch', re:'emphatisch\\w*', t:'Dunkel, „hinten im Mund“ gesprochene Konsonanten (z. B. 7, kh, q, r, s, t, d, dh). Sie machen benachbarte Vokale dunkler (a statt i).', bsp:'rawwa7 „er ging nach Hause“ (a), nicht rawwi7'},
+  {k:'Hilfsvokal', re:'Hilfsvokal\\w*', t:'Ein kurzer Vokal, der vor ein Wort gesetzt wird, damit es nicht mit zwei Konsonanten beginnt.', bsp:'ktib → i-ktib „schreib!“'},
+  {k:'Vokalzeichen', re:'Vokalzeichen|Fatha|Kasra|Damma', t:'Die kleinen Zeichen über oder unter arabischen Buchstaben. Fatha (kleiner Strich oben) = a, Kasra (Strich unten) = i, Damma (kleines و oben) = u.', bsp:'كَ = ka, كِ = ki, كُ = ku'},
   {k:'Imperativ', re:'Imperativ\\w*', t:'Der Befehl: „Schreib!“, „Komm!“. Er entsteht meist aus dem Präsens ohne Vorsilbe.', bsp:'ktib! „schreib!“, ktibu! „schreibt!“'}
 ];
 const GL_RE = new RegExp('(?<![A-Za-zÄÖÜäöüß])(?:' + GLOSSAR.map(g => '(' + g.re + ')').join('|') + ')(?![A-Za-zÄÖÜäöüß])', 'g');
