@@ -7313,15 +7313,25 @@ const GLOSSAR = [
   {k:'Imperativ', re:'Imperativ\\w*', t:'Der Befehl: „Schreib!“, „Komm!“. Er entsteht meist aus dem Präsens ohne Vorsilbe.', bsp:'ktib! „schreib!“, ktibu! „schreibt!“'}
 ];
 const GL_RE = new RegExp('(?<![A-Za-zÄÖÜäöüß])(?:' + GLOSSAR.map(g => '(' + g.re + ')').join('|') + ')(?![A-Za-zÄÖÜäöüß])', 'g');
-function glossarWrap(h){
+let GL_SEEN = new Set();   // je Karte: jeder Begriff nur beim ersten Auftreten unterstrichen (once)
+function glossarWrap(h, once){
   return String(h || '').split(/(<[^>]*>)/).map(seg => {
     if(seg.charAt(0) === '<') return seg;
     return seg.replace(GL_RE, function(){
       const a = arguments; let i = 0;
       for(; i < GLOSSAR.length; i++) if(a[i+1] !== undefined) break;
+      if(once){ if(GL_SEEN.has(i)) return a[0]; GL_SEEN.add(i); }
       return '<span class="gl" onclick="glossarTipp(event,'+i+')">'+a[0]+'</span>';
     });
   }).join('');
+}
+// Sätze auf eigene Zeilen verteilen (nicht nach Abkürzungen wie „II.“, „z. B.“, „Pl.“)
+function regelSaetzeHtml(t, abstand){
+  const marke = String(t || '').replace(/([.!?])(\s+)(?=[A-ZÄÖÜ*„(])/g, (m, z, w, off, ganz) => {
+    const davor = ganz.slice(Math.max(0, off - 6), off + 1);
+    return /(?:^|[\s(])(?:I|II|III|IV|V|VI|B|Pl|Sg|Nr|bzw|ca|Abb|jdm|m|f)\.$/.test(davor) ? m : z+'\u0001';
+  }).split('\u0001').map(x => x.trim()).filter(Boolean);
+  return marke.map((x, i) => '<div'+(i && abstand ? ' style="margin-top:'+abstand+'"' : '')+'>'+regelTextHtml(x)+'</div>').join('');
 }
 function glossarTipp(ev, i){
   if(ev){ ev.stopPropagation(); ev.preventDefault(); }
@@ -7360,9 +7370,10 @@ function showGlossar(){
 function regelTextHtml(t){
   // arabische Wörter im deutschen Text isolieren, sonst vertauscht die Schreibrichtung Klammern und Kommas
   return glossarWrap(escHtml(t||'').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>')
-    .replace(/[\u0600-\u06FF]+(?:-[\u0600-\u06FF]+)*/g, m => '<bdi dir="rtl" style="font-family:var(--arf,inherit);color:var(--gold2)">'+m+'</bdi>'));
+    .replace(/[\u0600-\u06FF]+(?:-[\u0600-\u06FF]+)*/g, m => '<bdi dir="rtl" style="font-family:var(--arf,inherit);color:var(--gold2)">'+m+'</bdi>'), true);
 }
 function regelFrageHtml(rg){
+  GL_SEEN = new Set();
   return '<div class="rk-frage">'+regelFrageInnen(rg)+'</div>';   // .rk-frage: Fragebereich ohne feste Höhe (neu.css), Regelkarten haben keine Eingabe
 }
 function regelFrageInnen(rg){
@@ -7374,9 +7385,10 @@ function regelFrageInnen(rg){
     + '<div style="font-size:1.05rem">'+escHtml(v.tr||'')+'</div>'
     + (v.de ? '<div style="font-size:.78rem;color:var(--muted);margin-top:.15rem">'+escHtml(v.de)+'</div>' : '')
     + '</div>'
-    + '<div style="font-size:1.1rem;text-align:center;margin:0">'+glossarWrap(escHtml(rg.frage||''))+'</div>';
+    + '<div style="font-size:1.1rem;text-align:center;margin:0">'+glossarWrap(escHtml(rg.frage||''), true)+'</div>';
 }
 function regelLoesungHtml(rg){
+  GL_SEEN = new Set();
   const a = rg.ant || {};
   const arrow = '<div style="color:var(--muted);text-align:center">→</div>';
   const cell = t => '<div style="text-align:center;padding:0 4px">'+escHtml(t||'')+'</div>';
@@ -7407,10 +7419,15 @@ function regelLoesungHtml(rg){
     rg.schritte.forEach((t, i) => { h += '<div style="display:flex;gap:.6rem"><span style="color:var(--gold2);font-weight:700;flex-shrink:0;min-width:1.4rem">'+(i+1)+'.</span><span>'+regelTextHtml(t)+'</span></div>'; });
     h += '</div>';
   }
-  if(rg.text) h += '<div style="margin-top:'+((a.tr_von || a.ar_von || rg.formel || rg.tabelle || (rg.schritte && rg.schritte.length))?'.8rem':'0')+';line-height:1.6">'+regelTextHtml(rg.text)+(rg.sicher ? '<br>'+escHtml(rg.sicher) : '')+'</div>';
-  if(rg.erklaerung) h += '<div style="margin-top:.8rem;padding:.6rem .7rem;background:var(--bg);border-radius:8px;font-size:.92rem;line-height:1.6">'
-     + '<div style="font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.25rem">Genauer erklärt</div>'
-     + regelTextHtml(rg.erklaerung)+'</div>';
+  if(rg.text) h += '<div style="margin-top:'+((a.tr_von || a.ar_von || rg.formel || rg.tabelle || (rg.schritte && rg.schritte.length))?'.8rem':'0')+';line-height:1.6">'+regelSaetzeHtml(rg.text, '.35rem')+'</div>';
+  if(rg.sicher) h += '<div style="margin-top:.4rem;font-size:.78rem;color:var(--muted)">'+escHtml(rg.sicher)+'</div>';
+  if(rg.erklaerung){
+    const lang = String(rg.erklaerung).length > 420;   // lange Erklärungen zugeklappt, kurze offen
+    const kopf = '<span style="font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">Genauer erklärt'+(lang ? ' ▾' : '')+'</span>';
+    h += '<details'+(lang ? '' : ' open')+' style="margin-top:.8rem;padding:.6rem .7rem;background:var(--bg);border-radius:8px;font-size:.92rem;line-height:1.6">'
+       + '<summary style="cursor:pointer;list-style:none;margin-bottom:.25rem">'+kopf+'</summary>'
+       + regelSaetzeHtml(rg.erklaerung, '.4rem')+'</details>';
+  }
   if(Array.isArray(rg.bsp) && rg.bsp.length){
     h += '<div style="margin-top:.8rem;padding-top:.7rem;border-top:1px solid var(--border)"><div style="font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.25rem">Weitere Beispiele</div>';
     rg.bsp.forEach(b => {
