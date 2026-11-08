@@ -5490,7 +5490,7 @@ function datenChecks(){
   feld('Verb: Englisch als „he …s“ statt Infinitiv „to …“', v => v.cj && /^(he|she|it) [a-z]+s( \([^)]*\))?$/.test(v.eg || ''), v => v.eg);
 
   // 9b) Lehnwort-Laute: v = ڤ, g = ڨ (2026-11-07 an 14 Zeilen vereinheitlicht). Zeilenweise, darum Ausnahmen mit Grund.
-  const VG_OK = {2437: 'original: frz. j-Laut, ج richtig', 3033: 'ngammedh: ڨ oder غ, Rückfrage an Semia'};
+  const VG_OK = {2437: 'original: frz. j-Laut, ج richtig'};
   feld('Lehnwort: v in der Umschrift, aber ف statt ڤ im Arabischen', v => /v/.test(v.tr || '') && /ف/.test(v.ar || '') && !/[ڤڥ]/.test(v.ar || '') && !VG_OK[v.id], v => v.tr+' / '+v.ar);
   feld('Lehnwort: g in der Umschrift, aber غ/ق/ج statt ڨ im Arabischen', v => /g(?!h)/.test(v.tr || '') && /[غقج]/.test(v.ar || '') && !/[ڨگ]/.test(v.ar || '') && !VG_OK[v.id], v => v.tr+' / '+v.ar);
 
@@ -5644,7 +5644,7 @@ const AR_TR_OK = [
   738,                          // sidaliyya: صَيْدَلِيَّة wie TUNICO, markierte Fatha bleibt (SKILL.md, Lautlehre Regel 9)
   3776,                         // lyoum: اليُوم, gesprochen lyoum
   3220, 3223,                   // kliti-shi, jiti-shi: Bindestrich-Schreibung mit -i-, Arabisch zusammengeschrieben
-  2624, 2851, 3033, 1343  // Rückfrage Semia offen (Fragen in ihrer Prüf-Warteschlange): tqeldi, ya3sser, ngammedh, si'lit
+  2624, 2851, 1343  // Rückfrage Semia offen (Fragen in ihrer Prüf-Warteschlange): tqeldi, ya3sser (von ihr bestätigt, Ausnahme bleibt), si'lit
 ];
 const KURS_VORGRIFF_OK = [
   'sin', 'bit', 'lil', 'hat', 'bank', 'allah', 'bin', // Deutsch („Französin“, „hat“, „Bank“, „ich bin“), Präposition bi-t-/lil-, Formel allah ykhallik
