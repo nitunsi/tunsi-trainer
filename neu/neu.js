@@ -43,7 +43,7 @@ function applyFont(){ document.documentElement.style.fontSize = (FONT[LS.get('ne
 applyFont();
 const SESSION = ['flash','coursesrs','mix','pairs','listen','speak'];
 const HASPROG = ['flash','coursesrs','mix','listen','speak'];
-const ADMIN = ['addvocab','activate','dupes','partnerqueue','partnercheck','quellen','translitregeln','export','lessons'];
+const ADMIN = ['addvocab','activate','dupes','partnerqueue','partnercheck','quellen','translitregeln','glossar','export','lessons'];
 
 /* ---------- Rahmen: untere Leiste, Schließen, Fortschritt ---------- */
 function buildChrome(){
@@ -730,7 +730,7 @@ function showMore(){
     + '<div class="li"><span class="sp">Vibration bei Richtig und Falsch</span>'+sw(vib, "neuToggleVib()")+'</div></div>'
     + '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Kurs-Abschnitte nach Themenblöcken vorschlagen<span class="neu-sub" style="display:block;font-size:.8rem">Aus: Reihenfolge wie im Skript. An: '+COURSE_ALT_BLOCKS+'; die Vergangenheit steht vor dem Partizip. Ändert nur den Vorschlag „Kurs-Abschnitt“ unter Lernen.</span></span>'+sw(courseAltOn(), "neuToggleCOrder()")+'</div></div>';
   const erinn = '<div class="neu-list"><div class="li"><span class="sp">Erinnerung, wenn etwas fällig ist<span class="neu-sub" style="display:block;font-size:.8rem">Morgens und abends, nur wenn heute etwas fällig ist. iPhone: nur mit der App auf dem Home-Bildschirm.</span></span>'+sw(_pushOn, "neuTogglePush()")+'</div></div>';
-  const pflege = '<div class="neu-list">' + li('plus','Vokabel hinzufügen',"setMode('addvocab')") + li('book','Vokabel-Lektionen',"setMode('lessons')") + li('search','Prüfungen',"setMode('dupes')") + li('check','Partner-Check',"setMode('partnercheck')") + li('compass','Quellenabgleich',"setMode('quellen')") + li('abc','Transliterationsregeln',"setMode('translitregeln')") + li('save','Export',"setMode('export')") + '</div>';
+  const pflege = '<div class="neu-list">' + li('plus','Vokabel hinzufügen',"setMode('addvocab')") + li('book','Vokabel-Lektionen',"setMode('lessons')") + li('search','Prüfungen',"setMode('dupes')") + li('check','Partner-Check',"setMode('partnercheck')") + li('compass','Quellenabgleich',"setMode('quellen')") + li('abc','Transliterationsregeln',"setMode('translitregeln')") + li('book','Glossar (Fachwörter)',"setMode('glossar')") + li('save','Export',"setMode('export')") + '</div>';
   const technik = '<div class="neu-sub" style="margin-bottom:.5rem">Fälligkeiten der Vokabeln ordnen</div><div style="display:flex;gap:.5rem;flex-wrap:wrap">'
     + '<button class="neu-btn line" style="flex:1;min-width:10rem" onclick="neuAsk(\'Fälligkeiten glätten?\\n(betrifft bis zu '+smoothMax+' Vokabeln)\').then(ok=>{if(ok)smoothSchedule();});">Glätten<small>bis zu '+fmtN(smoothMax)+' Einträge</small></button>'
     + '<button class="neu-btn ghost" style="flex:1;min-width:10rem;border-color:var(--red);color:var(--red)" onclick="neuAsk(\'Alle Fälligkeiten neu berechnen?\\n(betrifft bis zu '+recalcMax+' Vokabeln)\').then(ok=>{if(ok)recalcAllNextReview();});">Alle neu berechnen<small>bis zu '+fmtN(recalcMax)+' Einträge</small></button>'

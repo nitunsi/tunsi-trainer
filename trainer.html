@@ -18,6 +18,7 @@
 <link rel="preconnect" href="https://lzecflvfalxkodytnwzf.supabase.co">
 <link rel="dns-prefetch" href="https://lzecflvfalxkodytnwzf.supabase.co">
 <style>
+.gl{border-bottom:1px dotted var(--gold2);cursor:help}
 :root{--bg:#0e0c0a;--surface:#1a1612;--surface2:#242018;--border:#3a3228;--gold:#c9a84c;--gold2:#e8c96a;--red:#c94c4c;--green:#4cac6e;--text:#f0e8d8;--muted:#8a7d6a;--blue:#4c7ac9;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;}
 button,input,select,a{touch-action:manipulation;}
@@ -330,6 +331,7 @@ body.hide-latin .chat-opt .latin {
     <button class="lesson-chip" onclick="setMode('partnercheck',this);closeNav()">🙋 Partner-Check</button>
     <button class="lesson-chip" onclick="setMode('quellen',this);closeNav()">🧭 Quellenabgleich</button>
     <button class="lesson-chip" onclick="setMode('translitregeln',this);closeNav()">🔤 Transliterationsregeln</button>
+    <button class="lesson-chip" onclick="setMode('glossar',this);closeNav()">📖 Glossar</button>
     <button class="lesson-chip" onclick="setMode('lessons',this);closeNav()">📖 Lektionen</button>
     <button class="lesson-chip" onclick="setMode('export',this);closeNav()">💾 Export</button>
   </div>
@@ -2985,6 +2987,7 @@ let _modeDispatchTimer = null; // Timer-Handle für den verzögerten Mode-Dispat
 // verhindert, dass ein überholter Dispatch (schneller Mehrfachklick auf verschiedene Chips)
 // noch feuert und mit dem inzwischen global überschriebenen cMode arbeitet.
 function setMode(m,el){
+  { const gt = document.getElementById('gl-tip'); if(gt) gt.style.display = 'none'; }
   cMode=m;
   document.querySelectorAll('.lesson-chip[onclick*="setMode"]').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
@@ -2994,7 +2997,7 @@ function setMode(m,el){
   hideAllStickyBars();
   clearTimeout(_modeDispatchTimer);
   _modeDispatchTimer=setTimeout(()=>{
-    if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='quellen'){showQuellenAbgleich();return;}if(m==='translitregeln'){showTranslitRegeln();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}if(m==='coursesrs'){goCourseSrs();return;}if(m==='mix'){goMix();return;}go();
+    if(m==='vocab'){showVocabList();return;}if(m==='addvocab'){showAddVocab();return;}if(m==='stats'){showStats();return;}if(m==='activate'){showActivate();return;}if(m==='dupes'){showDupeCheck();return;}if(m==='partnerqueue'){showPartnerQueue();return;}if(m==='partnercheck'){showPartnerCheckMode();return;}if(m==='quellen'){showQuellenAbgleich();return;}if(m==='translitregeln'){showTranslitRegeln();return;}if(m==='glossar'){showGlossar();return;}if(m==='lessons'){showLessonsAdmin();return;}if(m==='export'){showExport();return;}if(m==='course'){showCourseOverview();return;}if(m==='pairs'){showPairsMode();return;}if(m==='coursesrs'){goCourseSrs();return;}if(m==='mix'){goMix();return;}go();
   },0);
 }
 function updScore(){/* Score-Anzeige in nav-strip entfernt — score.c/w/st werden weiterhin für Ergebnis-Screen und SRS-Streak gepflegt */}
@@ -7023,7 +7026,7 @@ function praesensHinweisHtml(ex, res){
   const g = m.gruppe && PRAESENS_GRUPPEN[m.gruppe];
   if(g) h += '<div style="margin-top:.3rem"><b>Gruppe '+e(String(m.gruppe))+'</b>: '+e(g)+'</div>';
   if(typeof m.hinweis === 'string' && m.hinweis.trim()) h += '<div style="margin-top:.3rem;color:var(--muted)">Hinweis: '+e(m.hinweis.trim())+'</div>';
-  return h + '</div>';
+  return glossarWrap(h + '</div>');
 }
 function perfektMarkiere(r, ex){
   const rg = ex && ex.meta && (PERFEKT_REGELN[ex.meta.regel] || PRAESENS_REGELN[ex.meta.regel]);
@@ -7059,7 +7062,7 @@ function perfektHinweisHtml(ex, res){
     + (er && praesensErUmschrift(ex) ? ': '+em(er+' → '+praesensErUmschrift(ex)) : '')+'</div>';
   if(r.m) h += '<div style="margin-top:.3rem;color:var(--muted)">Merke: '+e(r.m)+'</div>';
   if(typeof m.hinweis === 'string' && m.hinweis.trim()) h += '<div style="margin-top:.3rem"><b>Hinweis:</b> '+e(m.hinweis.trim())+'</div>';
-  return h + '</div>';
+  return glossarWrap(h + '</div>');
 }
 // Konjugier-/Negations-/Gruppen-Karten ("yqum (konjugieren)", "Negation: yijbid", Lösung "a, b, c, d; Pl. e, f, g, h."
 // oder mit "Perf.: …  Präs.: …" bzw. "Gruppe 5. …"): die Aufgabe aus der Klammer wird zur Anweisung, die Lösung zur
@@ -7288,10 +7291,69 @@ function regelFormelHtml(f){
     return e;
   }).join(dot);
 }
+// ---- Glossar: Fachwörter in Karten und Hinweisen antippbar, dazu eine Nachschlageseite (Mehr → Glossar) ----
+const GLOSSAR = [
+  {k:'Wurzel', re:'Wurzel(?:n|buchstaben?)?', t:'Die meist drei Grundkonsonanten eines Wortes. Aus ihnen bilden feste Muster die verwandten Wörter.', bsp:'n-j-m → najjem „er konnte“; k-t-b → ktib „er schrieb“'},
+  {k:'Stamm', re:'(?:(?:I{1,3}|IV|V|VI)\\. ?)?(?:Grund)?[Ss]tamm|Stämme', t:'Ein Verbmuster: Aus einer Wurzel bildet man nach festen Schemata verschiedene Verben. Der I. Stamm (Grundstamm) ist das einfache Verb, die höheren Stämme verändern Form und Bedeutung. II. Stamm: mittlerer Konsonant verdoppelt (fa33a). III. Stamm: langes a nach dem ersten Konsonanten (fa3il). V. Stamm: t- + II. Stamm. VI. Stamm: t- + III. Stamm.', bsp:'kbir „groß“ → kabbar „vergrößern“ (II.); safir „reisen“ (III.)'},
+  {k:'Stammvokal', re:'Stammvokal\\w*', t:'Der Vokal auf dem mittleren Wurzelbuchstaben (a, i oder u). Er entscheidet, wie das Präsens gebildet wird. Nicht zu verwechseln mit dem Stamm (Verbmuster).', bsp:'yiktib: der Stammvokal ist i'},
+  {k:'Perfekt', re:'Perfekt\\w*', t:'Die Vergangenheit: die Form für „er tat etwas“, schon abgeschlossen. Sie wird mit Endungen an die Person angepasst.', bsp:'ktib „er schrieb“, ktibt „ich schrieb“'},
+  {k:'Präsens', re:'Präsens\\w*', t:'Die Gegenwart (auch Zukünftiges): Vorsilbe für die Person (y-, t-, n-) plus Stamm.', bsp:'yiktib „er schreibt“, niktib „ich schreibe“'},
+  {k:'Partizip', re:'Partizip\\w*', t:'Eine Verbform, die einen Zustand oder den Täter beschreibt, ähnlich wie „schlafend“ oder „geschrieben“. Das aktive Partizip beschreibt, wer etwas tut oder in welchem Zustand er ist.', bsp:'kteb → katib „schreibend / geschrieben habend“'},
+  {k:'geminiert', re:'[Gg]eminiert\\w*', t:'„Verdoppelt“: ein Verb, dessen zweiter und dritter Wurzelbuchstabe gleich sind.', bsp:'7abb „er mochte“ (ح-ب-ب)'},
+  {k:'schwaches Ende', re:'schwach(?:es|en|er)? Ende', t:'Der letzte Wurzelbuchstabe ist ein y oder w (ein „schwacher“ Buchstabe). Dadurch ändern sich die Endungen: im Perfekt -a/-at/-it/-aw, im Präsens oft -i.', bsp:'khalla „er ließ“ → ykhalli „er lässt“'},
+  {k:'Hohlverb', re:'Hohlverb\\w*', t:'Ein Verb mit w oder y in der Mitte der Wurzel. Der lange Vokal ersetzt den Konsonanten; in manchen Formen kommt er wieder.', bsp:'shaf „er sah“ → shuft „ich sah“'},
+  {k:'Kehllaut', re:'Kehllaut\\w*', t:'Die Rachenlaute 3, 7, kh, gh, q. Sie färben die Vokale in der Nachbarschaft (ya- statt yi-).', bsp:'ya3rif statt yi3rif'},
+  {k:'Imperativ', re:'Imperativ\\w*', t:'Der Befehl: „Schreib!“, „Komm!“. Er entsteht meist aus dem Präsens ohne Vorsilbe.', bsp:'ktib! „schreib!“, ktibu! „schreibt!“'}
+];
+const GL_RE = new RegExp('(?<![A-Za-zÄÖÜäöüß])(?:' + GLOSSAR.map(g => '(' + g.re + ')').join('|') + ')(?![A-Za-zÄÖÜäöüß])', 'g');
+function glossarWrap(h){
+  return String(h || '').split(/(<[^>]*>)/).map(seg => {
+    if(seg.charAt(0) === '<') return seg;
+    return seg.replace(GL_RE, function(){
+      const a = arguments; let i = 0;
+      for(; i < GLOSSAR.length; i++) if(a[i+1] !== undefined) break;
+      return '<span class="gl" onclick="glossarTipp(event,'+i+')">'+a[0]+'</span>';
+    });
+  }).join('');
+}
+function glossarTipp(ev, i){
+  if(ev){ ev.stopPropagation(); ev.preventDefault(); }
+  const g = GLOSSAR[i]; if(!g) return;
+  let b = document.getElementById('gl-tip');
+  if(!b){
+    b = document.createElement('div'); b.id = 'gl-tip';
+    b.style.cssText = 'position:fixed;left:.7rem;right:.7rem;bottom:4.6rem;z-index:99999;max-width:34rem;margin:0 auto;background:var(--surface);border:1px solid var(--gold);border-radius:10px;padding:.7rem .85rem;box-shadow:0 6px 24px rgba(0,0,0,.35);font-size:.9rem;line-height:1.5;color:var(--text)';
+    b.onclick = e => e.stopPropagation();
+    document.body.appendChild(b);
+    document.addEventListener('click', () => { const t = document.getElementById('gl-tip'); if(t) t.style.display = 'none'; });
+  }
+  b.innerHTML = '<div style="color:var(--gold2);font-weight:700;margin-bottom:.25rem">'+escHtml(g.k)+'</div><div>'+escHtml(g.t)+'</div>'
+    + '<div style="margin-top:.3rem;color:var(--muted);font-size:.82rem">Beispiel: '+escHtml(g.bsp)+'</div>'
+    + '<div style="margin-top:.45rem;display:flex;gap:1rem;font-size:.8rem"><a href="#" onclick="event.preventDefault();event.stopPropagation();document.getElementById(\'gl-tip\').style.display=\'none\';setMode(\'glossar\')" style="color:var(--gold2)">Alle Begriffe</a>'
+    + '<a href="#" onclick="event.preventDefault();event.stopPropagation();document.getElementById(\'gl-tip\').style.display=\'none\'" style="color:var(--muted)">Schließen</a></div>';
+  b.style.display = 'block';
+}
+function showGlossar(){
+  document.getElementById('act-screen').style.display='none';
+  document.getElementById('act-screen').style.pointerEvents='none';
+  const _ab=document.getElementById('act-batch-bar'); if(_ab) _ab.style.display='none';
+  const area = document.getElementById('exercise-screen');
+  if(area) area.style.display='block';
+  const sticky = document.getElementById('sticky-next'); if(sticky) sticky.classList.remove('show');
+  document.getElementById('ex-type-label').textContent = '📖 Glossar';
+  document.getElementById('ex-progress').textContent = '';
+  const np = document.getElementById('nav-progress'); if(np) np.style.visibility='hidden';
+  const c = document.getElementById('exercise-content'); if(!c) return;
+  c.innerHTML = '<div style="color:var(--muted);font-size:.85rem;line-height:1.5;margin-bottom:.8rem">Fachwörter aus den Karten. In den Karten sind sie unterstrichen; ein Tipp darauf zeigt dieselbe Erklärung.</div>'
+    + GLOSSAR.map(g => '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;margin-bottom:.7rem">'
+      + '<div style="color:var(--gold2);font-weight:700;margin-bottom:.3rem">'+escHtml(g.k)+'</div>'
+      + '<div style="line-height:1.55">'+escHtml(g.t)+'</div>'
+      + '<div style="margin-top:.35rem;color:var(--muted);font-size:.85rem">Beispiel: '+escHtml(g.bsp)+'</div></div>').join('');
+}
 function regelTextHtml(t){
   // arabische Wörter im deutschen Text isolieren, sonst vertauscht die Schreibrichtung Klammern und Kommas
-  return escHtml(t||'').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>')
-    .replace(/[\u0600-\u06FF]+(?:-[\u0600-\u06FF]+)*/g, m => '<bdi dir="rtl" style="font-family:var(--arf,inherit);color:var(--gold2)">'+m+'</bdi>');
+  return glossarWrap(escHtml(t||'').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>')
+    .replace(/[\u0600-\u06FF]+(?:-[\u0600-\u06FF]+)*/g, m => '<bdi dir="rtl" style="font-family:var(--arf,inherit);color:var(--gold2)">'+m+'</bdi>'));
 }
 function regelFrageHtml(rg){
   return '<div class="rk-frage">'+regelFrageInnen(rg)+'</div>';   // .rk-frage: Fragebereich ohne feste Höhe (neu.css), Regelkarten haben keine Eingabe
