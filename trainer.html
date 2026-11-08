@@ -7367,7 +7367,7 @@ function regelFrageInnen(rg){
     + '<div style="font-size:1.05rem">'+escHtml(v.tr||'')+'</div>'
     + (v.de ? '<div style="font-size:.78rem;color:var(--muted);margin-top:.15rem">'+escHtml(v.de)+'</div>' : '')
     + '</div>'
-    + '<div style="font-size:1.1rem;text-align:center;margin:0">'+escHtml(rg.frage||'')+'</div>';
+    + '<div style="font-size:1.1rem;text-align:center;margin:0">'+glossarWrap(escHtml(rg.frage||''))+'</div>';
 }
 function regelLoesungHtml(rg){
   const a = rg.ant || {};
