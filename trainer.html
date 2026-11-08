@@ -5451,6 +5451,21 @@ function datenChecks(){
   const hom = mitAr.filter(v => v.hok && !(cA.get(arKey(v)) > 1 || cG.get(gKey(v)) > 1 || cT.get(tKey(v)) > 1)).map(v => zeile(v)+' – homonym_ok ohne Partner');
   out.push({label: 'Homonym-Markierung ohne Partner (keine gleiche Schrift, Bedeutung oder Umschrift)', n: hom.length, bsp: hom});
 
+  // 7b) Verbfamilie: alle Zeilen mit gleicher Konjugation tragen gleich viele deutsche Bedeutungen (Regel Nils 2026-11-07).
+  //     Verglichen werden nur die er-Formen (Befehle, ich/du- und Mehrpersonenformen sind andere Zeilentypen).
+  const famBed = {};
+  ALL_VOCAB.forEach(v => {
+    if(!v.cj || !/^er /.test(v.en || '') || [3412, 3449].includes(v.id)) return;   // nur die er-Formen (Vergangenheit/Gegenwart); twaffa: Höflichkeitsformel
+    const k = JSON.stringify(v.cj);
+    (famBed[k] = famBed[k] || []).push(v);
+  });
+  const bedAbw = [];
+  Object.values(famBed).forEach(zs => {
+    const n = z => String(z.en || '').replace(/\([^)]*\)/g, '').split(' / ').filter(t => t.trim()).length;
+    if(new Set(zs.map(n)).size > 1) bedAbw.push(zs.map(z => z.id+' '+z.tr+' ['+z.en+']').join(' || '));
+  });
+  out.push({label: 'Verbfamilie: Zeilen mit unterschiedlich vielen deutschen Bedeutungen', n: bedAbw.length, bsp: bedAbw});
+
   // 8) Kurs: Quelle fehlt, Aufgabe oder Lösung leer
   const KURS_OHNE_LOESUNG = new Set(['grammar_card', 'build_dialog']);   // Karten und offene Dialogaufgaben (eigene Sätze bilden) haben keine feste Lösung
   const beleg = ex.filter(e => !e.meta || !String(e.meta.beleg || '').trim()).map(e => 'Übung '+e.id+' ('+e.exercise_type+'): Beleg fehlt');
