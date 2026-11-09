@@ -878,3 +878,17 @@ body.neu-bar main{padding-bottom:calc(var(--barh,0px) + 1.2rem)!important}
 .neu-acc-b{padding:0 0 .9rem}
 .neu-acc-b>.neu-card{background:transparent;border:0;padding:0;margin:0;box-shadow:none}
 .tn-tag{font-size:.68rem;border:1px solid var(--border);border-radius:10px;padding:.02rem .4rem;margin-left:.3rem;color:var(--muted);white-space:nowrap}
+
+/* Startseite 2026-11-09: Gruß größer, Ring links mit kurzen Infos daneben, Seite gleichmäßig verteilt */
+.neu-greet .neu-art{width:108px;max-width:108px}
+.neu-greet .g1.ar{font-size:calc(2.45rem*var(--ars,1));white-space:nowrap}
+.neu-greet .neu-sub{font-size:1rem}
+.neu-home .neu-hero-in{flex-direction:row!important;align-items:center;justify-content:center;text-align:left;gap:1.4rem}
+.neu-home #neu-ring{flex:none!important;width:auto!important;min-height:0!important;max-height:none!important}
+.neu-home #neu-ring svg{width:clamp(110px,18vh,150px)!important;height:clamp(110px,18vh,150px)!important;max-height:none!important}
+.neu-home .neu-hero-t{display:flex;flex-direction:column;gap:3px}
+.neu-home .neu-hero-t .neu-sub{font-size:1rem}
+.neu-home #neu-total{font-size:1.25rem;font-weight:700;color:var(--gold2)}
+.neu-home .neu-hero{flex:1 1 auto}
+.neu-home #neu-partner{justify-content:space-between;text-align:left;padding:.6rem 0!important}
+.neu-home #neu-partner > div > div:first-child{font-size:1rem!important;color:var(--text)}
