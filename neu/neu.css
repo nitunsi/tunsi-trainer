@@ -609,9 +609,9 @@ body.neu-kb .neu-micbtn{width:46px;height:46px}
 
 /* Gruß nach Tageszeit */
 .neu-greet{display:flex;align-items:center;gap:.8rem;margin:.1rem 0 .6rem}
-.neu-greet .neu-art{width:58px;max-width:58px;margin:0;flex:none}
+.neu-greet .neu-art{width:88px;max-width:88px;margin:0;flex:none}
 .neu-greet .g1{font-size:1.25rem;font-weight:700;color:var(--gold2);line-height:1.2}
-.neu-greet .g1.ar{font-family:var(--arf,inherit);font-size:calc(1.45rem*var(--ars,1));font-weight:400;line-height:1.35}
+.neu-greet .g1.ar{font-family:var(--arf,inherit);font-size:calc(2.1rem*var(--ars,1));font-weight:400;line-height:1.3}
 /* Tagesziel erreicht: Ring pulsiert einmal grün */
 @keyframes neu-ringpop{0%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(43,134,80,0))}40%{transform:scale(1.12);filter:drop-shadow(0 0 10px rgba(43,134,80,.55))}100%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(43,134,80,0))}}
 .neu-ring-hit svg{animation:neu-ringpop .9s ease-out}
