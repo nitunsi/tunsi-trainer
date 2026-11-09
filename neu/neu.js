@@ -466,7 +466,7 @@ function goHome(){
     + lessonFilterChip()
     + '<div class="neu-card neu-hero" style="padding:.8rem 1rem"><div class="neu-hero-in">'
     +   '<div id="neu-ring">'+ring(0, 76, 8, 'var(--gold)', '')+'</div>'
-    +   '<div class="neu-hero-t"><div id="neu-goal-t" class="neu-sub">von '+goal+'</div><div id="neu-streak" class="neu-sub">&nbsp;</div>'+(total ? '<div id="neu-total">'+fmtN(total)+' fällig</div>' : '')+'</div>'
+    +   '<div class="neu-hero-t"><div id="neu-goal-t" style="display:none">von '+goal+'</div><div id="neu-streak" class="neu-sub">&nbsp;</div>'+(total ? '<div id="neu-total">'+fmtN(total)+' fällig</div>' : '')+'</div>'
     + '</div></div>'
     + '<div id="neu-new">'+(tnDaysHtml() || '')+'</div>'
     + (empty
@@ -478,7 +478,7 @@ function goHome(){
     + '</div>')
     + '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer;padding:.7rem 1rem" onclick="setMode(\'partnerqueue\')"><div style="flex:1"><span class="neu-skel" style="width:60%;height:1.1rem"></span><div style="height:.4rem"></div><span class="neu-skel" style="width:40%;height:.8rem"></span></div></div>'
     + '<div class="neu-chips" style="padding-bottom:0">'
-    +   '<span class="neu-chip" onclick="openActivateDialog()">Neue Vokabeln</span>'
+    +   (function(){ const m = newStuffMsg(); return '<span class="neu-chip'+(m ? ' hint'+(m.red ? ' red' : '') : '')+'" onclick="openActivateDialog()">Neue Vokabeln'+(m ? '<i class="neu-dot"></i>' : '')+'</span>'; })()
     +   '<span class="neu-chip" onclick="statsUnlockNextChunk()">Kurs-Abschnitt</span>'
     +   '<span class="neu-chip" onclick="openPullForward()">Vorziehen</span>'
     + '</div>'
@@ -491,7 +491,7 @@ function goHome(){
     try{ animateRing(r, p, dc.today, goal); }
     catch(e){ console.error('animateRing', e); r.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', fmtN(dc.today)); $('neu-goal-t').textContent = 'von ' + fmtN(goal); }
     setTimeout(() => { try{ milesCheck(a.streak || 0); }catch(e){} }, 600);
-    $('neu-streak').innerHTML = a.streak ? flame(a.streak) + a.streak + ' Tag' + (a.streak===1?'':'e') + ' in Folge' : 'Noch keine Serie';
+    $('neu-streak').innerHTML = a.streak ? flame(a.streak) + a.streak : '';
   }).catch(() => { const s = $('neu-streak'); if(s) s.textContent = ''; });
   // Motivation: zählt nur, was heute tatsächlich geschafft (richtig beantwortet) ist — nicht, was noch geplant/fällig ist
   loadDayCounts().then(dc => {
