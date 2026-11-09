@@ -193,7 +193,7 @@ function ring(p, size, w, color, txt){
   const r = (size - w) / 2, c = 2 * Math.PI * r, f = Math.max(0, Math.min(1, p));
   return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" style="flex:none"><circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="var(--surface2)" stroke-width="'+w+'"/>'
     + '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="'+w+'" stroke-linecap="round" stroke-dasharray="'+(c*f).toFixed(1)+' '+c.toFixed(1)+'" transform="rotate(-90 '+size/2+' '+size/2+')"/>'
-    + '<text x="50%" y="50%" dy=".35em" text-anchor="middle" fill="var(--text)" font-size="'+Math.round(size*0.24)+'" font-weight="700" font-family="inherit">'+(txt||'')+'</text></svg>';
+    + '<text x="50%" y="50%" dy=".35em" text-anchor="middle" fill="var(--text)" font-size="'+Math.round(size*0.24*Math.min(1, 4.6/Math.max(1, String(txt||'').length)))+'" font-weight="700" font-family="inherit">'+(txt||'')+'</text></svg>';
 }
 
 
@@ -388,6 +388,11 @@ function newStuffMsg(){
   if(w < goal * WARN_FACTORS[1]) return {t:'Der Nachschub wird knapp.\nZeit, Neues zu starten.', red:true};
   if(w < goal * WARN_FACTORS[0]) return {t:'Der Vorrat an Anfängerwörtern schrumpft.\nZeit für Neues.', red:false};
   return null;
+}
+// Hinweis „Neues aufnehmen“ ohne Text: Chip mit Punkt (gold = Vorrat schrumpft, rot = knapp)
+function newStuffChip(){
+  const m = newStuffMsg(); if(!m) return '';
+  return '<div style="text-align:center;margin:.2rem 0 .4rem"><span class="neu-chip hint'+(m.red ? ' red' : '')+'" style="display:inline-flex;align-items:center;border:1px solid '+(m.red ? 'var(--red)' : 'var(--gold)')+';border-radius:20px;padding:.5rem .9rem;font-size:.9rem;cursor:pointer" onclick="closeResult();openActivateDialog()">Neue Vokabeln<i class="neu-dot"></i></span></div>';
 }
 function newStuffHint(){
   const m = newStuffMsg();
@@ -942,7 +947,7 @@ window.showRes = function(){
   loadDayCounts().then(dc => {
     const el = $('neu-res-msg'); if(!el) return;
     const goal = parseInt(LS.get('neu-goal','100'), 10) || 100;
-    el.innerHTML = motivationHtml(dc, goal) || dangerHtml(dc, goal, left) || newStuffHint();
+    el.innerHTML = motivationHtml(dc, goal) || dangerHtml(dc, goal, left) || newStuffChip();
   }).catch(() => {});
   loadActivity().then(a => setTimeout(() => { try{ milesCheck(a.streak || 0); }catch(e){} }, 900)).catch(() => {});
 };
