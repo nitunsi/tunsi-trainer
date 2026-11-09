@@ -442,7 +442,7 @@ function greetHtml(){
   const v = (typeof VOCAB_BY_ID !== 'undefined' && VOCAB_BY_ID[g.id]) || null;   // live aus den Vokabeln, sonst die feste Fassung
   const ar = v && v.ar ? v.ar : g.ar, tn = v && v.tr ? v.tr : g.tn;
   return '<div class="neu-greet" onclick="greetOpen('+g.id+')" style="cursor:pointer">'+artHtml(g.art)
-    + '<div><div class="g1 ar" dir="rtl">'+escHtml(ar)+'</div><div class="neu-sub">'+escHtml(tn)+name+' · '+g.de+'</div></div></div>';
+    + '<div><div class="g1 ar" dir="rtl">'+escHtml(ar)+'</div><div class="neu-sub">'+escHtml(tn)+name+'</div></div></div>';
 }
 window.greetOpen = async function(id){
   try{
