@@ -428,18 +428,32 @@ function animateRing(host, p, today, goal){
     setTimeout(() => { if($('neu-ring') === host){ host.classList.add('neu-ring-hit'); try{ if(LS.get('neu-vib','0') === '1' && navigator.vibrate) navigator.vibrate([30, 40, 60]); }catch(e){} } }, 700);
   }
 }
-// Gruß nach Berliner Uhrzeit: Tounsi + Deutsch, mit Sonne oder Mond
+// Gruß nach Berliner Uhrzeit: arabisch aus der Kursvokabel (id), darunter klein die Umschrift mit Namen, mit Sonne oder Mond.
+// Antippen öffnet den Kurs-Abschnitt, in dem die Vokabel vorkommt.
 function greetingNow(){
   const hr = parseInt(new Intl.DateTimeFormat('de-DE', {hour:'2-digit', hour12:false, timeZone:'Europe/Berlin'}).format(new Date()), 10) % 24;
-  if(hr >= 5 && hr < 12) return {art:'sun', tn:'Sba7 lkhiyr', de:'Guten Morgen'};
-  if(hr >= 12 && hr < 18) return {art:'sun', tn:'Nharik zin', de:'Einen schönen Tag'};
-  if(hr >= 18 && hr < 22) return {art:'moon', tn:'Massik bil khir', de:'Guten Abend'};
-  return {art:'moon', tn:'Tisbe7 3ala khir', de:'Gute Nacht'};
+  if(hr >= 5 && hr < 12) return {art:'sun', id:248, tn:'Sba7 lkhir', ar:'صْبَاحْ لْخِيرْ', de:'Guten Morgen'};
+  if(hr >= 12 && hr < 18) return {art:'sun', id:853, tn:'Nharik zin', ar:'نهارك زين', de:'Einen schönen Tag'};
+  if(hr >= 18 && hr < 22) return {art:'moon', id:249, tn:'Massik bil khir', ar:'مَسَّاك بِالخِير', de:'Guten Abend'};
+  return {art:'moon', id:854, tn:'Tisbe7 3ala khir', ar:'تصبح على خير', de:'Gute Nacht'};
 }
 function greetHtml(){
   const g = greetingNow(), name = currentUser && currentUser.username ? ', '+escHtml(currentUser.username) : '';
-  return '<div class="neu-greet">'+artHtml(g.art)+'<div><div class="g1">'+g.tn+name+'</div><div class="neu-sub">'+g.de+'</div></div></div>';
+  const v = (typeof VOCAB_BY_ID !== 'undefined' && VOCAB_BY_ID[g.id]) || null;   // live aus den Vokabeln, sonst die feste Fassung
+  const ar = v && v.ar ? v.ar : g.ar, tn = v && v.tr ? v.tr : g.tn;
+  return '<div class="neu-greet" onclick="greetOpen('+g.id+')" style="cursor:pointer">'+artHtml(g.art)
+    + '<div><div class="g1 ar" dir="rtl">'+escHtml(ar)+'</div><div class="neu-sub">'+escHtml(tn)+name+' · '+g.de+'</div></div></div>';
 }
+window.greetOpen = async function(id){
+  try{
+    if(typeof _courseLoaded !== 'undefined' && !_courseLoaded) await loadCourseListData();
+    const v = VOCAB_BY_ID[id];
+    const l = (COURSE_LESSONS || []).find(x => { const r = parseCourseVocabRefs(x.vocab_lesson_refs); return r.ids.has(id) || (v && r.tr.has(v.tr)); });
+    if(!l){ showToast('Dazu gibt es keinen Kurs-Abschnitt', 'err'); return; }
+    setMode('course');
+    setTimeout(() => showCourseLesson(l.id), 60);
+  }catch(e){ showToast('Kurs konnte nicht geöffnet werden: '+e.message, 'err'); }
+};
 function goHome(){
   reset('home');
   const c = $('exercise-content'); if(!c) return;
