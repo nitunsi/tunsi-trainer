@@ -7305,6 +7305,8 @@ const GLOSSAR = [
   {k:'Präsens', re:'Präsens\\w*', t:'Die Gegenwart (auch Zukünftiges): Vorsilbe für die Person (y-, t-, n-) plus Stamm.', bsp:'yiktib „er schreibt“, niktib „ich schreibe“'},
   {k:'Partizip', re:'Partizip\\w*', t:'Eine Verbform, die einen Zustand oder den Täter beschreibt, ähnlich wie „schlafend“ oder „geschrieben“. Das aktive Partizip beschreibt, wer etwas tut oder in welchem Zustand er ist.', bsp:'kteb → katib „schreibend / geschrieben habend“'},
   {k:'geminiert', re:'[Gg]eminiert\\w*', t:'„Verdoppelt“: ein Verb, dessen zweiter und dritter Wurzelbuchstabe gleich sind.', bsp:'7abb „er mochte“ (ح-ب-ب)'},
+  {k:'starkes Verb', re:'(?:[Ss]tark(?:es|en|er)? Verb\\w*|regulär\\w*)', t:'Ein Verb ohne schwachen Wurzelbuchstaben (kein w, kein y): Es wird nach den normalen Mustern gebeugt, und alle Wurzelbuchstaben bleiben in jeder Form sichtbar.', bsp:'ktib „schreiben“, l3ab „spielen“, sma3 „hören“'},
+  {k:'schwaches Verb', re:'[Ss]chwach(?:es|en|er)? Verb\\w*', t:'Ein Verb mit w oder y als Wurzelbuchstabe. Diese Buchstaben fallen in manchen Formen weg oder werden zum Vokal. Je nach Stelle: am Anfang (wsil „ankommen“), in der Mitte (Hohlverb: shaf „sehen“, qam „aufstehen“) oder am Ende (schwaches Ende: kra „mieten“, lqa „finden“). Geminierte Verben (7abb) zählen nicht dazu.', bsp:'wsil, shaf, kra, aber 7abb (geminiert)'},
   {k:'schwaches Ende', re:'schwach(?:es|en|er)? Ende', t:'Der letzte Wurzelbuchstabe ist ein y oder w (ein „schwacher“ Buchstabe). Dadurch ändern sich die Endungen: im Perfekt -a/-at/-it/-aw, im Präsens oft -i.', bsp:'khalla „er ließ“ → ykhalli „er lässt“'},
   {k:'Hohlverb', re:'Hohlverb\\w*', t:'Ein Verb mit w oder y in der Mitte der Wurzel. Der lange Vokal ersetzt den Konsonanten; in manchen Formen kommt er wieder.', bsp:'shaf „er sah“ → shuft „ich sah“'},
   {k:'Kehllaut', re:'Kehllaut\\w*', t:'Die Rachenlaute 3, 7, kh, gh, q. Sie färben die Vokale in der Nachbarschaft (ya- statt yi-).', bsp:'ya3rif statt yi3rif'},
@@ -7351,9 +7353,29 @@ function glossarTipp(ev, i){
   }
   b.innerHTML = '<div style="color:var(--gold2);font-weight:700;margin-bottom:.25rem">'+escHtml(g.k)+'</div><div>'+escHtml(g.t)+'</div>'
     + '<div style="margin-top:.3rem;color:var(--muted);font-size:.82rem">Beispiel: '+escHtml(g.bsp)+'</div>'
-    + '<div style="margin-top:.45rem;display:flex;gap:1rem;font-size:.8rem"><a href="#" onclick="event.preventDefault();event.stopPropagation();document.getElementById(\'gl-tip\').style.display=\'none\';setMode(\'glossar\')" style="color:var(--gold2)">Alle Begriffe</a>'
+    + '<div style="margin-top:.45rem;display:flex;gap:1rem;font-size:.8rem"><a href="#" onclick="event.preventDefault();event.stopPropagation();document.getElementById(\'gl-tip\').style.display=\'none\';glossarOverlay('+i+')" style="color:var(--gold2)">Alle Begriffe</a>'
     + '<a href="#" onclick="event.preventDefault();event.stopPropagation();document.getElementById(\'gl-tip\').style.display=\'none\'" style="color:var(--muted)">Schließen</a></div>';
   b.style.display = 'block';
+}
+function glossarListeHtml(){
+  return '<div style="color:var(--muted);font-size:.85rem;line-height:1.5;margin-bottom:.8rem">Fachwörter aus den Karten. In den Karten sind sie beim ersten Auftreten unterstrichen; ein Tipp darauf zeigt dieselbe Erklärung.</div>'
+    + GLOSSAR.map(g => '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;margin-bottom:.7rem">'
+      + '<div style="color:var(--gold2);font-weight:700;margin-bottom:.3rem">'+escHtml(g.k)+'</div>'
+      + '<div style="line-height:1.55">'+escHtml(g.t)+'</div>'
+      + '<div style="margin-top:.35rem;color:var(--muted);font-size:.85rem">Beispiel: '+escHtml(g.bsp)+'</div></div>').join('');
+}
+// Glossar über der aktuellen Karte: „Zurück“ schließt es, die Karte bleibt, wie sie war
+function glossarOverlay(i){
+  let o = document.getElementById('gl-ov'); if(o) o.remove();
+  o = document.createElement('div'); o.id = 'gl-ov';
+  o.style.cssText = 'position:fixed;inset:0;z-index:100000;background:var(--bg);overflow:auto;-webkit-overflow-scrolling:touch';
+  o.innerHTML = '<div style="max-width:34rem;margin:0 auto;padding:1rem 1rem 5rem">'
+    + '<div style="position:sticky;top:0;background:var(--bg);padding:.4rem 0 .7rem;display:flex;align-items:center;justify-content:space-between;gap:1rem">'
+    + '<div style="font-size:1.3rem;font-weight:700">📖 Glossar</div>'
+    + '<button onclick="document.getElementById(\'gl-ov\').remove()" style="background:var(--gold);color:#fff;border:none;border-radius:8px;padding:.5rem .9rem;font-size:.95rem;font-weight:600;cursor:pointer">← Zurück zur Karte</button></div>'
+    + glossarListeHtml() + '</div>';
+  document.body.appendChild(o);
+  if(i != null){ const kids = o.querySelectorAll('[style*="border-radius:8px;padding:.7rem"]'); if(kids[i]) kids[i].scrollIntoView({block:'start'}); }
 }
 function showGlossar(){
   document.getElementById('act-screen').style.display='none';
@@ -7366,11 +7388,7 @@ function showGlossar(){
   document.getElementById('ex-progress').textContent = '';
   const np = document.getElementById('nav-progress'); if(np) np.style.visibility='hidden';
   const c = document.getElementById('exercise-content'); if(!c) return;
-  c.innerHTML = '<div style="color:var(--muted);font-size:.85rem;line-height:1.5;margin-bottom:.8rem">Fachwörter aus den Karten. In den Karten sind sie unterstrichen; ein Tipp darauf zeigt dieselbe Erklärung.</div>'
-    + GLOSSAR.map(g => '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;margin-bottom:.7rem">'
-      + '<div style="color:var(--gold2);font-weight:700;margin-bottom:.3rem">'+escHtml(g.k)+'</div>'
-      + '<div style="line-height:1.55">'+escHtml(g.t)+'</div>'
-      + '<div style="margin-top:.35rem;color:var(--muted);font-size:.85rem">Beispiel: '+escHtml(g.bsp)+'</div></div>').join('');
+  c.innerHTML = glossarListeHtml();
 }
 function regelTextHtml(t){
   // arabische Wörter im deutschen Text isolieren, sonst vertauscht die Schreibrichtung Klammern und Kommas
