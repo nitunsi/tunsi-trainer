@@ -280,7 +280,7 @@ async function loadPartnerLine(){
     const oTxt = open ? fmtN(open)+' Rückmeldung'+(open===1?'':'en')+' offen' : '';
     const qTxt = q ? '<span style="color:var(--gold2);text-decoration:underline" onclick="event.stopPropagation();setMode(\'dupes\')">'+fmtN(q)+' Treffer in den Prüfungen</span>' : '';
     const partnerSub2 = oTxt && qTxt ? oTxt+' · '+qTxt : (oTxt || qTxt || 'keine Rückmeldungen offen');
-    el.innerHTML = '<div style="flex:1;min-width:0"><div style="font-size:1rem">'+escHtml(name)+' zuletzt aktiv: '+when+'</div><div class="neu-sub" style="margin-top:2px">'+partnerSub2+'</div></div><div class="neu-sub" style="font-size:1.4rem">›</div>';
+    el.innerHTML = '<div style="flex:1;min-width:0"><div style="font-size:1rem;font-weight:600">'+escHtml(name)+'</div><div class="neu-sub" style="margin-top:2px">'+when.replace(/^vor /,'vor ')+' aktiv · '+partnerSub2+'</div></div><div class="neu-sub" style="font-size:1.4rem">›</div>';
   }catch(e){ el.style.display = 'none'; }
 }
 function lessonFilterChip(){
@@ -402,12 +402,12 @@ function animateRing(host, p, today, goal){
   const fromP = same ? last.p : 0, fromT = same ? last.today : 0;
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const goalEl = $('neu-goal-t');
-  const setTexts = (pp, t) => { const tx = host.querySelector('text'); if(tx) tx.textContent = fmtN(Math.round(t)); if(goalEl) goalEl.textContent = 'von ' + fmtN(goal) + ' richtigen Antworten'; };
+  const setTexts = (pp, t) => { const tx = host.querySelector('text'); if(tx) tx.textContent = fmtN(Math.round(t)); if(goalEl) goalEl.textContent = 'von ' + fmtN(goal); };
   const hit = p >= 1 && !(same && last.p >= 1);
   LS.set('neu-ringlast', JSON.stringify({day, p, today}));
   if(reduce || (Math.abs(fromP - p) < 0.005 && fromT === today)){
     host.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', fmtN(today));
-    if(goalEl) goalEl.textContent = 'von ' + fmtN(goal) + ' richtigen Antworten';
+    if(goalEl) goalEl.textContent = 'von ' + fmtN(goal);
     return;
   }
   host.innerHTML = ring(fromP, 76, 8, fromP >= 1 ? 'var(--green)' : 'var(--gold)', fmtN(Math.round(fromT)));
@@ -466,18 +466,17 @@ function goHome(){
     + lessonFilterChip()
     + '<div class="neu-card neu-hero" style="padding:.8rem 1rem"><div class="neu-hero-in">'
     +   '<div id="neu-ring">'+ring(0, 76, 8, 'var(--gold)', '')+'</div>'
-    +   '<div class="neu-hero-t"><div class="neu-sub">Tagesziel</div><div id="neu-goal-t" style="font-size:1.05rem;font-weight:700;margin:1px 0">von '+goal+' richtigen Antworten</div><div id="neu-streak" class="neu-sub">&nbsp;</div></div>'
+    +   '<div class="neu-hero-t"><div id="neu-goal-t" class="neu-sub">von '+goal+'</div><div id="neu-streak" class="neu-sub">&nbsp;</div>'+(total ? '<div id="neu-total">'+fmtN(total)+' fällig</div>' : '')+'</div>'
     + '</div></div>'
-    + '<div id="neu-new">'+(tnDaysHtml() || newStuffHint())+'</div>'
+    + '<div id="neu-new">'+(tnDaysHtml() || '')+'</div>'
     + (empty
       ? '<div class="neu-card neu-empty">'+artHtml('tea')+'<div><div style="font-size:1.15rem;font-weight:700;color:var(--gold2)">Alles erledigt</div><div class="neu-sub" style="margin-top:.2rem">Nächste Wiederholung: <b style="color:var(--text)">'+nextDueText()+'</b>'+(d.blocked ? ' · '+fmtN(d.blocked)+' gesperrt' : '')+'</div></div></div>'
-      : '<button class="neu-btn" style="min-height:56px;font-size:1.1rem;margin:0 0 .6rem" onclick="setMode(\'mix\')">Los geht’s · '+fmtN(total)+' fällig</button>')
+      : '')
     + (empty ? '' : '<div class="neu-row2" style="margin-bottom:.6rem">'
     +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem" '+(d.voc?'':'disabled')+' onclick="setMode(\'flash\')"><span class="neu-sub">Vokabeln</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.voc)+'</span><small>fällig'+(d.blocked?' · '+fmtN(d.blocked)+' gesperrt':'')+'</small></button>'
     +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem;border-color:#3b4f7a" '+(d.course?'':'disabled')+' onclick="setMode(\'coursesrs\')"><span class="neu-sub" style="color:var(--blue)">Kurs</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.course)+'</span><small>fällig</small></button>'
     + '</div>')
     + '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer;padding:.7rem 1rem" onclick="setMode(\'partnerqueue\')"><div style="flex:1"><span class="neu-skel" style="width:60%;height:1.1rem"></span><div style="height:.4rem"></div><span class="neu-skel" style="width:40%;height:.8rem"></span></div></div>'
-    + '<div class="neu-sub" style="text-align:center;font-size:.8rem;margin:.1rem 0 .2rem">Nachschub</div>'
     + '<div class="neu-chips" style="padding-bottom:0">'
     +   '<span class="neu-chip" onclick="openActivateDialog()">Neue Vokabeln</span>'
     +   '<span class="neu-chip" onclick="statsUnlockNextChunk()">Kurs-Abschnitt</span>'
@@ -490,7 +489,7 @@ function goHome(){
     const r = $('neu-ring'); if(!r || cMode !== 'home') return;
     const p = dc.today / goal;
     try{ animateRing(r, p, dc.today, goal); }
-    catch(e){ console.error('animateRing', e); r.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', fmtN(dc.today)); $('neu-goal-t').textContent = 'von ' + fmtN(goal) + ' richtigen Antworten'; }
+    catch(e){ console.error('animateRing', e); r.innerHTML = ring(p, 76, 8, p >= 1 ? 'var(--green)' : 'var(--gold)', fmtN(dc.today)); $('neu-goal-t').textContent = 'von ' + fmtN(goal); }
     setTimeout(() => { try{ milesCheck(a.streak || 0); }catch(e){} }, 600);
     $('neu-streak').innerHTML = a.streak ? flame(a.streak) + a.streak + ' Tag' + (a.streak===1?'':'e') + ' in Folge' : 'Noch keine Serie';
   }).catch(() => { const s = $('neu-streak'); if(s) s.textContent = ''; });
