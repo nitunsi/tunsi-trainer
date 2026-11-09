@@ -3575,10 +3575,10 @@ function showRes(){
   const msgs = pct>=90
     ? ['مَشَاءَ الله! 🎉 Masha allah!', 'بَارَك الله فيك 🌟', 'زِين بَرشَة! Zin barsha!']
     : pct>=70
-    ? ['مْلِيح بَرشَة 👏 Mli7 barsha!', 'يَسلَمو إيدَيك! Yislamu idik!', 'هَكَّة نَعرَف! Hakka na3ref!']
+    ? ['مْلِيح بَرشَة 👏 Mli7 barsha!']
     : pct>=50
     ? ['شْوَيَّة شْوَيَّة... Shwayya shwayya', 'عَاوِد مَرَّة أُخرى! 3awid marra okhra', 'مَا يَهمَّش، عَاوِد! Ma yehemsh, 3awid!']
-    : ['يَالَّة، عَاوِد! Yalla, 3awid! 💪', 'كُل بِدَايَة صْعِيبَة Kull bidaya s3iba', 'صَبرَا جَمِيل Sabra jmil!'];
+    : ['يَالَّة، عَاوِد! Yalla, 3awid! 💪', 'كُل بِدَايَة صْعِيبَة Kull bidaya s3iba'];
   document.getElementById('result-msg').textContent = msgs[Math.floor(Math.random()*msgs.length)];
   document.getElementById('result-sub').innerHTML=`<span style="color:var(--green)">✓ ${score.c} richtig</span> · <span style="color:var(--red)">✗ ${score.w} falsch</span> · ${score.t} gesamt`;
   document.getElementById('result-screen').classList.add('show');
