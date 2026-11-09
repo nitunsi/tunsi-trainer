@@ -931,8 +931,8 @@ window.showRes = function(){
   r.innerHTML = '<div class="neu-res">'
     + ring(pct/100, 150, 12, pct >= 70 ? 'var(--green)' : 'var(--gold)', score.c + ' / ' + score.t)
     + artHtml(pct >= 70 ? 'jasmin' : 'sun')
-    + '<div class="msg">'+(pct>=70?'Gut gemacht':'Weiter üben')+'</div>'
-    + '<div class="sub">'+msgs[Math.floor(Math.random()*msgs.length)]+'</div>'
+    + (function(){ const m = msgs[Math.floor(Math.random()*msgs.length)], mm = m.match(/^([^A-Za-z]+?)\s*([A-Za-z].*)$/), ar = mm ? mm[1].trim() : m, tn = mm ? mm[2].trim() : '';
+        return '<div class="ar-big" dir="rtl">'+ar+'</div><div class="msg">'+(pct>=70?'Gut gemacht':'Weiter üben')+'</div>'+(tn ? '<div class="sub">'+tn+'</div>' : ''); })()
     + '<div id="neu-res-msg" style="width:100%"></div>'
     + dueRow
     + '<div style="width:100%;display:flex;flex-direction:column;gap:.7rem"><button class="neu-btn" onclick="restartExercise()">Noch einen Block</button><button class="neu-btn ghost" onclick="closeResult();neuGoHome()">Fertig für heute</button></div>'
