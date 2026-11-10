@@ -1004,6 +1004,8 @@ async function srsLoadFromSupabase(){
       const k = Object.keys(vocabIdMap)[0];
       dbg('Beispiel: "' + k + '" → id ' + vocabIdMap[k], 'ok');
     }
+    _famFeste = null;
+    setTimeout(() => { wechselAutoFreischalten().catch(e => dbg('Wechselkarten freischalten: '+e.message, 'warn')); }, 4000);
   } catch(e){
     dbg('FEHLER load: ' + e.message, 'err');
     loadOverlayError(e.message);
@@ -1521,15 +1523,34 @@ function isDueByDay(ts){ return berlinDayKey(ts) <= berlinDayKey(new Date()); }
 // festen Karten derselben Verbfamilie (er-Perfekt, er-Präsens) mindestens Stufe WECHSEL_AB_STUFE erreicht haben (Nils 2026-11-10).
 const WECHSEL_AB_STUFE = 2;
 let _famFeste = null;
-function wechselFrei(v){
-  if(!v || !v.cr || !v.cj) return true;
+function wechselFeste(v){
   if(!_famFeste){
     _famFeste = {};
     ALL_VOCAB.forEach(e => { if(!e.cj || e.ausb) return; const k = e._fk || (e._fk = JSON.stringify(e.cj)), g = e.cj.past && e.cj.past['3sg_m'], pr = e.cj.present && e.cj.present['3sg_m'];
       if((g && e.tr === g.darija) || (pr && e.tr === pr.darija)) (_famFeste[k] = _famFeste[k] || []).push(e); });
   }
-  const feste = _famFeste[v._fk || (v._fk = JSON.stringify(v.cj))] || [];
-  return feste.every(e => { const p = srsProgress[e.id]; return p && p.next_review && (p.level||0) >= WECHSEL_AB_STUFE; });
+  return _famFeste[v._fk || (v._fk = JSON.stringify(v.cj))] || [];
+}
+function wechselFrei(v){
+  if(!v || !v.cr || !v.cj) return true;
+  return wechselFeste(v).every(e => { const p = srsProgress[e.id]; return p && p.next_review && (p.level||0) >= WECHSEL_AB_STUFE; });
+}
+// Neue Wechselkarten (ohne Lernstand) automatisch freischalten, sobald die festen Karten der Familie Stufe 2 haben –
+// höchstens WECHSEL_PRO_TAG pro Berliner Tag (Nils 2026-11-10), älteste Verben (niedrigste id) zuerst.
+const WECHSEL_PRO_TAG = 5;
+async function wechselAutoFreischalten(){
+  if(!currentUser || currentUser.is_partner || navigator.onLine === false || typeof statsActivateApply !== 'function') return;
+  const tag = berlinDay(new Date()), key = 'wechsel_auto_'+tag;
+  let schon = 0; try{ schon = parseInt(localStorage.getItem(key)||'0', 10) || 0; }catch(e){}
+  const frei = WECHSEL_PRO_TAG - schon; if(frei <= 0) return;
+  const kand = ALL_VOCAB.filter(v => v.cr && v.cj && !v.ausb && !(srsProgress[v.id] && srsProgress[v.id].next_review) && wechselFeste(v).length && wechselFrei(v))
+    .sort((a,b) => a.id - b.id).slice(0, frei);
+  if(!kand.length) return;
+  await statsActivateApply(kand.map(v => ({id: v.id, src: 'wechsel'})));
+  try{ localStorage.setItem(key, String(schon + kand.length)); }catch(e){}
+  dbg('Wechselkarten freigeschaltet: '+kand.map(v => v.tr).join(', '), 'ok');
+  try{ updateLessonChips(); }catch(e){}
+  if(cMode === 'home' && window.neuGoHome) window.neuGoHome();
 }
 function vokabelLernbar(v){ return !!v && !v.ausb && wechselFrei(v); }   // v.aus ist der Audio-Start!
 function srsIsDue(vocab){
