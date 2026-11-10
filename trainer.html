@@ -864,7 +864,7 @@ function retryLoad(){
 // Holt Vokabeln und Fortschritt (parallel). Wird auch genutzt, um den Zwischenspeicher im Hintergrund aufzufrischen.
 function srsFetchRows(onVocab, onProg){
   const loadVocabTask = sbApiPaged(
-      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,audio_gain,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,r_hell,english,lessons(lesson_number)&order=id.asc',
+      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,audio_gain,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,r_hell,english,wurzel,wurzel_ar,stamm,verbtyp,lessons(lesson_number)&order=id.asc',
       1000,
       (loaded) => { if(onVocab) onVocab(loaded); }
     );
@@ -905,7 +905,7 @@ async function srsLoadFromSupabase(){
     allVocab.forEach(v => {
       const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
       const tp = v.topic || 'Allgemein';
-      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null, cr: !!v.conj_rotate, rh: v.r_hell===true, eg: v.english||'' };
+      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null, cr: !!v.conj_rotate, rh: v.r_hell===true, eg: v.english||'', wz: v.wurzel||'', wza: v.wurzel_ar||'', st: v.stamm||'', vt: v.verbtyp||'' };
       ALL_VOCAB.push(entry);
       if(v.ninja_audio_url && v.audio_gain) AUDIO_GAIN[audioKey(v.ninja_audio_url, v.ninja_audio_start, v.ninja_audio_end)] = v.audio_gain;
       VOCAB_BY_ID[v.id] = entry;
@@ -5475,6 +5475,48 @@ function datenChecks(){
   });
   out.push({label: 'Verbfamilie: Zeilen mit unterschiedlich vielen deutschen Bedeutungen', n: bedAbw.length, bsp: bedAbw});
 
+  // 7c) Verbregeln je Typ (Wurzel/Stamm aus TUNICO, Spalten verbtyp/stamm): Konjugationstabelle gegen die Regel ihres Typs.
+  //     Geprüft 2026-11-10 an allen TUNICO-Verben und unseren Tabellen (Merkliste „ERGEBNIS“). Abweichungen nur durch
+  //     Vokalschreibung (e statt a/i, o statt u) stehen getrennt und zählen nicht mit, bis die Schreibung entschieden ist.
+  const famVR = new Map();
+  ALL_VOCAB.forEach(v => { if(v.cj && v.vt){ const k = JSON.stringify(v.cj); if(!famVR.has(k)) famVR.set(k, v); } });
+  const zl = (cj, t, k) => String((cj[t] && cj[t][k] && cj[t][k].darija) || '').split(' / ').map(x => x.trim()).filter(Boolean);
+  const vok = x => x.replace(/ou/g, 'u').replace(/o/g, 'u').replace(/[ei]/g, 'a');
+  const vrStreng = [], vrSchreib = [];
+  famVR.forEach(v => {
+    const cj = v.cj, l = (zl(cj, 'past', '3sg_m')[0] || '').toLowerCase(); if(!l) return;
+    const pr3 = zl(cj, 'present', '3sg_m'), pr3p = zl(cj, 'present', '3pl');
+    const tests = [];   // [Regelname, Zelle, erwartete Formen]
+    const typ = v.vt, st = v.st;
+    if(typ === 'stark' && st === 'I'){
+      tests.push(['Konsonant-Endung, Stamm bleibt', ['past','1sg'], [l+'t']], ['Konsonant-Endung, Stamm bleibt', ['past','1pl'], [l+'na']], ['Konsonant-Endung, Stamm bleibt', ['past','2pl'], [l+'tu']]);
+    }
+    if(typ === 'geminiert' && st === 'I'){
+      tests.push(['langes i vor Endung', ['past','1sg'], [l+'it']], ['langes i vor Endung', ['past','1pl'], [l+'ina']], ['langes i vor Endung', ['past','2pl'], [l+'itu']], ['Vokal-Endung direkt', ['past','3pl'], [l+'u']]);
+      if(pr3.length) tests.push(['Präsens Pl.: -u direkt', ['present','3pl'], pr3.map(x => x+'u')]);
+    }
+    if(typ === 'schwaches_ende' || typ === 'knacklaut_ende'){
+      if(/a$/.test(l)){ const b = l.slice(0, -1); tests.push(['schwaches Ende: -it', ['past','1sg'], [b+'it']], ['schwaches Ende: -ina', ['past','1pl'], [b+'ina']], ['schwaches Ende: -at', ['past','3sg_f'], [b+'at']], ['schwaches Ende: -aw', ['past','3pl'], [b+'aw']]); }
+      if(pr3.length) tests.push(['Präsens Pl.: -w', ['present','3pl'], pr3.map(x => x+'w')]);
+    }
+    if(typ === 'hohl' && st === 'I'){
+      tests.push(['Hohlverb: Vokal-Endung, langes a bleibt', ['past','3sg_f'], [l+'it']], ['Hohlverb: Vokal-Endung, langes a bleibt', ['past','3pl'], [l+'u']]);
+    }
+    tests.forEach(([name, [t, k], soll]) => {
+      const ist = zl(cj, t, k); if(!ist.length) return;
+      if(ist.some(x => soll.includes(x))) return;
+      const txt = l+' ('+k+' '+(t === 'past' ? 'Perfekt' : 'Präsens')+'): '+ist.join(' / ')+' statt '+soll.join(' / ')+' – '+name;
+      if(ist.some(x => soll.some(y => vok(x) === vok(y)))) vrSchreib.push(txt); else vrStreng.push(txt);
+    });
+    if(typ === 'stark' && st === 'I'){
+      const f = zl(cj, 'past', '3sg_f'), p3 = zl(cj, 'past', '3pl');
+      if(f.length && f.every(x => x === l+'it') && p3.every(x => x === l+'u')) vrStreng.push(l+': '+f.join(' / ')+', '+p3.join(' / ')+' – Vokal-Endung, Stammvokal rückt nicht vor (wie sma3 → sam3it, sam3u)');
+    }
+    if(st === 'II' && pr3.length && !pr3.some(x => /^y(sh|kh|gh|th|dh|[^aeiou])/.test(x))) vrStreng.push(l+' (Präsens): '+pr3.join(' / ')+' – II. Stamm: kein Vokal nach y-');
+  });
+  out.push({label: 'Verbregel: Konjugationstabelle passt nicht zur Regel ihres Typs (Wurzel/Stamm)', n: vrStreng.length, bsp: vrStreng});
+  out.push({label: 'Verbregel: Abweichung nur in der Vokalschreibung (e/a/i, o/u) – zählt nicht mit, bis die Schreibung entschieden ist', n: vrSchreib.length, bsp: vrSchreib, leise: true});
+
   // 8) Kurs: Quelle fehlt, Aufgabe oder Lösung leer
   const KURS_OHNE_LOESUNG = new Set(['grammar_card', 'build_dialog']);   // Karten und offene Dialogaufgaben (eigene Sätze bilden) haben keine feste Lösung
   const beleg = ex.filter(e => !e.meta || !String(e.meta.beleg || '').trim()).map(e => 'Übung '+e.id+' ('+e.exercise_type+'): Beleg fehlt');
@@ -9344,7 +9386,7 @@ function countTranslitIssues(){
     if(TRANSLIT_RULES.some(r => r.test(v))) ids.add(v.id);
   });
   let extra = 0;
-  try{ extra = translitExtraChecks().reduce((s, r) => s + r.n, 0); }catch(e){}
+  try{ extra = translitExtraChecks().reduce((s, r) => s + (r.leise ? 0 : r.n), 0); }catch(e){}   // leise: angezeigt, aber nicht mitgezählt
   return ids.size + extra;
 }
 
