@@ -7601,13 +7601,15 @@ function regelEinordnungHtml(rg){
     + (gleich && klass(eintr[0].e) ? '<div style="font-size:.95rem;margin-top:.25rem">'+(eintr.length>2?'alle: ':eintr.length>1?'beide: ':'')+'<b>'+glossarWrap(klass(eintr[0].e), true)+'</b></div>' : '')
     + '</div>';
 }
+// Umschrift auf Regelkarten mit Längen-/Klang-Anzeige (wie in den Tabellen), Arabisch der Karte als Grundlage
+function rgTr(tr, ar){ const t = String(tr||''); if(!ar) return escHtml(t); const h = laengeHtml(t, ar); return h === t ? escHtml(t) : h; }
 function regelFrageInnen(rg){
   const v = rg.verb || {};
   if(!v.ar && !v.tr) return '<div style="font-size:1.15rem;line-height:1.5;text-align:center;margin:.3rem 0">'+regelTextHtml(rg.frage||'')+'</div>';
   // kompakt halten: der Aufgabenblock der Kurs-Karte hat eine feste Höhe (neu.css .neu-cq)
   return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.45rem .6rem .5rem;text-align:center;margin-bottom:.4rem">'
     + (v.ar ? regelArHtml(v.ar, 2.4, 1.3) : '')
-    + '<div style="font-size:1.05rem">'+escHtml(v.tr||'')+'</div>'
+    + '<div style="font-size:1.05rem">'+rgTr(v.tr, v.ar)+'</div>'
     + (v.de ? '<div style="font-size:.78rem;color:var(--muted);margin-top:.15rem">'+escHtml(v.de)+'</div>' : '')
     + '</div>'
     + '<div style="font-size:1.1rem;text-align:center;margin:0">'+glossarWrap(escHtml(rg.frage||''), true)+'</div>';
@@ -7616,11 +7618,11 @@ function regelLoesungHtml(rg){
   GL_SEEN = new Set();
   const a = rg.ant || {};
   const arrow = '<div style="color:var(--muted);text-align:center">→</div>';
-  const cell = t => '<div style="text-align:center;padding:0 4px">'+escHtml(t||'')+'</div>';
+  const cell = (t, ar) => '<div style="text-align:center;padding:0 4px">'+rgTr(t, ar)+'</div>';
   let h = '<div style="background:var(--surface);color:var(--text);border-radius:10px;padding:.9rem .8rem;font-size:1.05rem;line-height:1.5">' + regelEinordnungHtml(rg);
   if(a.tr_von || a.ar_von) h += '<div style="display:grid;grid-template-columns:1fr 1.6rem 1fr;align-items:center;row-gap:2px">'
      + '<div style="text-align:center">'+regelArHtml(a.ar_von, 1.4)+'</div>'+arrow+'<div style="text-align:center">'+regelArHtml(a.ar_nach, 1.4)+'</div>'
-     + cell(a.tr_von)+arrow+cell(a.tr_nach)
+     + cell(a.tr_von, a.ar_von)+arrow+cell(a.tr_nach, a.ar_nach)
      + (a.de_von || a.de_nach ? '<div style="text-align:center;font-size:.78rem;color:var(--muted)">'+escHtml(a.de_von||'')+'</div><div></div><div style="text-align:center;font-size:.78rem;color:var(--muted)">'+escHtml(a.de_nach||'')+'</div>' : '')
      + '</div>';
   if(rg.formel){
@@ -7658,7 +7660,7 @@ function regelLoesungHtml(rg){
     rg.bsp.forEach(b => {
       if(b.ausnahme) h += '<div style="font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:.4rem">Ausnahme</div>';
       h += '<div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;font-size:.85rem;padding:.15rem 0'+(b.ausnahme?';color:var(--muted)':'')+'">'
-         + '<span style="min-width:0">'+escHtml(b.tr_von||'')+' → '+(b.ausnahme?escHtml(b.tr_nach||''):'<b>'+escHtml(b.tr_nach||'')+'</b>')
+         + '<span style="min-width:0">'+rgTr(b.tr_von, b.ar_von)+' → '+(b.ausnahme?rgTr(b.tr_nach, b.ar_nach):'<b>'+rgTr(b.tr_nach, b.ar_nach)+'</b>')
          + (b.de ? '<span style="color:var(--muted);font-size:.78rem"> · '+escHtml(b.de)+'</span>' : '')+'</span>'
          + '<span style="flex-shrink:0;white-space:nowrap;display:flex;align-items:center;gap:.35rem;direction:ltr;'+(b.ausnahme?'':'color:var(--gold2)')+'">'
          + '<span dir="rtl" style="font-family:var(--arf,inherit);font-size:calc(1.05rem*var(--ars,1))">'+escHtml(b.ar_nach||'')+'</span>'
