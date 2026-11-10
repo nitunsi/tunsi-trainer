@@ -7352,15 +7352,15 @@ function regelFormelHtml(f){
 // ---- Glossar: Fachwörter in Karten und Hinweisen antippbar, dazu eine Nachschlageseite (Mehr → Glossar) ----
 const GLOSSAR = [
   {k:'Wurzel', re:'Wurzel(?:n|buchstaben?)?', t:'Die meist drei Grundkonsonanten eines Wortes. Aus ihnen bilden feste Muster die verwandten Wörter.', bsp:'n-j-m → najjem „er konnte“; k-t-b → ktib „er schrieb“'},
-  {k:'Stamm', re:'(?:(?:I{1,3}|IV|V|VI)\\. ?)?(?:Grund)?[Ss]tamm|Stämme', t:'Ein Verbmuster: Aus einer Wurzel bildet man nach festen Schemata verschiedene Verben. Der I. Stamm (Grundstamm) ist das einfache Verb, die höheren Stämme verändern Form und Bedeutung. II. Stamm: mittlerer Konsonant verdoppelt (fa33a). III. Stamm: langes a nach dem ersten Konsonanten (fa3il). V. Stamm: t- + II. Stamm. VI. Stamm: t- + III. Stamm.', bsp:'kbir „groß“ → kabbar „vergrößern“ (II.); safir „reisen“ (III.)'},
+  {k:'Stamm', re:'(?:(?:I{1,3}|IV|V|VI)\\. ?)?(?:Grund)?[Ss]tamm|Stämme', t:'Ein Verbmuster: Aus einer Wurzel bildet man nach festen Schemata verschiedene Verben. Der I. Stamm (Grundstamm) ist das einfache Verb, die höheren Stämme verändern Form und Bedeutung. II. Stamm: mittlerer Konsonant verdoppelt (fa33a). III. Stamm: langes a nach dem ersten Konsonanten (fa3il). V. Stamm: t- + II. Stamm. VI. Stamm: t- + III. Stamm.', bsp:'ktib „schreiben“ (I.) · kbir „groß“ → kabbar „vergrößern“ (II.) · safir „reisen“ (III.) · tkallim „sprechen“ (V.)'},
   {k:'Stammvokal', re:'Stammvokal\\w*', t:'Der Vokal auf dem mittleren Wurzelbuchstaben (a, i oder u). Er entscheidet, wie das Präsens gebildet wird. Nicht zu verwechseln mit dem Stamm (Verbmuster).', bsp:'yiktib: der Stammvokal ist i'},
   {k:'Perfekt', re:'Perfekt\\w*', t:'Die Vergangenheit: die Form für „er tat etwas“, schon abgeschlossen. Sie wird mit Endungen an die Person angepasst.', bsp:'ktib „er schrieb“, ktibt „ich schrieb“'},
   {k:'Präsens', re:'Präsens\\w*', t:'Die Gegenwart (auch Zukünftiges): Vorsilbe für die Person (y-, t-, n-) plus Stamm.', bsp:'yiktib „er schreibt“, niktib „ich schreibe“'},
-  {k:'Partizip', re:'Partizip\\w*', t:'Eine Verbform, die einen Zustand oder den Täter beschreibt, ähnlich wie „schlafend“ oder „geschrieben“. Das aktive Partizip beschreibt, wer etwas tut oder in welchem Zustand er ist.', bsp:'kteb → katib „schreibend / geschrieben habend“'},
+  {k:'Partizip', re:'Partizip\\w*', t:'Eine Verbform, die einen Zustand oder den Täter beschreibt, ähnlich wie „schlafend“ oder „geschrieben“. Das aktive Partizip beschreibt, wer etwas tut oder in welchem Zustand er ist.', bsp:'ktib → katib „schreibend / geschrieben habend“'},
   {k:'geminiert', re:'[Gg]eminiert\\w*', t:'„Verdoppelt“: ein Verb, dessen zweiter und dritter Wurzelbuchstabe gleich sind.', bsp:'7abb „er mochte“ (ح-ب-ب)'},
   {k:'starkes Verb', re:'(?:[Ss]tark(?:es|en|er|em)? Verb\\w*|regulär\\w*)', t:'Ein Verb ohne schwachen Wurzelbuchstaben (kein w, kein y): Es wird nach den normalen Mustern gebeugt, und alle Wurzelbuchstaben bleiben in jeder Form sichtbar.', bsp:'ktib „schreiben“, l3ab „spielen“, sma3 „hören“'},
   {k:'schwaches Verb', re:'[Ss]chwach(?:es|en|er|em)? Verb\\w*', t:'Ein Verb mit w oder y als Wurzelbuchstabe. Diese Buchstaben fallen in manchen Formen weg oder werden zum Vokal. Je nach Stelle: am Anfang (wsil „ankommen“), in der Mitte (Hohlverb: shaf „sehen“, qam „aufstehen“) oder am Ende (schwaches Ende: kra „mieten“, lqa „finden“). Geminierte Verben (7abb) zählen nicht dazu.', bsp:'wsil, shaf, kra, aber 7abb (geminiert)'},
-  {k:'schwaches Ende', re:'schwach(?:es|en|er|em)? Ende', t:'Der letzte Wurzelbuchstabe ist ein y oder w (ein „schwacher“ Buchstabe). Dadurch ändern sich die Endungen: im Perfekt -a/-at/-it/-aw, im Präsens oft -i.', bsp:'khalla „er ließ“ → ykhalli „er lässt“'},
+  {k:'schwaches Ende', re:'schwach(?:es|en|er|em)? Ende', t:'Der letzte Wurzelbuchstabe ist ein y oder w (ein „schwacher“ Buchstabe). Dadurch ändern sich die Endungen: im Perfekt -a/-at/-it/-aw, im Präsens oft -i. Merkregel: Endet „er“ im Perfekt auf -a, hat das Verb meist ein schwaches Ende. Ausnahmen haben einen Knacklaut in der Wurzel (qra, bda, kla, khtha).', bsp:'kra „er mietete“ → krit „ich mietete“, kraw „sie mieteten“, yikri „er mietet“; khalla „er ließ“ → ykhalli „er lässt“'},
   {k:'Hohlverb', re:'Hohlverb\\w*', t:'Ein Verb mit w oder y in der Mitte der Wurzel. Der lange Vokal ersetzt den Konsonanten; in manchen Formen kommt er wieder.', bsp:'shaf „er sah“ → shuft „ich sah“'},
   {k:'Kehllaut', re:'Kehllaut\\w*', t:'Die Rachen- und Kehllaute 3, 7, kh, gh, q und h. Sie färben die Vokale in der Nachbarschaft (ya- statt yi-).', bsp:'ya3rif statt yi3rif'},
   {k:'Gruppe', re:'Gruppen? [1-6]|Gruppen', t:'Unsere Einteilung der regelmäßigen Verben nach dem Vokal im Perfekt und im Präsens (Gruppe 1 bis 6). Sie ist eine Merkhilfe, keine feste Regel: Perfekt und Präsens am besten zusammen lernen.', bsp:'sma3 / yisma3, ktib / yiktib, l3ab / yal3ab'},
@@ -7403,7 +7403,9 @@ function glossarWrap(h, once){
 function regelSaetzeHtml(t, abstand){
   const marke = String(t || '').replace(/([.!?])(\s+)(?=[A-ZÄÖÜ*„(])/g, (m, z, w, off, ganz) => {
     const davor = ganz.slice(Math.max(0, off - 6), off + 1);
-    return /(?:^|[\s(])(?:I|II|III|IV|V|VI|B|Pl|Sg|Nr|bzw|ca|Abb|jdm|m|f)\.$/.test(davor) ? m : z+'\u0001';
+    // Ordnungszahl: „3. Buchstabe“, „2. Person“ (kein Satzende)
+    const ordnung = /(?:^|[\s(])\d\.$/.test(davor) && /^\s+\**(?:Buchstabe|Wurzelbuchstabe|Person|Stamm|Silbe|Stelle|Form)/.test(ganz.slice(off + 1));
+    return ordnung || /(?:^|[\s(])(?:I|II|III|IV|V|VI|B|Pl|Sg|Nr|bzw|ca|Abb|jdm|m|f)\.$/.test(davor) ? m : z+'\u0001';
   }).split('\u0001').map(x => x.trim()).filter(Boolean);
   return marke.map((x, i) => '<div'+(i && abstand ? ' style="margin-top:'+abstand+'"' : '')+'>'+regelTextHtml(x)+'</div>').join('');
 }
