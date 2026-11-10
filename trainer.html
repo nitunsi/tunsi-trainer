@@ -3163,9 +3163,10 @@ function bFlash(vocab){
     // conj_rotate: bei jeder Kartenerstellung neu zufällig eine Personal-/Zeitform ziehen,
     // Progress bleibt an v.id — nur Frage/Antwort wechseln für diese eine Abfrage.
     if(v.cr && v.cj){
+      // _trL (Längenanzeige) gehört zur Grundzeile und darf nicht in die gezogene Form kopiert werden (zeigte sonst „nēkol“ für „wir essen“)
       const slot = pickRandomConjSlot(v.cj);
       if(slot){
-        items.push({type:'flash', v: Object.assign({}, v, {ar:'', tr:slot.darija, en:slot.german}), dir:'de2ar'});
+        items.push({type:'flash', v: Object.assign({}, v, {ar:'', tr:slot.darija, en:slot.german, _trL:undefined}), dir:'de2ar'});
         return;
       }
     }
