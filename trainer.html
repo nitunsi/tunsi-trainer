@@ -5504,6 +5504,7 @@ function datenChecks(){
     }
     tests.forEach(([name, [t, k], soll]) => {
       const ist = zl(cj, t, k); if(!ist.length) return;
+      if(cj[t] && cj[t][k] && cj[t][k].irr) return;   // als unregelmäßig markiert (z. B. t3ibt): bewusst, keine Abweichung
       if(ist.some(x => soll.includes(x))) return;
       const txt = l+' ('+k+' '+(t === 'past' ? 'Perfekt' : 'Präsens')+'): '+ist.join(' / ')+' statt '+soll.join(' / ')+' – '+name;
       if(ist.some(x => soll.some(y => vok(x) === vok(y)))) vrSchreib.push(txt); else vrStreng.push(txt);
