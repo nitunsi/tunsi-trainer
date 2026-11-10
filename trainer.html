@@ -5323,7 +5323,8 @@ function translitExtraChecks0(){
   ];
   const tn = t => String(t||'').split(/ — | – | \(| „/)[0];
   const kurs = new Set(), kursBsp = [], kursTexte = [];
-  const ex = Object.values(typeof COURSE_EX_BY_ID !== 'undefined' ? COURSE_EX_BY_ID : {});
+  // ausgeblendete Übungen (meta.aus) werden nicht abgefragt und nicht mehr geprüft (Nils 2026-11-10)
+  const ex = Object.values(typeof COURSE_EX_BY_ID !== 'undefined' ? COURSE_EX_BY_ID : {}).filter(e => !courseExAus(e));
   ex.forEach(e => {
     if(e.meta && e.meta.layout === 'regelkarte') return;   // Regelkarten erklären Vokale auf Deutsch („u“, „yi–i“), das ist kein tunesischer Satz
     const felder = [];
@@ -5418,7 +5419,7 @@ function translitExtraChecks0(){
     if(!/^[^aeiou]+a[^aeiou]+$/.test(m3) || !/^[^aeiou]+[eiou]+[^aeiou]+$/.test(s1)) return;
     const vok = (/[aeiou]+/.exec(s1) || [''])[0];
     if(vok === 'a') return;
-    const kl = /^y[^aeiou]*(ou|u)[^aeiou]*$/.test(pres) ? 'o' : /^y[^aeiou]*i[^aeiou]*$/.test(pres) ? 'i' : null;
+    const kl = /^y[^aeiou]*(ou|u)[^aeiou]*$/.test(pres) ? 'u' : /^y[^aeiou]*i[^aeiou]*$/.test(pres) ? 'i' : null;   // seit B1 (2026-11-10) Verben nur a/i/u: yqum → qumt
     if(kl && vok !== kl && !(kl === 'i' && vok === 'e') && !HOHL_VOKAL_AUSNAHMEN.has(m3)){ hVokal.push(v.id); hVokalBsp.push(v.id+' '+pres+' → '+s1+' (erwartet: '+kl+')'); }
     if(!irr1){ hOhneIrr.push(v.id); hOhneIrrBsp.push(v.id+' '+m3+' → '+s1+' ohne Markierung'); }
   });
@@ -5431,7 +5432,7 @@ function translitExtraChecks0(){
     {label: 'Suffix „sein“: -ouh und -uh nebeneinander am selben Stamm', n: sufBsp.length, bsp: sufBsp},
     {label: 'Kurslösung: Verbform fehlt in der Konjugationstabelle (von '+loesGeprueft+' prüfbaren Übungen)', n: loesIds.length, bsp: loesBsp},
     {label: 'Kurskarte weicht von der verknüpften Vokabeltabelle ab (von '+vGeprueft+' verknüpften Karten)', n: vIds.size, bsp: vBsp},
-    {label: 'Hohlverb: Vokal der Vergangenheit passt nicht zum Präsens (u → o, i → i) (Tabellen)', n: hVokal.length, bsp: hVokalBsp},
+    {label: 'Hohlverb: Vokal der Vergangenheit passt nicht zum Präsens (u → u, i → i) (Tabellen)', n: hVokal.length, bsp: hVokalBsp},
     {label: 'Hohlverb: Vokalwechsel in der Vergangenheit ohne Markierung (Tabellen)', n: hOhneIrr.length, bsp: hOhneIrrBsp},
     {label: 'Markierung veraltet: markierter Teil steht nicht mehr in der Form/Lösung', n: irrAlt.length, bsp: irrAltBsp}
   ];
@@ -5442,7 +5443,8 @@ function translitExtraChecks0(){
 function datenChecks(){
   const out = [];
   if(!ALL_VOCAB.length) return out;
-  const ex = Object.values(typeof COURSE_EX_BY_ID !== 'undefined' ? COURSE_EX_BY_ID : {});
+  // ausgeblendete Übungen (meta.aus) werden nicht abgefragt und nicht mehr geprüft (Nils 2026-11-10)
+  const ex = Object.values(typeof COURSE_EX_BY_ID !== 'undefined' ? COURSE_EX_BY_ID : {}).filter(e => !courseExAus(e));
   const geladen = ex.length > 0;
   const trSet = new Set(ALL_VOCAB.map(v => v.tr));
 
