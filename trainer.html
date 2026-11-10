@@ -2939,7 +2939,7 @@ function toggleConjTable(){
 function showConjModal(vocabId){
   const v = VOCAB_BY_ID[vocabId];
   if(!v || !v.cj) return;
-  document.getElementById('conj-modal-title').textContent = (v.ar||v.tr||'') + (v.tr ? ' · '+v.tr : '');
+  document.getElementById('conj-modal-title').innerHTML = escHtml(v.ar||v.tr||'') + (v.tr ? ' · '+trL(v) : '');
   document.getElementById('conj-modal-body').innerHTML = wurzelZeile(v) + renderConjugationTable(v.cj);
   document.getElementById('conj-modal').style.display = 'block';
 }
@@ -7541,10 +7541,23 @@ function showGlossar(){
   const c = document.getElementById('exercise-content'); if(!c) return;
   c.innerHTML = glossarListeHtml();
 }
+// Verbformen im Fließtext der Regelkarten mit Länge/Klang anzeigen (yakul → yǟkul, kla → klä), Arabisch aus den Verb-Vokabeln
+let _verbArByTr = null;
+const LAENGE_TEXT_NICHT = new Set(['bat','kam','fand','sang','rief','ging']);   // deutsche Wörter, die zufällig wie eine Verbform aussehen
+function laengeImText(html){
+  if(!_verbArByTr){
+    _verbArByTr = {};
+    ALL_VOCAB.forEach(v => { if(v.cj && v.ar && v.tr && /[\u064B-\u0652]/.test(v.ar) && !_verbArByTr[v.tr]) _verbArByTr[v.tr] = v; });
+  }
+  return String(html).split(/(<[^>]*>)/).map(seg => seg.charAt(0) === '<' ? seg : seg.replace(/[A-Za-z0-9'ʔ]+/g, w => {
+    const v = _verbArByTr[w]; if(!v || LAENGE_TEXT_NICHT.has(w)) return w;
+    return laengeHtml(w, v.ar, v.rh);
+  })).join('');
+}
 function regelTextHtml(t){
   // arabische Wörter im deutschen Text isolieren, sonst vertauscht die Schreibrichtung Klammern und Kommas
-  return glossarWrap(escHtml(t||'').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>')
-    .replace(/[\u0600-\u06FF]+(?:-[\u0600-\u06FF]+)*/g, m => '<bdi dir="rtl" style="font-family:var(--arf,inherit);color:var(--gold2)">'+m+'</bdi>'), true);
+  return laengeImText(glossarWrap(escHtml(t||'').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>')
+    .replace(/[\u0600-\u06FF]+(?:-[\u0600-\u06FF]+)*/g, m => '<bdi dir="rtl" style="font-family:var(--arf,inherit);color:var(--gold2)">'+m+'</bdi>'), true));
 }
 function regelFrageHtml(rg){
   GL_SEEN = new Set();
