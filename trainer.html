@@ -7620,11 +7620,12 @@ function showGlossar(){
 }
 // Verbformen im Fließtext der Regelkarten mit Länge/Klang anzeigen (yakul → yǟkul, kla → klä), Arabisch aus den Verb-Vokabeln
 let _verbArByTr = null;
-const LAENGE_TEXT_NICHT = new Set(['bat','kam','fand','sang','rief','ging']);   // deutsche Wörter, die zufällig wie eine Verbform aussehen
+const LAENGE_TEXT_NICHT = new Set(['bat','kam','fand','sang','rief','ging','hat','bin','war','man','kann','da','so','wo','am','im','um','an','in','es','er','die','das','der','den','mit','mal','nur','nie','tun']);   // deutsche Wörter, die zufällig wie eine tunesische Form aussehen
 function laengeImText(html){
   if(!_verbArByTr){
     _verbArByTr = {};
-    ALL_VOCAB.forEach(v => { if(v.cj && v.ar && v.tr && /[\u064B-\u0652]/.test(v.ar) && !_verbArByTr[v.tr]) _verbArByTr[v.tr] = v; });
+    // erst Verben, dann alle anderen Vokabeln mit Vokalzeichen (Fatha/Kasra/Damma)
+    [true, false].forEach(verb => ALL_VOCAB.forEach(v => { if(!!v.cj === verb && v.ar && v.tr && /[َُِ]/.test(v.ar) && !_verbArByTr[v.tr]) _verbArByTr[v.tr] = v; }));
   }
   return String(html).split(/(<[^>]*>)/).map(seg => seg.charAt(0) === '<' ? seg : seg.replace(/[A-Za-z0-9'ʔ]+/g, w => {
     const v = _verbArByTr[w]; if(!v || LAENGE_TEXT_NICHT.has(w)) return w;
