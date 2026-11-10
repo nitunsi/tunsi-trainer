@@ -665,10 +665,14 @@ function laengeSlots(ar, rHell){
       }
       if(b==='ة') continue;
       const v = d.includes(FA)?'a':d.includes(KA)?'i':d.includes(DA)?'u':null;
-      const lang = n && !n.d && (((n.b==='ا'||n.b==='ى') && (v==='a' || (v===null && b!=='ا'))) || (n.b==='ي' && v==='i') || (n.b==='و' && v==='u'));
+      // Langvokal-Buchstabe ohne Vokalzeichen – oder nur mit Sukun (Schreibweise وْ / يْ für ū / ī, z. B. نْكُوْنْ)
+      const nd = n && (!n.d || (n.d === SU && (n.b==='و'||n.b==='ي')));
+      const lang = n && nd && (((n.b==='ا'||n.b==='ى') && (v==='a' || (v===null && b!=='ا'))) || (n.b==='ي' && v==='i') || (n.b==='و' && v==='u'));
       const bloss = !lang && v===null && !d.includes(SU) && n && !n.d && (n.b==='ي'||n.b==='و') && b!=='ا' && i>0;
       if(lang || bloss){
-        if(i+2>=u.length){
+        // stummes Alif nach و am Wortende (إِكْتْبُوا) zählt nicht: der Vokal steht am Ende
+        const stumm = i+3===u.length && n.b==='و' && u[i+2].b==='ا' && !u[i+2].d;
+        if(i+2>=u.length || stumm){ if(stumm){ out.push('k'); i+=2; continue; }
           // langes a am Wortende wird kurz gesprochen; ohne dunklen Laut im Wort klingt es hell, fast wie e (mshe)
           const dk = rHell ? /[صضطظقخغحع]/ : /[صضطظقخغرحع]/;
           out.push((n.b==='ا'||n.b==='ى') && v==='a' && !dk.test(w) ? 'E' : 'k'); i++; continue;
