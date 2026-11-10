@@ -478,6 +478,16 @@ function synonymNote(v){
 //
 // Ueberschneidungsfrei zu den anderen beiden: homonymNote verlangt gleiches Arabisch, hier
 // ist es verschieden; synonymNote verlangt gleiches Deutsch, hier ist es verschieden.
+// Wurzel, Stamm und Verbtyp einer Vokabel als eine Zeile (Spalten wurzel, wurzel_ar, stamm, verbtyp)
+const VERBTYP_DE = {stark:'starkes Verb', hohl:'Hohlverb', geminiert:'geminiert', schwaches_ende:'schwaches Ende', schwach_anfang:'w am Anfang', knacklaut_anfang:'Knacklaut am Anfang', knacklaut_ende:'Knacklaut am Ende', mehrfach:'mehrere schwache Buchstaben', vierkonsonantig:'vier Wurzelbuchstaben'};
+function wurzelZeile(v){
+  if(!v || !v.wz) return '';
+  const st = !v.st || v.st==='?' ? '' : v.st==='Iq' ? 'Stamm I (vier Buchstaben)' : v.st==='t-I' ? 't-Stamm I' : v.st+'. Stamm';
+  const teile = [st, VERBTYP_DE[v.vt] || ''].filter(Boolean).join(' · ');
+  const ar = v.wza ? '<span dir="rtl" style="display:inline-block;direction:rtl;unicode-bidi:isolate;font-family:\'Playfair Display\',serif;font-size:1.35rem;color:var(--gold2);letter-spacing:.25em">'+escHtml(v.wza)+'</span> ' : '';
+  const txt = 'Wurzel '+escHtml(v.wz)+(teile ? ' · '+teile : '');
+  return '<div class="wurzel-zeile" style="margin-top:.45rem;font-size:.9rem;color:var(--muted);line-height:1.6">'+ar+(typeof glossarWrap==='function' ? glossarWrap(txt) : txt)+'</div>';
+}
 function schreibungNote(v){
   if(!v || !v.hok || !v.tr) return '';
   const key = v.tr.trim().toLowerCase();
@@ -2887,7 +2897,7 @@ function showConjModal(vocabId){
   const v = VOCAB_BY_ID[vocabId];
   if(!v || !v.cj) return;
   document.getElementById('conj-modal-title').textContent = (v.ar||v.tr||'') + (v.tr ? ' · '+v.tr : '');
-  document.getElementById('conj-modal-body').innerHTML = renderConjugationTable(v.cj);
+  document.getElementById('conj-modal-body').innerHTML = wurzelZeile(v) + renderConjugationTable(v.cj);
   document.getElementById('conj-modal').style.display = 'block';
 }
 function closeConjModal(){
@@ -3155,7 +3165,7 @@ function aMC(btn,ok,ca,con,v){
   if(fbMC){
     fbMC.className='feedback show '+(ok?'correct':'wrong');
     const darija = v ? `<span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">${trL(v)}</span>` : '';
-    const homNote = homonymNote(v)+synonymNote(v)+schreibungNote(v);
+    const homNote = wurzelZeile(v)+homonymNote(v)+synonymNote(v)+schreibungNote(v);
     fbMC.innerHTML='<span style="font-size:1.2rem">'+(ok?'✓ ':'✗ ')+ca+'</span>'+darija+homNote;
   }
   ok?(score.c++,score.st++,score.t++):(score.w++,score.st=0,score.t++);
@@ -3243,7 +3253,7 @@ function rFlash(ex,el){
       }
     </div>
     <div class="q-hint" id="flash-hint" style="margin-bottom:.6rem">${isAr2De?deHtml(v)+' — '+trL(v):v.ar+' ('+trL(v)+')'}</div>
-    ${v.cj ? `<div id="conj-table-box" style="display:none;margin-bottom:.6rem;padding:.5rem .6rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px">${renderConjugationTable(v.cj)}</div>` : ''}
+    ${v.cj ? `<div id="conj-table-box" style="display:none;margin-bottom:.6rem;padding:.5rem .6rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px">${wurzelZeile(v)}${renderConjugationTable(v.cj)}</div>` : ''}
     <input id="flash-input" type="text"
       style="width:100%;box-sizing:border-box;padding:.85rem 1rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:16px;border-radius:6px;font-family:'IBM Plex Mono',monospace;margin-bottom:4rem;display:block"
       placeholder="${isAr2De?'Deutsch eingeben...':'Arabisch oder Transliteration...'}"
