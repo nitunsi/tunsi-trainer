@@ -924,7 +924,7 @@ async function srsLoadFromSupabase(){
     allVocab.forEach(v => {
       const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
       const tp = v.topic || 'Allgemein';
-      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null, cr: !!v.conj_rotate, rh: v.r_hell===true, eg: v.english||'', wz: v.wurzel||'', wza: v.wurzel_ar||'', st: v.stamm||'', vt: v.verbtyp||'', aus: v.ausgeblendet===true };
+      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null, cr: !!v.conj_rotate, rh: v.r_hell===true, eg: v.english||'', wz: v.wurzel||'', wza: v.wurzel_ar||'', st: v.stamm||'', vt: v.verbtyp||'', ausb: v.ausgeblendet===true };
       ALL_VOCAB.push(entry);
       if(v.ninja_audio_url && v.audio_gain) AUDIO_GAIN[audioKey(v.ninja_audio_url, v.ninja_audio_start, v.ninja_audio_end)] = v.audio_gain;
       VOCAB_BY_ID[v.id] = entry;
@@ -1525,13 +1525,13 @@ function wechselFrei(v){
   if(!v || !v.cr || !v.cj) return true;
   if(!_famFeste){
     _famFeste = {};
-    ALL_VOCAB.forEach(e => { if(!e.cj || e.aus) return; const k = e._fk || (e._fk = JSON.stringify(e.cj)), g = e.cj.past && e.cj.past['3sg_m'], pr = e.cj.present && e.cj.present['3sg_m'];
+    ALL_VOCAB.forEach(e => { if(!e.cj || e.ausb) return; const k = e._fk || (e._fk = JSON.stringify(e.cj)), g = e.cj.past && e.cj.past['3sg_m'], pr = e.cj.present && e.cj.present['3sg_m'];
       if((g && e.tr === g.darija) || (pr && e.tr === pr.darija)) (_famFeste[k] = _famFeste[k] || []).push(e); });
   }
   const feste = _famFeste[v._fk || (v._fk = JSON.stringify(v.cj))] || [];
   return feste.every(e => { const p = srsProgress[e.id]; return p && p.next_review && (p.level||0) >= WECHSEL_AB_STUFE; });
 }
-function vokabelLernbar(v){ return !!v && !v.aus && wechselFrei(v); }
+function vokabelLernbar(v){ return !!v && !v.ausb && wechselFrei(v); }   // v.aus ist der Audio-Start!
 function srsIsDue(vocab){
   if(!vokabelLernbar(vocab)) return false;
   const p = srsProgress[vocab.id];
@@ -5475,7 +5475,8 @@ function datenChecks(){
   // 6) Pflichtfelder und Zeichen der Vokabeln
   const zeile = v => v.id+' '+(v.tr || v.ar || v.en || '?');
   const feld = (label, test, text) => { const l = ALL_VOCAB.filter(test).map(v => zeile(v)+(text ? ' – '+text(v) : '')); out.push({label, n: l.length, bsp: l}); };
-  feld('Vokabel ohne Arabisch, Umschrift oder Deutsch', v => !String(v.ar).trim() || !String(v.tr).trim() || !String(v.en).trim(), v => [!String(v.ar).trim() ? 'Arabisch' : '', !String(v.tr).trim() ? 'Umschrift' : '', !String(v.en).trim() ? 'Deutsch' : ''].filter(Boolean).join(', ')+' fehlt');
+  // Wechselkarten (conj_rotate) zeigen immer eine Tabellenform; eigenes Arabisch/Englisch brauchen sie nicht (Nils 2026-11-10)
+  feld('Vokabel ohne Arabisch, Umschrift oder Deutsch', v => (!String(v.ar).trim() && !v.cr) || !String(v.tr).trim() || !String(v.en).trim(), v => [!String(v.ar).trim() ? 'Arabisch' : '', !String(v.tr).trim() ? 'Umschrift' : '', !String(v.en).trim() ? 'Deutsch' : ''].filter(Boolean).join(', ')+' fehlt');
   feld('Arabisch-Feld mit lateinischen Buchstaben oder Umschrift mit arabischen Zeichen', v => /[A-Za-z]/.test(v.ar || '') || /[؀-ۿ]/.test(v.tr || ''), v => /[A-Za-z]/.test(v.ar || '') ? 'lateinisch im Arabischen: '+v.ar : 'arabisch in der Umschrift: '+v.tr);
   feld('Leerzeichen am Rand oder doppelt (Arabisch, Umschrift, Deutsch)', v => [v.ar, v.tr, v.en].some(x => x && (x !== x.trim() || /\s{2,}/.test(x))), v => 'Leerzeichen in „'+[v.ar, v.tr, v.en].find(x => x && (x !== x.trim() || /\s{2,}/.test(x)))+'“');
   feld('Klammer in der Umschrift (gehört ins Deutsche)', v => /[()]/.test(v.tr || ''), v => v.tr);
@@ -5565,7 +5566,7 @@ function datenChecks(){
   out.push({label: 'Kurs: Hörübung ohne Aufnahme oder ohne Text', n: hoer.length, bsp: hoer});
 
   // 9) Englisch (seit 2026-11-07 vollständig; Verben im Infinitiv „to …“, Entscheidung der Gesamtprüfung)
-  feld('Vokabel ohne Englisch', v => !String(v.eg || '').trim());
+  feld('Vokabel ohne Englisch', v => !String(v.eg || '').trim() && !v.cr);
   feld('Verb: Englisch als „he …s“ statt Infinitiv „to …“', v => v.cj && /^(he|she|it) [a-z]+s( \([^)]*\))?$/.test(v.eg || ''), v => v.eg);
 
   // 9b) Lehnwort-Laute: v = ڤ, g = ڨ (2026-11-07 an 14 Zeilen vereinheitlicht). Zeilenweise, darum Ausnahmen mit Grund.
