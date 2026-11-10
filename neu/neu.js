@@ -1643,7 +1643,7 @@ window.neuSpeakState = () => SQ;
       const inp = $('flash-input'), sp = window._neuSp, ex = exList[cIdx];
       if(inp && sp && ex && ex.v && sp.id === ex.v.id && inp.value.trim() === sp.alts[0]){
         const v = ex.v, val = inp.value.trim();
-        const ok = checkAnswer(val, v.ar).ok || checkAnswer(val, v.tr).ok;
+        const ok = checkAnswer(val, v.ar).ok || checkAnswer(val, v.tr, {verb: !!v.cj}).ok;
         if(!ok && speakMatch(v.ar, sp.alts).ok) inp.value = v.ar;
       }
     }catch(e){}
