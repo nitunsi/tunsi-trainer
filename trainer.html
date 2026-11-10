@@ -724,6 +724,73 @@ function conjZelleL(cj, t, tzH, pH){
   const sl = laengeRegelSlots(cj, t, tzH, pH);
   return sl ? laengeHtmlSlots(t, sl) : t;
 }
+// Vokalisiertes Arabisch einer Tabellenform erzeugen (Nils 2026-11-10): Wurzelbuchstaben aus wurzel_ar, Vorsilben/Endungen
+// nach Muster, Vokalzeichen aus der Umschrift, Länge aus laengeRegelSlots. Ergebnis ist „abgeleitet“, nicht belegt.
+const AR_KONS = {b:'ب',t:'ت',th:'ث',j:'ج','7':'ح',kh:'خ',d:'د',dh:'ض',r:'ر',z:'ز',s:'س',sh:'ش','3':'ع',gh:'غ',f:'ف',q:'ق',k:'ك',l:'ل',m:'م',n:'ن',h:'ه',w:'و',y:'ي',"'":'أ','ʔ':'أ',g:'ڨ',v:'ڤ',p:'پ'};
+const AR_FA = 'َ', AR_KA = 'ِ', AR_DA = 'ُ', AR_SU = 'ْ', AR_SH = 'ّ';
+function trEinheiten(tr, wl){
+  const out = []; let i = 0; tr = String(tr||'').toLowerCase();
+  const wj = (wl||[]).join('-'), trenn = d => !(wl||[]).includes(d) && wj.indexOf(d[0]+'-'+d[1]) >= 0;   // shar: Wurzel s-h-r, nicht sh
+  while(i < tr.length){
+    const two = tr.slice(i, i+2);
+    if(['sh','kh','gh','th','dh'].includes(two) && !trenn(two)){ out.push({k: two}); i += 2; continue; }
+    const c = tr[i];
+    if(/[aeiou]/.test(c)){ out.push({v: c === 'e' ? 'i' : c === 'o' ? 'u' : c}); i++; continue; }
+    if(AR_KONS[c]){ out.push({k: c}); i++; continue; }
+    return null;   // unbekanntes Zeichen (Leerzeichen, Bindestrich …): nicht erzeugen
+  }
+  // Vokalgruppen zusammenfassen (ou, ii …)
+  const g = []; out.forEach(u => { if(u.v && g.length && g[g.length-1].v){ g[g.length-1].v2 = true; } else g.push(u); });
+  return g;
+}
+function arabischErzeugen(cj, t, tz, p){
+  const b = famBasis(cj); if(!b) return null;
+  const e0 = ALL_VOCAB.find(e => e.cj && (e._fk || (e._fk = JSON.stringify(e.cj))) === JSON.stringify(cj) && e.wza);
+  if(!e0) return null;
+  const wl = String(e0.wz||'').split('-'), wa = String(e0.wza||'').split(' ');
+  if(wl.length !== wa.length) return null;
+  const vorsilbe = tz === 'present' && /^[nty]/.test(t);
+  const U = vorsilbe ? (rest => rest && [{k: t[0], vs: true}].concat(rest))(trEinheiten(t.slice(1), wl)) : trEinheiten(t, wl);
+  if(!U) return null;
+  const sl = laengeRegelSlots(cj, t, tz, p); const nV = U.filter(u => u.v).length;
+  if(!sl || sl.length !== nV) return null;
+  // Endung je Person abtrennen, Wurzel von hinten im Stamm zuordnen
+  const ks = U.map((u,i) => u.k ? i : -1).filter(i => i >= 0);
+  let ende = 0;
+  if(tz === 'past'){ if({'1sg':1,'2sg':1,'2pl':1,'3sg_f':1}[p]) ende = 1; if(p === '1pl') ende = 1; }
+  if(U.length >= 2 && U[U.length-1].k === 'w' && U[U.length-2].v) ende += 1;   // -aw / -iw
+  const stammKs = ks.slice(tz === 'present' ? 1 : 0, ks.length - ende);
+  const zu = {}; let j = stammKs.length - 1;
+  for(let r = wl.length - 1; r >= 0 && j >= 0; r--){
+    const L = wl[r] === 'ʔ' ? "'" : wl[r];
+    const A = wa[r] === 'ء' ? 'أ' : wa[r];
+    let jj = j; while(jj >= 0 && U[stammKs[jj]].k !== L) jj--;
+    if(jj >= 0 && (jj === j || !/^[wyʔ]$/.test(wl[r]))){ j = jj; zu[stammKs[j]] = A; j--; if(j >= 0 && U[stammKs[j]].k === L && wl[r-1] !== L){ zu[stammKs[j]] = A; j--; } }
+    else if(!/^[wyʔ]$/.test(wl[r])) { /* Wurzelbuchstabe fehlt im Stamm: weiter */ }
+  }
+  let h = '', vi = 0;
+  for(let i = 0; i < U.length; i++){
+    const u = U[i];
+    if(u.k){
+      // Verdopplung: gleicher Konsonant direkt danach → ein Buchstabe mit Schadda
+      const bu = i2 => zu[i2] || AR_KONS[U[i2].k];
+      const doppelt = U[i+1] && U[i+1].k === u.k && !u.vs && bu(i) === bu(i+1);
+      h += bu(i);
+      if(doppelt){ h += AR_SH; i++; }
+      const nx = U[i+1];
+      if(!nx || nx.k) h += (nx ? AR_SU : '');
+      continue;
+    }
+    // Vokal
+    const lang = sl[vi] === 'L' || sl[vi] === 'H', endE = sl[vi] === 'E', last = i === U.length - 1; vi++;
+    if(i === 0){ h += u.v === 'i' ? 'إِ' : u.v === 'u' ? 'اُ' : 'اَ'; continue; }
+    const ohneEndung = (tz === 'past' && p === '3sg_m') || (tz === 'present' && {'1sg':1,'2sg':1,'3sg_f':1,'3sg_m':1}[p]) || (tz === 'imperative' && p === 'sg');
+    if(u.v === 'a'){ h += AR_FA; if(lang || endE || last) h += (last && ohneEndung && /^[wy]$/.test(wl[wl.length-1])) ? 'ى' : 'ا'; }   // walla وَلَّى, aber bda بْدَا
+    else if(u.v === 'i'){ h += AR_KA; if(lang || last) h += 'ي'; }
+    else { h += AR_DA; if(lang || last) h += 'و'; }
+  }
+  return h;
+}
 // Länge einer Tabellenform nach Regel (B1-Folge, Nils 2026-11-10): Grundformen aus dem Arabischen der Familie (er-Perfekt,
 // er-Präsens), andere Personen nach Verbtyp. Liefert Slots wie laengeSlots ('L' lang, 'H' lang+hell, 'E' kurz+hell am Ende, 'k') oder null.
 let _famBasis = null;
@@ -767,6 +834,10 @@ function laengeRegelSlots(cj, t, tzH, pH){
     if(!R) return null;
     const hilfs = /^[aeiou]/.test(t) ? 1 : 0;                                  // iqif, iktib: Hilfsvokal kurz
     const m = (p === 'sg' ? n : n-1) - hilfs; if(m < 0 || m > R.length) return null;
+    // Plural: wie das Präsens „sie (Pl.)“ ohne Vorsilbe (jǟwbu wie yjǟwbu, shūfu wie yshūfu)
+    const p3 = cj.present && cj.present['3pl'] && cj.present['3pl'].darija;
+    const S = p === 'pl' && p3 ? laengeRegelSlots(cj, p3, 'present', '3pl') : null;
+    if(p === 'pl' && S){ const k2 = n - hilfs; if(k2 < 0 || k2 > S.length) return null; const o = (hilfs ? ['k'] : []).concat(k2 ? S.slice(S.length - k2) : []); return o.length === n ? o : null; }
     const stamm = (hilfs ? ['k'] : []).concat(m ? R.slice(R.length - m) : []);
     const out = p === 'sg' ? stamm : stamm.concat([wEnde ? (/aw$/.test(t) ? langA : 'L') : 'k']);
     return out.length === n && !out.includes(undefined) ? out : null;
@@ -2993,19 +3064,30 @@ function renderConjugationTable(cj){
     if(typeof c.irr === 'string' && c.irr && t.indexOf(c.irr) >= 0){ const i = t.indexOf(c.irr); return t.slice(0,i)+mk(c.irr)+t.slice(i+c.irr.length); }
     return conjZelleL(cj, t, tz, k);
   };
+  let _cjFk;
+  // Arabisch unter der Umschrift (Nils 2026-11-10): cell.ar, ar_abg = aus Wurzel + Umschrift erzeugt, nicht belegt
+  const dA = (c, tz, k, inl) => {
+    const h = d(c, tz, k);
+    if(!(c && c.darija)) return h;
+    // ohne eigenes Feld (Grundformen): Arabisch der Vokabelzeile derselben Familie mit gleicher Umschrift
+    const bel = c.ar ? null : (_cjFk === undefined ? (_cjFk = JSON.stringify(cj)) : _cjFk, ALL_VOCAB.find(e => e.cj && e.tr === c.darija && String(e.ar||'').trim() && (e._fk || (e._fk = JSON.stringify(e.cj))) === _cjFk));
+    const ar = c.ar || (bel && bel.ar); if(!ar) return h;
+    const abg = !!(c.ar && c.ar_abg), tit = abg ? 'abgeleitet (aus Wurzel und Umschrift erzeugt, nicht belegt)' : 'belegt';
+    return h + '<'+(inl ? 'span' : 'div')+' dir="rtl" title="'+tit+'" style="'+(inl ? 'margin-left:.35rem;' : 'text-align:left;')+'font-family:var(--arf,inherit);font-size:calc(.95rem*var(--ars,1));color:var(--gold2);opacity:'+(abg ? '.75' : '1')+';unicode-bidi:isolate">'+escHtml(ar)+'</'+(inl ? 'span' : 'div')+'>';
+  };
   let h = '<table style="width:100%;border-collapse:collapse;font-size:.8rem">';
   h += '<thead><tr style="color:var(--muted);font-size:.62rem;text-transform:uppercase;letter-spacing:.05em">';
   h += '<th style="text-align:left;padding:.2rem .4rem"></th><th style="text-align:left;padding:.2rem .4rem">Präsens</th><th style="text-align:left;padding:.2rem .4rem">Vergangenheit</th></tr></thead><tbody>';
   CONJ_PERSON_ROWS.forEach(([label,key])=>{
     h += '<tr style="border-top:1px solid rgba(255,255,255,.06)">';
     h += '<td style="padding:.2rem .4rem;color:var(--muted)">'+label+'</td>';
-    h += '<td style="padding:.2rem .4rem;font-family:\'IBM Plex Mono\',monospace">'+d(pr[key],'present',key)+'</td>';
-    h += '<td style="padding:.2rem .4rem;font-family:\'IBM Plex Mono\',monospace">'+d(pa[key],'past',key)+'</td>';
+    h += '<td style="padding:.2rem .4rem;font-family:\'IBM Plex Mono\',monospace">'+dA(pr[key],'present',key)+'</td>';
+    h += '<td style="padding:.2rem .4rem;font-family:\'IBM Plex Mono\',monospace">'+dA(pa[key],'past',key)+'</td>';
     h += '</tr>';
   });
   h += '</tbody></table>';
   if(im.sg || im.pl){
-    h += '<div style="margin-top:.5rem;padding-top:.4rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted)">Imperativ: <span style="color:var(--text);font-family:\'IBM Plex Mono\',monospace">'+d(im.sg,'imperative','sg')+'</span> (sg.) · <span style="color:var(--text);font-family:\'IBM Plex Mono\',monospace">'+d(im.pl,'imperative','pl')+'</span> (pl.)</div>';
+    h += '<div style="margin-top:.5rem;padding-top:.4rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted)">Imperativ: <span style="color:var(--text);font-family:\'IBM Plex Mono\',monospace">'+dA(im.sg,'imperative','sg',1)+'</span> (sg.) · <span style="color:var(--text);font-family:\'IBM Plex Mono\',monospace">'+dA(im.pl,'imperative','pl',1)+'</span> (pl.)</div>';
   }
   return h;
 }
@@ -3306,7 +3388,7 @@ function bFlash(vocab){
       // _trL (Längenanzeige) gehört zur Grundzeile und darf nicht in die gezogene Form kopiert werden (zeigte sonst „nēkol“ für „wir essen“)
       const slot = pickRandomConjSlot(v.cj);
       if(slot){
-        items.push({type:'flash', v: Object.assign({}, v, {ar:'', tr:slot.darija, en:slot.german, _trL:undefined}), dir:'de2ar'});
+        items.push({type:'flash', v: Object.assign({}, v, {ar:slot.ar||'', tr:slot.darija, en:slot.german, _trL:undefined}), dir:'de2ar'});
         return;
       }
     }
@@ -5808,6 +5890,19 @@ function datenChecks(){
     pv.push(v.id+' '+v.tr+': '+a.split(/\s/)[0]);
   });
   out.push({label: 'Präfix-Vokal: Darija ohne Vokal nach y/t/n, Arabisch mit', n: pv.length, bsp: pv});
+
+  // Arabisch der Tabellenformen gegen das belegte Arabisch der Vokabelzeilen (Nils 2026-11-10): gleiche Familie, gleiche
+  // Umschrift, aber andere Buchstaben. Vokalzeichen, Alif am Wortanfang, Schluss-Alif nach و und ى/ا zählen nicht.
+  const arNorm = a => String(a||'').replace(/[\u064B-\u0652\u0640]/g,'').replace(/^[اإأآ]/,'').replace(/وا$/,'و').replace(/ى$/,'ا').replace(/[إأآ]/g,'ا').trim();
+  const arW = [];
+  ALL_VOCAB.forEach(v => {
+    if(!v.cj || v.ausb || !String(v.ar||'').trim()) return;
+    const zellen = [];
+    ['past','present','imperative'].forEach(tz => Object.values(v.cj[tz]||{}).forEach(c => { if(c && c.darija === v.tr && c.ar) zellen.push(c); }));
+    if(!zellen.length || zellen.some(c => arNorm(c.ar) === arNorm(v.ar))) return;
+    arW.push(v.id+' '+v.tr+': Vokabel '+v.ar+' ↔ Tabelle '+[...new Set(zellen.map(c => c.ar))].join(' / '));
+  });
+  out.push({label: 'Arabisch der Tabelle widerspricht dem Arabisch der Vokabel (andere Buchstaben)', n: arW.length, bsp: arW});
   return out;
 }
 // Ausnahmen der Prüfungen 12 und 13 — gleich geschrieben, aber anderes Wort (jeweils mit Grund)
