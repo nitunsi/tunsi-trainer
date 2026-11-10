@@ -6461,6 +6461,7 @@ async function loadCourseData(force){
   });
   COURSE_PROGRESS_BY_LESSON = {};
   (progress||[]).forEach(p=>{ COURSE_PROGRESS_BY_LESSON[p.course_lesson_id]=p; });
+  regelLoesungenFuellen(exercises);
   _courseLoaded = true;
   await loadCourseExProgress(force);
   await courseEnsureFrontierUnlocked();
@@ -7341,6 +7342,28 @@ function courseListenPlay(ev){
 // Frage: nur das Verb (kein Hinweis auf die Lösung). Lösung: Hauptbeispiel (Perfekt → Präsens, Arabisch und
 // Umschrift), Formel mit Punkten, Regel, kleine weitere Beispiele. Der normale Lösungstext bleibt in der
 // Datenbank (Export, Listen). Nicht verwechseln mit meta.regel (Schlüssel für PERFEKT_REGELN).
+// Lösungszeile einer Regelkarte aus meta.regelkarte erzeugen (eine Quelle: meta). Ersetzt beim Laden e.solution;
+// die Spalte solution in Supabase ist für Regelkarten nur noch ein Abbild (für Suche/Partner/SQL).
+function regelLoesungText(rg){
+  if(!rg) return '';
+  const p = [], ohne = t => String(t||'').replace(/\*\*/g,'').trim(), satz = t => { t = ohne(t); return t && !/[.!?…)]$/.test(t) ? t+'.' : t; };
+  const a = rg.ant || {};
+  if(a.tr_nach || a.ar_nach) p.push(satz(ohne(a.tr_nach) + (a.ar_nach ? ' ('+a.ar_nach+')' : '')));
+  if(rg.tabelle && Array.isArray(rg.tabelle.zeilen) && rg.tabelle.zeilen.length) p.push(rg.tabelle.zeilen.map(r => r.map(ohne).join(' / ')).join(' '));
+  if(Array.isArray(rg.schritte) && rg.schritte.length) p.push(rg.schritte.map((t,i) => (i+1)+'. '+ohne(t)).join(' '));
+  if(!p.length){
+    // Einordnungskarte (V1–V6): die Antwort ist die Einordnung aus den Vokabeln
+    const v = rg.verb || {}, e = typeof wurzelVokabel === 'function' ? wurzelVokabel(String(v.tr||'').split(/\s*[·,]\s*/)[0]) : null;
+    if(e && e.wz){ const st = !e.st || e.st==='?' ? '' : e.st+'. Stamm'; p.push(satz('Wurzel '+e.wz+[st, VERBTYP_DE[e.vt]||''].filter(Boolean).map(x => ' · '+x).join(''))); }
+  }
+  if(rg.text) p.push('Regel: '+satz(rg.text));
+  if(rg.sicher) p.push(satz(rg.sicher));
+  if(Array.isArray(rg.bsp) && rg.bsp.length) p.push('Beispiele: '+rg.bsp.map(b => ohne(b.tr_von)+' → '+ohne(b.tr_nach)+(b.de ? ' ('+ohne(b.de)+')' : '')).join('; ')+'.');
+  return p.join(' ').replace(/\s+/g,' ').trim();
+}
+function regelLoesungenFuellen(list){
+  (list||[]).forEach(e => { const rg = courseRegelkarte(e); if(!rg) return; const t = regelLoesungText(rg); if(t){ if(e._solDb === undefined) e._solDb = e.solution; e.solution = t; } });
+}
 function courseRegelkarte(ex){
   const m = ex && ex.meta;
   return (m && m.layout === 'regelkarte' && m.regelkarte && typeof m.regelkarte === 'object') ? m.regelkarte : null;

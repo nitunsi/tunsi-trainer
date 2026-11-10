@@ -200,3 +200,6 @@ WHERE NOT EXISTS (SELECT 1 FROM progress p WHERE p.user_id = '6c6eff77-6b56-4ba9
 ```
 
 Die (darija, lesson_id)-Paare und der `WHERE course_number`-Wert sind nur ein Beispiel — bei jedem neuen Batch durch die tatsächlichen Werte ersetzen.
+
+
+**Lösungszeile der Regelkarten (seit 2026-11-10):** Für Karten mit `meta.layout = 'regelkarte'` erzeugt der Trainer `solution` beim Laden aus `meta.regelkarte` (`regelLoesungText()`: Antwort/Tabelle/Schritte bzw. Einordnung, dann „Regel: …“, Sicher-Zeile, Beispiele). Pflegen nur noch in `meta`; die Spalte `solution` in Supabase ist für diese Karten nur ein Abbild (Suche, Partner-Ansicht, SQL-Checks) und muss nicht von Hand nachgezogen werden. Der gespeicherte Text steht im Trainer als `e._solDb`.
