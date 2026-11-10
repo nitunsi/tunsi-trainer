@@ -525,7 +525,7 @@ function arOneSwap(a, b){
   for(let i=0;i<a.length;i++){ if(a[i] !== b[i]){ if(!arSimilar(a[i], b[i])) return false; diff++; if(diff>1) return false; } }
   return diff === 1;
 }
-function checkAnswer(input, answer){
+function checkAnswer(input, answer, opts){
   const rawInput = input.trim().toLowerCase();
   const n = normalize(input);
   const rawVariants = answer.split(/\s*\/\s*/).map(v => v.trim()).filter(v=>v!=='');
@@ -545,6 +545,12 @@ function checkAnswer(input, answer){
   const endA = x => normalize(String(x).replace(/e(t|w)?(?=$|[\s,.!?;:)])/gi, 'a$1'));
   const nA = endA(input);
   if(rawVariants.some(v => endA(v) === nA)) return {ok:true, exact:true, correct:answer};
+  // Verben: Schreibung seit 2026-11-10 nur a/i/u (wie TUNICO); alte Schreibung e/o gilt weiter als richtig (e = i, o = u)
+  if(opts && opts.verb){
+    const vk = x => endA(x).replace(/e/g,'i').replace(/o/g,'u');
+    const nV = vk(input);
+    if(rawVariants.some(v => vk(v) === nV)) return {ok:true, exact:true, correct:answer};
+  }
   // Mehrteilige Loesungen ("zuz krasi / tnashin kursi"): " / " trennt dort Teile, die beide
   // verlangt sind. Wer die ganze Loesung tippt, muss richtig liegen, nicht nur einzelne Teile.
   if(rawVariants.length>1 && n === normalize(answer)) return {ok:true, exact:true, correct:answer};
@@ -3336,7 +3342,7 @@ function chkFlash(){
     // Homonym: das Deutsch eines Partners mit gleicher Schreibung gilt auch als richtig
     if(!ok){ const pt = homAcceptPartners(v).de.find(e => checkAnswer(val, e.en).ok); if(pt){ ok = true; viaPartner = {p:pt, shown:pt.en}; } }
   } else {
-    {const r1=checkAnswer(val,v.ar),r2=checkAnswer(val,v.tr);ok=r1.ok||r2.ok;if(ok&&!(r1.exact||r2.exact))flashFuzzy=v.ar+'('+v.tr+')';}
+    {const r1=checkAnswer(val,v.ar),r2=checkAnswer(val,v.tr,{verb:!!v.cj});ok=r1.ok||r2.ok;if(ok&&!(r1.exact||r2.exact))flashFuzzy=v.ar+'('+v.tr+')';}
     // Synonym: Arabisch/Umschrift eines Partners mit gleichem Deutsch gilt auch als richtig
     if(!ok){ const pt = homAcceptPartners(v).tn.find(e => checkAnswer(val, e.ar).ok || checkAnswer(val, e.tr).ok); if(pt){ ok = true; viaPartner = {p:pt, shown:pt.ar+' ('+pt.tr+')'}; } }
   }
