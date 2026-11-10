@@ -687,9 +687,13 @@ function laengeSlots(ar, rHell){
 function laengeHtml(tr, ar, rHell){
   tr = String(tr||'');
   if(!tr || !/[ً-ْ]/.test(ar||'')) return tr;
-  const sl = laengeSlots(ar, rHell), re = /ou|[aeiou]+/gi, g = []; let m;
-  while((m = re.exec(tr))) g.push([m.index, m.index+m[0].length, m[0]]);
-  if(!g.length || g.length !== sl.length || !sl.some(x => x==='L'||x==='H'||x==='E')) return tr;
+  return laengeHtmlSlots(tr, laengeSlots(ar, rHell));
+}
+function vokalGruppen(tr){ const re = /ou|[aeiou]+/gi, g = []; let m; while((m = re.exec(String(tr||'')))) g.push([m.index, m.index+m[0].length, m[0]]); return g; }
+function laengeHtmlSlots(tr, sl){
+  tr = String(tr||'');
+  const g = vokalGruppen(tr);
+  if(!sl || !g.length || g.length !== sl.length || !sl.some(x => x==='L'||x==='H'||x==='E')) return tr;
   let h = '', p = 0;
   g.forEach(([s,e,t],k) => {
     h += tr.slice(p,s);
@@ -705,13 +709,82 @@ function laengeHtml(tr, ar, rHell){
 function trL(v){ if(!v) return ''; if(v._trL === undefined) v._trL = laengeHtml(v.tr, v.ar, v.rh); return v._trL; }
 // Tabellenzellen haben kein eigenes Arabisch: Länge aus der Vokabelzeile derselben Tabelle (gleiche Grundform)
 let _conjLaenge = null;
-function conjZelleL(cj, t){
+function conjZelleL(cj, t, tzH, pH){
   if(!_conjLaenge){
     _conjLaenge = {};
-    ALL_VOCAB.forEach(e => { if(!e.cj) return; const g = conjGrund(e.cj); if(g) _conjLaenge[g+'|'+e.tr] = trL(e); });
+    ALL_VOCAB.forEach(e => { if(!e.cj || !/[َُِ]/.test(e.ar||'')) return; const g = conjGrund(e.cj); if(g && !(g+'|'+e.tr in _conjLaenge)) _conjLaenge[g+'|'+e.tr] = trL(e); });
   }
   const g = conjGrund(cj);
-  return (g && _conjLaenge[g+'|'+t]) || t;
+  if(g && (g+'|'+t) in _conjLaenge) return _conjLaenge[g+'|'+t];   // belegt: eigenes Arabisch einer Vokabel
+  const sl = laengeRegelSlots(cj, t, tzH, pH);
+  return sl ? laengeHtmlSlots(t, sl) : t;
+}
+// Länge einer Tabellenform nach Regel (B1-Folge, Nils 2026-11-10): Grundformen aus dem Arabischen der Familie (er-Perfekt,
+// er-Präsens), andere Personen nach Verbtyp. Liefert Slots wie laengeSlots ('L' lang, 'H' lang+hell, 'E' kurz+hell am Ende, 'k') oder null.
+let _famBasis = null;
+function famBasis(cj){
+  if(!_famBasis){
+    _famBasis = {};
+    ALL_VOCAB.forEach(e => {
+      if(!e.cj || !/[َُِ]/.test(e.ar||'')) return;
+      const k = e._fk || (e._fk = JSON.stringify(e.cj)), b = _famBasis[k] || (_famBasis[k] = {vt: e.vt, st: e.st});
+      const g = e.cj.past && e.cj.past['3sg_m'], pr = e.cj.present && e.cj.present['3sg_m'];
+      const sl = laengeSlots(e.ar, e.rh), n = vokalGruppen(e.tr).length;
+      if(sl.length !== n) return;
+      if(g && e.tr === g.darija && !b.P){ b.P = sl; b.dunkel = /[صضطظقخغحع]/.test(e.ar) || (!e.rh && /ر/.test(e.ar)); }
+      if(pr && e.tr === pr.darija && !b.R){ b.R = sl; if(b.dunkel === undefined) b.dunkel = /[صضطظقخغحع]/.test(e.ar) || (!e.rh && /ر/.test(e.ar)); }
+      if(!b.vt && e.vt) b.vt = e.vt; if(!b.st && e.st) b.st = e.st;
+    });
+  }
+  return _famBasis[JSON.stringify(cj)] || null;
+}
+function laengeRegelSlots(cj, t, tzH, pH){
+  const b = famBasis(cj); if(!b) return null;
+  let tz = tzH || null, p = pH || null;
+  ['past','present','imperative'].forEach(z => { const blk = cj[z]; if(blk && typeof blk === 'object') Object.keys(blk).forEach(k => { if(!tz && blk[k] && blk[k].darija === t){ tz = z; p = k; } }); });
+  if(!tz) return null;
+  const n = vokalGruppen(t).length;
+  const wEnde = /[ia]w$/.test(t);   // -iw/-aw: Vokal vor w lang (nimshīw, yibdǟw) if(!n) return null;
+  const kurz = () => Array(n).fill('k');
+  const langA = b.dunkel ? 'L' : 'H';
+  const R = b.R, P = b.P, vt = b.vt || '', st = b.st || '';
+  const er = (cj.past && cj.past['3sg_m'] && cj.past['3sg_m'].darija) || '';
+  const endeA = /a$/.test(er) && vt !== 'hohl';            // Perfekt auf -a: schwaches Ende (auch kla, khtha, qra …)
+  const KEND = {'1sg':1,'2sg':1,'1pl':1,'2pl':1}, VEND = {'3sg_f':1,'3pl':1};
+  if(tz === 'present'){
+    if(!R) return null;
+    if(p === '3sg_m') return R.length === n ? R : null;
+    if({'1sg':1,'2sg':1,'3sg_f':1}[p]) return R.length === n ? R : null;
+    if(wEnde){ const o = R.slice(0, n); if(o.length !== n) return null; o[n-1] = /aw$/.test(t) ? langA : 'L'; return o; }
+    const out = R.slice(0, n-1).concat(['k']); return out.length === n ? out : null;   // Plural: Endung kurz
+  }
+  if(tz === 'imperative'){
+    if(!R) return null;
+    const hilfs = /^[aeiou]/.test(t) ? 1 : 0;                                  // iqif, iktib: Hilfsvokal kurz
+    const m = (p === 'sg' ? n : n-1) - hilfs; if(m < 0 || m > R.length) return null;
+    const stamm = (hilfs ? ['k'] : []).concat(m ? R.slice(R.length - m) : []);
+    const out = p === 'sg' ? stamm : stamm.concat([wEnde ? (/aw$/.test(t) ? langA : 'L') : 'k']);
+    return out.length === n && !out.includes(undefined) ? out : null;
+  }
+  // Perfekt
+  if(p === '3sg_m') return P && P.length === n ? P : null;
+  const naE = o => o;   // -na bei „wir“: Arabisch uneinheitlich (mshīnä, ktibna) – bewusst nicht markiert
+  if(endeA){
+    if(KEND[p]){ const o = kurz(), i = ({'1sg':1,'2sg':1}[p]) ? n-1 : n-2; if(i < 0) return null; o[i] = 'L'; return naE(o); }   // krīt, krīnä, khallīt
+    if(VEND[p]){ const o = kurz(); o[n-1] = langA; return o; }                  // krǟt, krǟw, khallǟt
+  }
+  if(vt === 'hohl' && !({'II':1,'V':1,'III':1}[st])){
+    if(KEND[p]) return naE(kurz());                                            // shuft
+    if(VEND[p] && n >= 2){ const o = kurz(); o[n-2] = langA; return o; }      // shǟfit, shǟfu, rtǟ7it
+  }
+  if(vt === 'geminiert' && (st === 'I' || st === 't-I')){
+    if(KEND[p] && n >= 2){ const o = kurz(), i = ({'1sg':1,'2sg':1}[p]) ? n-1 : n-2; o[i] = 'L'; return naE(o); }   // 7abbīt, 7abbīnä
+    if(VEND[p]) return kurz();
+  }
+  if(({'III':1,'VI':1}[st]) && P && P[0]){
+    const o = kurz(); o[0] = P[0]; return naE(o);                              // sǟfirt, sǟfrit
+  }
+  return naE(kurz());
 }
 function conjGrund(cj){ const x = (cj && ((cj.past && cj.past['3sg_m']) || (cj.present && cj.present['3sg_m']))) || null; return x && x.darija ? String(x.darija) : ''; }
 let _arByTr = null;   // Cache {darija: arabic_script} für die Hinweise (Präsens-/Perfekt-Grundform in arabischen Buchstaben)
@@ -2908,12 +2981,12 @@ function renderConjugationTable(cj){
   if(!cj) return '';
   const pr = cj.present||{}, pa = cj.past||{}, im = cj.imperative||{};
   // Unregelmäßige Formen: c.irr === true markiert die ganze Form, ein String (z.B. 'o') nur diesen Teil.
-  const d = c => {
+  const d = (c, tz, k) => {
     if(!(c && c.darija)) return '–';
     const t = c.darija, mk = x => '<b style="color:var(--red)" title="unregelmäßig">'+x+'</b>';
-    if(c.irr === true) return mk(conjZelleL(cj, t));   // ganze Form unregelmäßig: rot, Länge/Klang trotzdem anzeigen
+    if(c.irr === true) return mk(conjZelleL(cj, t, tz, k));   // ganze Form unregelmäßig: rot, Länge/Klang trotzdem anzeigen
     if(typeof c.irr === 'string' && c.irr && t.indexOf(c.irr) >= 0){ const i = t.indexOf(c.irr); return t.slice(0,i)+mk(c.irr)+t.slice(i+c.irr.length); }
-    return conjZelleL(cj, t);
+    return conjZelleL(cj, t, tz, k);
   };
   let h = '<table style="width:100%;border-collapse:collapse;font-size:.8rem">';
   h += '<thead><tr style="color:var(--muted);font-size:.62rem;text-transform:uppercase;letter-spacing:.05em">';
@@ -2921,13 +2994,13 @@ function renderConjugationTable(cj){
   CONJ_PERSON_ROWS.forEach(([label,key])=>{
     h += '<tr style="border-top:1px solid rgba(255,255,255,.06)">';
     h += '<td style="padding:.2rem .4rem;color:var(--muted)">'+label+'</td>';
-    h += '<td style="padding:.2rem .4rem;font-family:\'IBM Plex Mono\',monospace">'+d(pr[key])+'</td>';
-    h += '<td style="padding:.2rem .4rem;font-family:\'IBM Plex Mono\',monospace">'+d(pa[key])+'</td>';
+    h += '<td style="padding:.2rem .4rem;font-family:\'IBM Plex Mono\',monospace">'+d(pr[key],'present',key)+'</td>';
+    h += '<td style="padding:.2rem .4rem;font-family:\'IBM Plex Mono\',monospace">'+d(pa[key],'past',key)+'</td>';
     h += '</tr>';
   });
   h += '</tbody></table>';
   if(im.sg || im.pl){
-    h += '<div style="margin-top:.5rem;padding-top:.4rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted)">Imperativ: <span style="color:var(--text);font-family:\'IBM Plex Mono\',monospace">'+d(im.sg)+'</span> (sg.) · <span style="color:var(--text);font-family:\'IBM Plex Mono\',monospace">'+d(im.pl)+'</span> (pl.)</div>';
+    h += '<div style="margin-top:.5rem;padding-top:.4rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted)">Imperativ: <span style="color:var(--text);font-family:\'IBM Plex Mono\',monospace">'+d(im.sg,'imperative','sg')+'</span> (sg.) · <span style="color:var(--text);font-family:\'IBM Plex Mono\',monospace">'+d(im.pl,'imperative','pl')+'</span> (pl.)</div>';
   }
   return h;
 }
