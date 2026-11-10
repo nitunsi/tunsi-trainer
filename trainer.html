@@ -2911,7 +2911,7 @@ function renderConjugationTable(cj){
   const d = c => {
     if(!(c && c.darija)) return '–';
     const t = c.darija, mk = x => '<b style="color:var(--red)" title="unregelmäßig">'+x+'</b>';
-    if(c.irr === true) return mk(t);
+    if(c.irr === true) return mk(conjZelleL(cj, t));   // ganze Form unregelmäßig: rot, Länge/Klang trotzdem anzeigen
     if(typeof c.irr === 'string' && c.irr && t.indexOf(c.irr) >= 0){ const i = t.indexOf(c.irr); return t.slice(0,i)+mk(c.irr)+t.slice(i+c.irr.length); }
     return conjZelleL(cj, t);
   };
