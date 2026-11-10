@@ -531,6 +531,10 @@ function checkAnswer(input, answer){
   const variants = rawVariants.map(v => normalize(v)).filter(v=>v!=='');
   // Exakter Match nach Normierung
   if(variants.some(v => n === v)) return {ok:true, exact:true, correct:answer};
+  // Helles a am Wortende: mshe = msha, mshet = mshat, mshew = mshaw (Aussprache Tunis)
+  const endA = x => normalize(String(x).replace(/e(t|w)?(?=$|[\s,.!?;:)])/gi, 'a$1'));
+  const nA = endA(input);
+  if(rawVariants.some(v => endA(v) === nA)) return {ok:true, exact:true, correct:answer};
   // Mehrteilige Loesungen ("zuz krasi / tnashin kursi"): " / " trennt dort Teile, die beide
   // verlangt sind. Wer die ganze Loesung tippt, muss richtig liegen, nicht nur einzelne Teile.
   if(rawVariants.length>1 && n === normalize(answer)) return {ok:true, exact:true, correct:answer};
@@ -648,7 +652,11 @@ function laengeSlots(ar, rHell){
       const lang = n && !n.d && (((n.b==='ا'||n.b==='ى') && (v==='a' || (v===null && b!=='ا'))) || (n.b==='ي' && v==='i') || (n.b==='و' && v==='u'));
       const bloss = !lang && v===null && !d.includes(SU) && n && !n.d && (n.b==='ي'||n.b==='و') && b!=='ا' && i>0;
       if(lang || bloss){
-        if(i+2>=u.length){ out.push('k'); i++; continue; }
+        if(i+2>=u.length){
+          // langes a am Wortende wird kurz gesprochen; ohne dunklen Laut im Wort klingt es hell, fast wie e (mshe)
+          const dk = rHell ? /[صضطظقخغحع]/ : /[صضطظقخغرحع]/;
+          out.push((n.b==='ا'||n.b==='ى') && v==='a' && !dk.test(w) ? 'E' : 'k'); i++; continue;
+        }
         // langes a: hell (ä) oder dunkel (a) nach den Nachbarkonsonanten (Aussprache Tunis)
         const alif = n.b==='ا'||n.b==='ى', nach = u[i+2] ? u[i+2].b : '';
         const dunkel = rHell ? 'صضطظقخغحع' : 'صضطظقخغرحع'; // r_hell: r im Wort laut TUNICO hell (vocabulary.r_hell)
@@ -665,12 +673,13 @@ function laengeHtml(tr, ar, rHell){
   if(!tr || !/[ً-ْ]/.test(ar||'')) return tr;
   const sl = laengeSlots(ar, rHell), re = /ou|[aeiou]+/gi, g = []; let m;
   while((m = re.exec(tr))) g.push([m.index, m.index+m[0].length, m[0]]);
-  if(!g.length || g.length !== sl.length || !sl.some(x => x==='L'||x==='H')) return tr;
+  if(!g.length || g.length !== sl.length || !sl.some(x => x==='L'||x==='H'||x==='E')) return tr;
   let h = '', p = 0;
   g.forEach(([s,e,t],k) => {
     h += tr.slice(p,s);
     const lt = t.toLowerCase(), mac = _VL_MAC[lt]||_VL_MAC[lt[0]]||t;
     if(sl[k]==='H' && lt[0]==='a') h += '<span class="vl" title="lang, hell (ä)">ǟ</span>';
+    else if(sl[k]==='E' && lt==='a') h += '<span class="vl" title="kurz, hell gesprochen (fast wie e)">ä</span>';
     else if(sl[k]==='L'||sl[k]==='H') h += '<span class="vl" title="lang">'+mac+'</span>';
     else h += t;
     p = e;
