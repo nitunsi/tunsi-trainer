@@ -830,13 +830,20 @@ function famBasis(cj){
       const k = e._fk || (e._fk = JSON.stringify(e.cj)), b = _famBasis[k] || (_famBasis[k] = {vt: e.vt, st: e.st});
       if(!b.vt && e.vt) b.vt = e.vt; if(!b.st && e.st) b.st = e.st; if(!b.wza && e.wza) b.wza = e.wza;
     });
+    // Typen mit lauter kurzen Stammvokalen (Gegenprobe an belegten Familien, 2026-11-11); Ausnahmen: schwacher Anfang I (yūsil: erster Vokal lang), VI. Stamm (langes a nach dem 1. Radikal)
+    const KURZ = {stark: /^(I|II|V|X|t-I)$/, geminiert: /^(I|II|V|t-I)$/, schwaches_ende: /^(I|II|V|X)$/, mehrfach: /^(II|V|X)$/, hohl: /^(II|V|X)$/, schwach_anfang: /^(I|II)$/};
     Object.keys(_famBasis).forEach(k => {
-      const b = _famBasis[k]; if(!b || b === true || (b.P && b.R) || !/^(stark|geminiert)$/.test(b.vt||'') || !/^(I|II|V|t-I)$/.test(b.st||'')) return;
+      const b = _famBasis[k]; if(!b || b === true || (b.P && b.R)) return;
+      const vt = b.vt || '', st = b.st || '';
+      const sechs = vt === 'stark' && st === 'VI';
+      if(!sechs && !(KURZ[vt] && KURZ[vt].test(st))) return;
       let cj; try{ cj = JSON.parse(k); }catch(_){ return; }
       const g = cj.past && cj.past['3sg_m'], pr = cj.present && cj.present['3sg_m'];
-      if(!b.P && g && g.darija) b.P = Array(vokalGruppen(String(g.darija).split(' / ')[0]).length).fill('k');
-      if(!b.R && pr && pr.darija) b.R = Array(vokalGruppen(String(pr.darija).split(' / ')[0]).length).fill('k');
+      const erst = x => String(x).split(' / ')[0].split(' ')[0];   // erste Variante, erstes Wort (ysallim 3la)
       if(b.dunkel === undefined) b.dunkel = /[صضطظقخغحع]/.test(b.wza||'') || /ر/.test(b.wza||'');
+      const langA = b.dunkel ? 'L' : 'H';
+      if(!b.P && g && g.darija){ b.P = Array(vokalGruppen(erst(g.darija)).length).fill('k'); if(sechs && b.P.length >= 1) b.P[0] = langA; }
+      if(!b.R && pr && pr.darija){ b.R = Array(vokalGruppen(erst(pr.darija)).length).fill('k'); if(sechs && b.R.length >= 2) b.R[1] = langA; if(vt === 'schwach_anfang' && st === 'I' && b.R.length >= 1) b.R[0] = 'L'; }
     });
   }
   return _famBasis[JSON.stringify(cj)] || null;
