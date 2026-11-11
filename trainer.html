@@ -689,9 +689,11 @@ function laengeSlots(ar, rHell){
   }
   return out;
 }
+// Kleine Vorsilben/Partikeln werden nie hell (ä) angezeigt: ma- (Verneinung) spricht man ma (Nils 2026-11-11)
+const LAENGE_PARTIKEL = new Set(['ma']);
 function laengeHtml(tr, ar, rHell){
   tr = String(tr||'');
-  if(!tr || !/[ً-ْ]/.test(ar||'')) return tr;
+  if(!tr || LAENGE_PARTIKEL.has(tr.toLowerCase()) || !/[ً-ْ]/.test(ar||'')) return tr;
   return laengeHtmlSlots(tr, laengeSlots(ar, rHell));
 }
 function vokalGruppen(tr){ const re = /ou|[aeiou]+/gi, g = []; let m; while((m = re.exec(String(tr||'')))) g.push([m.index, m.index+m[0].length, m[0]]); return g; }
@@ -7724,7 +7726,7 @@ function laengeImText(html){
     [true, false].forEach(verb => ALL_VOCAB.forEach(v => { if(!!v.cj === verb && v.ar && v.tr && /[َُِ]/.test(v.ar) && !_verbArByTr[v.tr]) _verbArByTr[v.tr] = v; }));
   }
   return String(html).split(/(<[^>]*>)/).map(seg => seg.charAt(0) === '<' ? seg : seg.replace(/[A-Za-z0-9'ʔ]+/g, w => {
-    const v = _verbArByTr[w]; if(!v || LAENGE_TEXT_NICHT.has(w)) return w;
+    const v = _verbArByTr[w]; if(!v || LAENGE_TEXT_NICHT.has(w) || LAENGE_PARTIKEL.has(w.toLowerCase())) return w;
     return laengeHtml(w, v.ar, v.rh);
   })).join('');
 }
