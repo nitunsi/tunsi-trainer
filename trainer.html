@@ -813,6 +813,7 @@ function famBasis(cj){
       if(!e.cj || !/[َُِ]/.test(e.ar||'')) return;
       const k = e._fk || (e._fk = JSON.stringify(e.cj)), b = _famBasis[k] || (_famBasis[k] = {vt: e.vt, st: e.st});
       const g = e.cj.past && e.cj.past['3sg_m'], pr = e.cj.present && e.cj.present['3sg_m'];
+      if(/ \/ /.test(e.tr)) return;   // Zeile mit zwei Varianten (ya3rif / ya3raf) taugt nicht als Grundform
       const sl = laengeSlots(e.ar, e.rh), n = vokalGruppen(e.tr).length;
       if(sl.length !== n) return;
       if(g && e.tr === g.darija && !b.P){ b.P = sl; b.dunkel = /[صضطظقخغحع]/.test(e.ar) || (!e.rh && /ر/.test(e.ar)); }
@@ -820,7 +821,31 @@ function famBasis(cj){
       if(!b.vt && e.vt) b.vt = e.vt; if(!b.st && e.st) b.st = e.st;
     });
   }
+  if(!_famBasis._rueck){
+    _famBasis._rueck = true;
+    // Rückfall ohne vokalisiertes Arabisch (2026-11-11): bei starken und geminierten Verben im I., II., V. Stamm sind alle Stammvokale kurz;
+    // Grundformen und Wurzel (dunkel/hell) kommen aus der Tabelle und wurzel_ar der Familie
+    ALL_VOCAB.forEach(e => {
+      if(!e.cj || e.ausb) return;
+      const k = e._fk || (e._fk = JSON.stringify(e.cj)), b = _famBasis[k] || (_famBasis[k] = {vt: e.vt, st: e.st});
+      if(!b.vt && e.vt) b.vt = e.vt; if(!b.st && e.st) b.st = e.st; if(!b.wza && e.wza) b.wza = e.wza;
+    });
+    Object.keys(_famBasis).forEach(k => {
+      const b = _famBasis[k]; if(!b || b === true || (b.P && b.R) || !/^(stark|geminiert)$/.test(b.vt||'') || !/^(I|II|V|t-I)$/.test(b.st||'')) return;
+      let cj; try{ cj = JSON.parse(k); }catch(_){ return; }
+      const g = cj.past && cj.past['3sg_m'], pr = cj.present && cj.present['3sg_m'];
+      if(!b.P && g && g.darija) b.P = Array(vokalGruppen(String(g.darija).split(' / ')[0]).length).fill('k');
+      if(!b.R && pr && pr.darija) b.R = Array(vokalGruppen(String(pr.darija).split(' / ')[0]).length).fill('k');
+      if(b.dunkel === undefined) b.dunkel = /[صضطظقخغحع]/.test(b.wza||'') || /ر/.test(b.wza||'');
+    });
+  }
   return _famBasis[JSON.stringify(cj)] || null;
+}
+// Zellen mit zwei Varianten (nilqa / nalqa): jede einzeln erzeugen und mit „ / “ verbinden
+function arabischZelle(cj, t, tz, p){
+  const teile = String(t||'').split(' / ');
+  const r = teile.map(x => arabischErzeugen(cj, x.trim(), tz, p));
+  return r.every(Boolean) ? r.join(' / ') : null;
 }
 function laengeRegelSlots(cj, t, tzH, pH){
   const b = famBasis(cj); if(!b) return null;
