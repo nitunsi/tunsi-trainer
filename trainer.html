@@ -676,7 +676,8 @@ function laengeSlots(ar, rHell){
         if(i+2>=u.length || stumm){ if(stumm){ out.push('k'); i+=2; continue; }
           // langes a am Wortende wird kurz gesprochen; ohne dunklen Laut im Wort klingt es hell, fast wie e (mshe)
           const dk = rHell ? /[صضطظقخغحع]/ : /[صضطظقخغرحع]/;
-          out.push((n.b==='ا'||n.b==='ى') && v==='a' && !dk.test(w) ? 'E' : 'k'); i++; continue;
+          // Endung -ya (يَا) klingt immer ya, nie yä (Nils 2026-11-11: bouya, dinya, libya)
+          out.push((n.b==='ا'||n.b==='ى') && v==='a' && b!=='ي' && !dk.test(w) ? 'E' : 'k'); i++; continue;
         }
         // langes a: hell (ä) oder dunkel (a) nach den Nachbarkonsonanten (Aussprache Tunis)
         const alif = n.b==='ا'||n.b==='ى', nach = u[i+2] ? u[i+2].b : '';
