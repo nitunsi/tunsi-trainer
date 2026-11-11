@@ -7726,8 +7726,10 @@ function laengeImText(html){
     // erst Verben, dann alle anderen Vokabeln mit Vokalzeichen (Fatha/Kasra/Damma)
     [true, false].forEach(verb => ALL_VOCAB.forEach(v => { if(!!v.cj === verb && v.ar && v.tr && /[َُِ]/.test(v.ar) && !_verbArByTr[v.tr]) _verbArByTr[v.tr] = v; }));
   }
-  return String(html).split(/(<[^>]*>)/).map(seg => seg.charAt(0) === '<' ? seg : seg.replace(/[A-Za-z0-9'ʔ]+/g, w => {
+  return String(html).split(/(<[^>]*>)/).map(seg => seg.charAt(0) === '<' ? seg : seg.replace(/[A-Za-z0-9'ʔ]+/g, (w, off) => {
     const v = _verbArByTr[w]; if(!v || LAENGE_TEXT_NICHT.has(w) || LAENGE_PARTIKEL.has(w.toLowerCase())) return w;
+    // Vorsilbe vor Auslassungspunkten oder Bindestrich (yi…a, ya…i, ya-) ist kein Wort am Wortende
+    if(/^(…|\.\.\.)/.test(seg.slice(off + w.length))) return w;
     return laengeHtml(w, v.ar, v.rh);
   })).join('');
 }
@@ -7783,7 +7785,7 @@ function regelEinordnungHtml(rg){
       + '<span style="font-size:.95rem">'+(eintr.length>1 ? '<b>'+escHtml(f)+'</b> · ' : '')+markiert(String(e.wz||'').split('-'), markIdx(e), '-')
       + (gleich ? '' : '<span style="color:var(--muted)"> · '+glossarWrap(klass(e), true)+'</span>')+'</span>'
       + '<span style="display:flex;align-items:center;gap:.5rem">'+arSpan(e)
-      + (e.cj ? '<button type="button" onclick="event.stopPropagation();showConjModal('+e.id+')" title="Konjugationstabelle anzeigen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.78rem;padding:.1rem .4rem;border-radius:4px;cursor:pointer;white-space:nowrap">🔠 Tabelle</button>' : '')
+      + (e.cj ? '<button type="button" onclick="event.stopPropagation();showConjModal('+e.id+')" title="Konjugationstabelle anzeigen" aria-label="Konjugationstabelle anzeigen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.8rem;line-height:1;width:1.9rem;height:1.6rem;padding:0;border-radius:4px;cursor:pointer;flex:none">🔠</button>' : '')
       + '</span></div>').join('');
   return '<div style="margin-bottom:.9rem;padding-bottom:.7rem;border-bottom:1px solid var(--border)">'
     + '<div style="font-size:.72rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem">'+glossarWrap(eintr.length>1 ? 'Wurzeln' : 'Wurzel', true)+'</div>'
