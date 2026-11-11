@@ -689,8 +689,8 @@ function laengeSlots(ar, rHell){
   }
   return out;
 }
-// Kleine Wörter werden nie hell (ä) angezeigt: ma- (Verneinung) spricht man ma, ena „ich“ spricht man ena (Nils 2026-11-11)
-const LAENGE_PARTIKEL = new Set(['ma','ena']);
+// Kleine Wörter werden nie hell (ä) angezeigt: ma- (Verneinung) spricht man ma, ena „ich“ spricht man ena, ija „komm“ spricht man ija (Nils 2026-11-11)
+const LAENGE_PARTIKEL = new Set(['ma','ena','ija']);
 function laengeHtml(tr, ar, rHell){
   tr = String(tr||'');
   if(!tr || LAENGE_PARTIKEL.has(tr.toLowerCase()) || !/[ً-ْ]/.test(ar||'')) return tr;
