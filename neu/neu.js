@@ -936,7 +936,7 @@ window.showRes = function(){
   r.innerHTML = '<div class="neu-res">'
     + ring(pct/100, 150, 12, pct >= 70 ? 'var(--green)' : 'var(--gold)', score.c + ' / ' + score.t)
     + artHtml(pct >= 70 ? 'jasmin' : 'sun')
-    + (function(){ const m = msgs[Math.floor(Math.random()*msgs.length)], mm = m.match(/^([^A-Za-z]+?)\s*([A-Za-z].*)$/), ar = mm ? mm[1].trim() : m, tn = mm ? mm[2].trim() : '';
+    + (function(){ const m = msgs[Math.floor(Math.random()*msgs.length)], mm = m.match(/^([^A-Za-z0-9]+?)\s*([A-Za-z0-9].*)$/), ar = mm ? mm[1].trim() : m, tn = mm ? mm[2].trim() : '';
         return '<div class="ar-big" dir="rtl">'+ar+'</div><div class="msg">'+(pct>=70?'Gut gemacht':'Weiter üben')+'</div>'+(tn ? '<div class="sub">'+tn+'</div>' : ''); })()
     + '<div id="neu-res-msg" style="width:100%"></div>'
     + dueRow
