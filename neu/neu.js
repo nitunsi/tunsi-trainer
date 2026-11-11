@@ -126,7 +126,8 @@ const isQueueBlocked = v => v.ps === 'rejected' || v.ps === 'suggested' || v.ps 
 function dueCounts(){
   let voc = 0, blocked = 0, course = 0;
   ALL_VOCAB.forEach(v => { if(srsIsDue(v)){ if(isQueueBlocked(v)) blocked++; else voc++; } });
-  Object.values(COURSE_EX_PROGRESS).forEach(p => { if(p && p.next_review && isDueByDay(courseParseTs(p.next_review))) course++; });
+  // ausgeblendete Übungen (meta.aus) zählen nicht: sie werden nicht abgefragt (Nils 2026-11-11)
+  Object.keys(COURSE_EX_PROGRESS).forEach(id => { const p = COURSE_EX_PROGRESS[id]; if(p && p.next_review && !courseExAus(COURSE_EX_BY_ID[id]) && isDueByDay(courseParseTs(p.next_review))) course++; });
   return {voc, blocked, course};
 }
 /* ---------- Erinnerung (Web-Push) und Badge ---------- */
@@ -1220,7 +1221,7 @@ window.renderCourseOverview = function(){
     const total = items.length;
     const unlocked = items.filter(e => COURSE_EX_PROGRESS[e.id]).length;
     const mastered = items.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
-    const due = items.filter(e => { const p = COURSE_EX_PROGRESS[e.id]; return p && p.next_review && isDueByDay(courseParseTs(p.next_review)); }).length;
+    const due = items.filter(e => { const p = COURSE_EX_PROGRESS[e.id]; return p && p.next_review && !courseExAus(e) && isDueByDay(courseParseTs(p.next_review)); }).length;
     const v = hk === 'all' ? courseVocabInfo(l) : {total: 0, started: 0, solid: 0, due: 0, lv: []};
     // Level je Bereich: so hoch, wie 90 % der aktivierten Karten mindestens stehen (max. 4 = sicher); grün erst, wenn alles aktiv ist
     const exLv = items.filter(e => COURSE_EX_PROGRESS[e.id]).map(e => COURSE_EX_PROGRESS[e.id].correct_count||0);
@@ -1777,7 +1778,7 @@ function lessonProg(l){
   const total = items.length;
   const unlocked = items.filter(e => COURSE_EX_PROGRESS[e.id]).length;
   const mastered = items.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
-  const due = items.filter(e => { const p = COURSE_EX_PROGRESS[e.id]; return p && p.next_review && isDueByDay(courseParseTs(p.next_review)); }).length;
+  const due = items.filter(e => { const p = COURSE_EX_PROGRESS[e.id]; return p && p.next_review && !courseExAus(e) && isDueByDay(courseParseTs(p.next_review)); }).length;
   return {total, unlocked, mastered, due};
 }
 const _scl = window.showCourseLesson;
