@@ -700,8 +700,11 @@ function laengeHtml(tr, ar, rHell){
 function vokalGruppen(tr){ const re = /ou|[aeiou]+/gi, g = []; let m; while((m = re.exec(String(tr||'')))) g.push([m.index, m.index+m[0].length, m[0]]); return g; }
 // Wörter, deren langes a nach Gehör dunkel ist (ā), obwohl die Regel hell (ǟ) ergäbe (Nils 2026-11-11: taf taf)
 const LAENGE_DUNKEL = new Set(['taf']);
+// Einzelwörter mit End-a, das hell (ä) klingt, obwohl die Regel (-ya) es ausnimmt (Nils 2026-11-11: myä „hundert“)
+const LAENGE_HELL = new Set(['mya']);
 function laengeHtmlSlots(tr, sl){
   tr = String(tr||'');
+  if(sl && sl.length === 1 && LAENGE_HELL.has(tr.toLowerCase())) sl = ['E'];
   const g = vokalGruppen(tr);
   if(!sl || !g.length || g.length !== sl.length || !sl.some(x => x==='L'||x==='H'||x==='E')) return tr;
   if(sl.includes('H')){
