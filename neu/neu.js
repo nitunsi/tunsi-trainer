@@ -183,8 +183,9 @@ window.partnerPushInit = async function(){
 
 function nextDueText(){
   const now = new Date(); let next = null;
-  ALL_VOCAB.forEach(v => { if(isQueueBlocked(v)) return; const p = srsProgress[v.id]; if(p && p.next_review){ const d = new Date(p.next_review); if(!isDueByDay(d) && (!next || d < next)) next = d; } });
-  Object.values(COURSE_EX_PROGRESS).forEach(p => { if(p && p.next_review){ const d = courseParseTs(p.next_review); if(!isDueByDay(d) && (!next || d < next)) next = d; } });
+  // Ausgeblendete und noch nicht freigeschaltete Karten werden nicht abgefragt, also auch nicht als „nächste Wiederholung“ gezählt (Nils 2026-11-11)
+  ALL_VOCAB.forEach(v => { if(isQueueBlocked(v) || !vokabelLernbar(v)) return; const p = srsProgress[v.id]; if(p && p.next_review){ const d = new Date(p.next_review); if(!isDueByDay(d) && (!next || d < next)) next = d; } });
+  Object.keys(COURSE_EX_PROGRESS).forEach(id => { const p = COURSE_EX_PROGRESS[id]; if(p && p.next_review && !courseExAus(COURSE_EX_BY_ID[id])){ const d = courseParseTs(p.next_review); if(!isDueByDay(d) && (!next || d < next)) next = d; } });
   if(!next) return 'bald';
   const day0 = d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   const diff = Math.round((day0(next) - day0(now)) / 86400000);
@@ -367,8 +368,8 @@ function forecast7(part){
     const d = Math.max(0, idx(berlinDayKey(nr)) - today), iv = SRS_DAYS[Math.min(lv || 0, 6)];
     for(let k = d; k < FC_DAYS; k += iv) days[k]++;
   };
-  if(part !== 'course') ALL_VOCAB.forEach(v => { const p = srsProgress[v.id]; if(p && p.next_review) add(p.level, p.next_review); });
-  if(part !== 'vocab') Object.values(COURSE_EX_PROGRESS).forEach(p => { if(p && p.next_review) add(p.correct_count, courseParseTs(p.next_review)); });
+  if(part !== 'course') ALL_VOCAB.forEach(v => { const p = srsProgress[v.id]; if(p && p.next_review && vokabelLernbar(v)) add(p.level, p.next_review); });
+  if(part !== 'vocab') Object.keys(COURSE_EX_PROGRESS).forEach(id => { const p = COURSE_EX_PROGRESS[id]; if(p && p.next_review && !courseExAus(COURSE_EX_BY_ID[id])) add(p.correct_count, courseParseTs(p.next_review)); });
   const min = Math.min.apply(null, days);
   return {days, avg: days.reduce((a, b) => a + b, 0) / FC_DAYS, min, minDay: days.indexOf(min)};
 }
