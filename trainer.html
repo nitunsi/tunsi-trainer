@@ -697,10 +697,16 @@ function laengeHtml(tr, ar, rHell){
   return laengeHtmlSlots(tr, laengeSlots(ar, rHell));
 }
 function vokalGruppen(tr){ const re = /ou|[aeiou]+/gi, g = []; let m; while((m = re.exec(String(tr||'')))) g.push([m.index, m.index+m[0].length, m[0]]); return g; }
+// Wörter, deren langes a nach Gehör dunkel ist (ā), obwohl die Regel hell (ǟ) ergäbe (Nils 2026-11-11: taf taf)
+const LAENGE_DUNKEL = new Set(['taf']);
 function laengeHtmlSlots(tr, sl){
   tr = String(tr||'');
   const g = vokalGruppen(tr);
   if(!sl || !g.length || g.length !== sl.length || !sl.some(x => x==='L'||x==='H'||x==='E')) return tr;
+  if(sl.includes('H')){
+    sl = sl.slice();
+    g.forEach(([st], k) => { if(sl[k]==='H'){ const a = tr.lastIndexOf(' ', st) + 1, z = tr.indexOf(' ', st); if(LAENGE_DUNKEL.has(tr.slice(a, z < 0 ? tr.length : z).toLowerCase())) sl[k] = 'L'; } });
+  }
   let h = '', p = 0;
   g.forEach(([s,e,t],k) => {
     h += tr.slice(p,s);
