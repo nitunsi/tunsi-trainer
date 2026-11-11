@@ -1732,6 +1732,8 @@ function wechselFeste(v){
 }
 function wechselFrei(v){
   if(!v || !v.cr || !v.cj) return true;
+  // Wechselkarten mit eigenem Lernstand (zuvor Einzelkarte oder schon freigeschaltet) bleiben immer frei; nur neue warten auf die festen Karten (Nils 2026-11-11)
+  const pv = srsProgress[v.id]; if(pv && pv.next_review) return true;
   return wechselFeste(v).every(e => { const p = srsProgress[e.id]; return p && p.next_review && (p.level||0) >= WECHSEL_AB_STUFE; });
 }
 // Neue Wechselkarten (ohne Lernstand) automatisch freischalten, sobald die festen Karten der Familie Stufe 2 haben –
