@@ -3063,6 +3063,12 @@ function extConfirmIcon(v, style){
   const label = EXT_SOURCE_LABEL[v.xcs] || 'externe Quelle';
   return `<span title="Extern bestätigt (${label}, keine Audio-Aufnahme)" style="${style||'color:var(--muted)'}">🔗</span>`;
 }
+// Belegtes Arabisch einer Tabellenform: Vokabelzeile derselben Familie (gleiche Tabelle) mit gleicher Umschrift
+function conjBelegtAr(cj, tr){
+  if(!cj || !tr) return '';
+  const k = JSON.stringify(cj), e = ALL_VOCAB.find(x => x.cj && x.tr === tr && String(x.ar||'').trim() && (x._fk || (x._fk = JSON.stringify(x.cj))) === k);
+  return e ? e.ar : '';
+}
 const CONJ_PERSON_ROWS = [['ich','1sg'],['du','2sg'],['er','3sg_m'],['sie','3sg_f'],['wir','1pl'],['ihr','2pl'],['sie (Pl.)','3pl']];
 // Jede Zelle in vocabulary.conjugation hat die Form {darija, german}.
 function renderConjugationTable(cj){
@@ -3076,14 +3082,12 @@ function renderConjugationTable(cj){
     if(typeof c.irr === 'string' && c.irr && t.indexOf(c.irr) >= 0){ const i = t.indexOf(c.irr); return t.slice(0,i)+mk(c.irr)+t.slice(i+c.irr.length); }
     return conjZelleL(cj, t, tz, k);
   };
-  let _cjFk;
   // Arabisch unter der Umschrift (Nils 2026-11-10): cell.ar, ar_abg = aus Wurzel + Umschrift erzeugt, nicht belegt
   const dA = (c, tz, k, inl) => {
     const h = d(c, tz, k);
     if(!(c && c.darija)) return h;
     // ohne eigenes Feld (Grundformen): Arabisch der Vokabelzeile derselben Familie mit gleicher Umschrift
-    const bel = c.ar ? null : (_cjFk === undefined ? (_cjFk = JSON.stringify(cj)) : _cjFk, ALL_VOCAB.find(e => e.cj && e.tr === c.darija && String(e.ar||'').trim() && (e._fk || (e._fk = JSON.stringify(e.cj))) === _cjFk));
-    const ar = c.ar || (bel && bel.ar); if(!ar) return h;
+    const ar = c.ar || conjBelegtAr(cj, c.darija); if(!ar) return h;
     const abg = !!(c.ar && c.ar_abg), tit = abg ? 'abgeleitet (aus Wurzel und Umschrift erzeugt, nicht belegt)' : 'belegt';
     return h + '<'+(inl ? 'span' : 'div')+' dir="rtl" title="'+tit+'" style="'+(inl ? 'margin-left:.35rem;' : 'text-align:left;')+'font-family:var(--arf,inherit);font-size:calc(.95rem*var(--ars,1));color:var(--gold2);opacity:'+(abg ? '.75' : '1')+';unicode-bidi:isolate">'+escHtml(ar)+'</'+(inl ? 'span' : 'div')+'>';
   };
@@ -3400,7 +3404,7 @@ function bFlash(vocab){
       // _trL (Längenanzeige) gehört zur Grundzeile und darf nicht in die gezogene Form kopiert werden (zeigte sonst „nēkol“ für „wir essen“)
       const slot = pickRandomConjSlot(v.cj);
       if(slot){
-        items.push({type:'flash', v: Object.assign({}, v, {ar:slot.ar||'', tr:slot.darija, en:slot.german, _trL:undefined}), dir:'de2ar'});
+        items.push({type:'flash', v: Object.assign({}, v, {ar:slot.ar||conjBelegtAr(v.cj, slot.darija), tr:slot.darija, en:slot.german, _trL:undefined}), dir:'de2ar'});
         return;
       }
     }
