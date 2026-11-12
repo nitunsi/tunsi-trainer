@@ -384,6 +384,8 @@ function forecast7(part){
       if(k + 1 < FC_DAYS) m[k + 1][0] += w * (1 - pr);    // falsch: Stufe 0, am nächsten Tag wieder
     }
   }
+  // Heute zählt auch, was heute schon richtig beantwortet wurde (Nils 2026-11-12): erledigt plus noch fällig
+  days[0] += Math.max((_cache.dc && _cache.dc.today) || 0, window.neuLocalToday ? window.neuLocalToday() : 0);
   const avg = days.reduce((a, b) => a + b, 0) / FC_DAYS;
   const rd = days.map(x => Math.round(x)), min = Math.min.apply(null, rd);
   return {days: rd, avg, min, minDay: rd.indexOf(min)};
@@ -706,7 +708,7 @@ function nachschubCard(goal){
     + '<div class="neu-cap" style="margin-top:.8rem">Warnstufen (Anteil am Tagesziel)</div>'
     + '<div class="neu-sub">Hinweis unter <b style="color:var(--text)">'+fmtN(th[0])+'</b> (1,2 ×) · knapp unter <b style="color:var(--text)">'+fmtN(th[1])+'</b> (1,0 ×) · sehr knapp unter <b style="color:var(--text)">'+fmtN(th[2])+'</b> (0,6 ×)</div>'
     + '<div class="neu-cap" style="margin-top:.8rem">So wird gerechnet</div>'
-    + '<div class="neu-sub">Jede gestartete Karte (Vokabeln und Kurs-Übungen) kommt ab ihrem Fälligkeitstag wieder. Der Abstand hängt von der Stufe ab: Stufe 0 und 1 jeden Tag, Stufe 2 nach 3 Tagen, Stufe 3 nach 7, Stufe 4 nach 14, Stufe 5 nach 30, Stufe 6 nach 90 Tagen. Überfälliges zählt ab heute. Stufenwechsel sind eingerechnet: Bei Stufe 0 bis 2 werden 85 % richtig beantwortet (die Karte steigt eine Stufe), ab Stufe 3 sind es 95 %. Falsche Antworten setzen die Karte auf Stufe 0, sie kommt am nächsten Tag wieder. Alle Wiederholungen der nächsten 7 Tage, geteilt durch 7.</div>'
+    + '<div class="neu-sub">Jede gestartete Karte (Vokabeln und Kurs-Übungen) kommt ab ihrem Fälligkeitstag wieder. Der Abstand hängt von der Stufe ab: Stufe 0 und 1 jeden Tag, Stufe 2 nach 3 Tagen, Stufe 3 nach 7, Stufe 4 nach 14, Stufe 5 nach 30, Stufe 6 nach 90 Tagen. Überfälliges zählt ab heute. Stufenwechsel sind eingerechnet: Bei Stufe 0 bis 2 werden 85 % richtig beantwortet (die Karte steigt eine Stufe), ab Stufe 3 sind es 95 %. Falsche Antworten setzen die Karte auf Stufe 0, sie kommt am nächsten Tag wieder. Heute zählt zusätzlich das, was du heute schon richtig beantwortet hast. Alle Wiederholungen der nächsten 7 Tage, geteilt durch 7.</div>'
     + '</div>';
 }
 // Bereiche unter „Mehr“ zum Auf- und Zuklappen; der geöffnete Zustand bleibt erhalten (auch wenn die Seite beim Ändern neu aufgebaut wird)
