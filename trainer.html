@@ -5550,15 +5550,18 @@ function translitExtraChecks0(){
   });
   const geladen = ex.length > 0;
   const toks = t => String(t||'').toLowerCase().split(/[^a-z0-9]+/).filter(x => x.length > 2);
-  // 4a) Wortstamm mit „u“ statt „ou“: Schreibung, die es mit „ou“ in den Vokabeln gibt, mit „u“ aber nirgends
+  // 4a) Kurswort in alter Schreibung (ou/o): Vokabeln und Tabellen schreiben u (Beschluss Nils 2026-11-12), das Wort mit u
+  //     kommt dort vor, die Schreibung mit ou/o im Kurs aber nicht. Lehnwörter (hotel, kilo …) kommen selbst in den Vokabeln vor und fallen heraus.
   const vTok = new Set();
-  ALL_VOCAB.forEach(v => { toks(v.tr).forEach(t => vTok.add(t)); });
-  const alt = new Map();
-  vTok.forEach(t => { if(/ou./.test(t)){ const a = t.replace(/ou/g,'u'); if(!vTok.has(a) && a !== 'nur' && a !== 'tun') alt.set(a, t); } });
+  ALL_VOCAB.forEach(v => {
+    toks(v.tr).forEach(t => vTok.add(t));
+    if(v.cj) ['present','past','imperative'].forEach(z => { const blk = v.cj[z]; if(blk && typeof blk === 'object') Object.keys(blk).forEach(k => { const c = blk[k]; if(c && c.darija) toks(c.darija).forEach(t => vTok.add(t)); }); });
+  });
   const stammIds = new Set(), stammBsp = [];
   // Kurstexte ohne Kleinschreibung: deutsches „Tunis“ am Satzanfang ist kein tunesisches „tunis“
   const toksK = t => String(t||'').split(/[^a-z0-9]+/).filter(x => x.length > 2);
-  kursTexte.forEach(k => { toksK(k.txt).some(t => { if(alt.has(t)){ if(!stammIds.has(k.id)){ stammIds.add(k.id); stammBsp.push(k.id+': '+t+' → '+alt.get(t)); } return true; } return false; }); });
+  const neuSchreib = t => t.replace(/ou/g, 'u').replace(/o/g, 'u');
+  kursTexte.forEach(k => { toksK(k.txt).some(t => { if(/o/.test(t) && !vTok.has(t)){ const n = neuSchreib(t); if(vTok.has(n)){ if(!stammIds.has(k.id)){ stammIds.add(k.id); stammBsp.push(k.id+': '+t+' → '+n); } return true; } } return false; }); });
   // 4b) Suffix „sein“: -ouh und -uh am selben Stamm nebeneinander
   const suf = {};
   const sufZaehlen = t => { const m = /^(.{2,}?)(ouh|uh)$/.exec(t); if(m){ (suf[m[1]] = suf[m[1]] || {ouh:0, uh:0})[m[2]]++; } };
@@ -5638,7 +5641,7 @@ function translitExtraChecks0(){
     {label: 'Konjugationstabellen: Zelle verstößt gegen die Umschrift-Regeln (Zeilen)', n: zellen.length, bsp: zellenBsp},
     {label: 'Vokabel steht nicht in ihrer eigenen Konjugationstabelle (Zeilen)', n: zeile.length, bsp: zeileBsp},
     {label: geladen ? 'Kursübungen: tunesischer Text verstößt gegen die Umschrift-Regeln (von '+ex.length+')' : 'Kursübungen: Kursdaten nicht geladen', n: kurs.size, bsp: kursBsp},
-    {label: 'Kurs: Wortstamm mit „u“ statt „ou“ (weicht von den Vokabeln ab)', n: stammIds.size, bsp: stammBsp},
+    {label: 'Kurs: Wort in alter Schreibung (ou/o), Vokabeln und Tabellen schreiben u', n: stammIds.size, bsp: stammBsp},
     {label: 'Suffix „sein“: -ouh und -uh nebeneinander am selben Stamm', n: sufBsp.length, bsp: sufBsp},
     {label: 'Kurslösung: Verbform fehlt in der Konjugationstabelle (von '+loesGeprueft+' prüfbaren Übungen)', n: loesIds.length, bsp: loesBsp},
     {label: 'Kurskarte weicht von der verknüpften Vokabeltabelle ab (von '+vGeprueft+' verknüpften Karten)', n: vIds.size, bsp: vBsp},
@@ -5960,7 +5963,7 @@ const KURS_HDT_OK = [
   'ahla',                       // أهلا „willkommen“, nicht a7la „süßer“
   'hsan',                       // Name Hsan
   '3adhdha',                    // Partizip von y3udhdh „beißen“, nicht 3adda
-  '7out',                       // حوت „Fisch“, nicht 7outh „nimm“
+  '7ut',                        // حوت „Fisch“ (früher 7out), nicht 7uth „nimm“
   '7dhar', 'hdart',             // ḥḍar „anwesend sein“ (Skript L10) bzw. hdar „reden“ (هدر, Übung 1505) — zwei Verben
   'wa7dha',                     // wa7d-ha „sie allein“
   'nikthib', 'nikthbu', 'kithbit', 'kithbu', 'kthibtu', 'kthibna',   // kthib „lügen“ (ذ), nicht ktib „schreiben“
