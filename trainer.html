@@ -699,7 +699,7 @@ function laengeHtml(tr, ar, rHell){
 }
 function vokalGruppen(tr){ const re = /ou|[aeiou]+/gi, g = []; let m; while((m = re.exec(String(tr||'')))) g.push([m.index, m.index+m[0].length, m[0]]); return g; }
 // Wörter, deren langes a nach Gehör dunkel ist (ā), obwohl die Regel hell (ǟ) ergäbe (Nils 2026-11-11: taf taf)
-const LAENGE_DUNKEL = new Set(['taf']);
+const LAENGE_DUNKEL = new Set(['taf', 'massaj', 'massajat']);   // massaj: Nils 2026-11-12 spricht das a dunkel
 // Einzelwörter mit End-a, das hell (ä) klingt, obwohl die Regel (-ya) es ausnimmt (Nils 2026-11-11: myä „hundert“)
 const LAENGE_HELL = new Set(['mya']);
 function laengeHtmlSlots(tr, sl){
@@ -6457,6 +6457,8 @@ async function toggleFlag(tr, btn){
 
 
 // ── Duplikat-Manager ─────────────────────────────────────────────────────────
+// Schlüssel für „Transliteration identisch“: mit angezeigter Länge/Klang (ā ǟ ī ū ä), denn barrād „Teekanne“ und barrad „kühlte“ klingen verschieden (Nils 2026-11-12)
+function trDupKey(v){ return normKey(String(trL(v)||v.tr||'').replace(/<[^>]+>/g,'')); }
 function normKey(s){ return (s||'').toLowerCase().replace(/[\s\u0020\u00a0.,;:!?()\-\/\\'"«»]+/g,''); }
 
 // ── Lektionen-Verwaltung ─────────────────────────────────────────────────────
@@ -9797,7 +9799,7 @@ function countDupeIssues(){
   const arMap={}, trMap={}, enMap={};
   ALL_VOCAB.forEach(v => {
     if(v.ar){ const k=normKey(v.ar); (arMap[k]=arMap[k]||[]).push(v); }
-    if(v.tr){ const k=normKey(v.tr); (trMap[k]=trMap[k]||[]).push(v); }
+    if(v.tr){ const k=trDupKey(v); (trMap[k]=trMap[k]||[]).push(v); }
     if(v.en){ const k=normKey(v.en); (enMap[k]=enMap[k]||[]).push(v); }
   });
   scan(arMap,'ar'); scan(trMap,'tr'); scan(enMap,'en');
@@ -9882,7 +9884,7 @@ function renderDupeCheckList(c){
   const trMap = {};
   ALL_VOCAB.forEach(v => {
     if(!v.tr) return;
-    const k = normKey(v.tr);
+    const k = trDupKey(v);
     if(!trMap[k]) trMap[k] = [];
     trMap[k].push(v);
   });
