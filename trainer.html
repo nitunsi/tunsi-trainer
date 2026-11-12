@@ -5722,7 +5722,7 @@ function datenChecks(){
   feld('Arabisch-Feld mit lateinischen Buchstaben oder Umschrift mit arabischen Zeichen', v => /[A-Za-z]/.test(v.ar || '') || /[؀-ۿ]/.test(v.tr || ''), v => /[A-Za-z]/.test(v.ar || '') ? 'lateinisch im Arabischen: '+v.ar : 'arabisch in der Umschrift: '+v.tr);
   feld('Leerzeichen am Rand oder doppelt (Arabisch, Umschrift, Deutsch)', v => [v.ar, v.tr, v.en].some(x => x && (x !== x.trim() || /\s{2,}/.test(x))), v => 'Leerzeichen in „'+[v.ar, v.tr, v.en].find(x => x && (x !== x.trim() || /\s{2,}/.test(x)))+'“');
   feld('Klammer in der Umschrift (gehört ins Deutsche)', v => /[()]/.test(v.tr || ''), v => v.tr);
-  feld('„(f.)“ im Deutschen, Umschrift endet nicht auf -a', v => /\(f\.\)/i.test(v.en || '') && !/a$/.test(v.tr || '') && !/^(w-)?(ukht|umm|bint|saq|yidd|3in|wdin|farmasi|kar|tunis|mistir|susa|kirsh|shams|nar|dar|bit|blad|hethi|shah)(?![a-z0-9])/i.test(v.tr || ''), v => v.tr+' = '+v.en);
+  feld('„(f.)“ im Deutschen, Umschrift endet nicht auf -a', v => /\(f\.\)/i.test(v.en || '') && !/a$/.test(v.tr || '') && !/^(w-)?(ukht|umm|bint|saq|yidd|3in|wdin|farmasi|kar|tunis|mistir|susa|kirsh|shams|nar|dar|bit|blad|hethi|hathi|shah)(?![a-z0-9])/i.test(v.tr || ''), v => v.tr+' = '+v.en);
   feld('Schadda auf dem ersten Buchstaben (ungültig)', v => /(^|\s)[بتثجحخدذرزسشصضطظعغفقكلمنهويائأإآةى][ًٌٍَُِْٰ]*ّ/.test(v.ar || ''), v => v.ar);
   feld('Plural-Endung -iou/-eou/-aou statt -iw/-aw (Vokabel)', v => /(iou|eou|aou)(?![a-z0-9])/.test(v.tr || ''), v => v.tr);
   feld('Halb verdoppelter Digraph (ddh, ssh, kkh …) in der Umschrift', v => /(ddh|tth|ssh|kkh|ggh|7h|thh)/.test(v.tr || '') && !/(dhdh|thth|shsh|khkh|ghgh|77)/.test(v.tr || '') && ![722, 3042, 3073, 4254].includes(v.id), v => v.tr);
@@ -9729,7 +9729,7 @@ const TRANSLIT_RULES = [
     test: v => {
       if(!/\(f\.\)/i.test(v.en)) return false;
       if(/a$/.test(v.tr)) return false;
-      const exceptions = /^(w-)?(ukht|umm|bint|saq|yidd|3in|wdin|farmasi|kar|tunis|mistir|susa|kirsh|shams|nar|dar|bit|blad|hethi|shah)(\b|$)/i;
+      const exceptions = /^(w-)?(ukht|umm|bint|saq|yidd|3in|wdin|farmasi|kar|tunis|mistir|susa|kirsh|shams|nar|dar|bit|blad|hethi|hathi|shah)(\b|$)/i;
       return !exceptions.test(v.tr);
     } },
   { label: '"und" sollte immer als "w-" geschrieben werden, nicht als eigenständiges "wa"/"u"',
