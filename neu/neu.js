@@ -355,23 +355,38 @@ function motivation(done, avgs){
 }
 
 // Erwartete Wiederholungen pro Tag über die nächsten 7 Tage (Vokabeln und Kurs-Übungen zusammen).
-// Jede gestartete Karte kommt ab ihrem Fälligkeitstag im Abstand ihrer Stufe wieder (SRS_DAYS: 1, 1, 3, 7, 14, 30, 90 Tage);
-// überfällige zählen ab heute. Fehler und Stufenwechsel sind nicht eingerechnet. Ergebnis: Durchschnitt, Zahl je Tag, schwächster Tag.
+// Jede gestartete Karte kommt ab ihrem Fälligkeitstag wieder (SRS_DAYS: 1, 1, 3, 7, 14, 30, 90 Tage); überfällige zählen ab heute.
+// Stufenwechsel sind eingerechnet (Nils 2026-11-12): bei einer Antwort steigt die Karte mit der Trefferquote um eine Stufe (kommt nach dem
+// Abstand der neuen Stufe wieder), sonst fällt sie auf Stufe 0 und kommt am nächsten Tag wieder. Trefferquote 85 % bei Stufe 0–2,
+// 95 % ab Stufe 3 (FC_TREFFER). Rechnung mit Erwartungswerten, Sprünge durch Streuung (Jitter) und Wiederholungen am selben Tag nicht
+// eingerechnet. Ergebnis: Durchschnitt, Zahl je Tag, schwächster Tag.
 const FC_DAYS = 7;
+const FC_TREFFER = lv => lv <= 2 ? 0.85 : 0.95;
 const WARN_FACTORS = [1.2, 1.0, 0.6];   // Hinweis / knapp / sehr knapp, als Anteil des Tagesziels (1,2 = nötige Versuche bei ca. 86 % Trefferquote; 1,0 = Ziel selbst mit lauter richtigen Antworten nicht erreichbar)
 function forecast7(part){
   const idx = key => { const t = key.split('-').map(Number); return Math.round(Date.UTC(t[0], t[1] - 1, t[2]) / 86400000); };
   const today = idx(berlinDayKey(new Date()));
-  const days = new Array(FC_DAYS).fill(0);
+  const m = Array.from({length: FC_DAYS}, () => new Array(7).fill(0));   // m[Tag][Stufe] = erwartete Zahl fälliger Karten
   const add = (lv, nr) => {
     if(!nr) return;
-    const d = Math.max(0, idx(berlinDayKey(nr)) - today), iv = SRS_DAYS[Math.min(lv || 0, 6)];
-    for(let k = d; k < FC_DAYS; k += iv) days[k]++;
+    const d = Math.max(0, idx(berlinDayKey(nr)) - today);
+    if(d < FC_DAYS) m[d][Math.min(lv || 0, 6)]++;
   };
   if(part !== 'course') ALL_VOCAB.forEach(v => { const p = srsProgress[v.id]; if(p && p.next_review && vokabelLernbar(v)) add(p.level, p.next_review); });
   if(part !== 'vocab') Object.keys(COURSE_EX_PROGRESS).forEach(id => { const p = COURSE_EX_PROGRESS[id]; if(p && p.next_review && !courseExAus(COURSE_EX_BY_ID[id])) add(p.correct_count, courseParseTs(p.next_review)); });
-  const min = Math.min.apply(null, days);
-  return {days, avg: days.reduce((a, b) => a + b, 0) / FC_DAYS, min, minDay: days.indexOf(min)};
+  const days = new Array(FC_DAYS).fill(0);
+  for(let k = 0; k < FC_DAYS; k++){
+    for(let l = 0; l <= 6; l++){
+      const w = m[k][l]; if(!w) continue;
+      days[k] += w;
+      const pr = FC_TREFFER(l), nl = Math.min(l + 1, 6), nd = k + SRS_DAYS[nl];
+      if(nd < FC_DAYS) m[nd][nl] += w * pr;               // richtig: eine Stufe höher, nach deren Abstand wieder
+      if(k + 1 < FC_DAYS) m[k + 1][0] += w * (1 - pr);    // falsch: Stufe 0, am nächsten Tag wieder
+    }
+  }
+  const avg = days.reduce((a, b) => a + b, 0) / FC_DAYS;
+  const rd = days.map(x => Math.round(x)), min = Math.min.apply(null, rd);
+  return {days: rd, avg, min, minDay: rd.indexOf(min)};
 }
 // Hinweis: wann neue Vokabeln / Kurs-Übungen aufgenommen werden sollten (immer nur die wichtigste Meldung)
 //  Erwartete Wiederholungen pro Tag < 1,2 × Tagesziel: Hinweis (gold) · < 1,0 ×: knapp (rot) · < 0,6 ×: sehr knapp (rot)
@@ -691,7 +706,7 @@ function nachschubCard(goal){
     + '<div class="neu-cap" style="margin-top:.8rem">Warnstufen (Anteil am Tagesziel)</div>'
     + '<div class="neu-sub">Hinweis unter <b style="color:var(--text)">'+fmtN(th[0])+'</b> (1,2 ×) · knapp unter <b style="color:var(--text)">'+fmtN(th[1])+'</b> (1,0 ×) · sehr knapp unter <b style="color:var(--text)">'+fmtN(th[2])+'</b> (0,6 ×)</div>'
     + '<div class="neu-cap" style="margin-top:.8rem">So wird gerechnet</div>'
-    + '<div class="neu-sub">Jede gestartete Karte (Vokabeln und Kurs-Übungen) kommt ab ihrem Fälligkeitstag im Abstand ihrer Stufe wieder: Stufe 0 und 1 jeden Tag, Stufe 2 alle 3 Tage, Stufe 3 alle 7, Stufe 4 alle 14, Stufe 5 alle 30, Stufe 6 alle 90 Tage. Überfälliges zählt ab heute. Alle Wiederholungen der nächsten 7 Tage, geteilt durch 7. Fehler und Stufenwechsel sind nicht eingerechnet.</div>'
+    + '<div class="neu-sub">Jede gestartete Karte (Vokabeln und Kurs-Übungen) kommt ab ihrem Fälligkeitstag wieder. Der Abstand hängt von der Stufe ab: Stufe 0 und 1 jeden Tag, Stufe 2 nach 3 Tagen, Stufe 3 nach 7, Stufe 4 nach 14, Stufe 5 nach 30, Stufe 6 nach 90 Tagen. Überfälliges zählt ab heute. Stufenwechsel sind eingerechnet: Bei Stufe 0 bis 2 werden 85 % richtig beantwortet (die Karte steigt eine Stufe), ab Stufe 3 sind es 95 %. Falsche Antworten setzen die Karte auf Stufe 0, sie kommt am nächsten Tag wieder. Alle Wiederholungen der nächsten 7 Tage, geteilt durch 7.</div>'
     + '</div>';
 }
 // Bereiche unter „Mehr“ zum Auf- und Zuklappen; der geöffnete Zustand bleibt erhalten (auch wenn die Seite beim Ändern neu aufgebaut wird)
