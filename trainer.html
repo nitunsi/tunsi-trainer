@@ -5718,7 +5718,7 @@ function datenChecks(){
   const zeile = v => v.id+' '+(v.tr || v.ar || v.en || '?');
   const feld = (label, test, text) => { const l = ALL_VOCAB.filter(test).map(v => zeile(v)+(text ? ' – '+text(v) : '')); out.push({label, n: l.length, bsp: l}); };
   // Wechselkarten (conj_rotate) zeigen immer eine Tabellenform; eigenes Arabisch/Englisch brauchen sie nicht (Nils 2026-11-10)
-  feld('Vokabel ohne Arabisch, Umschrift oder Deutsch', v => (!String(v.ar).trim() && !v.cr) || !String(v.tr).trim() || !String(v.en).trim(), v => [!String(v.ar).trim() ? 'Arabisch' : '', !String(v.tr).trim() ? 'Umschrift' : '', !String(v.en).trim() ? 'Deutsch' : ''].filter(Boolean).join(', ')+' fehlt');
+  feld('Vokabel ohne Arabisch, Umschrift oder Deutsch', v => !String(v.ar).trim() || !String(v.tr).trim() || !String(v.en).trim(), v => [!String(v.ar).trim() ? 'Arabisch' : '', !String(v.tr).trim() ? 'Umschrift' : '', !String(v.en).trim() ? 'Deutsch' : ''].filter(Boolean).join(', ')+' fehlt');
   feld('Arabisch-Feld mit lateinischen Buchstaben oder Umschrift mit arabischen Zeichen', v => /[A-Za-z]/.test(v.ar || '') || /[؀-ۿ]/.test(v.tr || ''), v => /[A-Za-z]/.test(v.ar || '') ? 'lateinisch im Arabischen: '+v.ar : 'arabisch in der Umschrift: '+v.tr);
   feld('Leerzeichen am Rand oder doppelt (Arabisch, Umschrift, Deutsch)', v => [v.ar, v.tr, v.en].some(x => x && (x !== x.trim() || /\s{2,}/.test(x))), v => 'Leerzeichen in „'+[v.ar, v.tr, v.en].find(x => x && (x !== x.trim() || /\s{2,}/.test(x)))+'“');
   feld('Klammer in der Umschrift (gehört ins Deutsche)', v => /[()]/.test(v.tr || ''), v => v.tr);
@@ -5956,9 +5956,6 @@ function datenChecks(){
     arW.push(v.id+' '+v.tr+': Vokabel '+v.ar+' ↔ Tabelle '+[...new Set(zellen.map(c => c.ar))].join(' / '));
   });
   out.push({label: 'Arabisch der Tabelle widerspricht dem Arabisch der Vokabel (andere Buchstaben)', n: arW.length, bsp: arW});
-  // Vokabel ohne Arabisch (Nils 2026-11-13): sichtbare Zeilen mit leerem arabic_script; Ziel 0
-  const ohneAr = ALL_VOCAB.filter(v => !v.ausb && v.tr && !String(v.ar || '').trim()).map(v => v.id+' '+v.tr+' – '+String(v.en || '').slice(0, 30));
-  out.push({label: 'Vokabel ohne Arabisch', n: ohneAr.length, bsp: ohneAr});
   return out;
 }
 // Ausnahmen der Prüfungen 12 und 13 — gleich geschrieben, aber anderes Wort (jeweils mit Grund)
