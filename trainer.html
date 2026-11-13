@@ -494,12 +494,12 @@ function wortfamilie(v){
   if(!v || !v.wz) return [];
   if(!_wzIndex || _wzIndexN !== ALL_VOCAB.length){
     _wzIndex = {}; _wzIndexN = ALL_VOCAB.length;
-    ALL_VOCAB.forEach(e => { if(e.wz && !e.ausb && !e.cr) (_wzIndex[e.wz] = _wzIndex[e.wz] || []).push(e); });
+    ALL_VOCAB.forEach(e => { if(e.wz && !e.ausb && !e.cr) (_wzIndex[e.wz+'|'+(e.wzg||'')] = _wzIndex[e.wz+'|'+(e.wzg||'')] || []).push(e); });   // homonyme Wurzeln (wurzel_gruppe) bilden getrennte Familien
   }
   const gesehen = new Set([String(v.tr||'').toLowerCase()]);
   // Verbformen (er schreibt, ich schrieb, Schreibt!) gehören in die Tabelle, nicht in die Wortfamilie; Nomen und Adjektive zuerst
   const form = e => /^(er|sie|ich|du|wir|ihr|man)\s/i.test(e.en||'') || /!\s*$/.test(e.en||'') || /^\(?(Perfekt|Präsens)/i.test(e.en||'');
-  return (_wzIndex[v.wz] || []).filter(e => { if(e.id === v.id || form(e)) return false; const k = String(e.tr||'').toLowerCase(); if(gesehen.has(k)) return false; gesehen.add(k); return true; })
+  return (_wzIndex[v.wz+'|'+(v.wzg||'')] || []).filter(e => { if(e.id === v.id || form(e)) return false; const k = String(e.tr||'').toLowerCase(); if(gesehen.has(k)) return false; gesehen.add(k); return true; })
     .sort((a, b) => (a.cj ? 1 : 0) - (b.cj ? 1 : 0));
 }
 function wortfamilieHtml(v){
@@ -1102,7 +1102,7 @@ function retryLoad(){
 // Holt Vokabeln und Fortschritt (parallel). Wird auch genutzt, um den Zwischenspeicher im Hintergrund aufzufrischen.
 function srsFetchRows(onVocab, onProg){
   const loadVocabTask = sbApiPaged(
-      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,audio_gain,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,r_hell,english,wurzel,wurzel_ar,stamm,verbtyp,ausgeblendet,lessons(lesson_number)&order=id.asc',
+      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,audio_gain,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,r_hell,english,wurzel,wurzel_ar,wurzel_gruppe,stamm,verbtyp,ausgeblendet,lessons(lesson_number)&order=id.asc',
       1000,
       (loaded) => { if(onVocab) onVocab(loaded); }
     );
@@ -1143,7 +1143,7 @@ async function srsLoadFromSupabase(){
     allVocab.forEach(v => {
       const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
       const tp = v.topic || 'Allgemein';
-      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null, cr: !!v.conj_rotate, rh: v.r_hell===true, eg: v.english||'', wz: v.wurzel||'', wza: v.wurzel_ar||'', st: v.stamm||'', vt: v.verbtyp||'', ausb: v.ausgeblendet===true };
+      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null, cr: !!v.conj_rotate, rh: v.r_hell===true, eg: v.english||'', wz: v.wurzel||'', wza: v.wurzel_ar||'', wzg: v.wurzel_gruppe||'', st: v.stamm||'', vt: v.verbtyp||'', ausb: v.ausgeblendet===true };
       ALL_VOCAB.push(entry);
       if(v.ninja_audio_url && v.audio_gain) AUDIO_GAIN[audioKey(v.ninja_audio_url, v.ninja_audio_start, v.ninja_audio_end)] = v.audio_gain;
       VOCAB_BY_ID[v.id] = entry;
