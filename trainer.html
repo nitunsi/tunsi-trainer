@@ -5956,6 +5956,9 @@ function datenChecks(){
     arW.push(v.id+' '+v.tr+': Vokabel '+v.ar+' ↔ Tabelle '+[...new Set(zellen.map(c => c.ar))].join(' / '));
   });
   out.push({label: 'Arabisch der Tabelle widerspricht dem Arabisch der Vokabel (andere Buchstaben)', n: arW.length, bsp: arW});
+  // Vokabel ohne Arabisch (Nils 2026-11-13): sichtbare Zeilen mit leerem arabic_script; Ziel 0
+  const ohneAr = ALL_VOCAB.filter(v => !v.ausb && v.tr && !String(v.ar || '').trim()).map(v => v.id+' '+v.tr+' – '+String(v.en || '').slice(0, 30));
+  out.push({label: 'Vokabel ohne Arabisch', n: ohneAr.length, bsp: ohneAr});
   return out;
 }
 // Ausnahmen der Prüfungen 12 und 13 — gleich geschrieben, aber anderes Wort (jeweils mit Grund)
