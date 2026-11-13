@@ -7830,7 +7830,7 @@ function showGlossar(){
 }
 // Verbformen im Fließtext der Regelkarten mit Länge/Klang anzeigen (yakul → yǟkul, kla → klä), Arabisch aus den Verb-Vokabeln
 let _verbArByTr = null;
-const LAENGE_TEXT_NICHT = new Set(['bat','kam','fand','sang','rief','ging','hat','bin','war','man','kann','da','so','wo','am','im','um','an','in','es','er','die','das','der','den','mit','mal','nur','nie','tun']);   // deutsche Wörter, die zufällig wie eine tunesische Form aussehen
+const LAENGE_TEXT_NICHT = new Set(['ich','du','wir','ihr','sie','ein','und','oder','nicht','ist','sind','bat','kam','fand','sang','rief','ging','hat','bin','war','man','kann','da','so','wo','am','im','um','an','in','es','er','die','das','der','den','mit','mal','nur','nie','tun']);   // deutsche Wörter, die zufällig wie eine tunesische Form aussehen
 function laengeImText(html){
   if(!_verbArByTr){
     _verbArByTr = {};
@@ -7844,6 +7844,51 @@ function laengeImText(html){
     return laengeHtml(w, v.ar, v.rh);
   })).join('');
 }
+// Länge und Klang auch in Kurssätzen, Lösungen und Dialogen (Nils 2026-11-13): Wort für Wort, nur im tunesischen Teil.
+// Quelle je Wort: Vokabelzeile mit Vokalzeichen (Verben zuerst), sonst eine Tabellenzelle (conjZelleL: belegt oder aus der Regel).
+// Nur Anzeige – Eingabe, Antwortprüfung und gespeicherter Text bleiben unverändert. Unbekannte Wörter bleiben wie sie sind.
+let _kursWortIdx = null;
+const _kursWortCache = {};
+function kursWortL(w){
+  const k = w.toLowerCase();
+  if(w in _kursWortCache) return _kursWortCache[w];   // Schlüssel mit Großschreibung: „Vor“ und „vor“ sind verschiedene Einträge
+  if(!_kursWortIdx){
+    _kursWortIdx = {v:{}, c:{}};
+    [true, false].forEach(verb => ALL_VOCAB.forEach(v => {
+      if(!!v.cj === verb && v.ar && v.tr && !/\s/.test(v.tr) && /[َُِ]/.test(v.ar)){ const t = v.tr.toLowerCase(); if(!_kursWortIdx.v[t]) _kursWortIdx.v[t] = v; }
+    }));
+    ALL_VOCAB.forEach(e => { if(!e.cj) return; ['past','present','imperative'].forEach(z => { const blk = e.cj[z]; if(!blk || typeof blk !== 'object') return;
+      Object.keys(blk).forEach(p => { const c = blk[p]; if(!c || !c.darija) return;
+        String(c.darija).split(' / ').forEach(f => { f = f.trim(); const t = f.toLowerCase(); if(f && !/\s/.test(f) && !_kursWortIdx.c[t]) _kursWortIdx.c[t] = [e.cj, z, p]; }); }); }); });
+  }
+  let h = w;
+  try{
+    const v = _kursWortIdx.v[k], c = _kursWortIdx.c[k];
+    if(v) h = laengeHtml(w, v.ar, v.rh);
+    else if(c) h = conjZelleL(c[0], w, c[1], c[2]);
+  }catch(e){ h = w; }
+  return _kursWortCache[w] = h;
+}
+function kursLaenge(html){
+  if(!ALL_VOCAB.length || !html) return html;
+  let de = false;   // ab „ — Deutsch“ bzw. „ – Deutsch“ am Ende: deutscher Teil, nichts markieren
+  return String(html).split(/(<[^>]*>)/).map(seg => {
+    if(seg.charAt(0) === '<' || de) return seg;
+    const cut = seg.search(/\s[—–]\s(?=[A-ZÄÖÜ„])/);
+    let rest = '';
+    if(cut >= 0){ rest = seg.slice(cut); seg = seg.slice(0, cut); de = true; }
+    return seg.split(/(„[^“]*“|&#?\w+;)/).map(t => {
+      if(!t || t.charAt(0) === '„' || t.charAt(0) === '&') return t;
+      return t.replace(/[A-Za-z0-9'ʔ]+/g, (w, off) => {
+        if(/^\d+$/.test(w) || w.length < 2 || LAENGE_TEXT_NICHT.has(w.toLowerCase()) || LAENGE_PARTIKEL.has(w.toLowerCase())) return w;
+        if(/^(…|\.\.\.)/.test(t.slice(off + w.length))) return w;
+        return kursWortL(w);
+      });
+    }).join('') + rest;
+  }).join('');
+}
+// Prompts: nur wenn der Text tunesisch ist (kein Großbuchstabe außerhalb von „…“), sonst würden deutsche Wörter getroffen
+function kursPromptL(html, plain){ return /[A-ZÄÖÜ]/.test(String(plain||'').replace(/„[^“]*“/g, '')) ? html : kursLaenge(html); }
 function regelTextHtml(t){
   // arabische Wörter im deutschen Text isolieren, sonst vertauscht die Schreibrichtung Klammern und Kommas
   return laengeImText(glossarWrap(escHtml(t||'').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>')
@@ -7980,7 +8025,7 @@ function courseExSolutionHtml(exercise){
   if(_rg) return regelLoesungHtml(_rg);
   if(exercise.exercise_type==='listening'){
     return (exercise.prompt ? courseArPromptHtml(exercise.prompt) : '')
-      + '<div style="margin-top:.4rem">'+escHtml(exercise.solution||'—')+'</div>'
+      + '<div style="margin-top:.4rem">'+kursLaenge(escHtml(exercise.solution||'—'))+'</div>'
       + courseBelegHtml(exercise);
   }
   const _cv = courseConjView(exercise);
@@ -7998,7 +8043,7 @@ function courseExSolutionHtml(exercise){
     const drillRows = exercise.exercise_type==='grammar_drill' ? parseGrammarDrillSolution(exercise.solution) : null;
     solHtml = drillRows ? renderGrammarDrillGrid(drillRows,true) : escHtml(exercise.solution||'—');
   }
-  return irrMark(solHtml, exercise) + courseMetaGermanHtml(exercise) + courseBelegHtml(exercise);
+  return kursLaenge(irrMark(solHtml, exercise)) + courseMetaGermanHtml(exercise) + courseBelegHtml(exercise);
 }
 
 // Karten, deren Prompt schon die Tounsi-Wörter der Antwort enthält ("amriki – almani"), während die
@@ -8077,7 +8122,7 @@ function rCourseEx(ex, el){
     const vocabAudio = exercise.vocabulary && exercise.vocabulary.ninja_audio_url
       ? ' <button onclick="playVocabAudio(\''+exercise.vocabulary.ninja_audio_url.replace(/'/g,"\\'")+'\',event,'+(exercise.vocabulary.ninja_audio_start||0)+','+(exercise.vocabulary.ninja_audio_end||0)+')" title="Aussprache abspielen" style="background:none;border:1px solid var(--blue);color:var(--blue);font-size:.85rem;padding:.1rem .5rem;cursor:pointer;border-radius:3px;vertical-align:middle">🔊</button>'
       : '';
-    h += '<div style="min-height:60px;margin-bottom:.6rem;font-size:1.15rem;line-height:1.5'+(courseArOnly(cv ? cv.prompt : exercise.prompt) ? ';text-align:center' : '')+'">'+courseArPromptHtml(cv ? cv.prompt : exercise.prompt)+vocabAudio+'</div>';
+    h += '<div style="min-height:60px;margin-bottom:.6rem;font-size:1.15rem;line-height:1.5'+(courseArOnly(cv ? cv.prompt : exercise.prompt) ? ';text-align:center' : '')+'">'+kursPromptL(courseArPromptHtml(cv ? cv.prompt : exercise.prompt), cv ? cv.prompt : exercise.prompt)+vocabAudio+'</div>';
   }
   const drillRows = exercise.exercise_type==='grammar_drill' ? parseGrammarDrillSolution(exercise.solution) : null;
 
@@ -8135,7 +8180,8 @@ function courseSrsReveal(){
 // 3a-l-imin w ___ (yimshi) toul toul") werden die festen Textstücke zwischen den Lücken gezogen und
 // gegen die Lösung gelegt; was dazwischen steht, sind die ergänzten Wörter. Der Anfang der Lösung darf
 // vom Prompt abweichen (oft fehlt der Satzanfang). Passt nichts sicher, bleibt die Lösung unmarkiert.
-function courseSolutionHtml(exercise){
+function courseSolutionHtml(exercise){ return kursLaenge(courseSolutionHtmlRaw(exercise)); }
+function courseSolutionHtmlRaw(exercise){
   const plain = escHtml(exercise.solution||'');
   if(exercise.exercise_type!=='fill_blank') return plain;
   const prompt = exercise.prompt||'';
@@ -8488,7 +8534,7 @@ function renderCourseLearnTab(tc, l){
   let h = '';
   if(l.dialog_text){
     h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem">Dialoge</div>';
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7;margin-bottom:1.2rem">'+mdLite(l.dialog_text, true)+'</div>';
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7;margin-bottom:1.2rem">'+kursLaenge(mdLite(l.dialog_text, true))+'</div>';
   }
   if(l.grammar_notes){
     h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem">Grammatik</div>';
@@ -8778,7 +8824,7 @@ function courseChunkLearnHtml(l, chunk){
   let h = '';
   if(chunk.dialog && l.dialog_text){
     h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem">Dialog</div>';
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7;margin-bottom:1rem">'+mdLite(l.dialog_text, true)+'</div>';
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7;margin-bottom:1rem">'+kursLaenge(mdLite(l.dialog_text, true))+'</div>';
   }
   let grammarMd = '';
   (chunk.grammar_headings||[]).forEach(hd=>{
