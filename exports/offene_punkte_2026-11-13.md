@@ -145,3 +145,10 @@ Fund beim Anlegen: In Regelkarten-Meta stehen noch „ou“-Reste hinter ** (z. 
 
 ### A: „ou“-Rest in Kurstexten erledigt 13.11. (abends)
 course_lessons.grammar_notes/dialog_text (14 Lektionen) und Regelkarte 2446 auf „u“ umgestellt; geschützt: Journal, Sousse, Bourguiba (auch fi-bourgiba), Mou7sin, radyou. Erklärsätze von Hand (L1, L14, Endungstabellen, yifhim + u, langes ū in L5/L8/Karte 2446), 3allouch → 3allush, houwa → huwwa. Sicherungen backup_2026_11_13_ou_rest_lekt / _ou_rest_meta (ab 27.11. löschen). Trainer-Prüfungen: alles 0 außer 3asser (Semia). Offen: e → a im Kurstext ((h)ethuma → hathuma), bouliss ↔ bulis; Prüfung „alte Schreibung“ auf Regelkarten-Meta/Lektionstexte ausweiten (Vorschlag). SKILL.md: Wurzel-Konventionen, DO-Blöcke, Textersetzung ergänzt; ZIP neu gepackt.
+
+### Anzeige Länge/Klang (13.11. abends, Commits 5a440f3 … 5858897)
+- Länge/Klang jetzt auch in Kurssätzen, Lösungen, Dialogen und in Phrasen ohne volles Arabisch (Wort für Wort aus den Vokabeln). Grammatiknotizen noch nicht.
+- hatha/hathi/hathuma/hathika/hathukum/hathaka: hǟ-, Endung -a (Nils). Offen: hathaka als hǟthǟka oder hǟthaka.
+- Wortende: ä nur bei Verbformen und schwachem Wurzelende (y/w/ʔ, nicht geminiert); sonst a (shnuwwa, huma, tawwa, banka). wfa nicht heraushörbar (bleibt wfä nach Regel). Bekannte Grenze: Verbformen in Phrasen, die in keiner Tabelle stehen (tetmanna), enden auf a; walla „oder“ wird in Phrasen wie das Verb wallä behandelt.
+- e → a in grammar_notes (id 3, 7, 9): (h)eth… → (h)ath…, hethuma → hathuma; Sicherung backup_2026_11_13_eth_lekt (ab 27.11. löschen).
+- Vokalisierung: Probelauf in exports/vokalisierung_probe_2026-11-13.md (418 Zeilen: A 58 sicher, B 10 mit Artikel, C 140 teilweise, D 210 offen). Nichts geschrieben. Nächster Schritt: A/B nach Durchsicht schreiben, C/D per Solver (tools/vokalisierer.js) + Gegenprobe; teilvokalisierte Einzelwörter (تُرقُد) erfasst der Probelauf noch nicht.
