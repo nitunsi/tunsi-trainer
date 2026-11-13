@@ -486,7 +486,27 @@ function wurzelZeile(v){
   const teile = [st, VERBTYP_DE[v.vt] || ''].filter(Boolean).join(' · ');
   const ar = v.wza ? '<span dir="rtl" style="display:inline-block;direction:rtl;unicode-bidi:isolate;font-family:\'Playfair Display\',serif;font-size:1.35rem;color:var(--gold2);letter-spacing:.25em">'+escHtml(v.wza)+'</span> ' : '';
   const txt = 'Wurzel '+escHtml(v.wz)+(teile ? ' · '+teile : '');
-  return '<div class="wurzel-zeile" style="margin-top:.45rem;font-size:.9rem;color:var(--muted);line-height:1.6">'+ar+(typeof glossarWrap==='function' ? glossarWrap(txt) : txt)+'</div>';
+  return '<div class="wurzel-zeile" style="margin-top:.45rem;font-size:.9rem;color:var(--muted);line-height:1.6">'+ar+(typeof glossarWrap==='function' ? glossarWrap(txt) : txt)+wortfamilieHtml(v)+'</div>';
+}
+// Wortfamilie (Nils 2026-11-13): andere Vokabeln mit derselben Wurzel, ohne Wechselkarten-Formen und ausgeblendete; höchstens 8, nach Bedeutung gekürzt
+let _wzIndex = null, _wzIndexN = -1;
+function wortfamilie(v){
+  if(!v || !v.wz) return [];
+  if(!_wzIndex || _wzIndexN !== ALL_VOCAB.length){
+    _wzIndex = {}; _wzIndexN = ALL_VOCAB.length;
+    ALL_VOCAB.forEach(e => { if(e.wz && !e.ausb && !e.cr) (_wzIndex[e.wz] = _wzIndex[e.wz] || []).push(e); });
+  }
+  const gesehen = new Set([String(v.tr||'').toLowerCase()]);
+  // Verbformen (er schreibt, ich schrieb, Schreibt!) gehören in die Tabelle, nicht in die Wortfamilie; Nomen und Adjektive zuerst
+  const form = e => /^(er|sie|ich|du|wir|ihr|man)\s/i.test(e.en||'') || /!\s*$/.test(e.en||'') || /^\(?(Perfekt|Präsens)/i.test(e.en||'');
+  return (_wzIndex[v.wz] || []).filter(e => { if(e.id === v.id || form(e)) return false; const k = String(e.tr||'').toLowerCase(); if(gesehen.has(k)) return false; gesehen.add(k); return true; })
+    .sort((a, b) => (a.cj ? 1 : 0) - (b.cj ? 1 : 0));
+}
+function wortfamilieHtml(v){
+  const fam = wortfamilie(v); if(!fam.length) return '';
+  const kurz = e => escHtml(String(e.en||'').split(/\s*[\/(;]/)[0].slice(0, 22));
+  const teile = fam.slice(0, 8).map(e => '<span style="white-space:nowrap">'+(typeof trL==='function' ? trL(e) : escHtml(e.tr))+' <span style="opacity:.7">('+kurz(e)+')</span></span>');
+  return '<div class="wortfamilie" style="margin-top:.25rem;font-size:.85rem;line-height:1.7">Wortfamilie: '+teile.join(' · ')+(fam.length > 8 ? ' · +'+(fam.length-8) : '')+'</div>';
 }
 function schreibungNote(v){
   if(!v || !v.hok || !v.tr) return '';
