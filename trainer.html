@@ -712,10 +712,20 @@ function laengeSlots(ar, rHell){
 }
 // Kleine Wörter werden nie hell (ä) angezeigt: ma- (Verneinung) spricht man ma, ena „ich“ spricht man ena, ija „komm“ spricht man ija, ya (Anrufwort) spricht man ya (Nils 2026-11-11)
 const LAENGE_PARTIKEL = new Set(['ma','ena','ija','ya']);
-function laengeHtml(tr, ar, rHell){
+// Wortende: ä nur bei Verbformen und bei Wörtern mit schwachem Wurzelende (y, w, ʔ: mshä, jä, nsä, mustashfä).
+// Pronomen, Fragewörter, Partikel, Lehnwörter und Namen enden auf a (shnuwwa, huma, tawwa, banka) – Nils 2026-11-13.
+function endeHell(v){ if(!v) return false; if(v.cj) return true; const r = String(v.wz||'').trim().split('-'), n = r.length;
+  return n >= 2 && /^[ywʔ]$/.test(r[n-1]) && r[n-1] !== r[n-2]; }   // t-w-w (tawwa) ist geminiert, kein schwaches Ende
+function wortEndeHell(w, v){
+  if(v && !/\s/.test(v.tr||'')) return endeHell(v);
+  if(!ALL_VOCAB.length) return true;
+  const ix = kursIdx(), k = String(w||'').toLowerCase();
+  return ix.c[k] ? true : endeHell(ix.v[k]);
+}
+function laengeHtml(tr, ar, rHell, v){
   tr = String(tr||'');
   if(!tr || LAENGE_PARTIKEL.has(tr.toLowerCase())) return tr;
-  const h = /[ً-ْ]/.test(ar||'') ? laengeHtmlSlots(tr, laengeSlots(ar, rHell)) : tr;
+  const h = /[ً-ْ]/.test(ar||'') ? laengeHtmlSlots(tr, laengeSlots(ar, rHell), v) : tr;
   // Phrase, deren Arabisch nicht (voll) vokalisiert ist oder nicht zur Umschrift passt: Wort für Wort aus den Vokabeln ableiten (Nils 2026-11-13)
   return h === tr && /\s/.test(tr) ? kursLaenge(tr) : h;
 }
@@ -726,10 +736,16 @@ const LAENGE_DUNKEL = new Set(['taf', 'massaj', 'massajat']);   // massaj: Nils 
 const LAENGE_HELL = new Set(['mya']);
 // Hinweiswörter hatha, hathi, hathuma, hathika, hathukum, hathaka: ha- spricht Nils hell lang (hǟtha), die Endung -a bleibt a, nie ä (Nils 2026-11-13)
 const LAENGE_HA = new Set(['hatha','hathi','hathuma','hathika','hathukum','hathaka']);
-function laengeHtmlSlots(tr, sl){
+function laengeHtmlSlots(tr, sl, v){
   tr = String(tr||'');
-  if(sl && sl.length === 1 && LAENGE_HELL.has(tr.toLowerCase())) sl = ['E'];
   const g = vokalGruppen(tr);
+  if(sl && g.length === sl.length && sl.includes('E')){
+    sl = sl.slice();
+    g.forEach(([st, en], k) => { if(sl[k] !== 'E') return;
+      let a = st, z = en; while(a > 0 && /[A-Za-z0-9'ʔ]/.test(tr[a-1])) a--; while(z < tr.length && /[A-Za-z0-9'ʔ]/.test(tr[z])) z++;
+      if(!wortEndeHell(tr.slice(a, z), v)) sl[k] = 'k'; });
+  }
+  if(sl && sl.length === 1 && LAENGE_HELL.has(tr.toLowerCase())) sl = ['E'];
   if(!sl || !g.length || g.length !== sl.length || !sl.some(x => x==='L'||x==='H'||x==='E')) return tr;
   if(sl.includes('H')){
     sl = sl.slice();
@@ -752,7 +768,7 @@ function laengeHtmlSlots(tr, sl){
   });
   return h + tr.slice(p);
 }
-function trL(v){ if(!v) return ''; if(v._trL === undefined) v._trL = laengeHtml(v.tr, v.ar, v.rh); return v._trL; }
+function trL(v){ if(!v) return ''; if(v._trL === undefined) v._trL = laengeHtml(v.tr, v.ar, v.rh, v); return v._trL; }
 // Tabellenzellen haben kein eigenes Arabisch: Länge aus der Vokabelzeile derselben Tabelle (gleiche Grundform)
 let _conjLaenge = null;
 function conjZelleL(cj, t, tzH, pH){
@@ -7850,7 +7866,7 @@ function laengeImText(html){
     const v = _verbArByTr[w]; if(!v || LAENGE_TEXT_NICHT.has(w) || LAENGE_PARTIKEL.has(w.toLowerCase())) return w;
     // Vorsilbe vor Auslassungspunkten oder Bindestrich (yi…a, ya…i, ya-) ist kein Wort am Wortende
     if(/^(…|\.\.\.)/.test(seg.slice(off + w.length))) return w;
-    return laengeHtml(w, v.ar, v.rh);
+    return laengeHtml(w, v.ar, v.rh, v);
   })).join('');
 }
 // Länge und Klang auch in Kurssätzen, Lösungen und Dialogen (Nils 2026-11-13): Wort für Wort, nur im tunesischen Teil.
@@ -7861,6 +7877,16 @@ const _kursWortCache = {};
 function kursWortL(w){
   const k = w.toLowerCase();
   if(w in _kursWortCache) return _kursWortCache[w];   // Schlüssel mit Großschreibung: „Vor“ und „vor“ sind verschiedene Einträge
+  kursIdx();
+  let h = w;
+  try{
+    const v = _kursWortIdx.v[k], c = _kursWortIdx.c[k];
+    if(v) h = laengeHtml(w, v.ar, v.rh, v);
+    else if(c) h = conjZelleL(c[0], w, c[1], c[2]);
+  }catch(e){ h = w; }
+  return _kursWortCache[w] = h;
+}
+function kursIdx(){
   if(!_kursWortIdx){
     _kursWortIdx = {v:{}, c:{}};
     [true, false].forEach(verb => ALL_VOCAB.forEach(v => {
@@ -7870,13 +7896,7 @@ function kursWortL(w){
       Object.keys(blk).forEach(p => { const c = blk[p]; if(!c || !c.darija) return;
         String(c.darija).split(' / ').forEach(f => { f = f.trim(); const t = f.toLowerCase(); if(f && !/\s/.test(f) && !_kursWortIdx.c[t]) _kursWortIdx.c[t] = [e.cj, z, p]; }); }); }); });
   }
-  let h = w;
-  try{
-    const v = _kursWortIdx.v[k], c = _kursWortIdx.c[k];
-    if(v) h = laengeHtml(w, v.ar, v.rh);
-    else if(c) h = conjZelleL(c[0], w, c[1], c[2]);
-  }catch(e){ h = w; }
-  return _kursWortCache[w] = h;
+  return _kursWortIdx;
 }
 function kursLaenge(html){
   if(!ALL_VOCAB.length || !html) return html;
