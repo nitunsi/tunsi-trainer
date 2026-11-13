@@ -382,3 +382,113 @@ Verfahren: jedes Wort mit e wird gegen Einzelvokabeln und Tabellenformen gehalte
 | 3720 | kul wa7id w kifash y3ish 7yetu |  | 7yetu |
 | 4677 | jey / jeya |  | jey; jeya |
 
+
+# Nachtrag: Abgleich mit dem Arabisch der Phrase selbst
+
+Geschrieben wurden nur die 79 Zeilen, deren neue Vokale das eigene Arabisch der Phrase bestätigt (Sicherung backup_2026_11_13_phr_e).
+
+## Widerspruch: Arabisch der Phrase sagt etwas anderes als die Einzelvokabel (nicht geschrieben) (37)
+
+| id | Ist | Vorschlag | Hinweis |
+|---|---|---|---|
+| 1740 | qrina handsa fil jem3a | qrina handsa fil jim3a | jem3a→jim3a aber Arabisch „jam3a“ |
+| 1944 | mabruk ma tzed lik | mabruk ma tzid lik | tzed→tzid aber Arabisch „tzad“ |
+| 2404 | najjem na7ki bil-ingliziyya | najjim na7ki bil-ingliziyya | najjem→najjim aber Arabisch „najjam“ |
+| 2405 | najjem nimshi | najjim nimshi | najjem→najjim aber Arabisch „najjam“ |
+| 2408 | tnajjem twwarini eth-thniyya? | tnajjim twwarini eth-thniyya? | tnajjem→tnajjim aber Arabisch „tnajjam“ |
+| 2409 | tnajjem tudkhul? | tnajjim tudkhul? | tnajjem→tnajjim aber Arabisch „tnajjam“ |
+| 2532 | mush tfahemna es-sab3a? | mush tfahimna es-sab3a? | tfahemna→tfahimna aber Arabisch „tfahamna“ |
+| 2645 | yelzemni tbib | yilzimni tbib | yelzemni→yilzimni aber Arabisch „yilzamni“ |
+| 2732 | wakhkher littali | wakhkhar littali | wakhkher→wakhkhar aber Arabisch „wakhkhir“ |
+| 2788 | yelzemni nijri | yilzimni nijri | yelzemni→yilzimni aber Arabisch „yilzamni“ |
+| 2830 | shidd el-yser | shidd el-ysir | el-yser→el-ysir aber Arabisch „ysar“ |
+| 2836 | 3al yeddek el-yser | 3al yeddek el-ysir | el-yser→el-ysir aber Arabisch „ysar“ |
+| 2902 | tnejjem t3awed? | tnajjim t3awid? | tnejjem→tnajjim aber Arabisch „tnajjam“ |
+| 2930 | najjem nista3mel et-telifun? | najjim nista3mil et-talifun? | et-telifun→et-talifun aber Arabisch „tilifun“ |
+| 2939 | tkallem tawwa | tkallim tawwa | tkallem→tkallim aber Arabisch „tkallam“ |
+| 2991 | kallem bil-qwi | kallim bil-qwi | kallem→kallim aber Arabisch „kallam“ |
+| 3025 | n7ebb nekel mlawi skhuna | n7ibb nekel mlawi skhuna | n7ebb→n7ibb aber Arabisch „n7abb“ |
+| 3030 | nurqud bekri | nurqud bikri | bekri→bikri aber Arabisch „bakri“ |
+| 3037 | ne7lem 7elma bahya | ne7lem 7ilma bahya | 7elma→7ilma aber Arabisch „7alma“ |
+| 3041 | nqum bekri | nqum bikri | bekri→bikri aber Arabisch „bakri“ |
+| 3075 | sba7kum b-rba7kum w khalluha 3la llah tebra jra7kum | sba7kum b-rba7kum w khalluha 3la llah tibra jra7kum | tebra→tibra aber Arabisch „tabra“ |
+| 3201 | tkallem besh-shwayya | tkallim besh-shwayya | tkallem→tkallim aber Arabisch „tkallam“ |
+| 3205 | shkunu a3azz sa7eb 3andek? | shkunu a3azz sa7ib 3andik? | 3andek→3andik aber Arabisch „3andak“ |
+| 3211 | qaddesh min marra ta3mel spur? | qaddesh min marra ta3mil spur? | ta3mel→ta3mil aber Arabisch „ta3mal“ |
+| 3219 | qaddesh 3andek tuskun hna? | qaddesh 3andik tuskun hna? | 3andek→3andik aber Arabisch „3andak“ |
+| 3224 | shrubtshi el-qahwa mta3ek? | shrubtshi el-qahwa mta3ik? | mta3ek→mta3ik aber Arabisch „mta3ak“ |
+| 3233 | shams ta7req | shams ta7raq | ta7req→ta7raq aber Arabisch „ta7riq“ |
+| 3568 | 7adhdher el-farsh | 7adhdhar el-farsh | 7adhdher→7adhdhar aber Arabisch „7adhdhir“ |
+| 1515 | rabbi ywasslek salem | rabbi ywasslik salam | salem→salam aber Arabisch „salim“ |
+| 2410 | tnajjem nis'alek? | tnajjim nis'alik? | tnajjem→tnajjim aber Arabisch „tnajjam“; nis'alik: Arabisch liest „nisalik“ |
+| 2800 | la7tha hani jitek | la7tha hani jitik | jitek→jitik aber Arabisch „jitak“ |
+| 2806 | khuth waqtek | khuth waqtik | waqtek→waqtik aber Arabisch „waqtak“ |
+| 2807 | fi 3aqlek | fi 3aqlik | 3aqlek→3aqlik aber Arabisch „3aqlak“ |
+| 2808 | ma tezrebsh ru7ek | ma tezrebsh ru7ik | ru7ek→ru7ik aber Arabisch „ru7ak“ |
+| 2947 | kan 3ajbek | kan 3ajbik | 3ajbek→3ajbik aber Arabisch „3ajbak“ |
+| 3213 | waqtash 3id miladek? | waqtash 3id miladik? | miladek→miladik aber Arabisch „miladak“ |
+| 3317 | sakker fummek | sakkar fummik | fummek→fummik aber Arabisch „fummak“ |
+
+## Ungeprüft: Arabisch ohne Vokalzeichen oder andere Wortzahl (nicht geschrieben) (58)
+
+| id | Ist | Vorschlag | Hinweis |
+|---|---|---|---|
+| 285 | el beqi | el baqi | baqi: Wortzahl |
+| 467 | ekhir sum | akhir sum | akhir: Arabisch liest „akhr“ |
+| 815 | sallem 3ad-dar | sallim 3ad-dar | sallim: Wortzahl |
+| 918 | kifash nemshi li...? | kifash nimshi li...? | nimshi: Arabisch liest „nmshy“ |
+| 1106 | el 7desh w nus | el 7dash w nus | 7dash: Wortzahl |
+| 1108 | nitkallem bil 3arbi | nitkallim bil 3arbi | nitkallim: Wortzahl |
+| 1442 | minna w minnik w mil a3mel es-sal7a | minna w minnik w mil a3mil es-sal7a | a3mil: Wortzahl |
+| 1506 | 3andi ma na3mel | 3andi ma na3mil | na3mil: Arabisch liest „n3ml“ |
+| 1508 | ma 3andi ma na3mel lik | ma 3andi ma na3mil lik | na3mil: Arabisch liest „n3ml“ |
+| 1609 | ma na3rafsh njewib 3ala es-su'al hatha | ma na3rafsh njawib 3ala es-su'al hatha | njawib: Arabisch liest „njawb“ |
+| 1626 | illi y7ib yil3ab basket lezim ya3rif ynaggiz 3ali | illi y7ib yil3ab basket lazim ya3rif ynaggiz 3ali | lazim: Arabisch liest „lazm“ |
+| 1636 | et-telifun ma yikhdimsh. 7awilt nsalla7u ama ma najjamtish | et-talifun ma yikhdimsh. 7awilt nsalla7u ama ma najjamtish | et-talifun: Arabisch liest „tlyfwn“ |
+| 1659 | kammalt el film el bera7? | kammalt el film el bara7? | bara7: Wortzahl |
+| 1661 | salla7t et-telifun el-qdim w tawwa yikhdim bel-bahi | salla7t et-talifun el-qdim w tawwa yikhdim bel-bahi | et-talifun: Wortzahl |
+| 1744 | kull nhar nejri thlatha kilometre | kull nhar nijri thlatha kilometre | nijri: Arabisch liest „njry“ |
+| 1758 | khthina kunji 3ashra ayyem fi ut | khthina kunji 3ashra ayyam fi ut | ayyam: Arabisch liest „ayam“ |
+| 1789 | famma shkun quddem el bab | famma shkun quddam el bab | quddam: Wortzahl |
+| 1796 | nhar kemel | nhar kamil | kamil: Arabisch liest „kml“ |
+| 1803 | kul jem3a | kul jim3a | jim3a: Arabisch liest „jm3a“ |
+| 1805 | thlatha marra fi ej-jem3a | thlatha marra fi ej-jim3a | ej-jim3a: Arabisch liest „jm3a“ |
+| 1808 | na3mel marche | na3mil marche | na3mil: Arabisch liest „n3ml“ |
+| 1809 | nemshi li salle de sport | nimshi li salle de sport | nimshi: Wortzahl |
+| 1810 | na3mel jarya | na3mil jarya | na3mil: Arabisch liest „n3ml“ |
+| 1813 | kul qaddesh tsefir? | kul qaddesh tsafir? | tsafir: Arabisch liest „tsafr“ |
+| 1814 | kul qaddesh titfarrej fi aflem? | kul qaddesh titfarrij fi aflem? | titfarrij: Arabisch liest „ttfrj“ |
+| 1835 | tel3ab volley | tal3ab volley | tal3ab: Arabisch liest „tl3b“ |
+| 1843 | tel3ab jeux video | tal3ab jeux video | tal3ab: Arabisch liest „tl3b“ |
+| 1846 | temshi lil maktab | timshi lil maktab | timshi: Wortzahl |
+| 1860 | mazelt nekhdem | mazelt nikhdim | nikhdim: Arabisch liest „nkhdm“ |
+| 1873 | lazimni neshri telifun jdid | lazimni nishri talifun jdid | nishri: Arabisch liest „nshry“; talifun: Arabisch liest „tlyfwn“ |
+| 1875 | lazmik tel3ab sport | lazmik tal3ab sport | tal3ab: Arabisch liest „tl3b“ |
+| 1876 | 3melt illi ken lezim yitta3mel | 3malt illi kan lazim yitta3mel | 3malt: Arabisch liest „3mlt“; lazim: Arabisch liest „lazm“ |
+| 1877 | ken lezim nemshi lu w na7ki m3ah | kan lazim nimshi lu w na7ki m3ah | kan: Wortzahl; lazim: Wortzahl; nimshi: Wortzahl |
+| 1881 | rassat li nemshi 3la saqayya | rassat li nimshi 3la saqayya | nimshi: Arabisch liest „nmshy“ |
+| 1883 | rassat li n3awed nektbu milluel | rassat li n3awid niktbu milluel | n3awid: Wortzahl; niktbu: Wortzahl |
+| 1940 | en-nes l kull jew lil 7afla | en-nas l kull jaw lil 7afla | en-nas: Wortzahl; jaw: Wortzahl |
+| 1946 | insha allah fi nje7 l awlad | insha allah fi nja7 l awlad | nja7: Arabisch liest „fi“ |
+| 2132 | tmatem ma3juna | tmatim ma3juna | tmatim: Arabisch liest „tmatm“ |
+| 2324 | el khdem | el khdim | khdim: Wortzahl |
+| 2897 | el-mekla skhuna taghli w m7ar7ra tishwi | el-makla skhuna taghli w m7ar7ra tishwi | el-makla: Wortzahl |
+| 3013 | imshi m3aya lel-7enut | imshi m3aya lel-7anut | lel-7anut: Arabisch liest „lil7anut“ |
+| 3110 | ikhdem b-qafsi w 7asib el-battal | ikhdim b-qafsi w 7asib el-battal | ikhdim: Wortzahl |
+| 3143 | illi ma ta3refsh taghsel ed-dawwara makhthitha fi weld en-nas khsara, w illi la ya3ref la slikha w la thbi7a makhithtu fi bent en-nas fdhi7a | illi ma ta3refsh taghsil ed-dawwara makhthitha fi wild en-nas khsara, w illi la ya3ref la slikha w la thbi7a makhithtu fi bint en-nas fdhi7a | taghsil: Wortzahl; wild: Wortzahl; bint: Wortzahl |
+| 3256 | ybarbesh fil-internet | ybarbish fil-internet | ybarbish: Wortzahl |
+| 3686 | ena ma nejjem nedfa3 ken ... | ena ma najjim nidfa3 kan ... | najjim: Arabisch liest „nijim“ |
+| 3699 | jina besh n7awsu w net3allmu tunsi zeda | jina besh n7awsu w nit3allmu tunsi zada | nit3allmu: Arabisch liest „nit3allamu“ |
+| 3710 | n7ib ez-zliz et-tunsi el mlawwen 3la el 7yut w fi el qe3a zeda | n7ib ez-zliz et-tunsi el mlawwen 3la el 7yut w fi el qe3a zada | zada: Wortzahl |
+| 3713 | hathi el blasa illi nitkhayyel ru7i fiha mirte7 w far7an | hathi el blasa illi nitkhayyel ru7i fiha mirta7 w far7an | mirta7: Wortzahl |
+| 3716 | besh ysefru ba3d el 3id bi jem3a | besh ysafru ba3d el 3id bi jim3a | ysafru: Wortzahl; jim3a: Wortzahl |
+| 3746 | enti makesh | enti makish | makish: Arabisch liest „maksh“ |
+| 1114 | allah ybarek | allah ybarik | ybarik: Arabisch liest „ybark“ |
+| 1407 | liltek zina | liltik zina | liltik: Arabisch liest „liyaltik“ |
+| 1414 | rud belik 3ala ru7ek! | rud belik 3ala ru7ik! | ru7ik: Arabisch liest „raw7ik“ |
+| 1440 | y3ayyshik, min fummek li rabbi | y3ayyshik, min fummik li rabbi | fummik: Wortzahl |
+| 1497 | thiqtek fi ru7ek | thiqtik fi ru7ik | thiqtik: Arabisch liest „thyqtk“; ru7ik: Arabisch liest „rw7k“ |
+| 1812 | kul qaddesh tukhruj m3a s7abek? | kul qaddesh tukhruj m3a s7abik? | s7abik: Arabisch liest „s7abk“ |
+| 3130 | watti sutek shwayya | watti sutik shwayya | sutik: Arabisch liest „sawtak“ |
+| 3693 | na3mel dura w narja3lek | na3mil dura w narja3lik | na3mil: Wortzahl; narja3lik: Wortzahl |
+

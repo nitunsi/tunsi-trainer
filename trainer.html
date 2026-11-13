@@ -760,16 +760,16 @@ function laengeHtmlSlots(tr, sl, v){
     g.forEach(([st, en, t], k) => { if((sl[k] === 'H' || sl[k] === 'L') && t.toLowerCase() === 'a' && lehnKurz(tr, st, en)){ c = c || sl.slice(); c[k] = 'k'; } });
     if(c) sl = c;
   }
+  if(sl && sl.length === g.length && /h[a-z]*th/i.test(tr)){
+    sl = sl.slice();
+    g.forEach(([st], k) => { const a = tr.lastIndexOf(' ', st) + 1, z = tr.indexOf(' ', st), wd = tr.slice(a, z < 0 ? tr.length : z).toLowerCase().replace(/[^a-z0-9]/g, '');
+      if(!LAENGE_HA.has(wd)) return; if(!g.slice(0, k).some(([s2]) => s2 >= a)) sl[k] = 'H'; if(sl[k] === 'E') sl[k] = 'k'; });
+  }
   if(sl && sl.length === 1 && LAENGE_HELL.has(tr.toLowerCase())) sl = ['E'];
   if(!sl || !g.length || g.length !== sl.length || !sl.some(x => x==='L'||x==='H'||x==='E')) return tr;
   if(sl.includes('H')){
     sl = sl.slice();
     g.forEach(([st], k) => { if(sl[k]==='H'){ const a = tr.lastIndexOf(' ', st) + 1, z = tr.indexOf(' ', st); if(LAENGE_DUNKEL.has(tr.slice(a, z < 0 ? tr.length : z).toLowerCase())) sl[k] = 'L'; } });
-  }
-  if(sl.length === g.length && /h[a-z]*th/i.test(tr)){
-    sl = sl.slice();
-    g.forEach(([st], k) => { const a = tr.lastIndexOf(' ', st) + 1, z = tr.indexOf(' ', st), wd = tr.slice(a, z < 0 ? tr.length : z).toLowerCase().replace(/[^a-z0-9]/g, '');
-      if(!LAENGE_HA.has(wd)) return; if(!g.slice(0, k).some(([s2]) => s2 >= a)) sl[k] = 'H'; if(sl[k] === 'E') sl[k] = 'k'; });
   }
   let h = '', p = 0;
   g.forEach(([s,e,t],k) => {
