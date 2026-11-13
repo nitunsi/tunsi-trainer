@@ -5978,6 +5978,32 @@ function datenChecks(){
     arW.push(v.id+' '+v.tr+': Vokabel '+v.ar+' ↔ Tabelle '+[...new Set(zellen.map(c => c.ar))].join(' / '));
   });
   out.push({label: 'Arabisch der Tabelle widerspricht dem Arabisch der Vokabel (andere Buchstaben)', n: arW.length, bsp: arW});
+  // Wurzel gegen das Arabische des Wortes (Nils 2026-11-13): die starken Wurzelbuchstaben müssen in dieser Reihenfolge im Wort vorkommen
+  // (w, y, Hamza, Alif dürfen fehlen; Verdoppelung zählt einfach; ähnliche Buchstaben gelten als gleich, weil Umgangs- und Hochsprache
+  // verschieden schreiben: ص/س/ث, ط/ت, ض/د/ذ, ظ/ز/ذ, ق/ڨ). Wörter mit Wurzel „von Hand“ stehen in WURZEL_AR_OK mit Grund.
+  const WURZEL_AR_OK = {   // Wort-id → Grund
+    260: 'zuz „zwei“ schreibt ز و ز, die Wurzel ز-و-ج ist die hochsprachliche',
+    352: 'klafis: Lehnwort-Schreibung mit ص, Wurzel k-r-f-s',
+    481: 'karhba/krahib: von kahraba „Elektrizität“, Arabisch ohne das zweite ب in der Reihenfolge',
+    838: 'siehe 481',
+    2194: 'bnayya „Mädchen“: ب ن ي ة aus bint, Wurzel b-n-t (ت wird zu ي)',
+    3397: 'jbid „ziehen“: Umstellung j-b-d gegen j-d-b (Wurzel nach TUNICO jdb)',
+    3816: 'siehe 3397', 4121: 'siehe 3397',
+    3851: 'ma „Wasser“: Wurzel m-w-h, das ه fällt weg',
+    4698: 'tsakir „Fahrkarten“: von tadhkira, Wurzel th-k-r, hier mit س'
+  };
+  const wk = c => ({'ص':'س','ث':'س','ط':'ت','ض':'د','ذ':'د','ظ':'ز','ڨ':'ق','گ':'ق','ڤ':'ف','پ':'ب'}[c] || c);
+  const wzReihe = [];
+  ALL_VOCAB.forEach(v => {
+    if(v.ausb || !v.wz || !v.wza || !v.ar || WURZEL_AR_OK[v.id]) return;
+    const wort = String(v.ar).replace(/[ً-ٰٟ]/g, '').replace(/^ال/, '').replace(/[ةءأإآؤئىاويةـ\s]/g, '').split('').map(wk);
+    const wurz = String(v.wza).replace(/\s+/g, '').replace(/[ءأإآؤئىاوي]/g, '').split('').map(wk).filter((c, i, a) => i === 0 || c !== a[i-1]);
+    if(wurz.length < 2) return;
+    let pos = 0, ok = true;
+    for(const c of wurz){ const i = wort.indexOf(c, pos); if(i < 0){ ok = false; break; } pos = i + 1; }
+    if(!ok) wzReihe.push(v.id+' '+v.tr+' ['+String(v.en||'').slice(0, 18)+']: Wurzel '+v.wz+' ↔ '+v.ar);
+  });
+  out.push({label: 'Wurzelbuchstaben nicht in Reihenfolge im Arabischen des Wortes', n: wzReihe.length, bsp: wzReihe});
   return out;
 }
 // Ausnahmen der Prüfungen 12 und 13 — gleich geschrieben, aber anderes Wort (jeweils mit Grund)
