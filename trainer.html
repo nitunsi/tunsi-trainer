@@ -714,8 +714,10 @@ function laengeSlots(ar, rHell){
 const LAENGE_PARTIKEL = new Set(['ma','ena','ija','ya']);
 function laengeHtml(tr, ar, rHell){
   tr = String(tr||'');
-  if(!tr || LAENGE_PARTIKEL.has(tr.toLowerCase()) || !/[ً-ْ]/.test(ar||'')) return tr;
-  return laengeHtmlSlots(tr, laengeSlots(ar, rHell));
+  if(!tr || LAENGE_PARTIKEL.has(tr.toLowerCase())) return tr;
+  const h = /[ً-ْ]/.test(ar||'') ? laengeHtmlSlots(tr, laengeSlots(ar, rHell)) : tr;
+  // Phrase, deren Arabisch nicht (voll) vokalisiert ist oder nicht zur Umschrift passt: Wort für Wort aus den Vokabeln ableiten (Nils 2026-11-13)
+  return h === tr && /\s/.test(tr) ? kursLaenge(tr) : h;
 }
 function vokalGruppen(tr){ const re = /ou|[aeiou]+/gi, g = []; let m; while((m = re.exec(String(tr||'')))) g.push([m.index, m.index+m[0].length, m[0]]); return g; }
 // Wörter, deren langes a nach Gehör dunkel ist (ā), obwohl die Regel hell (ǟ) ergäbe (Nils 2026-11-11: taf taf)
