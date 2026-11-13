@@ -5906,7 +5906,8 @@ function datenChecks(){
     const paare = [];
     if(k.verb) paare.push([k.verb.ar, k.verb.tr]);
     if(k.ant) paare.push([k.ant.ar_von, k.ant.tr_von], [k.ant.ar_nach, k.ant.tr_nach]);
-    (Array.isArray(k.bsp) ? k.bsp : []).forEach(b => paare.push([b.ar_von, b.tr_von], [b.ar_nach, b.tr_nach]));
+    // hochsprache: die „von“-Seite ist Hochsprache in wissenschaftlicher Umschrift (ṯ, ǧ, ʿ …), nur die tunesische Seite wird verglichen (Lautgesetz-Karten L14)
+    (Array.isArray(k.bsp) ? k.bsp : []).forEach(b => { if(!k.hochsprache) paare.push([b.ar_von, b.tr_von]); paare.push([b.ar_nach, b.tr_nach]); });
     paare.forEach(([a, t]) => {
       if(!a || !t || /[+→]/.test(t)) return;
       const A = String(a).trim().split(/\s*[\/·]\s*|\s{2,}/).filter(Boolean), W = String(t).trim().split(/\s*[\/·]\s*/).filter(Boolean);
@@ -6011,6 +6012,7 @@ function datenChecks(){
 // Ausnahmen der Prüfungen 12 und 13 — gleich geschrieben, aber anderes Wort (jeweils mit Grund)
 const KURS_HDT_OK = [
   'ahla',                       // أهلا „willkommen“, nicht a7la „süßer“
+  'tib',                        // Rest von „kǟtib“ in der Lautgesetz-Karte (ǟ trennt das Wort), nicht thib
   'tun',                        // deutsches „tun“ in den Erklärtexten, nicht thun „Thunfisch“
   'hsan',                       // Name Hsan
   '3adhdha',                    // Partizip von y3udhdh „beißen“, nicht 3adda
