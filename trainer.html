@@ -3439,6 +3439,7 @@ function aMC(btn,ok,ca,con,v){
     fbMC.className='feedback show '+(ok?'correct':'wrong');
     const darija = v ? `<span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">${trL(v)}</span>` : '';
     const homNote = wurzelZeile(v)+homonymNote(v)+synonymNote(v)+schreibungNote(v);
+    window._lastFlashFbBody = '<span style="font-size:1.2rem">'+ca+'</span>'+darija+homNote;
     fbMC.innerHTML='<span style="font-size:1.2rem">'+(ok?'✓ ':'✗ ')+ca+'</span>'+darija+homNote;
   }
   ok?(score.c++,score.st++,score.t++):(score.w++,score.st=0,score.t++);
@@ -3582,7 +3583,8 @@ function chkFlash(){
   const solAr = '<span style="font-family:\'Playfair Display\',serif;font-size:2.2rem;color:var(--gold2);display:block">'+v.ar+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+trL(v)+'</span>';
   const solDe = '<span style="font-family:\'Playfair Display\',serif;font-size:1.5rem;display:block">'+deHtml(v)+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+trL(v)+'</span>';
   const sol = ex.dir==='au2de' ? solDe+'<span style="font-family:\'Playfair Display\',serif;font-size:2.2rem;color:var(--gold2);display:block;margin-top:.3rem">'+v.ar+'</span>' : (dir==='ar2de' ? solDe : solAr);
-  const homNote = homonymNote(v)+synonymNote(v)+schreibungNote(v);
+  const homNote = wurzelZeile(v)+homonymNote(v)+synonymNote(v)+schreibungNote(v);
+  window._lastFlashFbBody = sol + homNote;   // bleibt bei „War doch richtig/falsch“ stehen (Nils 2026-11-13)
   if(ok){
     fb.className='feedback show correct';
     fb.innerHTML = (flashFuzzy ? '~ Fast! Richtige Schreibung: '+flashFuzzy+'<br>'
@@ -3754,7 +3756,7 @@ function markFlashCorrect(){
     await _applyFlashCorrection(vid, true, orig);
   })();
   const fb = document.getElementById('feedback');
-  if(fb){ fb.className='feedback show correct'; fb.innerHTML='✓ Als richtig gewertet.'; }
+  if(fb){ fb.className='feedback show correct'; fb.innerHTML='✓ Als richtig gewertet.'+(window._lastFlashFbBody ? '<br>'+window._lastFlashFbBody : ''); }
   hideFlashActionBar();
   showFlashNextBar(last.v, true);
 }
@@ -3775,7 +3777,7 @@ function markFlashWrong(){
     await _applyFlashCorrection(vid, false, orig);
   })();
   const fb = document.getElementById('feedback');
-  if(fb){ fb.className='feedback show wrong'; fb.innerHTML='✗ Als falsch gewertet.'; }
+  if(fb){ fb.className='feedback show wrong'; fb.innerHTML='✗ Als falsch gewertet.'+(window._lastFlashFbBody ? '<br>'+window._lastFlashFbBody : ''); }
   hideFlashActionBar();
   showFlashNextBar(last.v, false);
 }
@@ -7047,7 +7049,12 @@ function courseCorrectLast(toOk){
   const last = _applyCourseCorrection(toOk);
   if(!last) return;
   const fb = document.getElementById('feedback');
-  if(fb){ fb.className = 'feedback show '+(toOk?'correct':'wrong'); fb.innerHTML = toOk ? '✓ Als richtig gewertet.' : '✗ Als falsch gewertet.'; }
+  if(fb){
+    fb.className = 'feedback show '+(toOk?'correct':'wrong');
+    // die Lösung bleibt stehen (Nils 2026-11-13); Selbstbewertungs-Karten haben keinen Lösungstext im Feedback
+    const solHtml = last.exercise && !COURSE_SELF_GRADE_TYPES.includes(last.exercise.exercise_type) ? '<br><span style="color:var(--gold2)">'+courseSolutionHtml(last.exercise)+'</span>' : '';
+    fb.innerHTML = (toOk ? '✓ Als richtig gewertet.' : '✗ Als falsch gewertet.') + solHtml;
+  }
   hideFlashActionBar();
   showCourseNextBar(last.exercise, toOk);
 }
