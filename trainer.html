@@ -734,6 +734,16 @@ function vokalGruppen(tr){ const re = /ou|[aeiou]+/gi, g = []; let m; while((m =
 const LAENGE_DUNKEL = new Set(['taf', 'massaj', 'massajat']);   // massaj: Nils 2026-11-12 spricht das a dunkel
 // Einzelwörter mit End-a, das hell (ä) klingt, obwohl die Regel (-ya) es ausnimmt (Nils 2026-11-11: myä „hundert“)
 const LAENGE_HELL = new Set(['mya']);
+// Lehnwörter: ein a vor zwei Konsonanten bleibt kurz, auch wenn das Arabische ein Alif schreibt (banka, fanta, taxi, fransa – Nils 2026-11-13).
+// Arabische Wörter derselben Form bleiben lang (mtǟ3hum, jzǟyri, twǟnsa). Neue Lehnwörter hier eintragen.
+const LAENGE_LEHN = new Set(['bank','banka','fanta','manga','taxi','taxist','parking','pasbur','faks','matsh','sandiwytish','janfi','mars','fransa','almanya','italya','italyan','isbanya','muritanya',
+  'garçon','garsunat','faranda','radio','spadri','marshi','chambriz','analgun','gouandouet']);
+function lehnKurz(tr, st, en){
+  let a = st, z = en; const W = /[A-Za-zç0-9'ʔ]/; while(a > 0 && W.test(tr[a-1])) a--; while(z < tr.length && W.test(tr[z])) z++;
+  if(!LAENGE_LEHN.has(tr.slice(a, z).toLowerCase())) return false;
+  const m = tr.slice(en, z).toLowerCase().replace(/i(?=[aou])/g, 'y').match(/^[^aeiou]+/); if(!m) return false;   // radio = rad-yu
+  return m[0].replace(/sh|th|kh|gh|dh|ch/g, 'C').replace(/x/g, 'CC').length >= 2;
+}
 // Hinweiswörter hatha, hathi, hathuma, hathika, hathukum, hathaka: ha- spricht Nils hell lang (hǟtha), die Endung -a bleibt a, nie ä (Nils 2026-11-13)
 const LAENGE_HA = new Set(['hatha','hathi','hathuma','hathika','hathukum','hathaka']);
 function laengeHtmlSlots(tr, sl, v){
@@ -744,6 +754,11 @@ function laengeHtmlSlots(tr, sl, v){
     g.forEach(([st, en], k) => { if(sl[k] !== 'E') return;
       let a = st, z = en; while(a > 0 && /[A-Za-z0-9'ʔ]/.test(tr[a-1])) a--; while(z < tr.length && /[A-Za-z0-9'ʔ]/.test(tr[z])) z++;
       if(!wortEndeHell(tr.slice(a, z), v)) sl[k] = 'k'; });
+  }
+  if(sl && g.length === sl.length && (sl.includes('H') || sl.includes('L'))){
+    let c = null;
+    g.forEach(([st, en, t], k) => { if((sl[k] === 'H' || sl[k] === 'L') && t.toLowerCase() === 'a' && lehnKurz(tr, st, en)){ c = c || sl.slice(); c[k] = 'k'; } });
+    if(c) sl = c;
   }
   if(sl && sl.length === 1 && LAENGE_HELL.has(tr.toLowerCase())) sl = ['E'];
   if(!sl || !g.length || g.length !== sl.length || !sl.some(x => x==='L'||x==='H'||x==='E')) return tr;
