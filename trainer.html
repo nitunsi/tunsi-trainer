@@ -722,6 +722,8 @@ function vokalGruppen(tr){ const re = /ou|[aeiou]+/gi, g = []; let m; while((m =
 const LAENGE_DUNKEL = new Set(['taf', 'massaj', 'massajat']);   // massaj: Nils 2026-11-12 spricht das a dunkel
 // Einzelwörter mit End-a, das hell (ä) klingt, obwohl die Regel (-ya) es ausnimmt (Nils 2026-11-11: myä „hundert“)
 const LAENGE_HELL = new Set(['mya']);
+// Hinweiswörter hatha, hathi, hathuma, hathika, hathukum, hathaka: ha- spricht Nils hell lang (hǟtha), die Endung -a bleibt a, nie ä (Nils 2026-11-13)
+const LAENGE_HA = new Set(['hatha','hathi','hathuma','hathika','hathukum','hathaka']);
 function laengeHtmlSlots(tr, sl){
   tr = String(tr||'');
   if(sl && sl.length === 1 && LAENGE_HELL.has(tr.toLowerCase())) sl = ['E'];
@@ -730,6 +732,11 @@ function laengeHtmlSlots(tr, sl){
   if(sl.includes('H')){
     sl = sl.slice();
     g.forEach(([st], k) => { if(sl[k]==='H'){ const a = tr.lastIndexOf(' ', st) + 1, z = tr.indexOf(' ', st); if(LAENGE_DUNKEL.has(tr.slice(a, z < 0 ? tr.length : z).toLowerCase())) sl[k] = 'L'; } });
+  }
+  if(sl.length === g.length && /h[a-z]*th/i.test(tr)){
+    sl = sl.slice();
+    g.forEach(([st], k) => { const a = tr.lastIndexOf(' ', st) + 1, z = tr.indexOf(' ', st), wd = tr.slice(a, z < 0 ? tr.length : z).toLowerCase().replace(/[^a-z0-9]/g, '');
+      if(!LAENGE_HA.has(wd)) return; if(!g.slice(0, k).some(([s2]) => s2 >= a)) sl[k] = 'H'; if(sl[k] === 'E') sl[k] = 'k'; });
   }
   let h = '', p = 0;
   g.forEach(([s,e,t],k) => {
