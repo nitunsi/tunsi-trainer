@@ -725,7 +725,7 @@ function wortEndeHell(w, v){
 function laengeHtml(tr, ar, rHell, v){
   tr = String(tr||'');
   if(!tr || LAENGE_PARTIKEL.has(tr.toLowerCase())) return tr;
-  const h = /[ً-ْ]/.test(ar||'') ? laengeHtmlSlots(tr, laengeSlots(ar, rHell), v) : tr;
+  const h = laengeHtmlSlots(tr, /[ً-ْ]/.test(ar||'') ? laengeSlots(ar, rHell) : null, v);
   // Phrase, deren Arabisch nicht (voll) vokalisiert ist oder nicht zur Umschrift passt: Wort für Wort aus den Vokabeln ableiten (Nils 2026-11-13)
   return h === tr && /\s/.test(tr) ? kursLaenge(tr) : h;
 }
@@ -744,6 +744,9 @@ function lehnKurz(tr, st, en){
   const m = tr.slice(en, z).toLowerCase().replace(/i(?=[aou])/g, 'y').match(/^[^aeiou]+/); if(!m) return false;   // radio = rad-yu
   return m[0].replace(/sh|th|kh|gh|dh|ch/g, 'C').replace(/x/g, 'CC').length >= 2;
 }
+// Einzelwörter, die Nils anders hört als die Regel ergibt (2026-11-13). Je Vokalgruppe des Wortes ein Zeichen:
+// 'k' kurz ohne Markierung, 'E' kurzes helles ä, 'H' langes helles ǟ, 'L' lang (ā ī ū). Gilt auch im Satz und hinter dem Artikel.
+const LAENGE_WORT = {inshallah: ['k','k','k'], insha: ['k','k'], sba7: ['H'], sba7kum: ['H','k'], mashwiya: ['E','k','k'], mashwi: ['E','k']};
 // Hinweiswörter hatha, hathi, hathuma, hathika, hathukum, hathaka: ha- spricht Nils hell lang (hǟtha), die Endung -a bleibt a, nie ä (Nils 2026-11-13)
 const LAENGE_HA = new Set(['hatha','hathi','hathuma','hathika','hathukum','hathaka']);
 function laengeHtmlSlots(tr, sl, v){
@@ -766,6 +769,16 @@ function laengeHtmlSlots(tr, sl, v){
       if(!LAENGE_HA.has(wd)) return; if(!g.slice(0, k).some(([s2]) => s2 >= a)) sl[k] = 'H'; if(sl[k] === 'E') sl[k] = 'k'; });
   }
   if(sl && sl.length === 1 && LAENGE_HELL.has(tr.toLowerCase())) sl = ['E'];
+  if(g.length){
+    const re = /[A-Za-z0-9'ʔ]+/g, toks = []; let m; while((m = re.exec(tr))) toks.push([m.index, m.index + m[0].length, m[0].toLowerCase()]);
+    let c = (sl && sl.length === g.length) ? sl.slice() : null, treffer = false;
+    toks.forEach(([a, z, w]) => { const ov = LAENGE_WORT.hasOwnProperty(w) ? LAENGE_WORT[w] : null; if(!ov) return;
+      const ks = []; g.forEach(([st], k) => { if(st >= a && st < z) ks.push(k); });
+      if(ks.length !== ov.length) return;
+      if(!c){ if(toks.filter(t => /[aeiou]/.test(t[2])).length !== 1) return; c = Array(g.length).fill('k'); }
+      ks.forEach((k, j) => { c[k] = ov[j]; }); treffer = true; });
+    if(treffer) sl = c;
+  }
   if(!sl || !g.length || g.length !== sl.length || !sl.some(x => x==='L'||x==='H'||x==='E')) return tr;
   if(sl.includes('H')){
     sl = sl.slice();
@@ -7894,6 +7907,7 @@ function kursWortL(w){
   if(w in _kursWortCache) return _kursWortCache[w];   // Schlüssel mit Großschreibung: „Vor“ und „vor“ sind verschiedene Einträge
   kursIdx();
   let h = w;
+  if(LAENGE_WORT.hasOwnProperty(k)) return _kursWortCache[w] = laengeHtmlSlots(w, null);
   try{
     const v = _kursWortIdx.v[k], c = _kursWortIdx.c[k];
     if(v) h = laengeHtml(w, v.ar, v.rh, v);
