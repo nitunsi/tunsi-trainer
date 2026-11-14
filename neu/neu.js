@@ -1418,10 +1418,12 @@ window.renderVocabTableRows = function(){
     const conj = v.cj || v.cr ? ' <button onclick="event.stopPropagation();showConjModal('+v.id+')" title="Konjugationstabelle" style="background:none;border:none;color:inherit;cursor:pointer;padding:0 .2rem;font-size:1em">🔠</button>' : '';
     const ps = v.ps;
     const psIcon = ps==='approved'?'✅' : ps==='rejected'?'❌' : ps==='unknown'?'❓' : ps==='pending'?'⏳' : ps==='skipped'?'⏭' : ps==='suggested'?'💡' : ps==='accepted'?'🆗' : '';
+    // Anzeige-Schreibweise mit Länge/Klang (hǟtha, sbǟ7) neben der Umschrift, wenn sie abweicht (Nils 2026-11-14)
+    let trLx = ''; try{ const d = typeof trL === 'function' ? trL(v) : ''; if(d && d.replace(/<[^>]+>/g,'') !== v.tr) trLx = ' <span style="color:var(--gold2)" title="Aussprache: Länge und Klang">· '+d+'</span>'; }catch(e){}
     const audio = v.au ? '<button class="ib" onclick="event.stopPropagation();playVocabAudio(\''+v.au.replace(/'/g,"\\'")+'\',event,'+(v.aus||0)+','+(v.aue||0)+')" title="Aussprache" aria-label="Aussprache">🔊</button>' : '';
     h += '<div class="neu-vrow" style="box-shadow:inset 4px 0 0 '+col+'" onclick="neuRowTap(event,'+(v.id||0)+','+i+')"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)"'+(selectedVocabIds.has(v.id)?' checked':'')+'/>'
       + '<div class="ar">'+hl(v.ar, hq, true)+'</div>'
-      + '<div class="mid"><div class="t1">'+hl(v.en, hq)+'</div><div class="t2 neu-mono">'+hl(v.tr, hq)+conj+'</div><div class="t2">'+v.ls+flag+(psIcon?' · '+psIcon:'')+'</div></div>'
+      + '<div class="mid"><div class="t1">'+hl(v.en, hq)+'</div><div class="t2 neu-mono">'+hl(v.tr, hq)+trLx+conj+'</div><div class="t2">'+v.ls+flag+(psIcon?' · '+psIcon:'')+'</div></div>'
       + '<div class="rt"><div class="lv"><span class="dot" style="background:'+col+'"></span>'+(!cs.isNew?'Stufe '+level:'Neu')+'</div><div class="t2" style="'+(isDueNow?'color:var(--red)':'')+'">'+(started?due:'—')+'</div>'+(audio?'<div style="margin-top:.3rem">'+audio+'</div>':'')+'</div></div>';
   });
   h += '</div>';
