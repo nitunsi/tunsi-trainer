@@ -685,7 +685,7 @@ function laengeSlots(ar, rHell, kurz){
       if(i===0 && b==='آ'){ out.push('k'); continue; }   // آ am Wortanfang (آنَا = ena): ein Vokal, nicht markiert
       if(i===0 && (b==='ا'||b==='أ'||b==='إ')){
         if(d.includes(FA) && n && n.b==='ا' && !n.d){ out.push('L'); i++; continue; }
-        if(d.includes(FA)||d.includes(KA)||d.includes(DA)||b!=='ا'||(n&&n.b==='ل')) out.push(kurz && d.includes(FA) && n && !(n.d.includes(SU) && u[i+2] && u[i+2].b==='ع') && kurzHell('', n.b, w) ? 'e' : 'k');
+        if(d.includes(FA)||d.includes(KA)||d.includes(DA)||b!=='ا'||(n&&n.b==='ل')) out.push(kurz && d.includes(FA) && n && !(n.d.includes(SU) && n.b!=='ج' && u[i+2] && u[i+2].b==='ع') && kurzHell('', n.b, w) ? 'e' : 'k');
         continue;
       }
       if(b==='ة') continue;
@@ -711,8 +711,9 @@ function laengeSlots(ar, rHell, kurz){
         i++; continue;
       }
       // kurzes a: nicht vor ة am Wortende (Endung -a bleibt a) und nicht als letzter Laut
-      // ع zwei Konsonanten nach dem a (a + Konsonant + ع: sab3a, sab3in, yal3ab) macht es dunkel (Nils 2026-11-14); ح tut das nicht (mär7ba)
-      if(v) out.push(kurz && v==='a' && n && !(n.b==='ة' && i+2>=u.length) && !(n.d.includes(SU) && u[i+2] && u[i+2].b==='ع') && kurzHell(b, n.b, w) ? 'e' : 'k');
+      // ع zwei Konsonanten nach dem a (a + Konsonant + ع: sab3a, sab3in, yal3ab) macht es dunkel (Nils 2026-11-14); ح tut das nicht (mär7ba),
+      // ebenso nicht bei ج dazwischen (fäj3a, Nils 2026-11-14; ein Wort, Vermutung: ج hellt das a auf)
+      if(v) out.push(kurz && v==='a' && n && !(n.b==='ة' && i+2>=u.length) && !(n.d.includes(SU) && n.b!=='ج' && u[i+2] && u[i+2].b==='ع') && kurzHell(b, n.b, w) ? 'e' : 'k');
     }
   }
   return out;
