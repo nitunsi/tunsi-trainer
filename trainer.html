@@ -747,9 +747,12 @@ function lehnKurz(tr, st, en){
 // Einzelwörter, die Nils anders hört als die Regel ergibt (2026-11-13). Je Vokalgruppe des Wortes ein Zeichen:
 // 'k' kurz ohne Markierung, 'E' kurzes helles ä, 'H' langes helles ǟ, 'L' lang (ā ī ū). Gilt auch im Satz und hinter dem Artikel.
 const LAENGE_WORT = {inshallah: ['k','k','k'], insha: ['k','k'], sba7: ['H'], sba7kum: ['H','k'], mashwiya: ['E','k','k'], mashwi: ['E','k'],
-  takil: ['H','k'], amis: ['E','k'], nitkallimik: ['k','E','k','k'], shayid: ['E','k'], makish: ['E','k'], milad: ['k','E'], miladik: ['k','E','k'],
-  manish: ['E','k'], mahush: ['E','k'], mahish: ['E','k'], manash: ['E','k'], makumsh: ['E','k'], mahumsh: ['E','k'],
-  mazel: ['E','k'], mazelt: ['E','k'], mazelna: ['E','k','k'], mazelit: ['E','k','k'], mazeltu: ['E','k','k'], mazelu: ['E','k','k']};
+  takil: ['H','k'], amis: ['E','k'], nitkallimik: ['k','E','k','k'],
+  // helles a, Länge nach dem Arabischen (Alif = lang ǟ, sonst kurz ä)
+  shayid: ['H','k'], makish: ['H','k'], milad: ['k','H'], miladik: ['k','H','k'], balik: ['H','k'], ta3ib: ['H','k'],
+  manish: ['H','k'], mahush: ['H','k'], mahish: ['H','k'], manash: ['H','k'], makumsh: ['H','k'], mahumsh: ['H','k'],
+  mazel: ['H','k'], mazelt: ['H','k'], mazelna: ['H','k','k'], mazelit: ['H','k','k'], mazeltu: ['H','k','k'], mazelu: ['H','k','k'],
+  najjim: ['E','k'], tnajjim: ['E','k'], ynajjim: ['E','k'], nnajjim: ['E','k'], najjimsh: ['E','k'], tnajjimsh: ['E','k']};
 // Hinweiswörter hatha, hathi, hathuma, hathika, hathukum, hathaka: ha- spricht Nils hell lang (hǟtha), die Endung -a bleibt a, nie ä (Nils 2026-11-13)
 const LAENGE_HA = new Set(['hatha','hathi','hathuma','hathika','hathukum','hathaka']);
 function laengeHtmlSlots(tr, sl, v){
