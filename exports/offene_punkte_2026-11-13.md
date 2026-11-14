@@ -170,3 +170,41 @@ course_lessons.grammar_notes/dialog_text (14 Lektionen) und Regelkarte 2446 auf 
 - 14.11.: Klärungsrunde ausgewertet (91 Wörter) und Klang-Regel im Trainer umgestellt (Commit 8ed5495): ā dunkel nur nach dunklem Laut oder vor r; kurzes helles ä nach Regel; ma → mä. 415 Einzelwörter zeigen ein kurzes ä, 510 ein langes ǟ. Tabellenformen ohne eigenes Arabisch zeigen noch kein kurzes ä. Offen: Kurskarten für die Lese-Lektion (L14) – LG7 nennt die alte Regel; Vorschlag neuer Abschnitt „Länge und Klang lesen“ (Regelkarten + Hörkarten) liegt bei Nils zur Bestätigung.
 - 14.11.: Lese-Lektion L14 (id 16): neuer Abschnitt `lesen_klang` „Länge und Klang“ mit 7 Regelkarten LK1–LK7 und 24 Hörkarten (Übungen 2549–2579, Hörkarten über `vocabulary_id` mit Aufnahme, answer_pattern zum Selbstbewerten); LG7 berichtigt; chunk_order und grammar_notes ergänzt. Sicherung backup_2026_11_14_l14_klang. NICHT freigeschaltet (Nils: nur anlegen).
 - Kurs-Durchsicht 14.11. (nur gezählt, nichts geändert): (1) Verneinung in zwei Schreibweisen: ma-X-sh 612 gegen „ma Xsh“ 178; in den zusammengeschriebenen Formen noch altes e (titkallemsh, ta3refsh, tekulsh, ta3melsh, ne3refsh). (2) Präposition + Artikel: f-el- 158 / fil- 26 / fi-l- 7; b-el- 81 / bil- 33; el- 974 / il- 17. (3) Nisba -iyya 178 gegen -iya 48. (4) Doppelkonsonant: y7ibb 43 / y7ib 3, kull 51 / kul 3, tunn/tun, 7utt/7ut (Vokabel-Phrasen schreiben oft n7ib). (5) Altes e/o im Kurs: jey 14, jeya 4 (Vokabel seit 14.11. jay/jaya – Folgeort!), seknin 3, rajelha 3, hethiya 2, 3ayelti 2, y3ayshek, ustedha; o: nosknush, tosknush, yosknush, noshrbush, yoshrbush, tekolu, khoms, momtaza, 3alikom, romthanik. (6) 925 verschiedene Kurswörter (1677 Vorkommen von 11005) stehen in keiner Vokabel oder Tabelle → dort keine Länge/Klang. (7) Tabellenformen ohne kurzes ä; Grammatiknotizen ohne Längenanzeige.
+
+## Für später (Stand 14.11. abends, Nils lernt und testet erst; nichts davon ist begonnen)
+
+### Zuerst nach dem Merge von PR 425
+- Skill-ZIP neu packen (SKILL.md ist seit dem letzten Packen ergänzt: Klang-Regel, Prüflisten mit Anzeige-Spalte, Wurzel-Konventionen) und Datum in CLAUDE.md anpassen.
+- Im Trainer „Neue Version – neu laden“ bestätigen; Mehr → Darstellung → „Aussprache in der Umschrift“ ausprobieren (Länge + Klang / Nur Länge / Aus).
+- Sicherungen löschen (Nils im SQL-Editor): backup_2026_11_10_* ab 21.11., backup_2026_11_11_* und _12_* ab 22.11., backup_2026_11_13_* und backup_2026_11_14_* ab 27.–28.11. Hilfsobjekte: Tabellen plan_w_*, plan_tunico_tok, plan_2026_11_12_*, plan_2026_11_13_* (u. a. plan_2026_11_13_kurs_e), Funktionen wurzel_lat, wurzel_arab, kurs_ersetzen.
+
+### Kurs: Konsistenz (Durchsicht 14.11., Zahlen = Vorkommen im tunesischen Teil)
+Entscheidung von Nils nötig, dann ein Durchgang für Kurs UND Vokabeln:
+- Verneinung: ma-X-sh (612) gegen „ma Xsh“ (178); in den zusammengeschriebenen Formen noch altes e (titkallemsh, ta3refsh, tekulsh, ta3melsh, ne3refsh, tisbe7 → Semia).
+- Präposition + Artikel: f-el- 158 / fil- 26 / fi-l- 7; b-el- 81 / bil- 33; el- 974 / il- 17.
+- Nisba: -iyya 178 gegen -iya 48 (dazu bulisiya/bulisiyya, marrukiyya/marrukiya).
+- Doppelkonsonant: y7ibb 43 / y7ib 3, kull 51 / kul 3, tunn / tun, 7utt / 7ut; die Vokabel-Phrasen schreiben oft n7ib.
+- Klein und eindeutig, kann vorab: jey 14 / jeya 4 → jay / jaya (Vokabel seit 14.11. so, Kurs vergessen), seknin → saknin, rajelha → rajilha, hethiya → hathiya, 3ayelti → 3ayilti, y3ayshek → y3ayshik, ustedha; altes o: nosknush, tosknush, yosknush, noshrbush, yoshrbush, tekolu, khoms, momtaza, 3alikom, romthanik.
+- qaddem / najjem ohne Vorsilbe (Perfekt oder Befehl?) einzeln ansehen; Kurs-Verbformen mit e (t7ebb, n7ebbu …) = Punkt A der Liste.
+
+### Anzeige im Trainer (Länge und Klang)
+- 925 verschiedene Kurswörter (1677 Vorkommen von 11005) stehen in keiner Vokabel/Tabelle → keine Anzeige. Vorschlag: Endungen und Verneinung (-sh, -ni, -ha, -hum, ma-) abtrennen, bevor das Wort nachgeschlagen wird.
+- Tabellenformen ohne eigenes Arabisch zeigen kein kurzes ä; Grammatiknotizen zeigen keine Länge (Deutsch/Tunesisch gemischt, Deutsches aussparen).
+- Regel trifft 6 Wörter nicht: mta3, waqif, yaghurt, qrad (Nils hört a), dars, draj (Nils hört ä, neben r). Neben r ist kurzes a uneinheitlich; ص ض ط ظ NACH langem ā nicht geprüft.
+- LAENGE_WORT: Einträge sind nicht von Semia bestätigt (inshallah, sba7, mashwiya, takil, amis, nitkallimik, shayid, milad, balik, ta3ib, manish-Reihe, ma, najjim-Formen, mer). Semia gegenhören lassen: wa7id, 7aja, qa3id, sa3a, miftah, bab, kas.
+- Offen: najjamt/najjamna mit ä? 7abbas oder 7abbis (2729)? Formant-Messung der Aufnahmen (Idee, nicht probiert). Weitere Hörprobe-Runden bei Bedarf (Seite https://claude.ai/artifact/478gn3WxycQsyA4hMCsArv, Urteile in der Sammlung `urteile`).
+
+### Vokalisierung (Probelauf-Listen in exports/)
+- Rest C/D (rund 350 Zeilen): tools/vokalisierer.js auf u statt o/ou und a/i statt e umstellen, Gegenprobe mit _arabic_to_chatalpha, Liste Ist/Soll MIT Anzeige zeigen (SKILL.md). Teilvokalisierte Wörter (تُرقُد, طبِعت) erfasst der Probelauf noch nicht; sie verschieben die Längen-Zuordnung (3710 „ēt-tunsī“, 3208 „el-cūlēr“).
+- Neue Trainer-Prüfung vorschlagen: „Arabisch ohne Vokalzeichen“ (Ziel 0); Prüfung „alte Schreibung“ auf Regelkarten-Meta und Lektionstexte ausweiten (Wächter, aktuell 0 Treffer).
+- 1826 und weitere Einzelzeilen: Arabisch nach Gehör/Quelle prüfen.
+
+### Gruppe X: bewusst nicht angefasst
+Semia: tisbe7 (854), yesbe7 (1884), nghammedh (3033), 3asser, barresh, rakkedh, tza33ab, qarrit, lazim. Nils: hani jet (1270), 3weja (1890), udhreb bseqak/bidak (2475/2476), nset (2533), 7abbes/a7bes (2729), shnu welek (3217), ey (3225), el khdem (2324), dekhel ba3dhu (2454). Französisch Geschriebenes (bureau, vacances, commande, place pasteur, hotel/util), Artikel-e (b-esh-, bel-, lekbir), gouandouet.
+
+### Lese-Lektion L14
+- Neue Karten LK1–LK7 (Regeln) und 24 Hörkarten (Übungen 2549–2579, Abschnitt lesen_klang) sind angelegt, aber NICHT freigeschaltet, ebenso LG1–LG7 (course_exercise_progress je Karte fehlt bewusst). Nils prüft/lernt sie vor dem Freischalten; Texte ggf. anpassen.
+- Weitere Ideen: Hörkarten „kurzes a hell/dunkel“, Vorlese-Karten, Karte LK6 (mä) bei Semia gegenprüfen, Audio-Beispiele zu LG1–LG6.
+
+### Unverändert offen aus früheren Abschnitten
+E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkarten ab L7 in Häppchen), L6 lange Übungen, I/K (Audio-Sicherung in Colab, Restore-Test, ninja-audio verkleinern), H (Arabisch Tabellenformen: tsawwir, tfakkir, wallat), C (Semia-Fragen), Wortarten-Prüfung für -ou/-u-Suffix.
