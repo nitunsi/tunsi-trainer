@@ -668,7 +668,11 @@ let VOCAB_BY_ID = {}; // {vocabulary_id: ALL_VOCAB-Eintrag} — O(1)-Lookup, kol
 // klingt dunkel (ā), sonst hell (ǟ) — Aussprache Tunis, im Süden weniger aufgehellt. Passt die Zahl der Vokal-Stellen
 // im Arabischen nicht zu den Vokalgruppen der Umschrift, bleibt die Umschrift wie sie ist.
 const _VL_MAC = {a:'ā',e:'ē',i:'ī',o:'ō',u:'ū',ou:'ū'};
-function laengeSlots(ar, rHell){
+// Regel nach 91 gehörten Einzelwörtern mit Aufnahme (Nils 2026-11-14, Sprecher von Derja Ninja; Maßstab bleibt Semia, Mahdia):
+// Langes ā ist dunkel, wenn der Laut DAVOR dunkel ist (ص ض ط ظ ق خ غ ر ح ع) oder wenn r folgt (auch ص ض ط ظ danach, ungeprüft);
+// ein dunkler Laut DANACH (ح ع ق خ غ) macht es nicht dunkel (wǟ7id, bǟqi, sǟ3a). Kurzes a ist hell (kälb, jbäl), außer neben
+// ق خ غ ح ع oder mit ص ض ط ظ im Wort; neben r bleibt es unmarkiert (Urteile uneinheitlich). kurz = true liefert dafür den Slot 'e'.
+function laengeSlots(ar, rHell, kurz){
   const FA='َ', DA='ُ', KA='ِ', SU='ْ';
   const isL = c => /[ء-يپڤڨگچ]/.test(c), isH = c => /[ً-ْٰ]/.test(c);
   const out = [];
@@ -681,7 +685,7 @@ function laengeSlots(ar, rHell){
       if(i===0 && b==='آ'){ out.push('k'); continue; }   // آ am Wortanfang (آنَا = ena): ein Vokal, nicht markiert
       if(i===0 && (b==='ا'||b==='أ'||b==='إ')){
         if(d.includes(FA) && n && n.b==='ا' && !n.d){ out.push('L'); i++; continue; }
-        if(d.includes(FA)||d.includes(KA)||d.includes(DA)||b!=='ا'||(n&&n.b==='ل')) out.push('k');
+        if(d.includes(FA)||d.includes(KA)||d.includes(DA)||b!=='ا'||(n&&n.b==='ل')) out.push(kurz && d.includes(FA) && n && kurzHell('', n.b, w) ? 'e' : 'k');
         continue;
       }
       if(b==='ة') continue;
@@ -701,17 +705,24 @@ function laengeSlots(ar, rHell){
         }
         // langes a: hell (ä) oder dunkel (a) nach den Nachbarkonsonanten (Aussprache Tunis)
         const alif = n.b==='ا'||n.b==='ى', nach = u[i+2] ? u[i+2].b : '';
-        const dunkel = rHell ? 'صضطظقخغحع' : 'صضطظقخغرحع'; // r_hell: r im Wort laut TUNICO hell (vocabulary.r_hell)
-        out.push(alif && !dunkel.includes(b) && !dunkel.includes(nach) ? 'H' : 'L');
+        const davor = rHell ? 'صضطظقخغحع' : 'صضطظقخغرحع'; // r_hell: r im Wort laut TUNICO hell (vocabulary.r_hell)
+        const danach = rHell ? 'صضطظ' : 'صضطظر';
+        out.push(alif && !davor.includes(b) && !(nach && danach.includes(nach)) ? 'H' : 'L');
         i++; continue;
       }
-      if(v) out.push('k');
+      // kurzes a: nicht vor ة am Wortende (Endung -a bleibt a) und nicht als letzter Laut
+      if(v) out.push(kurz && v==='a' && n && !(n.b==='ة' && i+2>=u.length) && kurzHell(b, n.b, w) ? 'e' : 'k');
     }
   }
   return out;
 }
+function kurzHell(vor, nach, wort){
+  if(/[صضطظ]/.test(wort)) return false;               // schwerer Laut irgendwo im Wort
+  const nb = (vor||'') + (nach||'');
+  return !/[قخغحعر]/.test(nb);                        // r: uneinheitlich gehört, bleibt unmarkiert
+}
 // Kleine Wörter werden nie hell (ä) angezeigt: ma- (Verneinung) spricht man ma, ena „ich“ spricht man ena, ija „komm“ spricht man ija, ya (Anrufwort) spricht man ya (Nils 2026-11-11)
-const LAENGE_PARTIKEL = new Set(['ma','ena','ija','ya']);
+const LAENGE_PARTIKEL = new Set(['ena','ija','ya']);   // ma steht seit 2026-11-14 in LAENGE_WORT (Nils: ma-…-sh spricht man mä)
 // Wortende: ä nur bei Verbformen und bei Wörtern mit schwachem Wurzelende (y, w, ʔ: mshä, jä, nsä, mustashfä).
 // Pronomen, Fragewörter, Partikel, Lehnwörter und Namen enden auf a (shnuwwa, huma, tawwa, banka) – Nils 2026-11-13.
 function endeHell(v){ if(!v) return false; if(v.cj) return true; const r = String(v.wz||'').trim().split('-'), n = r.length;
@@ -725,7 +736,7 @@ function wortEndeHell(w, v){
 function laengeHtml(tr, ar, rHell, v){
   tr = String(tr||'');
   if(!tr || LAENGE_PARTIKEL.has(tr.toLowerCase())) return tr;
-  const h = laengeHtmlSlots(tr, /[ً-ْ]/.test(ar||'') ? laengeSlots(ar, rHell) : null, v);
+  const h = laengeHtmlSlots(tr, /[ً-ْ]/.test(ar||'') ? laengeSlots(ar, rHell, true) : null, v);
   // Phrase, deren Arabisch nicht (voll) vokalisiert ist oder nicht zur Umschrift passt: Wort für Wort aus den Vokabeln ableiten (Nils 2026-11-13)
   return h === tr && /\s/.test(tr) ? kursLaenge(tr) : h;
 }
@@ -747,14 +758,15 @@ function lehnKurz(tr, st, en){
 // Einzelwörter, die Nils anders hört als die Regel ergibt (2026-11-13/14). Quelle: Nils nach Aufnahmen verschiedener Sprecher,
 // von Semia noch NICHT bestätigt. Neue Einträge nur, wenn Semia sie bestätigt oder mehrere Aufnahmen übereinstimmen. Je Vokalgruppe des Wortes ein Zeichen:
 // 'k' kurz ohne Markierung, 'E' kurzes helles ä, 'H' langes helles ǟ, 'L' lang (ā ī ū). Gilt auch im Satz und hinter dem Artikel.
-const LAENGE_WORT = {inshallah: ['k','k','k'], insha: ['k','k'], sba7: ['H'], sba7kum: ['H','k'], mashwiya: ['E','k','k'], mashwi: ['E','k'],
+const LAENGE_WORT = {inshallah: ['k','k','k'], insha: ['k','k'], sba7: ['H'], sba7kum: ['H','k'], mashwiya: ['E','k','k'],
   takil: ['H','k'], amis: ['E','k'], nitkallimik: ['k','E','k','k'],
   // helles a, Länge nach dem Arabischen (Alif = lang ǟ, sonst kurz ä)
-  shayid: ['H','k'], makish: ['H','k'], milad: ['k','H'], miladik: ['k','H','k'], balik: ['H','k'], ta3ib: ['H','k'],
+  shayid: ['H','k'], milad: ['k','H'], miladik: ['k','H','k'], balik: ['H','k'], ta3ib: ['H','k'],
   manish: ['H','k'], mahush: ['H','k'], mahish: ['H','k'], manash: ['H','k'], makumsh: ['H','k'], mahumsh: ['H','k'],
-  mazel: ['H','k'], mazelt: ['H','k'], mazelna: ['H','k','k'], mazelit: ['H','k','k'], mazeltu: ['H','k','k'], mazelu: ['H','k','k'],
+  mazelt: ['H','k'], mazelna: ['H','k','k'], mazelit: ['H','k','k'], mazeltu: ['H','k','k'], mazelu: ['H','k','k'],
+  ma: ['E'],   // Verneinung ma-…-sh und ma „Wasser“ (Nils 2026-11-14)
   mer: ['k'],   // mer-rwayiq: min + el, kurz
-  najjim: ['E','k'], tnajjim: ['E','k'], ynajjim: ['E','k'], nnajjim: ['E','k'], najjimsh: ['E','k'], tnajjimsh: ['E','k']};
+  najjim: ['E','k'], tnajjim: ['E','k'], nnajjim: ['E','k'], najjimsh: ['E','k'], tnajjimsh: ['E','k']};
 // Hinweiswörter hatha, hathi, hathuma, hathika, hathukum, hathaka: ha- spricht Nils hell lang (hǟtha), die Endung -a bleibt a, nie ä (Nils 2026-11-13)
 const LAENGE_HA = new Set(['hatha','hathi','hathuma','hathika','hathukum','hathaka']);
 // Anzeige-Stufe (Nils 2026-11-14): 'klang' = Länge und Klang (ā ī ū, ǟ, ä), 'laenge' = nur Länge (ā ī ū), 'aus' = nichts.
@@ -801,7 +813,7 @@ function laengeHtmlSlots(tr, sl, v){
       ks.forEach((k, j) => { c[k] = ov[j]; }); treffer = true; });
     if(treffer) sl = c;
   }
-  if(!sl || !g.length || g.length !== sl.length || !sl.some(x => x==='L'||x==='H'||x==='E')) return tr;
+  if(!sl || !g.length || g.length !== sl.length || !sl.some(x => x==='L'||x==='H'||x==='E'||x==='e')) return tr;
   if(sl.includes('H')){
     sl = sl.slice();
     g.forEach(([st], k) => { if(sl[k]==='H'){ const a = tr.lastIndexOf(' ', st) + 1, z = tr.indexOf(' ', st); if(LAENGE_DUNKEL.has(tr.slice(a, z < 0 ? tr.length : z).toLowerCase())) sl[k] = 'L'; } });
@@ -813,7 +825,8 @@ function laengeHtmlSlots(tr, sl, v){
     const klang = LAENGE_MODUS === 'klang';
     if(klang && sl[k]==='H' && lt[0]==='a') h += '<span class="vl" title="lang, hell (ä)">ǟ</span>';
     else if(klang && sl[k]==='E' && lt==='a') h += '<span class="vl" title="kurz, hell gesprochen (fast wie e)">ä</span>';
-    else if(sl[k]==='E') h += t;
+    else if(klang && sl[k]==='e' && lt==='a') h += '<span class="vl" title="kurz, hell (ä)">ä</span>';
+    else if(sl[k]==='E' || sl[k]==='e') h += t;
     else if(sl[k]==='L'||sl[k]==='H') h += '<span class="vl" title="lang">'+mac+'</span>';
     else h += t;
     p = e;
