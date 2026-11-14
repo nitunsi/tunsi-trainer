@@ -760,7 +760,10 @@ function showMore(){
     + '<div class="neu-cap" style="margin-top:1rem">Arabische Schrift</div>'+seg([['naskh','Naskh'],['amiri','Amiri'],['schehe','Scheherazade'],['kufi','Kufi']], LS.get('neu-arf','naskh'), "neuSetArf('%v')")
     + '<div style="height:.5rem"></div>'+seg([['0.85','Klein'],['1','Mittel'],['1.2','Groß'],['1.4','Sehr groß']], LS.get('neu-ars','1'), "neuSetArs('%v')")
     + '<div class="neu-list" style="margin-top:.4rem"><div class="li"><span class="sp">Vokalzeichen anzeigen</span>'+sw(LS.get('neu-arv','1') === '1', "neuToggleArv()")+'</div></div>'
-    + '<div class="neu-arprev" id="neu-arprev">'+arPrev()+'</div>';
+    + '<div class="neu-arprev" id="neu-arprev">'+arPrev()+'</div>'
+    + '<div class="neu-cap" style="margin-top:1rem">Aussprache in der Umschrift</div>'+seg([['klang','Länge + Klang'],['laenge','Nur Länge'],['aus','Aus']], (typeof LAENGE_MODUS !== 'undefined' ? LAENGE_MODUS : 'klang'), "neuSetLaenge('%v')")
+    + '<div class="neu-sub" style="font-size:.8rem;margin-top:.35rem">Länge (ā ī ū) steht im Arabischen. Der Klang (ä, ǟ) folgt Semias Aussprache aus Mahdia; anderswo klingt das a oft dunkler.'
+    + ' Beispiel: '+(typeof laengeHtml === 'function' ? laengeHtml('hatha', 'هَذَا') + ' · ' + laengeHtml('msha', 'مْشَى', null, {cj:1, tr:'msha'}) + ' · ' + laengeHtml('kbir', 'كْبِير') : '')+'</div>';
   const lernen = '<div class="neu-list"><div class="li"><span class="sp">Ähnlich klingende Buchstaben gelten als richtig<span class="neu-sub" style="display:block;font-size:.8rem">Aus: nur die genauen Buchstaben zählen (Vokalzeichen sind immer egal).</span></span>'+sw(LS.get('neu-tol','1') !== '0', "neuToggleTol()")+'</div></div>'
     + '<div class="neu-cap" style="margin-top:1rem">Tagesziel (richtige Antworten pro Tag)</div>'+seg([[50,'50'],[100,'100'],[150,'150'],[200,'200']], goal, "neuSetGoal(%v)")
     + '<div class="neu-list" style="margin-top:.6rem"><div class="li"><span class="sp">Audio beim Aufdecken abspielen</span>'+sw(audioAutoplay, "toggleAudioAutoplay();showMore()")+'</div>'
@@ -778,7 +781,7 @@ function showMore(){
     + '<button class="neu-btn" id="neu-refresh-btn" style="min-height:56px;width:100%;font-size:1.05rem" onclick="neuUpdateAll()">Aktualisieren<small>Daten und Trainer neu laden</small></button>'
     + '<div id="neu-refresh-result" style="font-size:.85rem;color:var(--muted);margin:.4rem 0 .2rem">'+escHtml(updAtText())+'</div>'
     + '<div class="neu-h">Einstellungen</div><div class="neu-card neu-accs">'
-    +   moreAcc('darst', 'Darstellung', 'Farbschema, Schrift, Arabisch', darst)
+    +   moreAcc('darst', 'Darstellung', 'Farbschema, Schrift, Arabisch, Aussprache', darst)
     +   moreAcc('lernen', 'Lernen', 'Tagesziel ' + escHtml(String(goal)) + ', Audio, Vibration, Kurs-Reihenfolge', lernen)
     +   (pushShown ? moreAcc('erinn', 'Erinnerungen', _pushOn ? 'An, morgens und abends' : 'Aus', erinn) : '')
     +   moreAcc('nachschub', 'Nachschub und Warnstufen', escHtml(fcAvg), noHead(nachschubCard(goal)))
@@ -816,6 +819,7 @@ window.neuRefreshData = async function(){
 };
 window.neuSetTheme = function(v){ LS.set('neu-theme', v); applyTheme(); showMore(); };
 window.neuSetFont = function(k){ LS.set('neu-font', k); applyFont(); showMore(); };
+window.neuSetLaenge = function(m){ if(typeof laengeModusSetzen === 'function') laengeModusSetzen(m); showMore(); };
 window.neuSetGoal = function(n){ LS.set('neu-goal', String(n)); showMore(); };
 window.neuToggleTol = function(){ LS.set('neu-tol', LS.get('neu-tol','1') === '0' ? '1' : '0'); showMore(); };
 window.neuToggleVib = function(){ LS.set('neu-vib', LS.get('neu-vib','0') === '1' ? '0' : '1'); if(LS.get('neu-vib') === '1' && navigator.vibrate) navigator.vibrate(30); showMore(); };

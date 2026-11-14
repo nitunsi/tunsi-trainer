@@ -744,7 +744,8 @@ function lehnKurz(tr, st, en){
   const m = tr.slice(en, z).toLowerCase().replace(/i(?=[aou])/g, 'y').match(/^[^aeiou]+/); if(!m) return false;   // radio = rad-yu
   return m[0].replace(/sh|th|kh|gh|dh|ch/g, 'C').replace(/x/g, 'CC').length >= 2;
 }
-// Einzelwörter, die Nils anders hört als die Regel ergibt (2026-11-13). Je Vokalgruppe des Wortes ein Zeichen:
+// Einzelwörter, die Nils anders hört als die Regel ergibt (2026-11-13/14). Quelle: Nils nach Aufnahmen verschiedener Sprecher,
+// von Semia noch NICHT bestätigt. Neue Einträge nur, wenn Semia sie bestätigt oder mehrere Aufnahmen übereinstimmen. Je Vokalgruppe des Wortes ein Zeichen:
 // 'k' kurz ohne Markierung, 'E' kurzes helles ä, 'H' langes helles ǟ, 'L' lang (ā ī ū). Gilt auch im Satz und hinter dem Artikel.
 const LAENGE_WORT = {inshallah: ['k','k','k'], insha: ['k','k'], sba7: ['H'], sba7kum: ['H','k'], mashwiya: ['E','k','k'], mashwi: ['E','k'],
   takil: ['H','k'], amis: ['E','k'], nitkallimik: ['k','E','k','k'],
@@ -756,8 +757,22 @@ const LAENGE_WORT = {inshallah: ['k','k','k'], insha: ['k','k'], sba7: ['H'], sb
   najjim: ['E','k'], tnajjim: ['E','k'], ynajjim: ['E','k'], nnajjim: ['E','k'], najjimsh: ['E','k'], tnajjimsh: ['E','k']};
 // Hinweiswörter hatha, hathi, hathuma, hathika, hathukum, hathaka: ha- spricht Nils hell lang (hǟtha), die Endung -a bleibt a, nie ä (Nils 2026-11-13)
 const LAENGE_HA = new Set(['hatha','hathi','hathuma','hathika','hathukum','hathaka']);
+// Anzeige-Stufe (Nils 2026-11-14): 'klang' = Länge und Klang (ā ī ū, ǟ, ä), 'laenge' = nur Länge (ā ī ū), 'aus' = nichts.
+// Die Länge steht im Arabischen und gilt für alle Sprecher. Der Klang (helles a) schwankt nach Sprecher und Region;
+// Maßstab ist Semias Aussprache (Mahdia, Sahel). Einstellung unter Mehr → Darstellung.
+let LAENGE_MODUS = 'klang';
+try{ const m = localStorage.getItem('laenge-modus'); if(m === 'laenge' || m === 'aus' || m === 'klang') LAENGE_MODUS = m; }catch(e){}
+function laengeModusSetzen(m){
+  if(m !== 'laenge' && m !== 'aus') m = 'klang';
+  LAENGE_MODUS = m; try{ localStorage.setItem('laenge-modus', m); }catch(e){}
+  ALL_VOCAB.forEach(v => { delete v._trL; }); _conjLaenge = null;
+  if(typeof _kursWortCache !== 'undefined') Object.keys(_kursWortCache).forEach(k => { delete _kursWortCache[k]; });
+}
+// Prüfungen rechnen immer mit der vollen Anzeige, unabhängig von der Einstellung
+function laengeVoll(v){ const m = LAENGE_MODUS; LAENGE_MODUS = 'klang'; try{ return laengeHtml(v.tr, v.ar, v.rh, v); } finally { LAENGE_MODUS = m; } }
 function laengeHtmlSlots(tr, sl, v){
   tr = String(tr||'');
+  if(LAENGE_MODUS === 'aus') return tr;
   const g = vokalGruppen(tr);
   if(sl && g.length === sl.length && sl.includes('E')){
     sl = sl.slice();
@@ -795,8 +810,10 @@ function laengeHtmlSlots(tr, sl, v){
   g.forEach(([s,e,t],k) => {
     h += tr.slice(p,s);
     const lt = t.toLowerCase(), mac = _VL_MAC[lt]||_VL_MAC[lt[0]]||t;
-    if(sl[k]==='H' && lt[0]==='a') h += '<span class="vl" title="lang, hell (ä)">ǟ</span>';
-    else if(sl[k]==='E' && lt==='a') h += '<span class="vl" title="kurz, hell gesprochen (fast wie e)">ä</span>';
+    const klang = LAENGE_MODUS === 'klang';
+    if(klang && sl[k]==='H' && lt[0]==='a') h += '<span class="vl" title="lang, hell (ä)">ǟ</span>';
+    else if(klang && sl[k]==='E' && lt==='a') h += '<span class="vl" title="kurz, hell gesprochen (fast wie e)">ä</span>';
+    else if(sl[k]==='E') h += t;
     else if(sl[k]==='L'||sl[k]==='H') h += '<span class="vl" title="lang">'+mac+'</span>';
     else h += t;
     p = e;
@@ -6570,7 +6587,7 @@ async function toggleFlag(tr, btn){
 
 // ── Duplikat-Manager ─────────────────────────────────────────────────────────
 // Schlüssel für „Transliteration identisch“: mit angezeigter Länge/Klang (ā ǟ ī ū ä), denn barrād „Teekanne“ und barrad „kühlte“ klingen verschieden (Nils 2026-11-12)
-function trDupKey(v){ return normKey(String(trL(v)||v.tr||'').replace(/<[^>]+>/g,'')); }
+function trDupKey(v){ return normKey(String(laengeVoll(v)||v.tr||'').replace(/<[^>]+>/g,'')); }
 function normKey(s){ return (s||'').toLowerCase().replace(/[\s\u0020\u00a0.,;:!?()\-\/\\'"«»]+/g,''); }
 
 // ── Lektionen-Verwaltung ─────────────────────────────────────────────────────
@@ -7935,7 +7952,7 @@ function kursIdx(){
   return _kursWortIdx;
 }
 function kursLaenge(html){
-  if(!ALL_VOCAB.length || !html) return html;
+  if(!ALL_VOCAB.length || !html || LAENGE_MODUS === 'aus') return html;
   let de = false;   // ab „ — Deutsch“ bzw. „ – Deutsch“ am Ende: deutscher Teil, nichts markieren
   return String(html).split(/(<[^>]*>)/).map(seg => {
     if(seg.charAt(0) === '<' || de) return seg;
