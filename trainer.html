@@ -748,6 +748,7 @@ function lehnKurz(tr, st, en){
 // 'k' kurz ohne Markierung, 'E' kurzes helles ä, 'H' langes helles ǟ, 'L' lang (ā ī ū). Gilt auch im Satz und hinter dem Artikel.
 const LAENGE_WORT = {inshallah: ['k','k','k'], insha: ['k','k'], sba7: ['H'], sba7kum: ['H','k'], mashwiya: ['E','k','k'], mashwi: ['E','k'],
   takil: ['H','k'], amis: ['E','k'], nitkallimik: ['k','E','k','k'], shayid: ['E','k'], makish: ['E','k'], milad: ['k','E'], miladik: ['k','E','k'],
+  manish: ['E','k'], mahush: ['E','k'], mahish: ['E','k'], manash: ['E','k'], makumsh: ['E','k'], mahumsh: ['E','k'],
   mazel: ['E','k'], mazelt: ['E','k'], mazelna: ['E','k','k'], mazelit: ['E','k','k'], mazeltu: ['E','k','k'], mazelu: ['E','k','k']};
 // Hinweiswörter hatha, hathi, hathuma, hathika, hathukum, hathaka: ha- spricht Nils hell lang (hǟtha), die Endung -a bleibt a, nie ä (Nils 2026-11-13)
 const LAENGE_HA = new Set(['hatha','hathi','hathuma','hathika','hathukum','hathaka']);
@@ -8010,7 +8011,7 @@ function regelEinordnungHtml(rg){
     + '</div>';
 }
 // Umschrift auf Regelkarten mit Längen-/Klang-Anzeige (wie in den Tabellen), Arabisch der Karte als Grundlage
-function rgTr(tr, ar){ const t = String(tr||''); if(!ar) return escHtml(t); const h = laengeHtml(t, ar); return h === t ? escHtml(t) : h; }
+function rgTr(tr, ar){ const t = String(tr||''); if(!ar) return kursLaenge(escHtml(t)); const h = laengeHtml(t, ar); return h === t ? kursLaenge(escHtml(t)) : h; }
 function regelFrageInnen(rg){
   const v = rg.verb || {};
   if(!v.ar && !v.tr) return '<div style="font-size:1.15rem;line-height:1.5;text-align:center;margin:.3rem 0">'+regelTextHtml(rg.frage||'')+'</div>';
