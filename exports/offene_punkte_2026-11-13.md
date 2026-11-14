@@ -208,3 +208,4 @@ Semia: tisbe7 (854), yesbe7 (1884), nghammedh (3033), 3asser, barresh, rakkedh, 
 
 ### Unverändert offen aus früheren Abschnitten
 E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkarten ab L7 in Häppchen), L6 lange Übungen, I/K (Audio-Sicherung in Colab, Restore-Test, ninja-audio verkleinern), H (Arabisch Tabellenformen: tsawwir, tfakkir, wallat), C (Semia-Fragen), Wortarten-Prüfung für -ou/-u-Suffix.
+- 14.11. (nach dem Merge, Nils im Trainer markiert): sab3a, sab3in, yal3ab klingen a, nicht ä → Regel: kurzes a ist dunkel, wenn zwei Konsonanten danach ع steht (a + C + ع); ح nicht (mär7ba bleibt ä). baku, sash (Lehnwörter, langes ā heller Regel) hört Nils dunkel → Einzelwort-Ausnahmen in LAENGE_WORT. 4525 rit: Notiz „Audio ist was ganz anderes“ (Ninja 4117) – Audio prüfen, noch nicht angesehen.

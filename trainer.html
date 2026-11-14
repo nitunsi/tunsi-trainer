@@ -685,7 +685,7 @@ function laengeSlots(ar, rHell, kurz){
       if(i===0 && b==='آ'){ out.push('k'); continue; }   // آ am Wortanfang (آنَا = ena): ein Vokal, nicht markiert
       if(i===0 && (b==='ا'||b==='أ'||b==='إ')){
         if(d.includes(FA) && n && n.b==='ا' && !n.d){ out.push('L'); i++; continue; }
-        if(d.includes(FA)||d.includes(KA)||d.includes(DA)||b!=='ا'||(n&&n.b==='ل')) out.push(kurz && d.includes(FA) && n && kurzHell('', n.b, w) ? 'e' : 'k');
+        if(d.includes(FA)||d.includes(KA)||d.includes(DA)||b!=='ا'||(n&&n.b==='ل')) out.push(kurz && d.includes(FA) && n && !(n.d.includes(SU) && u[i+2] && u[i+2].b==='ع') && kurzHell('', n.b, w) ? 'e' : 'k');
         continue;
       }
       if(b==='ة') continue;
@@ -711,7 +711,8 @@ function laengeSlots(ar, rHell, kurz){
         i++; continue;
       }
       // kurzes a: nicht vor ة am Wortende (Endung -a bleibt a) und nicht als letzter Laut
-      if(v) out.push(kurz && v==='a' && n && !(n.b==='ة' && i+2>=u.length) && kurzHell(b, n.b, w) ? 'e' : 'k');
+      // ع zwei Konsonanten nach dem a (a + Konsonant + ع: sab3a, sab3in, yal3ab) macht es dunkel (Nils 2026-11-14); ح tut das nicht (mär7ba)
+      if(v) out.push(kurz && v==='a' && n && !(n.b==='ة' && i+2>=u.length) && !(n.d.includes(SU) && u[i+2] && u[i+2].b==='ع') && kurzHell(b, n.b, w) ? 'e' : 'k');
     }
   }
   return out;
@@ -765,6 +766,7 @@ const LAENGE_WORT = {inshallah: ['k','k','k'], insha: ['k','k'], sba7: ['H'], sb
   manish: ['H','k'], mahush: ['H','k'], mahish: ['H','k'], manash: ['H','k'], makumsh: ['H','k'], mahumsh: ['H','k'],
   mazelt: ['H','k'], mazelna: ['H','k','k'], mazelit: ['H','k','k'], mazeltu: ['H','k','k'], mazelu: ['H','k','k'],
   ma: ['E'],   // Verneinung ma-…-sh und ma „Wasser“ (Nils 2026-11-14)
+  baku: ['L','k'], sash: ['L'],   // Lehnwörter, Nils hört dunkles a (2026-11-14)
   mer: ['k'],   // mer-rwayiq: min + el, kurz
   najjim: ['E','k'], tnajjim: ['E','k'], nnajjim: ['E','k'], najjimsh: ['E','k'], tnajjimsh: ['E','k']};
 // Hinweiswörter hatha, hathi, hathuma, hathika, hathukum, hathaka: ha- spricht Nils hell lang (hǟtha), die Endung -a bleibt a, nie ä (Nils 2026-11-13)
