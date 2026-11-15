@@ -746,6 +746,27 @@ function laengeHtml(tr, ar, rHell, v){
   return h === tr && /\s/.test(tr) ? kursLaenge(tr) : h;
 }
 function vokalGruppen(tr){ const re = /ou|[aeiou]+/gi, g = []; let m; while((m = re.exec(String(tr||'')))) g.push([m.index, m.index+m[0].length, m[0]]); return g; }
+// „Aussprache-Anzeige“ (vocabulary.anzeige, Nils 2026-11-15): die gehörte Schreibweise einer Vokabel, z. B. mǟkish. Gültig nur, wenn die Buchstaben
+// ohne ǟ ä ā ī ū der Umschrift entsprechen. Liefert die Vokalzeichen je Vokalgruppe ('k' kurz, 'e' kurz hell, 'H' lang hell, 'L' lang).
+function azNorm(az){ return String(az||'').trim().toLowerCase().replace(/[ǟä]/g,'a').replace(/ā/g,'a').replace(/ī/g,'i').replace(/ū/g,'u'); }
+function azGueltig(tr, az){ return azNorm(az) === String(tr||'').trim().toLowerCase(); }
+function azSlots(tr, az){
+  tr = String(tr||''); az = String(az||'').trim();
+  if(!az || azNorm(az) !== tr.toLowerCase()) return null;
+  return vokalGruppen(tr).map(([st]) => { const c = az.charAt(st); return c === 'ä' ? 'e' : c === 'ǟ' ? 'H' : (c === 'ā' || c === 'ī' || c === 'ū') ? 'L' : 'k'; });
+}
+let AZ_WORT = null;   // Einzelwörter mit eigener Anzeige: tr (klein) → Vokalzeichen; wirkt auch in Phrasen, Kurs und Tabellen
+function azBuild(){
+  const m = {};
+  ALL_VOCAB.forEach(v => { if(v.az && v.tr && !/[\s\/]/.test(v.tr)){ const sl = azSlots(v.tr, v.az); if(sl) m[v.tr.toLowerCase()] = sl; } });
+  AZ_WORT = m;
+}
+function lwGet(w){
+  if(AZ_WORT === null && typeof ALL_VOCAB !== 'undefined' && ALL_VOCAB.length) azBuild();
+  if(AZ_WORT && AZ_WORT.hasOwnProperty(w)) return AZ_WORT[w];
+  return LAENGE_WORT.hasOwnProperty(w) ? LAENGE_WORT[w] : null;
+}
+function azNeu(){ AZ_WORT = null; ALL_VOCAB.forEach(v => { delete v._trL; }); _conjLaenge = null; if(typeof _kursWortCache !== 'undefined') Object.keys(_kursWortCache).forEach(k => { delete _kursWortCache[k]; }); }
 // Wörter, deren langes a nach Gehör dunkel ist (ā), obwohl die Regel hell (ǟ) ergäbe (Nils 2026-11-11: taf taf)
 const LAENGE_DUNKEL = new Set(['taf', 'massaj', 'massajat']);   // massaj: Nils 2026-11-12 spricht das a dunkel
 // Einzelwörter mit End-a, das hell (ä) klingt, obwohl die Regel (-ya) es ausnimmt (Nils 2026-11-11: myä „hundert“)
@@ -796,27 +817,29 @@ function laengeHtmlSlots(tr, sl, v){
   tr = String(tr||'');
   if(LAENGE_MODUS === 'aus') return tr;
   const g = vokalGruppen(tr);
-  if(sl && g.length === sl.length && sl.includes('E')){
+  const fix = v && v.az ? azSlots(tr, v.az) : null;   // „Aussprache-Anzeige“ der Vokabel (Nils) gilt vor jeder Regel
+  if(fix) sl = fix;
+  if(!fix && sl && g.length === sl.length && sl.includes('E')){
     sl = sl.slice();
     g.forEach(([st, en], k) => { if(sl[k] !== 'E') return;
       let a = st, z = en; while(a > 0 && /[A-Za-z0-9'ʔ]/.test(tr[a-1])) a--; while(z < tr.length && /[A-Za-z0-9'ʔ]/.test(tr[z])) z++;
       if(!wortEndeHell(tr.slice(a, z), v)) sl[k] = 'k'; });
   }
-  if(sl && g.length === sl.length && (sl.includes('H') || sl.includes('L'))){
+  if(!fix && sl && g.length === sl.length && (sl.includes('H') || sl.includes('L'))){
     let c = null;
     g.forEach(([st, en, t], k) => { if((sl[k] === 'H' || sl[k] === 'L') && t.toLowerCase() === 'a' && lehnKurz(tr, st, en)){ c = c || sl.slice(); c[k] = 'k'; } });
     if(c) sl = c;
   }
-  if(sl && sl.length === g.length && /h[a-z]*th/i.test(tr)){
+  if(!fix && sl && sl.length === g.length && /h[a-z]*th/i.test(tr)){
     sl = sl.slice();
     g.forEach(([st], k) => { const a = tr.lastIndexOf(' ', st) + 1, z = tr.indexOf(' ', st), wd = tr.slice(a, z < 0 ? tr.length : z).toLowerCase().replace(/[^a-z0-9]/g, '');
       if(!LAENGE_HA.has(wd)) return; if(!g.slice(0, k).some(([s2]) => s2 >= a)) sl[k] = 'H'; if(sl[k] === 'E') sl[k] = 'k'; });
   }
-  if(sl && sl.length === 1 && LAENGE_HELL.has(tr.toLowerCase())) sl = ['E'];
-  if(g.length){
+  if(!fix && sl && sl.length === 1 && LAENGE_HELL.has(tr.toLowerCase())) sl = ['E'];
+  if(g.length && !fix){
     const re = /[A-Za-z0-9'ʔ]+/g, toks = []; let m; while((m = re.exec(tr))) toks.push([m.index, m.index + m[0].length, m[0].toLowerCase()]);
     let c = (sl && sl.length === g.length) ? sl.slice() : null, treffer = false;
-    toks.forEach(([a, z, w]) => { const ov = LAENGE_WORT.hasOwnProperty(w) ? LAENGE_WORT[w] : null; if(!ov) return;
+    toks.forEach(([a, z, w]) => { const ov = lwGet(w); if(!ov) return;
       const ks = []; g.forEach(([st], k) => { if(st >= a && st < z) ks.push(k); });
       if(ks.length !== ov.length) return;
       if(!c){ if(toks.filter(t => /[aeiou]/.test(t[2])).length !== 1) return; c = Array(g.length).fill('k'); }
@@ -824,7 +847,7 @@ function laengeHtmlSlots(tr, sl, v){
     if(treffer) sl = c;
   }
   if(!sl || !g.length || g.length !== sl.length || !sl.some(x => x==='L'||x==='H'||x==='E'||x==='e')) return tr;
-  if(sl.includes('H')){
+  if(!fix && sl.includes('H')){
     sl = sl.slice();
     g.forEach(([st], k) => { if(sl[k]==='H'){ const a = tr.lastIndexOf(' ', st) + 1, z = tr.indexOf(' ', st); if(LAENGE_DUNKEL.has(tr.slice(a, z < 0 ? tr.length : z).toLowerCase())) sl[k] = 'L'; } });
   }
@@ -1202,7 +1225,7 @@ function retryLoad(){
 // Holt Vokabeln und Fortschritt (parallel). Wird auch genutzt, um den Zwischenspeicher im Hintergrund aufzufrischen.
 function srsFetchRows(onVocab, onProg){
   const loadVocabTask = sbApiPaged(
-      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,audio_gain,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,r_hell,english,wurzel,wurzel_ar,wurzel_gruppe,stamm,verbtyp,ausgeblendet,lessons(lesson_number)&order=id.asc',
+      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,audio_gain,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,r_hell,english,wurzel,wurzel_ar,wurzel_gruppe,stamm,verbtyp,ausgeblendet,lehnwort,anzeige,lessons(lesson_number)&order=id.asc',
       1000,
       (loaded) => { if(onVocab) onVocab(loaded); }
     );
@@ -1243,7 +1266,7 @@ async function srsLoadFromSupabase(){
     allVocab.forEach(v => {
       const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
       const tp = v.topic || 'Allgemein';
-      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null, cr: !!v.conj_rotate, rh: v.r_hell===true, eg: v.english||'', wz: v.wurzel||'', wza: v.wurzel_ar||'', wzg: v.wurzel_gruppe||'', st: v.stamm||'', vt: v.verbtyp||'', ausb: v.ausgeblendet===true };
+      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null, cr: !!v.conj_rotate, rh: v.r_hell===true, eg: v.english||'', wz: v.wurzel||'', wza: v.wurzel_ar||'', wzg: v.wurzel_gruppe||'', st: v.stamm||'', vt: v.verbtyp||'', ausb: v.ausgeblendet===true, lw: v.lehnwort||'', az: v.anzeige||'' };
       ALL_VOCAB.push(entry);
       if(v.ninja_audio_url && v.audio_gain) AUDIO_GAIN[audioKey(v.ninja_audio_url, v.ninja_audio_start, v.ninja_audio_end)] = v.audio_gain;
       VOCAB_BY_ID[v.id] = entry;
@@ -6448,6 +6471,8 @@ function openVocabEdit(vocabId, i){
     if(pcInp) pcInp.value = v.pc || '';
     const ntInp = document.getElementById('ei-nt');
     if(ntInp) ntInp.value = v.nt || '';
+    const lwSel = document.getElementById('ei-lw'); if(lwSel) lwSel.value = v.lw || '';
+    const azInp = document.getElementById('ei-az'); if(azInp) azInp.value = v.az || '';
   });
 }
 
@@ -6472,6 +6497,9 @@ async function saveVocabEditSheet(){
   const newNr = document.getElementById('ei-nr').value;
   const newLvl = parseInt(document.getElementById('ei-lvl').value)||0;
   if(!newAr || !newTr || !newEn){ neuNote('Alle Felder ausfüllen'); return; }
+  const newAz = document.getElementById('ei-az') ? document.getElementById('ei-az').value.trim() : null;
+  const newLw = document.getElementById('ei-lw') ? document.getElementById('ei-lw').value : null;
+  if(newAz && !azGueltig(newTr, newAz)){ neuNote('Aussprache-Anzeige: Die Buchstaben müssen der Umschrift entsprechen (nur ǟ ä ā ī ū dürfen abweichen).'); return; }
   const oldTr = v.tr;
   try{
     const newPs = document.getElementById('ei-ps') ? document.getElementById('ei-ps').value : null;
@@ -6485,6 +6513,8 @@ async function saveVocabEditSheet(){
     }
     if(newPc !== null) vocabPatch.partner_comment = newPc || null;
     if(newNt !== null) vocabPatch.internal_note = newNt || null;
+    if(newAz !== null) vocabPatch.anzeige = newAz || null;
+    if(newLw !== null) vocabPatch.lehnwort = newLw || null;
     await sbApi('vocabulary?id=eq.'+vocabId, 'PATCH', vocabPatch);
     const progId = srsProgress[vocabId] ? srsProgress[vocabId].id : null;
     const patchProg = {};
@@ -6502,6 +6532,8 @@ async function saveVocabEditSheet(){
       srsProgress[vocabId].level = newLvl;
     }
     v.ar = newAr; v.tr = newTr; v.en = newEn; v.tp = newTp; v.ls = newLs; v.ps = newPsNorm; v.pc = newPc||null; v.nt = newNt||'';
+    if(newAz !== null) v.az = newAz; if(newLw !== null) v.lw = newLw;
+    azNeu();
     if(vocabPatch.status_updated_at) v.psu = vocabPatch.status_updated_at;
     if(newTr !== oldTr){ vocabIdMap[newTr] = vocabId; delete vocabIdMap[oldTr]; }
     closeVocabEdit();
@@ -7956,7 +7988,7 @@ function kursWortL(w){
   if(w in _kursWortCache) return _kursWortCache[w];   // Schlüssel mit Großschreibung: „Vor“ und „vor“ sind verschiedene Einträge
   kursIdx();
   let h = w;
-  if(LAENGE_WORT.hasOwnProperty(k)) return _kursWortCache[w] = laengeHtmlSlots(w, null);
+  if(lwGet(k)) return _kursWortCache[w] = laengeHtmlSlots(w, null);
   try{
     const v = _kursWortIdx.v[k], c = _kursWortIdx.c[k];
     if(v) h = laengeHtml(w, v.ar, v.rh, v);
@@ -11734,6 +11766,19 @@ window.addEventListener('unhandledrejection', (e) => {
     </select>
     <label class="sh-l">Partner-Kommentar</label>
     <textarea id="ei-pc" class="sh-in" placeholder="Partner-Kommentar…" rows="2"></textarea>
+    <label class="sh-l">Lehnwort (Herkunft)</label>
+    <select id="ei-lw" class="sh-in">
+      <option value="">kein Lehnwort</option>
+      <option value="frz">französisch</option>
+      <option value="engl">englisch</option>
+      <option value="ital">italienisch</option>
+      <option value="türk">türkisch</option>
+      <option value="span">spanisch</option>
+      <option value="sonst">andere Sprache</option>
+    </select>
+    <label class="sh-l">Aussprache-Anzeige (nur Einzelwörter)</label>
+    <input id="ei-az" class="sh-in" placeholder="gehörte Schreibweise, z. B. mǟkish – leer = Regel" autocomplete="off">
+    <div style="font-size:.7rem;color:var(--muted);margin:-.2rem 0 .5rem">Buchstaben wie die Umschrift, nur ǟ ä ā ī ū dürfen anders stehen. Gilt auch in Phrasen und im Kurs.</div>
     <label class="sh-l">Interner Kommentar</label>
     <textarea id="ei-nt" class="sh-in" placeholder="z. B. Quelle/Sicherheit: Ninja-bestätigt, arabisch selbst erstellt …" rows="2"></textarea>
     <div style="height:5.5rem"></div>
