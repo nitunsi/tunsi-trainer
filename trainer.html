@@ -722,8 +722,9 @@ function laengeSlots(ar, rHell, kurz){
 }
 function kurzHell(vor, nach, wort){
   if(/[صضطظ]/.test(wort)) return false;               // schwerer Laut irgendwo im Wort
-  const nb = (vor||'') + (nach||'');
-  return !/[قخغحعر]/.test(nb);                        // r: uneinheitlich gehört, bleibt unmarkiert
+  // ق خ غ ح ع ر و irgendwo im Wort macht das kurze a dunkel/offen (Hörprobe Nils 2026-11-15: 50 von 59 Wörtern mit Doppelkonsonant,
+  // vorher nur Nachbarlaute; r bleibt unmarkiert, also a)
+  return !/[قخغحعرو]/.test(wort);
 }
 // Kleine Wörter werden nie hell (ä) angezeigt: ma- (Verneinung) spricht man ma, ena „ich“ spricht man ena, ija „komm“ spricht man ija, ya (Anrufwort) spricht man ya (Nils 2026-11-11)
 const LAENGE_PARTIKEL = new Set(['ena','ija','ya']);   // ma steht seit 2026-11-14 in LAENGE_WORT (Nils: ma-…-sh spricht man mä)
