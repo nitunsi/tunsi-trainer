@@ -6697,6 +6697,8 @@ function renderLessonsAdmin(){
 }
 
 function escHtml(s){ const d=document.createElement('div');d.textContent=s||'';return d.innerHTML; }
+// Anweisungstexte: tunesische Formen darin (madha-b-) wie im Kurs anzeigen
+function instrHtml(s){ return escHtml(s).replace(/\bmadha-b-/g, () => kursLaenge('madha') + '-b-'); }
 // Deutsch einer Vokabel für die Anzeige: bei Verben mit mehreren Bedeutungen (" / ") ist die erste die Hauptbedeutung
 // und wird fett gesetzt (Nils, 2026-11-07). Alle Zeilen einer Verbfamilie tragen dieselbe Liste in derselben Reihenfolge.
 function deHtml(v){
@@ -8210,10 +8212,10 @@ function rCourseEx(ex, el){
   if(hintFirst){
     // Die deutsche Frage ist die Aufgabe. Die Tounsi-Wörter aus dem Prompt (Ausgangsform, die halbe
     // Lösung) werden nicht gezeigt, auch nicht als Hinweis (Nils: Hinweis ausblenden).
-    h += '<div style="margin-bottom:.8rem;font-size:1.15rem;line-height:1.5">'+escHtml(exercise.instruction)+'</div>';
+    h += '<div style="margin-bottom:.8rem;font-size:1.15rem;line-height:1.5">'+instrHtml(exercise.instruction)+'</div>';
   }
   const cv = courseConjView(exercise);
-  if((exercise.instruction || cv) && !hintFirst) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(cv ? cv.instr : exercise.instruction)+'</div>';
+  if((exercise.instruction || cv) && !hintFirst) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+instrHtml(cv ? cv.instr : exercise.instruction)+'</div>';
   else if(courseIsDialogQuestion(exercise)) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">Beantworte die Frage anhand des Dialogs (Knopf „📖 Dialog“).</div>';
   if(exercise.exercise_type==='listening'){
     const lu = courseListenUrl(exercise);
@@ -8783,7 +8785,7 @@ function renderCourseTestTab(tc, l){
        + '<div>☐ Frage auf Tounsi beantworten</div>'
        + '<div>☐ Deine Antwort auf Deutsch übersetzen</div>'
        + '</div>';
-  } else if(ex.instruction || courseConjView(ex)) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(courseConjView(ex) ? courseConjView(ex).instr : ex.instruction)+'</div>';
+  } else if(ex.instruction || courseConjView(ex)) h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+instrHtml(courseConjView(ex) ? courseConjView(ex).instr : ex.instruction)+'</div>';
   if(ex.prompt) h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem;font-size:.95rem;margin-bottom:.8rem">'+escHtml(courseConjView(ex) ? courseConjView(ex).prompt : ex.prompt)+'</div>';
   const drillRows = ex.exercise_type==='grammar_drill' ? parseGrammarDrillSolution(ex.solution) : null;
   const _tcv = courseConjView(ex);
@@ -9102,7 +9104,7 @@ function renderPairsItem(){
   const ex = _pairsItems[_pairsIdx];
   const md = ex.meta || {};
   let h = '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.3rem">🔗 Antwort-Paare · '+(_pairsIdx+1)+' / '+_pairsItems.length+'</div>';
-  h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+escHtml(ex.instruction||'Was antwortet man darauf?')+'</div>';
+  h += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">'+instrHtml(ex.instruction||'Was antwortet man darauf?')+'</div>';
   h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem;font-size:.95rem;margin-bottom:.8rem">'+escHtml(ex.prompt||'');
   if(_pairsRevealed && md.prompt_de) h += '<div style="font-size:.72rem;color:var(--muted);margin-top:.4rem">'+escHtml(md.prompt_de)+'</div>';
   h += '</div>';

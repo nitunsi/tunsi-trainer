@@ -2174,7 +2174,7 @@ window.renderPairsItem = function(){
   }
   const ex = _pairsItems[_pairsIdx], md = ex.meta || {};
   let h = '<div class="neu-sub" style="margin:.2rem 0 .5rem">Antwort-Paare · '+(_pairsIdx+1)+' von '+_pairsItems.length+'</div>'
-    + '<div class="neu-sub" style="margin-bottom:.5rem">'+escHtml(ex.instruction||'Was antwortet man darauf?')+'</div>'
+    + '<div class="neu-sub" style="margin-bottom:.5rem">'+instrHtml(ex.instruction||'Was antwortet man darauf?')+'</div>'
     + '<div class="neu-card" style="font-size:1.25rem;padding:1.2rem 1rem;text-align:center">'+escHtml(ex.prompt||'')
     + (_pairsRevealed && md.prompt_de ? '<div class="neu-sub" style="margin-top:.5rem">'+escHtml(md.prompt_de)+'</div>' : '') + '</div>';
   if(!_pairsRevealed){
