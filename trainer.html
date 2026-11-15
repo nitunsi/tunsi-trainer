@@ -864,6 +864,8 @@ function laengeHtmlSlots(tr, sl, v){
   });
   return h + tr.slice(p);
 }
+const LEHN_NAME = {frz:'französisch', engl:'englisch', ital:'italienisch', 'türk':'türkisch', span:'spanisch', sonst:'andere Sprache'};
+function lwMark(v){ return v && v.lw ? ' <span class="neu-lw" title="Lehnwort: '+(LEHN_NAME[v.lw]||escHtml(v.lw))+'">⇄</span>' : ''; }
 function trL(v){ if(!v) return ''; if(v._trL === undefined) v._trL = laengeHtml(v.tr, v.ar, v.rh, v); return v._trL; }
 // Tabellenzellen haben kein eigenes Arabisch: Länge aus der Vokabelzeile derselben Tabelle (gleiche Grundform)
 let _conjLaenge = null;
@@ -3536,7 +3538,7 @@ function rMC(ex,el){
   const v=ex.v,dir=ex.dir;
   el.innerHTML=`<div class="lesson-badge">${v.ls} · ${v.tp}</div><div class="srs-info-badge">${srsInfoBadge(v)}</div>
   <div class="q-card"><div class="q-label">${dir==='ar2en'?'Was bedeutet dieses Wort?':'Welches Tounsi-Wort bedeutet:'}</div>
-  ${dir==='ar2en'?`<div class="q-arabic">${v.ar}</div><div class="q-sub latin">${trL(v)}</div>`:`<div class="q-text">${deHtml(v)}</div>`}
+  ${dir==='ar2en'?`<div class="q-arabic">${v.ar}</div><div class="q-sub latin">${trL(v)}${lwMark(v)}</div>`:`<div class="q-text">${deHtml(v)}</div>`}
   </div>
   <div class="choices" id="choices"></div>
   <div class="feedback" id="feedback"></div>
@@ -3643,7 +3645,7 @@ function rFlash(ex,el){
       ${isAudio
         ? `<button type="button" class="neu-audioq" onclick="playVocabAudio('${String(v.au||'').replace(/'/g,"\\'")}',event,${v.aus||0},${v.aue||0})" aria-label="Abspielen">🔊</button><div class="q-sub" style="font-family:inherit!important">Hören und die Bedeutung eingeben</div>`
         : isAr2De
-        ? `<div class="q-arabic" style="font-size:2.8rem">${v.ar}</div><div class="q-sub latin">${trL(v)}</div>`
+        ? `<div class="q-arabic" style="font-size:2.8rem">${v.ar}</div><div class="q-sub latin">${trL(v)}${lwMark(v)}</div>`
         : `<div class="q-text" style="font-size:1.3rem">${deHtml(v)}</div>`
       }
     </div>

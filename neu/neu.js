@@ -1290,10 +1290,10 @@ window.renderCourseOverview = function(){
 };
 
 /* ---------- Vokabelliste als Karten ---------- */
-const NEUF = {due:false, neu:false, audio:false, flag:false, select:false};
+const NEUF = {due:false, neu:false, audio:false, flag:false, lw:false, select:false};
 window.neuChipsHtml = function(){
   const c = (k, l) => '<span class="neu-chip'+(NEUF[k]?' on':'')+'" data-k="'+k+'" onclick="neuVChip(\''+k+'\')">'+l+'</span>';
-  return '<div class="neu-chips" id="neu-vchips">'+c('due','Fällig')+c('neu','Ohne Fälligkeit')+c('audio','Mit Audio')+c('flag','Markiert')+'<span id="neu-vreset" class="neu-chip" style="display:none" onclick="neuVReset()">Filter zurücksetzen</span></div>';
+  return '<div class="neu-chips" id="neu-vchips">'+c('due','Fällig')+c('neu','Ohne Fälligkeit')+c('audio','Mit Audio')+c('flag','Markiert')+c('lw','Lehnwort')+'<span id="neu-vreset" class="neu-chip" style="display:none" onclick="neuVReset()">Filter zurücksetzen</span></div>';
 };
 window.neuVChip = function(k){
   NEUF[k] = !NEUF[k];
@@ -1327,15 +1327,16 @@ function applyChips(vocab){
   if(NEUF.neu) vocab = vocab.filter(v => { const p = v._ex ? xp(v) : srsProgress[v.id]; return !(p && p.next_review); });
   if(NEUF.audio) vocab = vocab.filter(v => !v._ex && !!v.au);
   if(NEUF.flag) vocab = vocab.filter(v => v._ex ? !!v.ex.flagged : flaggedVocab.has(v.tr));
+  if(NEUF.lw) vocab = vocab.filter(v => !v._ex && !!v.lw);
   return vocab;
 }
 const _rvt = window.renderVocabTable;
 window.renderVocabTable = function(vocab){ return _rvt.call(this, applyChips(vocab)); };
 const _svl = window.showVocabList;
 window.showVocabList = function(){
-  NEUF.due = NEUF.neu = NEUF.audio = NEUF.flag = NEUF.select = false;
+  NEUF.due = NEUF.neu = NEUF.audio = NEUF.flag = NEUF.lw = NEUF.select = false;
   let sv = null; try{ sv = JSON.parse(LS.get('neu-vfilter', 'null')); }catch(e){}
-  if(sv){ ['due','neu','audio','flag'].forEach(k => { NEUF[k] = !!(sv.chips && sv.chips[k]); }); }
+  if(sv){ ['due','neu','audio','flag','lw'].forEach(k => { NEUF[k] = !!(sv.chips && sv.chips[k]); }); }
   const r = _svl.apply(this, arguments);
   if(sv && cLesson !== 'COURSEVOCAB'){
     try{
@@ -1355,7 +1356,7 @@ window.showVocabList = function(){
 };
 function vState(){
   const g = id => { const e = $(id); return e ? e.value : 'all'; };
-  return {q: ($('vocab-search') || {}).value || '', chips: {due:NEUF.due, neu:NEUF.neu, audio:NEUF.audio, flag:NEUF.flag},
+  return {q: ($('vocab-search') || {}).value || '', chips: {due:NEUF.due, neu:NEUF.neu, audio:NEUF.audio, flag:NEUF.flag, lw:NEUF.lw},
     lvl: vocabLevelFilter, tp: g('vl-topic-filter'), ls: g('vl-ls-filter'), ps: g('vl-ps-filter'), au: g('vl-audio-filter')};
 }
 function vActive(st){ return !!(st.q || Object.values(st.chips).some(Boolean) || st.lvl !== 'all' || ['tp','ls','ps','au'].some(k => st[k] && st[k] !== 'all')); }
@@ -1367,7 +1368,7 @@ window.filterVocabList = function(){
   return r;
 };
 window.neuVReset = function(){
-  NEUF.due = NEUF.neu = NEUF.audio = NEUF.flag = false;
+  NEUF.due = NEUF.neu = NEUF.audio = NEUF.flag = NEUF.lw = false;
   vocabLevelFilter = 'all'; vocabTopicFilter = vocabLsFilter = vocabPsFilter = vocabAudioFilter = 'all';
   ['lvl-filter-select','vl-topic-filter','vl-ls-filter','vl-ps-filter','vl-audio-filter'].forEach(id => { const e = $(id); if(e) e.value = 'all'; });
   const q = $('vocab-search'); if(q) q.value = '';
