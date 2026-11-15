@@ -9920,7 +9920,7 @@ function dupeEntryHtml(v, extraActions){
 }
 
 // Regeln f\u00fcr den Transliterations-Check \u2014 jede Regel liefert true bei einem Verstoss
-const isLoanword = v => /(frz\.|franz\.|ital\.|engl\.|lehnwort)/i.test(v.en||'');
+const isLoanword = v => !!v.lw || /(frz\.|franz\.|ital\.|engl\.|lehnwort)/i.test(v.en||'');   // Feld „Lehnwort“, solange alte Hinweise im Deutsch-Feld stehen auch daraus
 // Buchstabenpaare fuer den Anzahl-Gegencheck (Regel 22), einmal vorkompiliert statt je Zeile neu
 const CONSONANT_PAIRS = [
   [/ح/g, /7/g], [/خ/g, /kh/gi], [/ع/g, /3/g], [/ش/g, /sh/gi], [/ض/g, /dh/gi],
