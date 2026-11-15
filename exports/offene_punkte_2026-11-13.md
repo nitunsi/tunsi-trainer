@@ -1,5 +1,42 @@
 # Offene Punkte – Stand 10.11.2026 (Abend)
 
+## ÜBERSICHT NACH AUFWAND (Stand 15.11. abends, aus den Abschnitten unten zusammengestellt; Zahlen dort sind Momentaufnahmen)
+
+### Stufe 1 – klein (Minuten; ich allein, höchstens ein Ja von Nils)
+1. Kurs: z statt j – tukhrzu (761 → tukhrju) und baza (1486 → baja) korrigieren; zak (522) und dzayir/dziriya (538, 521, 316) erst prüfen. [Ist/Soll zeigen, dann schreiben]
+2. madha-bi-: zwei neue Wahl-Übungen (INSERT; Nils fragen, ob fällig).
+3. Sechs Wörter, die die Klang-Regel nicht trifft (mta3, waqif, yaghurt, qrad = a; dars, draj = ä): Einträge in LAENGE_WORT, wenn Nils sie bestätigt; hathaka als hǟthǟka oder hǟthaka (Nils entscheidet).
+4. Regelkarten: Tabellen-Zellen und Schritte (meta.schritte) auf Länge/Klang-Anzeige prüfen (Fließtext ist seit 15.11. umgestellt).
+5. Aufräumen: Übersicht aller Sicherungs-, Plan- und Hilfstabellen und Funktionen mit Löschterminen (ab 21.11. die ersten); Nils löscht im SQL-Editor.
+6. Nils prüft am Handy: Schrift ǟ in Lösungszeilen (sonst Plex Mono mit passendem Zeichenbereich neu einbetten); Hinweis „Neue Version – neu laden“.
+
+### Stufe 2 – mittel (eine Entscheidung von Nils, dann ein Durchgang; Batch nach gezeigtem Verfahren)
+7. Kurs-Konsistenz: Verneinung ma-X-sh gegen „ma Xsh“ (inkl. altes e in titkallemsh, ta3refsh …), f-el-/fil-/fi-l-, b-el-/bil-, Nisba -iyya/-iya, Doppelkonsonant (y7ibb/y7ib, kull/kul). Je Entscheidung ein Durchgang für Kurs UND Vokabeln.
+8. Kurs-Verbformen mit altem e (t7ebb, n7ebbu …), qaddem/najjem ohne Vorsilbe einzeln (Punkt A).
+9. tawwa vereinheitlichen (Umschrift, Arabisch, Anzeige a) und mit „tawwa ohne Übung“ und „taw/qrib im Kurs“ (Mion) zusammen erledigen.
+10. madha-bi- als Vokabel anlegen (Arabisch mit Semia klären, fällig fragen) und die Ausnahme in LAENGE_WORT später ins Feld „Aussprache-Anzeige“ übernehmen.
+11. Neue Trainer-Prüfungen (je erst vorschlagen, Trefferzahl vorher im Harness): „Arabisch ohne Vokalzeichen“, „alte Schreibung“ auf Regelkarten-Meta und Lektionstexte, „Kurswort mit z ohne Vokabel“, „gleiche Umschrift, verschiedenes Arabisch“, „Kurs-Abschnitt ohne Übung“.
+12. besh- (bi + Sonnenbuchstabe: 1686, 3149, 3201): Konvention festlegen, dann alle Fälle gemeinsam (b-esh-sharr, bes-serqa, bet-tun, bit-tayyara …).
+13. Gruppe X Rest, jeweils eine kleine Entscheidung: hani jet (1270), 3weja (1890), udhreb (2475/2476), nset (2533), 7abbes/a7bes (2729), shnu welek (3217), ey (3225), el khdem (2324), dekhel ba3dhu (2454), französisch Geschriebenes, Artikel-e (b-esh-, bel-, lekbir), gouandouet.
+14. Anzeige im Trainer: unbekannte Kurswörter (Endungen und Verneinung vor dem Nachschlagen abtrennen), Tabellenformen ohne kurzes ä, Grammatiknotizen ohne Länge.
+15. L14: Lese-Karten LK1–LK7, 24 Hörkarten, LG1–LG7 freischalten (Nils prüft vorher), Audio-Beispiele, Karte LK6 (mä) bei Semia gegenprüfen.
+16. Audio: rit (4525, „ganz anderes“) und yistad3a (4023, „klingt komisch“) prüfen.
+
+### Stufe 3 – größer (mehrere Arbeitsgänge, Code + Datenbank)
+17. Kennzeichen „Lehnwort“ an der Vokabel (neue Spalte, Bearbeiten-Maske, Icon, Filter; Prüfungen und LAENGE_LEHN umstellen; Befüllung als Vorschlag).
+18. Feld „Aussprache-Anzeige“ (vocabulary.anzeige) und Ursachen-Auswahl in der Markieren-Maske; ersetzt LAENGE_WORT, LAENGE_DUNKEL, LAENGE_HELL. Gehört mit 17 in einen Plan (gleiche Maske).
+19. Vokalisierung Rest C/D: tools/vokalisierer.js auf u/a/i umstellen, Gegenprobe, Listen Ist/Soll mit Anzeige (rund 350 Zeilen), danach teilvokalisierte Wörter.
+20. Kurs-Abschnitte ohne Übung (neun, plus drei Aussprache-Überschriften): Übungen bauen oder „nur Lesen“ entscheiden; tawwa-Übungen (tawwa gegen bash, Verneinung, nahe Zukunft).
+21. Schimpfwörter aufnehmen (Bițună 2019): Wortliste als Vorschlag, vorher fragen (anlegen, fällig, Register).
+22. Weitere wissenschaftliche Quellen (Gibson 2011, Mion 2008/2014, Talmoudi, Singer, Saada, Yoda, Attia, TuniCo) mit Seitenzahlen auswerten – Nils bringt die PDFs.
+
+### Stufe 4 – groß oder wartet auf andere
+23. E Wurzeln: rund 578 offen von Hand, E3 Stämme verbinden, Musterkarten, Plural nach Muster, Wurzel-Lexikon.
+24. B Regelkarten ab L7 in Häppchen; L6 lange Übungen kürzen.
+25. Audio-Sicherung (Colab, Restore-Test, ninja-audio verkleinern) – nur Nils, Status unbekannt.
+26. Wartet auf Semia: 3asser, barresh, rakkedh, tza33ab, qarrit, lazim, nghammedh, tisbe7, yesbe7, LAENGE_WORT-Einträge gegenhören, a + C + ع (sab3a, yal3ab, fäj3a), Arabisch von jay/ija (J1c/J1d), tsawwir/tfakkir/wallat (H).
+
+
 ## A. Schreibweise in Kurs und Vokabeln angleichen (Nils)
 - Kurs: rund 300 verbartige Wörter mit o/e/ou in rund 700 aktiven Übungen (z. B. ma-noshrob-sh, ma-tqoum-sh, n3oumou, ma-nekol). 53 davon haben eine direkte Tabellenform mit a/i/u.
 - Vokabelzeilen außerhalb der Tabellen (Nomen, Wendungen) schreiben noch ou/e/o.
