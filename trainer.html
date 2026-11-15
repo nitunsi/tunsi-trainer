@@ -766,6 +766,7 @@ const LAENGE_WORT = {inshallah: ['k','k','k'], insha: ['k','k'], sba7: ['H'], sb
   shayid: ['H','k'], milad: ['k','H'], miladik: ['k','H','k'], balik: ['H','k'], ta3ib: ['H','k'],
   manish: ['H','k'], mahush: ['H','k'], mahish: ['H','k'], manash: ['H','k'], makumsh: ['H','k'], mahumsh: ['H','k'],
   mazelt: ['H','k'], mazelna: ['H','k','k'], mazelit: ['H','k','k'], mazeltu: ['H','k','k'], mazelu: ['H','k','k'],
+  madha: ['H','E'],   // madha-bi- „ich hätte gern“, Nils 2026-11-15: mǟdhä-biya (Semia: māḏā bī)
   ma: ['E'],   // Verneinung ma-…-sh und ma „Wasser“ (Nils 2026-11-14)
   baku: ['L','k'], sash: ['L'],   // Lehnwörter, Nils hört dunkles a (2026-11-14)
   mer: ['k'],   // mer-rwayiq: min + el, kurz
@@ -7923,7 +7924,7 @@ function showGlossar(){
 }
 // Verbformen im Fließtext der Regelkarten mit Länge/Klang anzeigen (yakul → yǟkul, kla → klä), Arabisch aus den Verb-Vokabeln
 let _verbArByTr = null;
-const LAENGE_TEXT_NICHT = new Set(['ich','du','wir','ihr','sie','ein','und','oder','nicht','ist','sind','bat','kam','fand','sang','rief','ging','hat','bin','war','man','kann','da','so','wo','am','im','um','an','in','es','er','die','das','der','den','mit','mal','nur','nie','tun']);   // deutsche Wörter, die zufällig wie eine tunesische Form aussehen
+const LAENGE_TEXT_NICHT = new Set(['damit','zur','bus','ich','du','wir','ihr','sie','ein','und','oder','nicht','ist','sind','bat','kam','fand','sang','rief','ging','hat','bin','war','man','kann','da','so','wo','am','im','um','an','in','es','er','die','das','der','den','mit','mal','nur','nie','tun']);   // deutsche Wörter, die zufällig wie eine tunesische Form aussehen
 function laengeImText(html){
   if(!_verbArByTr){
     _verbArByTr = {};
@@ -7967,17 +7968,18 @@ function kursIdx(){
   }
   return _kursWortIdx;
 }
-function kursLaenge(html){
+function kursLaenge(html, roh){   // roh: Fließtext der Regelkarten – auch in „…“ markieren, deutsche Schlusssätze nicht abschneiden
   if(!ALL_VOCAB.length || !html || LAENGE_MODUS === 'aus') return html;
   let de = false;   // ab „ — Deutsch“ bzw. „ – Deutsch“ am Ende: deutscher Teil, nichts markieren
   return String(html).split(/(<[^>]*>)/).map(seg => {
     if(seg.charAt(0) === '<' || de) return seg;
-    const cut = seg.search(/\s[—–]\s(?=[A-ZÄÖÜ„])/);
+    const cut = roh ? -1 : seg.search(/\s[—–]\s(?=[A-ZÄÖÜ„])/);
     let rest = '';
     if(cut >= 0){ rest = seg.slice(cut); seg = seg.slice(0, cut); de = true; }
     return seg.split(/(„[^“]*“|&#?\w+;)/).map(t => {
-      if(!t || t.charAt(0) === '„' || t.charAt(0) === '&') return t;
+      if(!t || (!roh && t.charAt(0) === '„') || t.charAt(0) === '&') return t;
       return t.replace(/[A-Za-z0-9'ʔ]+/g, (w, off) => {
+        if(roh && (/[\u00C0-\u024F\u1E00-\u1EFF]/.test(t.charAt(off - 1)) || /[\u00C0-\u024F\u1E00-\u1EFF]/.test(t.charAt(off + w.length)))) return w;   // Teil eines Wortes mit Sonderzeichen (Fatḥa)
         if(/^\d+$/.test(w) || w.length < 2 || LAENGE_TEXT_NICHT.has(w.toLowerCase()) || LAENGE_PARTIKEL.has(w.toLowerCase())) return w;
         if(/^(…|\.\.\.)/.test(t.slice(off + w.length))) return w;
         return kursWortL(w);
@@ -7989,8 +7991,8 @@ function kursLaenge(html){
 function kursPromptL(html, plain){ return /[A-ZÄÖÜ]/.test(String(plain||'').replace(/„[^“]*“/g, '')) ? html : kursLaenge(html); }
 function regelTextHtml(t){
   // arabische Wörter im deutschen Text isolieren, sonst vertauscht die Schreibrichtung Klammern und Kommas
-  return laengeImText(glossarWrap(escHtml(t||'').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>')
-    .replace(/[\u0600-\u06FF]+(?:-[\u0600-\u06FF]+)*/g, m => '<bdi dir="rtl" style="font-family:var(--arf,inherit);color:var(--gold2)">'+m+'</bdi>'), true));
+  return kursLaenge(glossarWrap(escHtml(t||'').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>')
+    .replace(/[\u0600-\u06FF]+(?:-[\u0600-\u06FF]+)*/g, m => '<bdi dir="rtl" style="font-family:var(--arf,inherit);color:var(--gold2)">'+m+'</bdi>'), true), true);
 }
 function regelFrageHtml(rg){
   GL_SEEN = new Set();
