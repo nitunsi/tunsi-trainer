@@ -768,9 +768,9 @@ function lwGet(w){
 }
 function azNeu(){ AZ_WORT = null; ALL_VOCAB.forEach(v => { delete v._trL; }); _conjLaenge = null; if(typeof _kursWortCache !== 'undefined') Object.keys(_kursWortCache).forEach(k => { delete _kursWortCache[k]; }); }
 // Wörter, deren langes a nach Gehör dunkel ist (ā), obwohl die Regel hell (ǟ) ergäbe (Nils 2026-11-11: taf taf)
-const LAENGE_DUNKEL = new Set(['taf', 'massaj', 'massajat']);   // massaj: Nils 2026-11-12 spricht das a dunkel
+const LAENGE_DUNKEL = new Set(['taf']);   // massaj: Nils 2026-11-12 spricht das a dunkel
 // Einzelwörter mit End-a, das hell (ä) klingt, obwohl die Regel (-ya) es ausnimmt (Nils 2026-11-11: myä „hundert“)
-const LAENGE_HELL = new Set(['mya']);
+const LAENGE_HELL = new Set([]);
 // Lehnwörter: ein a vor zwei Konsonanten bleibt kurz, auch wenn das Arabische ein Alif schreibt (banka, fanta, taxi, fransa – Nils 2026-11-13).
 // Arabische Wörter derselben Form bleiben lang (mtǟ3hum, jzǟyri, twǟnsa). Neue Lehnwörter hier eintragen.
 const LAENGE_LEHN = new Set(['bank','banka','fanta','manga','taxi','taxist','parking','pasbur','faks','matsh','sandiwytish','janfi','mars','fransa','almanya','italya','italyan','isbanya','muritanya',
@@ -784,20 +784,18 @@ function lehnKurz(tr, st, en){
 // Einzelwörter, die Nils anders hört als die Regel ergibt (2026-11-13/14). Quelle: Nils nach Aufnahmen verschiedener Sprecher,
 // von Semia noch NICHT bestätigt. Neue Einträge nur, wenn Semia sie bestätigt oder mehrere Aufnahmen übereinstimmen. Je Vokalgruppe des Wortes ein Zeichen:
 // 'k' kurz ohne Markierung, 'E' kurzes helles ä, 'H' langes helles ǟ, 'L' lang (ā ī ū). Gilt auch im Satz und hinter dem Artikel.
-const LAENGE_WORT = {inshallah: ['k','k','k'], insha: ['k','k'], sba7: ['H'], sba7kum: ['H','k'], mashwiya: ['E','k','k'],
+const LAENGE_WORT = {insha: ['k','k'], sba7: ['H'], sba7kum: ['H','k'], mashwiya: ['E','k','k'],
   takil: ['H','k'], amis: ['E','k'], nitkallimik: ['k','E','k','k'],
   // helles a, Länge nach dem Arabischen (Alif = lang ǟ, sonst kurz ä)
   shayid: ['H','k'], milad: ['k','H'], miladik: ['k','H','k'], balik: ['H','k'], ta3ib: ['H','k'],
   manish: ['H','k'], mahush: ['H','k'], mahish: ['H','k'], manash: ['H','k'], makumsh: ['H','k'], mahumsh: ['H','k'],
-  mazelt: ['H','k'], mazelna: ['H','k','k'], mazelit: ['H','k','k'], mazeltu: ['H','k','k'], mazelu: ['H','k','k'],
   // Hörprobe 2026-11-15 (Nils): kurzes a vor Doppelkonsonant uneinheitlich; diese Wörter hört er dunkel/offen
-  dabbuza: ['k','L','k'], sakkar: ['k','k'], fadd: ['k'], babbush: ['k','L'], kabbar: ['k','L'], hakka: ['k','k'], dazz: ['k'], wakkil: ['k','k'],
-  mraya: ['H','k'], shajra: ['k','k'], jannan: ['k','H'], malla: ['k','k'],
-  madha: ['H','E'],   // madha-bi- „ich hätte gern“, Nils 2026-11-15: mǟdhä-biya (Semia: māḏā bī)
-  ma: ['E'],   // Verneinung ma-…-sh und ma „Wasser“ (Nils 2026-11-14)
-  baku: ['L','k'], sash: ['L'],   // Lehnwörter, Nils hört dunkles a (2026-11-14)
+  dabbuza: ['k','L','k'], sakkar: ['k','k'], babbush: ['k','L'], kabbar: ['k','L'], wakkil: ['k','k'],
+  shajra: ['k','k'], madha: ['H','E'],   // madha-bi- „ich hätte gern“, Nils 2026-11-15: mǟdhä-biya (Semia: māḏā bī)
+  // Verneinung ma-…-sh und ma „Wasser“ (Nils 2026-11-14)
+  // Lehnwörter, Nils hört dunkles a (2026-11-14)
   mer: ['k'],   // mer-rwayiq: min + el, kurz
-  najjim: ['E','k'], tnajjim: ['E','k'], nnajjim: ['E','k'], najjimsh: ['E','k'], tnajjimsh: ['E','k']};
+  najjim: ['E','k'], nnajjim: ['E','k'], najjimsh: ['E','k'], tnajjimsh: ['E','k']};
 // Hinweiswörter hatha, hathi, hathuma, hathika, hathukum, hathaka: ha- spricht Nils hell lang (hǟtha), die Endung -a bleibt a, nie ä (Nils 2026-11-13)
 const LAENGE_HA = new Set(['hatha','hathi','hathuma','hathika','hathukum','hathaka']);
 // Anzeige-Stufe (Nils 2026-11-14): 'klang' = Länge und Klang (ā ī ū, ǟ, ä), 'laenge' = nur Länge (ā ī ū), 'aus' = nichts.
