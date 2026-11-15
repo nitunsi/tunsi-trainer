@@ -707,7 +707,9 @@ function laengeSlots(ar, rHell, kurz){
         const alif = n.b==='ا'||n.b==='ى', nach = u[i+2] ? u[i+2].b : '';
         const davor = rHell ? 'صضطظقخغحع' : 'صضطظقخغرحع'; // r_hell: r im Wort laut TUNICO hell (vocabulary.r_hell)
         const danach = rHell ? 'صضطظ' : 'صضطظر';
-        out.push(alif && !davor.includes(b) && !(nach && danach.includes(nach)) ? 'H' : 'L');
+        // ص ض ط ظ später im selben Wort macht das lange ā dunkel (klafis, klasit, kbabit, bayas; Hörprobe Nils 2026-11-15); ق danach nicht (naqis)
+        const emphSpaeter = !(nach && 'حعقخغ'.includes(nach)) && u.slice(i+2).some(x => 'صضطظ'.includes(x.b));   // direkt folgendes ق/غ/خ/ح/ع hellt wie bisher (naqis, sǟ3a)
+        out.push(alif && !davor.includes(b) && !(nach && danach.includes(nach)) && !emphSpaeter ? 'H' : 'L');
         i++; continue;
       }
       // kurzes a: nicht vor ة am Wortende (Endung -a bleibt a) und nicht als letzter Laut
@@ -766,6 +768,9 @@ const LAENGE_WORT = {inshallah: ['k','k','k'], insha: ['k','k'], sba7: ['H'], sb
   shayid: ['H','k'], milad: ['k','H'], miladik: ['k','H','k'], balik: ['H','k'], ta3ib: ['H','k'],
   manish: ['H','k'], mahush: ['H','k'], mahish: ['H','k'], manash: ['H','k'], makumsh: ['H','k'], mahumsh: ['H','k'],
   mazelt: ['H','k'], mazelna: ['H','k','k'], mazelit: ['H','k','k'], mazeltu: ['H','k','k'], mazelu: ['H','k','k'],
+  // Hörprobe 2026-11-15 (Nils): kurzes a vor Doppelkonsonant uneinheitlich; diese Wörter hört er dunkel/offen
+  dabbuza: ['k','L','k'], sakkar: ['k','k'], fadd: ['k'], babbush: ['k','L'], kabbar: ['k','L'], hakka: ['k','k'], dazz: ['k'], wakkil: ['k','k'],
+  mraya: ['H','k'], shajra: ['k','k'], jannan: ['k','H'], malla: ['k','k'],
   madha: ['H','E'],   // madha-bi- „ich hätte gern“, Nils 2026-11-15: mǟdhä-biya (Semia: māḏā bī)
   ma: ['E'],   // Verneinung ma-…-sh und ma „Wasser“ (Nils 2026-11-14)
   baku: ['L','k'], sash: ['L'],   // Lehnwörter, Nils hört dunkles a (2026-11-14)
