@@ -6074,7 +6074,7 @@ function datenChecks(){
   ALL_VOCAB.forEach(v => {
     const t = String(v.tr || '').trim().toLowerCase(), a = String(v.ar || '').trim();
     if(!t || !a || /[\s\/]/.test(t) || /\s/.test(a) || !/[\u064E\u064F\u0650\u0652]/.test(a)) return;
-    if(/(frz|engl|ital|Lehnwort)/i.test(v.en || '') || AR_TR_AUSNAHMEN.has(v.id)) return;
+    if(v.lw || /(frz|engl|ital|Lehnwort)/i.test(v.en || '') || AR_TR_AUSNAHMEN.has(v.id)) return;
     const g = transliterateArabicWord(atrAr(a));
     if(!atrMuster(t).test(atrN(rkNorm(ohneArt(g), 'a')))) atr.push(v.id+' '+v.tr+': '+a+' liest sich „'+g+'“');
   });
