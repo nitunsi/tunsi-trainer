@@ -766,18 +766,18 @@ function lwGet(w){
   if(AZ_WORT && AZ_WORT.hasOwnProperty(w)) return AZ_WORT[w];
   return LAENGE_WORT.hasOwnProperty(w) ? LAENGE_WORT[w] : null;
 }
-function azNeu(){ AZ_WORT = null; ALL_VOCAB.forEach(v => { delete v._trL; }); _conjLaenge = null; if(typeof _kursWortCache !== 'undefined') Object.keys(_kursWortCache).forEach(k => { delete _kursWortCache[k]; }); }
+function azNeu(){ AZ_WORT = null; _lehnFeld = null; ALL_VOCAB.forEach(v => { delete v._trL; }); _conjLaenge = null; if(typeof _kursWortCache !== 'undefined') Object.keys(_kursWortCache).forEach(k => { delete _kursWortCache[k]; }); }
 // Wörter, deren langes a nach Gehör dunkel ist (ā), obwohl die Regel hell (ǟ) ergäbe (Nils 2026-11-11: taf taf)
 const LAENGE_DUNKEL = new Set(['taf']);   // massaj: Nils 2026-11-12 spricht das a dunkel
 // Einzelwörter mit End-a, das hell (ä) klingt, obwohl die Regel (-ya) es ausnimmt (Nils 2026-11-11: myä „hundert“)
 const LAENGE_HELL = new Set([]);
-// Lehnwörter: ein a vor zwei Konsonanten bleibt kurz, auch wenn das Arabische ein Alif schreibt (banka, fanta, taxi, fransa – Nils 2026-11-13).
-// Arabische Wörter derselben Form bleiben lang (mtǟ3hum, jzǟyri, twǟnsa). Neue Lehnwörter hier eintragen.
-const LAENGE_LEHN = new Set(['bank','banka','fanta','manga','taxi','taxist','parking','pasbur','faks','matsh','sandiwytish','janfi','mars','fransa','almanya','italya','italyan','isbanya','muritanya',
-  'garçon','garsunat','faranda','radio','spadri','marshi','chambriz','analgun','gouandouet']);
+// Lehnwörter (Feld vocabulary.lehnwort, in der Bearbeiten-Maske setzbar): ein a vor zwei Konsonanten bleibt kurz, auch wenn das Arabische ein Alif schreibt
+// (banka, fanta, taxi, fransa – Nils 2026-11-13). Arabische Wörter derselben Form bleiben lang (mtǟ3hum, jzǟyri, twǟnsa).
+let _lehnFeld = null;
+function lehnFeld(){ if(_lehnFeld === null && typeof ALL_VOCAB !== 'undefined' && ALL_VOCAB.length){ _lehnFeld = new Set(); ALL_VOCAB.forEach(v => { if(v.lw && v.tr && !/[\s\/]/.test(v.tr)) _lehnFeld.add(v.tr.toLowerCase()); }); } return _lehnFeld || new Set(); }
 function lehnKurz(tr, st, en){
   let a = st, z = en; const W = /[A-Za-zç0-9'ʔ]/; while(a > 0 && W.test(tr[a-1])) a--; while(z < tr.length && W.test(tr[z])) z++;
-  if(!LAENGE_LEHN.has(tr.slice(a, z).toLowerCase())) return false;
+  if(!lehnFeld().has(tr.slice(a, z).toLowerCase())) return false;
   const m = tr.slice(en, z).toLowerCase().replace(/i(?=[aou])/g, 'y').match(/^[^aeiou]+/); if(!m) return false;   // radio = rad-yu
   return m[0].replace(/sh|th|kh|gh|dh|ch/g, 'C').replace(/x/g, 'CC').length >= 2;
 }
@@ -864,6 +864,8 @@ function laengeHtmlSlots(tr, sl, v){
   });
   return h + tr.slice(p);
 }
+const LEHN_NAME = {frz:'französisch', engl:'englisch', ital:'italienisch', 'türk':'türkisch', span:'spanisch', sonst:'andere Sprache'};
+function lwMark(v){ return v && v.lw ? ' <span class="neu-lw" title="Lehnwort: '+(LEHN_NAME[v.lw]||escHtml(v.lw))+'">⇄</span>' : ''; }
 function trL(v){ if(!v) return ''; if(v._trL === undefined) v._trL = laengeHtml(v.tr, v.ar, v.rh, v); return v._trL; }
 // Tabellenzellen haben kein eigenes Arabisch: Länge aus der Vokabelzeile derselben Tabelle (gleiche Grundform)
 let _conjLaenge = null;
@@ -3536,7 +3538,7 @@ function rMC(ex,el){
   const v=ex.v,dir=ex.dir;
   el.innerHTML=`<div class="lesson-badge">${v.ls} · ${v.tp}</div><div class="srs-info-badge">${srsInfoBadge(v)}</div>
   <div class="q-card"><div class="q-label">${dir==='ar2en'?'Was bedeutet dieses Wort?':'Welches Tounsi-Wort bedeutet:'}</div>
-  ${dir==='ar2en'?`<div class="q-arabic">${v.ar}</div><div class="q-sub latin">${trL(v)}</div>`:`<div class="q-text">${deHtml(v)}</div>`}
+  ${dir==='ar2en'?`<div class="q-arabic">${v.ar}</div><div class="q-sub latin">${trL(v)}${lwMark(v)}</div>`:`<div class="q-text">${deHtml(v)}</div>`}
   </div>
   <div class="choices" id="choices"></div>
   <div class="feedback" id="feedback"></div>
@@ -3643,7 +3645,7 @@ function rFlash(ex,el){
       ${isAudio
         ? `<button type="button" class="neu-audioq" onclick="playVocabAudio('${String(v.au||'').replace(/'/g,"\\'")}',event,${v.aus||0},${v.aue||0})" aria-label="Abspielen">🔊</button><div class="q-sub" style="font-family:inherit!important">Hören und die Bedeutung eingeben</div>`
         : isAr2De
-        ? `<div class="q-arabic" style="font-size:2.8rem">${v.ar}</div><div class="q-sub latin">${trL(v)}</div>`
+        ? `<div class="q-arabic" style="font-size:2.8rem">${v.ar}</div><div class="q-sub latin">${trL(v)}${lwMark(v)}</div>`
         : `<div class="q-text" style="font-size:1.3rem">${deHtml(v)}</div>`
       }
     </div>
