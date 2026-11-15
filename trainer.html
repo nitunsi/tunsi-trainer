@@ -1225,7 +1225,7 @@ function retryLoad(){
 // Holt Vokabeln und Fortschritt (parallel). Wird auch genutzt, um den Zwischenspeicher im Hintergrund aufzufrischen.
 function srsFetchRows(onVocab, onProg){
   const loadVocabTask = sbApiPaged(
-      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,audio_gain,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,r_hell,english,wurzel,wurzel_ar,wurzel_gruppe,stamm,verbtyp,ausgeblendet,lehnwort,anzeige,lessons(lesson_number)&order=id.asc',
+      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,audio_gain,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,r_hell,english,wurzel,wurzel_ar,wurzel_gruppe,stamm,verbtyp,ausgeblendet,lehnwort,anzeige,flag_grund,lessons(lesson_number)&order=id.asc',
       1000,
       (loaded) => { if(onVocab) onVocab(loaded); }
     );
@@ -1266,7 +1266,7 @@ async function srsLoadFromSupabase(){
     allVocab.forEach(v => {
       const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
       const tp = v.topic || 'Allgemein';
-      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null, cr: !!v.conj_rotate, rh: v.r_hell===true, eg: v.english||'', wz: v.wurzel||'', wza: v.wurzel_ar||'', wzg: v.wurzel_gruppe||'', st: v.stamm||'', vt: v.verbtyp||'', ausb: v.ausgeblendet===true, lw: v.lehnwort||'', az: v.anzeige||'' };
+      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null, cr: !!v.conj_rotate, rh: v.r_hell===true, eg: v.english||'', wz: v.wurzel||'', wza: v.wurzel_ar||'', wzg: v.wurzel_gruppe||'', st: v.stamm||'', vt: v.verbtyp||'', ausb: v.ausgeblendet===true, lw: v.lehnwort||'', az: v.anzeige||'', fg: v.flag_grund||'' };
       ALL_VOCAB.push(entry);
       if(v.ninja_audio_url && v.audio_gain) AUDIO_GAIN[audioKey(v.ninja_audio_url, v.ninja_audio_start, v.ninja_audio_end)] = v.audio_gain;
       VOCAB_BY_ID[v.id] = entry;
@@ -6472,6 +6472,7 @@ function openVocabEdit(vocabId, i){
     const ntInp = document.getElementById('ei-nt');
     if(ntInp) ntInp.value = v.nt || '';
     const lwSel = document.getElementById('ei-lw'); if(lwSel) lwSel.value = v.lw || '';
+    const fgSel = document.getElementById('ei-fg'); if(fgSel) fgSel.value = v.fg || '';
     const azInp = document.getElementById('ei-az'); if(azInp) azInp.value = v.az || '';
   });
 }
@@ -6499,6 +6500,7 @@ async function saveVocabEditSheet(){
   if(!newAr || !newTr || !newEn){ neuNote('Alle Felder ausfüllen'); return; }
   const newAz = document.getElementById('ei-az') ? document.getElementById('ei-az').value.trim() : null;
   const newLw = document.getElementById('ei-lw') ? document.getElementById('ei-lw').value : null;
+  const newFg = document.getElementById('ei-fg') ? document.getElementById('ei-fg').value : null;
   if(newAz && !azGueltig(newTr, newAz)){ neuNote('Aussprache-Anzeige: Die Buchstaben müssen der Umschrift entsprechen (nur ǟ ä ā ī ū dürfen abweichen).'); return; }
   const oldTr = v.tr;
   try{
@@ -6515,6 +6517,7 @@ async function saveVocabEditSheet(){
     if(newNt !== null) vocabPatch.internal_note = newNt || null;
     if(newAz !== null) vocabPatch.anzeige = newAz || null;
     if(newLw !== null) vocabPatch.lehnwort = newLw || null;
+    if(newFg !== null){ vocabPatch.flag_grund = newFg || null; if(newFg && !flaggedVocab.has(v.tr)){ vocabPatch.flagged = true; } }   // ein Grund setzt die Flagge
     await sbApi('vocabulary?id=eq.'+vocabId, 'PATCH', vocabPatch);
     const progId = srsProgress[vocabId] ? srsProgress[vocabId].id : null;
     const patchProg = {};
@@ -6532,7 +6535,8 @@ async function saveVocabEditSheet(){
       srsProgress[vocabId].level = newLvl;
     }
     v.ar = newAr; v.tr = newTr; v.en = newEn; v.tp = newTp; v.ls = newLs; v.ps = newPsNorm; v.pc = newPc||null; v.nt = newNt||'';
-    if(newAz !== null) v.az = newAz; if(newLw !== null) v.lw = newLw;
+    if(newAz !== null) v.az = newAz; if(newLw !== null) v.lw = newLw; if(newFg !== null) v.fg = newFg;
+    if(vocabPatch.flagged === true){ flaggedVocab.add(newTr); }
     azNeu();
     if(vocabPatch.status_updated_at) v.psu = vocabPatch.status_updated_at;
     if(newTr !== oldTr){ vocabIdMap[newTr] = vocabId; delete vocabIdMap[oldTr]; }
@@ -6558,8 +6562,8 @@ async function toggleFlagSheet(){
   const v = vById(vocabId);
   if(!v) return;
   const isFlagged = flaggedVocab.has(v.tr);
-  await sbApi('vocabulary?id=eq.'+vocabId, 'PATCH', { flagged: !isFlagged });
-  if(isFlagged) flaggedVocab.delete(v.tr);
+  await sbApi('vocabulary?id=eq.'+vocabId, 'PATCH', isFlagged ? { flagged: false, flag_grund: null } : { flagged: true });
+  if(isFlagged){ flaggedVocab.delete(v.tr); v.fg = ''; const fgSel = document.getElementById('ei-fg'); if(fgSel) fgSel.value = ''; }
   else flaggedVocab.add(v.tr);
   const flagBtn = document.getElementById('sheet-flag-btn');
   flagBtn.textContent = !isFlagged ? '🚩' : '🏳️';
@@ -6618,7 +6622,8 @@ async function toggleFlagById(vocabId, btn){
   const tr = v ? v.tr : null;
   const isFlagged = tr ? flaggedVocab.has(tr) : !!(btn && btn.classList.contains('flagged'));
   try {
-    await sbApi('vocabulary?id=eq.'+vocabId, 'PATCH', {flagged: !isFlagged});
+    await sbApi('vocabulary?id=eq.'+vocabId, 'PATCH', isFlagged ? {flagged: false, flag_grund: null} : {flagged: true});
+    if(isFlagged && v) v.fg = '';
     if(tr){ if(isFlagged) flaggedVocab.delete(tr); else flaggedVocab.add(tr); }
     if(btn){
       btn.classList.toggle('flagged', !isFlagged);
@@ -11766,6 +11771,16 @@ window.addEventListener('unhandledrejection', (e) => {
     </select>
     <label class="sh-l">Partner-Kommentar</label>
     <textarea id="ei-pc" class="sh-in" placeholder="Partner-Kommentar…" rows="2"></textarea>
+    <label class="sh-l">Grund der Markierung (🚩)</label>
+    <select id="ei-fg" class="sh-in">
+      <option value="">kein Grund angegeben</option>
+      <option value="lehnwort">Lehnwort</option>
+      <option value="arabisch">Arabisch falsch oder unvollständig</option>
+      <option value="ausnahme">Ausnahme (Aussprache weicht von der Regel ab)</option>
+      <option value="regel">Regel passt nicht (mehrere ähnliche Wörter)</option>
+      <option value="audio">Audio falsch</option>
+      <option value="sonst">Sonstiges (siehe Kommentar)</option>
+    </select>
     <label class="sh-l">Lehnwort (Herkunft)</label>
     <select id="ei-lw" class="sh-in">
       <option value="">kein Lehnwort</option>
