@@ -7961,6 +7961,12 @@ function kursIdx(){
     _kursWortIdx = {v:{}, c:{}};
     [true, false].forEach(verb => ALL_VOCAB.forEach(v => {
       if(!!v.cj === verb && v.ar && v.tr && !/\s/.test(v.tr) && /[َُِ]/.test(v.ar)){ const t = v.tr.toLowerCase(); if(!_kursWortIdx.v[t]) _kursWortIdx.v[t] = v; }
+      // Zeilen mit „m. / f.“-Paaren („jay / jaya“): jede Form einzeln, wenn Umschrift und Arabisch gleich viele Teile haben
+      else if(!!v.cj === verb && v.ar && v.tr && / \/ /.test(v.tr)){
+        const ts = v.tr.split(' / '), as = v.ar.split(' / ');
+        if(ts.length === as.length) ts.forEach((tp, i) => { const t = tp.trim().toLowerCase();
+          if(t && !/\s/.test(t) && /[َُِ]/.test(as[i]) && !_kursWortIdx.v[t]) _kursWortIdx.v[t] = Object.assign({}, v, {tr: tp.trim(), ar: as[i].trim()}); });
+      }
     }));
     ALL_VOCAB.forEach(e => { if(!e.cj) return; ['past','present','imperative'].forEach(z => { const blk = e.cj[z]; if(!blk || typeof blk !== 'object') return;
       Object.keys(blk).forEach(p => { const c = blk[p]; if(!c || !c.darija) return;
