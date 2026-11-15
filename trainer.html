@@ -771,15 +771,13 @@ function azNeu(){ AZ_WORT = null; _lehnFeld = null; ALL_VOCAB.forEach(v => { del
 const LAENGE_DUNKEL = new Set(['taf']);   // massaj: Nils 2026-11-12 spricht das a dunkel
 // Einzelwörter mit End-a, das hell (ä) klingt, obwohl die Regel (-ya) es ausnimmt (Nils 2026-11-11: myä „hundert“)
 const LAENGE_HELL = new Set([]);
-// Lehnwörter: ein a vor zwei Konsonanten bleibt kurz, auch wenn das Arabische ein Alif schreibt (banka, fanta, taxi, fransa – Nils 2026-11-13).
-// Arabische Wörter derselben Form bleiben lang (mtǟ3hum, jzǟyri, twǟnsa). Neue Lehnwörter hier eintragen.
-const LAENGE_LEHN = new Set(['bank','banka','fanta','manga','taxi','taxist','parking','pasbur','faks','matsh','sandiwytish','janfi','mars','fransa','almanya','italya','italyan','isbanya','muritanya',
-  'garçon','garsunat','faranda','radio','spadri','marshi','chambriz','analgun','gouandouet']);
+// Lehnwörter (Feld vocabulary.lehnwort, in der Bearbeiten-Maske setzbar): ein a vor zwei Konsonanten bleibt kurz, auch wenn das Arabische ein Alif schreibt
+// (banka, fanta, taxi, fransa – Nils 2026-11-13). Arabische Wörter derselben Form bleiben lang (mtǟ3hum, jzǟyri, twǟnsa).
 let _lehnFeld = null;
 function lehnFeld(){ if(_lehnFeld === null && typeof ALL_VOCAB !== 'undefined' && ALL_VOCAB.length){ _lehnFeld = new Set(); ALL_VOCAB.forEach(v => { if(v.lw && v.tr && !/[\s\/]/.test(v.tr)) _lehnFeld.add(v.tr.toLowerCase()); }); } return _lehnFeld || new Set(); }
 function lehnKurz(tr, st, en){
   let a = st, z = en; const W = /[A-Za-zç0-9'ʔ]/; while(a > 0 && W.test(tr[a-1])) a--; while(z < tr.length && W.test(tr[z])) z++;
-  if(!LAENGE_LEHN.has(tr.slice(a, z).toLowerCase()) && !lehnFeld().has(tr.slice(a, z).toLowerCase())) return false;   // Code-Liste oder Feld „Lehnwort“ der Vokabel
+  if(!lehnFeld().has(tr.slice(a, z).toLowerCase())) return false;
   const m = tr.slice(en, z).toLowerCase().replace(/i(?=[aou])/g, 'y').match(/^[^aeiou]+/); if(!m) return false;   // radio = rad-yu
   return m[0].replace(/sh|th|kh|gh|dh|ch/g, 'C').replace(/x/g, 'CC').length >= 2;
 }
