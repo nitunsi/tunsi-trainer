@@ -5967,6 +5967,45 @@ function datenChecks(){
   const hoer = ex.filter(e => e.exercise_type === 'listening' && (!/^https:\/\//.test(String((e.meta && e.meta.audio_url) || '')) || !String(e.prompt || '').trim())).map(e => 'Übung '+e.id+' (listening): '+(!/^https:\/\//.test(String((e.meta && e.meta.audio_url) || '')) ? 'Aufnahme (meta.audio_url) fehlt' : 'arabischer Text fehlt'));
   out.push({label: 'Kurs: Hörübung ohne Aufnahme oder ohne Text', n: hoer.length, bsp: hoer});
 
+  // 8a) Kurs-Abschnitt ohne aktive Übung (Nils 2026-11-17). Ausnahmen: Abschnitte, die bewusst nur gelesen werden (Konjugation läuft über Tabellen und Wechselkarten)
+  const KURS_NUR_LESEN = new Set(['1.4|plural_nomen','1.4|frageworter_suffix','1.5|verben_gruppen_praesens','1.6|verba_infirmae_konjug','1.6|geminierte_konjug','1.7|hada_jayy','1.7|yji','2.10|perfekt_konjug1','2.10|perfekt_konjug2']);
+  const aktivJe = {}; ex.forEach(e => { const k = e.course_lesson_id + '|' + e.chunk_key; aktivJe[k] = (aktivJe[k] || 0) + 1; });
+  const ohneUe = [];
+  (typeof COURSE_LESSONS !== 'undefined' ? COURSE_LESSONS : []).forEach(l => (l.chunk_order || []).forEach(c => {
+    if(c.dialog || aktivJe[l.id + '|' + c.key] || KURS_NUR_LESEN.has(l.skript + '.' + l.course_number + '|' + c.key)) return;
+    ohneUe.push('Lektion ' + l.course_number + ' (Skript ' + l.skript + '): ' + (c.label || c.key) + ' [' + c.key + ']');
+  }));
+  out.push({label: geladen ? 'Kurs: Abschnitt ohne aktive Übung (außer Liste „nur Lesen“)' : 'Kurs: Kursdaten nicht geladen', n: ohneUe.length, bsp: ohneUe});
+
+  // 8b) gleiche Umschrift, verschiedenes Arabisch (Einzelwörter): Homonym mit homonym_ok oder ein Schreibfehler
+  const umGr = {}; ALL_VOCAB.forEach(v => { if(v.ausb || !v.tr || !v.ar || /[\s\/]/.test(v.tr)) return; const k = v.tr.toLowerCase(); (umGr[k] = umGr[k] || []).push(v); });
+  const gleichUm = [];
+  Object.keys(umGr).forEach(k => { const g = umGr[k]; if(g.length < 2 || g.every(v => v.hok)) return;
+    if(new Set(g.map(v => v.ar.replace(/[ً-ْٰ\s]/g, ''))).size > 1) gleichUm.push(g.map(v => zeile(v)).join('  |  ')); });
+  out.push({label: 'Gleiche Umschrift, verschiedenes Arabisch, ohne homonym_ok', n: gleichUm.length, bsp: gleichUm});
+
+  // 8c) alte Schreibung (feste Liste, Stand 2026-11-17): Vokabeln, Übungen, Lektionstexte und Regelkarten. Bewusst nicht in der Liste: ey (auch „welcher“), kul (Befehl), 7ut (Fisch), bulisiya (Femininum)
+  const ALT_SCHR = [
+    [/(?<![A-Za-z0-9'])(?:fil|bil|fi-l)-[a-z0-9]/, 'f-el- / b-el-'],
+    [/(?<![A-Za-z0-9'])(?:bit|bis|bin|bir|bidh|bish|bes|besh|ben|bet|bez|bel)-[a-z0-9]/, 'b-es- / b-et- / b-el- …'],
+    [/(?<![A-Za-z0-9'-])ma [a-z0-9']+sh(?![A-Za-z0-9'])/, 'ma-X-sh'],
+    [/(?<![A-Za-z0-9'])[nty]7ib(?![A-Za-z0-9'])/, 'n7ibb / t7ibb / y7ibb'],
+    [/(?<![A-Za-z0-9'])(?:firmli|zarbi|battani|sahri|aghlabi|shahi)ya(?![A-Za-z0-9'])/, '-iyya'],
+    [/(?<![A-Za-z0-9'])(?:[ynt]itkall(?:am|em)|t3arref|y3arref|n3arref|ta3mel|na3mel|ya3mel|ta3ref|ne3ref|tekul|nekul)(?![A-Za-z0-9'])/, 'alte e-Form'],
+    [/(?<![A-Za-z0-9'])(?:bare7|ka3bet|hethiha|sket|leseq|hezzu?|amriken|yezzi|khwet|etla3|ezreb|udhreb|nset|lamen|qaddem)(?![A-Za-z0-9'])/, 'alte Schreibung'],
+    [/(?<![A-Za-z0-9'])bled(?:i|ik|u|ha|na|kum|hum)?(?![A-Za-z0-9'])/, 'blad…']
+  ];
+  const altHits = [];
+  const altPruef = (wo, text) => { const t = String(text || ''); ALT_SCHR.forEach(([re, hin]) => { const m = t.match(re); if(m) altHits.push(wo + ': ' + m[0].trim() + ' → ' + hin); }); };
+  ALL_VOCAB.forEach(v => { if(!v.ausb) altPruef('Vokabel ' + v.id, v.tr); });
+  ex.forEach(e => { altPruef('Übung ' + e.id, (e.exercise_type === 'translate_de_tn' ? '' : (e.prompt || '')) + ' ' + (e.solution || '')); if(e.meta && e.meta.regelkarte) altPruef('Regelkarte ' + e.id, JSON.stringify(e.meta.regelkarte)); });
+  (typeof COURSE_LESSONS !== 'undefined' ? COURSE_LESSONS : []).forEach(l => altPruef('Lektion ' + l.course_number + ' (Skript ' + l.skript + ')', (l.dialog_text || '') + ' ' + (l.grammar_notes || '')));
+  out.push({label: 'Alte Schreibung (Liste der umgestellten Wörter) in Vokabeln, Übungen, Lektionstexten oder Regelkarten', n: altHits.length, bsp: altHits});
+
+  // 8d) Arabisch ohne Vokalzeichen (Einzelwörter, keine Lehnwörter): leise, zeigt nur den Fortschritt der Vokalisierung
+  const ohneVok = ALL_VOCAB.filter(v => !v.ausb && v.ar && !/[ً-ْٰ]/.test(v.ar) && v.tr && !/[\s\/]/.test(v.tr) && !v.lw).map(v => zeile(v));
+  out.push({label: 'Arabisch ohne Vokalzeichen (Einzelwörter, keine Lehnwörter) – Fortschritt der Vokalisierung', n: ohneVok.length, bsp: ohneVok, leise: true});
+
   // 9) Englisch (seit 2026-11-07 vollständig; Verben im Infinitiv „to …“, Entscheidung der Gesamtprüfung)
   feld('Vokabel ohne Englisch', v => !String(v.eg || '').trim() && !v.cr);
   feld('Verb: Englisch als „he …s“ statt Infinitiv „to …“', v => v.cj && /^(he|she|it) [a-z]+s( \([^)]*\))?$/.test(v.eg || ''), v => v.eg);
