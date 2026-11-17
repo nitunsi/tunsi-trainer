@@ -1050,12 +1050,12 @@ function laengeRegelSlotsRoh(cj, t, tzH, pH){
   return naE(kurz());
 }
 // Kurzes a in Tabellenformen (Nils 2026-11-17, yitkallim): die Grundform der Familie (famBasis) kennt nur 'k' für kurzes a. Gilt dieselbe Regel wie in
-// kurzHell – kein dunkler Laut im Wort (Familie nicht dunkel, kein w, Plural auf -u = و), nicht am Wortende (Endungs-a) – wird es hell (ä).
+// kurzHell – kein dunkler Laut im Wort (Familie nicht dunkel, kein w; Plural auf -u zählt nicht: Nils hört nitkällmu), nicht am Wortende (Endungs-a) – wird es hell (ä).
 function regelKurzA(sl, t, cj){
   if(!sl) return sl;
   const b = famBasis(cj); if(!b || b.dunkel !== false) return sl;
   const w = String(t||'').toLowerCase();
-  if(/w|u$|ou/.test(w)) return sl;
+  if(/w/.test(w)) return sl;
   const g = vokalGruppen(t); if(g.length !== sl.length) return sl;
   let o = null;
   g.forEach(([st, en, v], k) => { if(sl[k] === 'k' && v.toLowerCase() === 'a' && en < w.length){ o = o || sl.slice(); o[k] = 'e'; } });
