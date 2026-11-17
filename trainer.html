@@ -9982,7 +9982,9 @@ const TRANSLIT_RULES = [
       const connectors = /^(el|il|es|et|ej|ed|en|er|ez|eth|w|l|b|f)$/i;
       let arWords = v.ar.split(/\s+/).filter(w => w && !/^(و|وَ|وْ|في)$/.test(w)).length;
       if(/شاء الله/.test(v.ar)) arWords -= 2;
-      const trWords = v.tr.split(/\s+/).filter(w => w && !connectors.test(w)).length;
+      // Verneinung ma-X-sh (seit 2026-11-17 mit Bindestrichen) sind im Arabischen zwei Wörter (ما يخدمش): ma zählt einzeln
+      const trT = v.tr.replace(/(^|\s)ma-(?=[^\s]+-sh(?=\s|$|[.,!?;:]))/gi, '$1ma ');
+      const trWords = trT.split(/\s+/).filter(w => w && !connectors.test(w)).length;
       return Math.abs(arWords - trWords) >= 2;
     } },
   { label: 'Artikel (ال) im Arabischen, aber in der Transliteration nicht erkennbar',
