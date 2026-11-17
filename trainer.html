@@ -8023,7 +8023,7 @@ function showGlossar(){
 }
 // Verbformen im Fließtext der Regelkarten mit Länge/Klang anzeigen (yakul → yǟkul, kla → klä), Arabisch aus den Verb-Vokabeln
 let _verbArByTr = null;
-const LAENGE_TEXT_NICHT = new Set(['damit','zur','bus','ich','du','wir','ihr','sie','ein','und','oder','nicht','ist','sind','bat','kam','fand','sang','rief','ging','hat','bin','war','man','kann','da','so','wo','am','im','um','an','in','es','er','die','das','der','den','mit','mal','nur','nie','tun']);   // deutsche Wörter, die zufällig wie eine tunesische Form aussehen
+const LAENGE_TEXT_NICHT = new Set(['tut','allahu','trank','damit','zur','bus','ich','du','wir','ihr','sie','ein','und','oder','nicht','ist','sind','bat','kam','fand','sang','rief','ging','hat','bin','war','man','kann','da','so','wo','am','im','um','an','in','es','er','die','das','der','den','mit','mal','nur','nie','tun']);   // deutsche Wörter, die zufällig wie eine tunesische Form aussehen
 function laengeImText(html){
   if(!_verbArByTr){
     _verbArByTr = {};
@@ -8042,6 +8042,7 @@ function laengeImText(html){
 // Nur Anzeige – Eingabe, Antwortprüfung und gespeicherter Text bleiben unverändert. Unbekannte Wörter bleiben wie sie sind.
 let _kursWortIdx = null;
 const _kursWortCache = {};
+const KURS_ENDUNGEN = ['hum','kum','ha','ni','na','ek','ik','ak','u','k','i','a'];   // Besitz- und Objektendungen, längste zuerst
 function kursWortL(w){
   const k = w.toLowerCase();
   if(w in _kursWortCache) return _kursWortCache[w];   // Schlüssel mit Großschreibung: „Vor“ und „vor“ sind verschiedene Einträge
@@ -8052,6 +8053,15 @@ function kursWortL(w){
     const v = _kursWortIdx.v[k], c = _kursWortIdx.c[k];
     if(v) h = laengeHtml(w, v.ar, v.rh, v);
     else if(c) h = conjZelleL(c[0], w, c[1], c[2]);
+    else if(!/\d/.test(w)){   // unbekannte Form mit Besitz- oder Objektendung (ukht-i, flus-ik, khwat-ha): Stamm nachschlagen, Endung bleibt unmarkiert (Nils 2026-11-17)
+      for(const en of KURS_ENDUNGEN){
+        if(k.length < en.length + 3 || !k.endsWith(en)) continue;
+        const st = w.slice(0, w.length - en.length), sk = st.toLowerCase();
+        if(!(_kursWortIdx.v[sk] || _kursWortIdx.c[sk] || lwGet(sk))) continue;
+        const hs = kursWortL(st); if(hs !== st) h = hs + w.slice(w.length - en.length);
+        break;
+      }
+    }
   }catch(e){ h = w; }
   return _kursWortCache[w] = h;
 }
@@ -8073,7 +8083,7 @@ function kursIdx(){
   }
   return _kursWortIdx;
 }
-function kursLaenge(html, roh){   // roh: Fließtext der Regelkarten – auch in „…“ markieren, deutsche Schlusssätze nicht abschneiden
+function kursLaenge(html, roh, grossNein){   // roh: Fließtext der Regelkarten – auch in „…“ markieren, deutsche Schlusssätze nicht abschneiden; grossNein: Wörter mit großem Anfangsbuchstaben nie markieren (Grammatiknotizen: deutsche Sätze)
   if(!ALL_VOCAB.length || !html || LAENGE_MODUS === 'aus') return html;
   let de = false;   // ab „ — Deutsch“ bzw. „ – Deutsch“ am Ende: deutscher Teil, nichts markieren
   return String(html).split(/(<[^>]*>)/).map(seg => {
@@ -8087,6 +8097,7 @@ function kursLaenge(html, roh){   // roh: Fließtext der Regelkarten – auch in
         if(roh && (/[\u00C0-\u024F\u1E00-\u1EFF]/.test(t.charAt(off - 1)) || /[\u00C0-\u024F\u1E00-\u1EFF]/.test(t.charAt(off + w.length)))) return w;   // Teil eines Wortes mit Sonderzeichen (Fatḥa)
         if(/^\d+$/.test(w) || w.length < 2 || LAENGE_TEXT_NICHT.has(w.toLowerCase()) || LAENGE_PARTIKEL.has(w.toLowerCase())) return w;
         if(/^(…|\.\.\.)/.test(t.slice(off + w.length))) return w;
+        if(grossNein && /^[A-ZÄÖÜ]/.test(w)) return w;
         return kursWortL(w);
       });
     }).join('') + rest;
@@ -8743,7 +8754,7 @@ function renderCourseLearnTab(tc, l){
   }
   if(l.grammar_notes){
     h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem">Grammatik</div>';
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7">'+mdLite(l.grammar_notes)+'</div>';
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7">'+kursLaenge(mdLite(l.grammar_notes), false, true)+'</div>';
   }
   if(!l.dialog_text && !l.grammar_notes){
     h = '<div style="color:var(--muted);font-size:.85rem;text-align:center;padding:2rem 0">Noch kein Lernmaterial für diese Lektion.</div>';
@@ -9039,7 +9050,7 @@ function courseChunkLearnHtml(l, chunk){
   });
   if(grammarMd.trim()){
     h += '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem">Grammatik</div>';
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7">'+mdLite(grammarMd)+'</div>';
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7">'+kursLaenge(mdLite(grammarMd), false, true)+'</div>';
   }
   if(!h) h = '<div style="color:var(--muted);font-size:.85rem;text-align:center;padding:1rem 0">Kein Erklärtext für diesen Abschnitt.</div>';
   return h;
