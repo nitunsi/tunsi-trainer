@@ -785,6 +785,7 @@ function lehnKurz(tr, st, en){
 // von Semia noch NICHT bestätigt. Neue Einträge nur, wenn Semia sie bestätigt oder mehrere Aufnahmen übereinstimmen. Je Vokalgruppe des Wortes ein Zeichen:
 // 'k' kurz ohne Markierung, 'E' kurzes helles ä, 'H' langes helles ǟ, 'L' lang (ā ī ū). Gilt auch im Satz und hinter dem Artikel.
 const LAENGE_WORT = {insha: ['k','k'], sba7: ['H'], sba7kum: ['H','k'], mashwiya: ['E','k','k'],
+  ija: ['k','k'],   // Nils 2026-11-18: ija ohne ä
   muslam: ['k','E'],   // Nils 2026-11-18: musläm
   maryam: ['E','k'],   // Nils 2026-11-18: märyam
   allah: ['k','k'], allahu: ['k','k','k'],   // Nils 2026-11-18: allah ohne ä
