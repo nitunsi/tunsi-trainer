@@ -7728,7 +7728,7 @@ function courseConjTableHtml(heads, grids, showForm){
   grids[0].forEach((r, i) => {
     h += '<tr><td style="color:var(--muted);font-family:\'IBM Plex Mono\',monospace;padding:.2rem .8rem .2rem 0">'+escHtml(r.person)+'</td>'
       + grids.map(g => g[i].form == null ? '<td style="padding:.2rem .5rem .2rem 0;color:var(--muted);opacity:.5" title="Form fehlt noch">—</td>'
-        : '<td style="padding:.2rem .5rem .2rem 0;color:'+(showForm ? (g[i].mark ? 'var(--blue)' : 'var(--gold2)') : 'var(--muted)')+(showForm && g[i].mark ? ';font-weight:700' : '')+'">'+(showForm ? escHtml(g[i].form) : '…')+'</td>').join('')+'</tr>';
+        : '<td style="padding:.2rem .5rem .2rem 0;color:'+(showForm ? (g[i].mark ? 'var(--blue)' : 'var(--gold2)') : 'var(--muted)')+(showForm && g[i].mark ? ';font-weight:700' : '')+'">'+(showForm ? kursLaenge(escHtml(g[i].form), false) : '…')+'</td>').join('')+'</tr>';
   });
   return h+'</table>'+courseConjGapNote(grids);
 }
@@ -8853,7 +8853,7 @@ function renderGrammarDrillGrid(rows, showForm){
   rows.forEach(r => {
     g += '<div style="color:var(--muted);font-family:\'IBM Plex Mono\',monospace">'+escHtml(r.person)+'</div>';
     g += r.form == null ? '<div style="color:var(--muted);opacity:.5" title="Form fehlt noch">—</div>'
-      : '<div style="color:'+(showForm ? (r.mark ? 'var(--blue)' : 'var(--gold2)') : 'var(--muted)')+(showForm && r.mark ? ';font-weight:700' : '')+'"'+(showForm && r.mark ? ' title="wird anders gebildet als „er“"' : '')+'>'+(showForm?escHtml(r.form):'…')+'</div>';
+      : '<div style="color:'+(showForm ? (r.mark ? 'var(--blue)' : 'var(--gold2)') : 'var(--muted)')+(showForm && r.mark ? ';font-weight:700' : '')+'"'+(showForm && r.mark ? ' title="wird anders gebildet als „er“"' : '')+'>'+(showForm?kursLaenge(escHtml(r.form), false):'…')+'</div>';
   });
   g += '</div>';
   return g;
