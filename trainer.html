@@ -5987,6 +5987,8 @@ function datenChecks(){
   // 8c) alte Schreibung (feste Liste, Stand 2026-11-17): Vokabeln, Übungen, Lektionstexte und Regelkarten. Bewusst nicht in der Liste: ey (auch „welcher“), kul (Befehl), 7ut (Fisch), bulisiya (Femininum)
   const ALT_SCHR = [
     [/(?<![A-Za-z0-9'])(?:fil|bil|fi-l)-[a-z0-9]/, 'f-el- / b-el-'],
+    [/(?<![A-Za-z0-9'-])(?:fi|li|bi)(?:th|dh|sh|t|d|r|z|s|n|j)-(?:th|dh|sh|t|d|r|z|s|n|j)[a-z0-9']/, 'f-es- / l-es- / b-es- (Artikel abtrennen)'],
+    [/(?<![A-Za-z0-9'-])fel-lil/, 'f-el-lil'],
     [/(?<![A-Za-z0-9'])(?:bit|bis|bin|bir|bidh|bish|bes|besh|ben|bet|bez|bel)-[a-z0-9]/, 'b-es- / b-et- / b-el- …'],
     [/(?<![A-Za-z0-9'-])ma [a-z0-9']+sh(?![A-Za-z0-9'])/, 'ma-X-sh'],
     [/(?<![A-Za-z0-9'])[nty]7ib(?![A-Za-z0-9'])/, 'n7ibb / t7ibb / y7ibb'],
@@ -7726,7 +7728,7 @@ function courseConjTableHtml(heads, grids, showForm){
   grids[0].forEach((r, i) => {
     h += '<tr><td style="color:var(--muted);font-family:\'IBM Plex Mono\',monospace;padding:.2rem .8rem .2rem 0">'+escHtml(r.person)+'</td>'
       + grids.map(g => g[i].form == null ? '<td style="padding:.2rem .5rem .2rem 0;color:var(--muted);opacity:.5" title="Form fehlt noch">—</td>'
-        : '<td style="padding:.2rem .5rem .2rem 0;color:'+(showForm ? (g[i].mark ? 'var(--blue)' : 'var(--gold2)') : 'var(--muted)')+(showForm && g[i].mark ? ';font-weight:700' : '')+'">'+(showForm ? escHtml(g[i].form) : '…')+'</td>').join('')+'</tr>';
+        : '<td style="padding:.2rem .5rem .2rem 0;color:'+(showForm ? (g[i].mark ? 'var(--blue)' : 'var(--gold2)') : 'var(--muted)')+(showForm && g[i].mark ? ';font-weight:700' : '')+'">'+(showForm ? kursLaenge(escHtml(g[i].form), false) : '…')+'</td>').join('')+'</tr>';
   });
   return h+'</table>'+courseConjGapNote(grids);
 }
@@ -8851,7 +8853,7 @@ function renderGrammarDrillGrid(rows, showForm){
   rows.forEach(r => {
     g += '<div style="color:var(--muted);font-family:\'IBM Plex Mono\',monospace">'+escHtml(r.person)+'</div>';
     g += r.form == null ? '<div style="color:var(--muted);opacity:.5" title="Form fehlt noch">—</div>'
-      : '<div style="color:'+(showForm ? (r.mark ? 'var(--blue)' : 'var(--gold2)') : 'var(--muted)')+(showForm && r.mark ? ';font-weight:700' : '')+'"'+(showForm && r.mark ? ' title="wird anders gebildet als „er“"' : '')+'>'+(showForm?escHtml(r.form):'…')+'</div>';
+      : '<div style="color:'+(showForm ? (r.mark ? 'var(--blue)' : 'var(--gold2)') : 'var(--muted)')+(showForm && r.mark ? ';font-weight:700' : '')+'"'+(showForm && r.mark ? ' title="wird anders gebildet als „er“"' : '')+'>'+(showForm?kursLaenge(escHtml(r.form), false):'…')+'</div>';
   });
   g += '</div>';
   return g;
