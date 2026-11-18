@@ -759,6 +759,9 @@ let AZ_WORT = null;   // Einzelwörter mit eigener Anzeige: tr (klein) → Vokal
 function azBuild(){
   const m = {};
   ALL_VOCAB.forEach(v => { if(v.az && v.tr && !/[\s\/]/.test(v.tr)){ const sl = azSlots(v.tr, v.az); if(sl) m[v.tr.toLowerCase()] = sl; } });
+  // Tabellenzellen mit eigenem Feld az (Formen ohne eigene Vokabelzeile, z. B. najjim, nnajjim in der Tabelle von tnajjim)
+  ALL_VOCAB.forEach(v => { if(!v.cj) return; ['past','present','imperative'].forEach(z => { const b = v.cj[z]; if(!b || typeof b !== 'object') return;
+    Object.keys(b).forEach(p => { const c = b[p]; if(c && c.az && c.darija && !/[\s\/]/.test(c.darija)){ const sl = azSlots(c.darija, c.az); if(sl) m[c.darija.toLowerCase()] = sl; } }); }); });
   AZ_WORT = m;
 }
 function lwGet(w){
@@ -767,10 +770,6 @@ function lwGet(w){
   return LAENGE_WORT.hasOwnProperty(w) ? LAENGE_WORT[w] : null;
 }
 function azNeu(){ AZ_WORT = null; _lehnFeld = null; ALL_VOCAB.forEach(v => { delete v._trL; }); _conjLaenge = null; if(typeof _kursWortCache !== 'undefined') Object.keys(_kursWortCache).forEach(k => { delete _kursWortCache[k]; }); }
-// Wörter, deren langes a nach Gehör dunkel ist (ā), obwohl die Regel hell (ǟ) ergäbe (Nils 2026-11-11: taf taf)
-const LAENGE_DUNKEL = new Set(['taf']);   // massaj: Nils 2026-11-12 spricht das a dunkel
-// Einzelwörter mit End-a, das hell (ä) klingt, obwohl die Regel (-ya) es ausnimmt (Nils 2026-11-11: myä „hundert“)
-const LAENGE_HELL = new Set([]);
 // Lehnwörter (Feld vocabulary.lehnwort, in der Bearbeiten-Maske setzbar): ein a vor zwei Konsonanten bleibt kurz, auch wenn das Arabische ein Alif schreibt
 // (banka, fanta, taxi, fransa – Nils 2026-11-13). Arabische Wörter derselben Form bleiben lang (mtǟ3hum, jzǟyri, twǟnsa).
 let _lehnFeld = null;
@@ -784,27 +783,20 @@ function lehnKurz(tr, st, en){
 // Einzelwörter, die Nils anders hört als die Regel ergibt (2026-11-13/14). Quelle: Nils nach Aufnahmen verschiedener Sprecher,
 // von Semia noch NICHT bestätigt. Neue Einträge nur, wenn Semia sie bestätigt oder mehrere Aufnahmen übereinstimmen. Je Vokalgruppe des Wortes ein Zeichen:
 // 'k' kurz ohne Markierung, 'E' kurzes helles ä, 'H' langes helles ǟ, 'L' lang (ā ī ū). Gilt auch im Satz und hinter dem Artikel.
-const LAENGE_WORT = {insha: ['k','k'], sba7: ['H'], sba7kum: ['H','k'], mashwiya: ['E','k','k'],
-  ija: ['k','k'],   // Nils 2026-11-18: ija ohne ä
-  muslam: ['k','E'],   // Nils 2026-11-18: musläm
-  maryam: ['E','k'],   // Nils 2026-11-18: märyam
-  allah: ['k','k'], allahu: ['k','k','k'],   // Nils 2026-11-18: allah ohne ä
-  ambulans: ['k','L','L'],   // Nils 2026-11-18: ambūlāns, ohne ä
-  sama7ni: ['L','k','k'],   // Nils 2026-11-18: sāma7ni, ohne ä
-  shwayya: ['E','k'], bishwayya: ['k','E','k'],   // Nils 2026-11-18: shwäyya (kommt in vielen Sätzen vor)
+const LAENGE_WORT = {
+  // Nur Wörter ohne eigene Vokabelzeile und ohne eigene Tabellenzelle. Alles andere steht im Feld vocabulary.anzeige (Zeile) oder az (Tabellenzelle); Aufräumen 2026-11-18.
+  insha: ['k','k'], sba7: ['H'], sba7kum: ['H','k'], mashwiya: ['E','k','k'],
+  maryam: ['E','k'],   // Nils 2026-11-18: märyam (Name, keine Vokabel)
+  allahu: ['k','k','k'],   // Nils 2026-11-18: allah ohne ä
+  ambulans: ['k','L','L'],   // Nils 2026-11-18: ambūlāns
   takil: ['H','k'], amis: ['E','k'], nitkallimik: ['k','E','k','k'],
   // helles a, Länge nach dem Arabischen (Alif = lang ǟ, sonst kurz ä)
-  shayyid: ['E','k'], milad: ['k','H'], miladik: ['k','H','k'], balik: ['H','k'], ta3ib: ['H','k'],   // shayyid: Nils 2026-11-18 shäyyid (vorher shayid H,k)
-  manish: ['H','k'], mahush: ['H','k'], mahish: ['H','k'], manash: ['H','k'], makumsh: ['H','k'], mahumsh: ['H','k'],
-  // Hörprobe 2026-11-15 (Nils): kurzes a vor Doppelkonsonant uneinheitlich; diese Wörter hört er dunkel/offen
-  dabbuza: ['k','L','k'], sakkar: ['k','k'], babbush: ['k','L'], kabbar: ['k','L'], wakkil: ['k','k'],
-  shajra: ['k','k'], madha: ['H','E'],   // madha-bi- „ich hätte gern“, Nils 2026-11-15: mǟdhä-biya (Semia: māḏā bī)
-  // Verneinung ma-…-sh und ma „Wasser“ (Nils 2026-11-14)
-  // Lehnwörter, Nils hört dunkles a (2026-11-14)
+  shayyid: ['E','k'], milad: ['k','H'], miladik: ['k','H','k'], balik: ['H','k'], ta3ib: ['H','k'],   // shayyid: Nils 2026-11-18 shäyyid
+  madha: ['H','E'],   // madha-bi- „ich hätte gern“, Nils 2026-11-15: mǟdhä-biya (Semia: māḏā bī)
   mer: ['k'],   // mer-rwayiq: min + el, kurz
-  najjim: ['E','k'], nnajjim: ['E','k'], najjimsh: ['E','k'], tnajjimsh: ['E','k'],
+  najjimsh: ['E','k'], tnajjimsh: ['E','k'],
   // Regelkarten-Tabellen (Formen ohne eigene Vokabelzeile), Anzeige nach der Klang-Regel (Nils 2026-11-17: Vorschlag bestätigt, nicht einzeln gehört)
-  sakin: ['H','k'], sakna: ['E','k'], saknin: ['E','k'], makil: ['H','k'], maklin: ['H','k'], makul: ['H','k'], laz: ['H']};
+  makil: ['H','k'], maklin: ['H','k'], makul: ['H','k'], laz: ['H']};
 // Hinweiswörter hatha, hathi, hathuma, hathika, hathukum, hathaka: ha- spricht Nils hell lang (hǟtha), die Endung -a bleibt a, nie ä (Nils 2026-11-13)
 const LAENGE_HA = new Set(['hatha','hathi','hathuma','hathika','hathukum','hathaka']);
 // Anzeige-Stufe (Nils 2026-11-14): 'klang' = Länge und Klang (ā ī ū, ǟ, ä), 'laenge' = nur Länge (ā ī ū), 'aus' = nichts.
@@ -842,7 +834,6 @@ function laengeHtmlSlots(tr, sl, v){
     g.forEach(([st], k) => { const a = tr.lastIndexOf(' ', st) + 1, z = tr.indexOf(' ', st), wd = tr.slice(a, z < 0 ? tr.length : z).toLowerCase().replace(/[^a-z0-9]/g, '');
       if(!LAENGE_HA.has(wd)) return; if(!g.slice(0, k).some(([s2]) => s2 >= a)) sl[k] = 'H'; if(sl[k] === 'E') sl[k] = 'k'; });
   }
-  if(!fix && sl && sl.length === 1 && LAENGE_HELL.has(tr.toLowerCase())) sl = ['E'];
   if(g.length && !fix){
     const re = /[A-Za-z0-9'ʔ]+/g, toks = []; let m; while((m = re.exec(tr))) toks.push([m.index, m.index + m[0].length, m[0].toLowerCase()]);
     let c = (sl && sl.length === g.length) ? sl.slice() : null, treffer = false;
@@ -856,7 +847,6 @@ function laengeHtmlSlots(tr, sl, v){
   if(!sl || !g.length || g.length !== sl.length || !sl.some(x => x==='L'||x==='H'||x==='E'||x==='e')) return tr;
   if(!fix && sl.includes('H')){
     sl = sl.slice();
-    g.forEach(([st], k) => { if(sl[k]==='H'){ const a = tr.lastIndexOf(' ', st) + 1, z = tr.indexOf(' ', st); if(LAENGE_DUNKEL.has(tr.slice(a, z < 0 ? tr.length : z).toLowerCase())) sl[k] = 'L'; } });
   }
   let h = '', p = 0;
   g.forEach(([s,e,t],k) => {
