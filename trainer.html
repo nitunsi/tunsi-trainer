@@ -10040,7 +10040,7 @@ const TRANSLIT_RULES = [
       if(!v.ar || !v.tr || v.ar.includes('/') || v.tr.includes('/')) return false;
       const connectors = /^(el|il|es|et|ej|ed|en|er|ez|eth|w|l|b|f)$/i;
       let arWords = v.ar.split(/\s+/).filter(w => w && !/^(و|وَ|وْ|في)$/.test(w)).length;
-      if(/شاء الله/.test(v.ar)) arWords -= 2;
+      if(/شاء الله/.test(v.ar.replace(/[\u064B-\u065F\u0670]/g, ''))) arWords -= 2;   // إِنْ شَاءَ الله = inshallah (auch mit Vokalzeichen)
       // Verneinung ma-X-sh (seit 2026-11-17 mit Bindestrichen) sind im Arabischen zwei Wörter (ما يخدمش): ma zählt einzeln
       const trT = v.tr.replace(/(^|\s)ma-(?=[^\s]+-sh(?=\s|$|[.,!?;:]))/gi, '$1ma ');
       const trWords = trT.split(/\s+/).filter(w => w && !connectors.test(w)).length;
