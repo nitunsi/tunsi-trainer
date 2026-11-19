@@ -490,17 +490,28 @@ function wurzelZeile(v){
 }
 // Wortfamilie (Nils 2026-11-13): andere Vokabeln mit derselben Wurzel, ohne Wechselkarten-Formen und ausgeblendete; höchstens 8, nach Bedeutung gekürzt
 let _wzIndex = null, _wzIndexN = -1;
-function wortfamilie(v){
-  if(!v || !v.wz) return [];
+// Gruppen der Wortfamilie: ein Eintrag je Verb (alle Zeilen einer Konjugationstabelle sind dasselbe Verb), dazu Nomen/Adjektive/anderes.
+// Verbzeilen mit deutschem „er …“ gelten hier NICHT als bloße Form: sie sind die Grundform des Verbs (Nils 2026-11-19, „Saft“ zeigte das Verb nicht).
+function wortfamilieGruppen(v){
+  if(!v || !v.wz) return {verben: [], rest: [], alle: []};
   if(!_wzIndex || _wzIndexN !== ALL_VOCAB.length){
     _wzIndex = {}; _wzIndexN = ALL_VOCAB.length;
     ALL_VOCAB.forEach(e => { if(e.wz && !e.ausb && !e.cr) (_wzIndex[e.wz+'|'+(e.wzg||'')] = _wzIndex[e.wz+'|'+(e.wzg||'')] || []).push(e); });   // homonyme Wurzeln (wurzel_gruppe) bilden getrennte Familien
   }
+  const alle = _wzIndex[v.wz+'|'+(v.wzg||'')] || [];
+  const fk = e => e.cj ? (e._fk || (e._fk = JSON.stringify(e.cj))) : null;
+  const eigenFk = fk(v);
+  const formDe = e => /^(er|sie|ich|du|wir|ihr|man)\s/i.test(e.en||'') || /!\s*$/.test(e.en||'') || /^\(?(Perfekt|Präsens)/i.test(e.en||'');
+  const verbGrp = new Map();
+  alle.forEach(e => { const k = fk(e); if(!k || k === eigenFk) return; const alt = verbGrp.get(k), p3 = e.cj && e.cj.past && e.cj.past['3sg_m'] && e.cj.past['3sg_m'].darija; if(!alt || (p3 && String(e.tr||'').toLowerCase() === String(p3).toLowerCase())) verbGrp.set(k, e); });
   const gesehen = new Set([String(v.tr||'').toLowerCase()]);
-  // Verbformen (er schreibt, ich schrieb, Schreibt!) gehören in die Tabelle, nicht in die Wortfamilie; Nomen und Adjektive zuerst
-  const form = e => /^(er|sie|ich|du|wir|ihr|man)\s/i.test(e.en||'') || /!\s*$/.test(e.en||'') || /^\(?(Perfekt|Präsens)/i.test(e.en||'');
-  return (_wzIndex[v.wz+'|'+(v.wzg||'')] || []).filter(e => { if(e.id === v.id || form(e)) return false; const k = String(e.tr||'').toLowerCase(); if(gesehen.has(k)) return false; gesehen.add(k); return true; })
-    .sort((a, b) => (a.cj ? 1 : 0) - (b.cj ? 1 : 0));
+  const rest = alle.filter(e => e.id !== v.id && !e.cj && !formDe(e) && !gesehen.has(String(e.tr||'').toLowerCase()) && gesehen.add(String(e.tr||'').toLowerCase()));
+  return {verben: [...verbGrp.values()], rest, alle};
+}
+// Wortfamilie (Nils 2026-11-13): andere Vokabeln mit derselben Wurzel, ohne Wechselkarten-Formen und ausgeblendete; Nomen und Adjektive zuerst, dann je Verb ein Eintrag
+function wortfamilie(v){
+  const g = wortfamilieGruppen(v);
+  return [...g.rest, ...g.verben];
 }
 function wortfamilieHtml(v){
   const fam = wortfamilie(v); if(!fam.length) return '';
@@ -5329,15 +5340,7 @@ function showWurzelModal(vocabId){
   const ar = v.wza ? '<div dir="rtl" style="font-family:\'Playfair Display\',serif;font-size:2rem;color:var(--gold2);letter-spacing:.3em;text-align:center;margin:.2rem 0 .1rem">'+escHtml(v.wza)+'</div>' : '';
   let h = ar + '<div style="text-align:center;font-size:.95rem;color:var(--text);margin-bottom:.6rem">Wurzel <b>'+escHtml(v.wz)+'</b></div>';
   if(st || art) h += '<div style="font-size:.85rem;color:var(--muted);line-height:1.6;margin-bottom:.6rem">'+[st, art].filter(Boolean).map(t => (typeof glossarWrap==='function' ? glossarWrap(escHtml(t)) : escHtml(t))).join(' · ')+'</div>';
-  wortfamilie(v);   // baut _wzIndex
-  const alle = (_wzIndex && _wzIndex[v.wz+'|'+(v.wzg||'')]) || [];
-  const fk = e => e.cj ? (e._fk || (e._fk = JSON.stringify(e.cj))) : null;
-  const eigenFk = fk(v), formDe = e => /^(er|sie|ich|du|wir|ihr|man)\s/i.test(e.en||'') || /!\s*$/.test(e.en||'') || /^\(?(Perfekt|Präsens)/i.test(e.en||'');
-  const verbGrp = new Map();   // ein Eintrag je Verb (alle Zeilen einer Konjugationstabelle gehören zu demselben Verb)
-  alle.forEach(e => { const k = fk(e); if(!k || k === eigenFk) return; const alt = verbGrp.get(k), p3 = e.cj && e.cj.past && e.cj.past['3sg_m'] && e.cj.past['3sg_m'].darija; if(!alt || (p3 && String(e.tr||'').toLowerCase() === String(p3).toLowerCase())) verbGrp.set(k, e); });
-  const gesehenTr = new Set([String(v.tr||'').toLowerCase()]);
-  const rest0 = alle.filter(e => e.id !== v.id && !e.cj && !formDe(e) && !gesehenTr.has(String(e.tr||'').toLowerCase()) && gesehenTr.add(String(e.tr||'').toLowerCase()));
-  const fam = [...verbGrp.values(), ...rest0];
+  const g = wortfamilieGruppen(v), alle = g.alle, verbGrp = {values: () => g.verben}, rest0 = g.rest, fam = [...g.verben, ...g.rest];
   const zeile = e => '<div style="display:flex;gap:.6rem;align-items:baseline;padding:.25rem 0;border-bottom:1px solid rgba(58,50,40,.4)"><span style="flex:0 0 auto;min-width:6rem;font-size:.8rem"><a href="#" onclick="event.preventDefault();showWurzelModal('+e.id+')" style="color:var(--text);text-decoration:none;border-bottom:1px dotted var(--muted)">'+(typeof trL==='function' ? trL(e) : escHtml(e.tr))+'</a></span>'
     +'<span dir="rtl" style="font-family:\'Playfair Display\',serif;font-size:1rem;color:var(--gold2);flex:0 0 auto">'+escHtml(e.ar||'')+'</span>'
     +'<span style="font-size:.78rem;color:var(--muted);min-width:0">'+escHtml(String(e.en||'').slice(0, 60))+'</span></div>';
