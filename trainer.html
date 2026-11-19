@@ -8103,6 +8103,7 @@ function kursLaenge(html, roh, grossNein){   // roh: Fließtext der Regelkarten 
         if(roh && (/[\u00C0-\u024F\u1E00-\u1EFF]/.test(t.charAt(off - 1)) || /[\u00C0-\u024F\u1E00-\u1EFF]/.test(t.charAt(off + w.length)))) return w;   // Teil eines Wortes mit Sonderzeichen (Fatḥa)
         if(/^\d+$/.test(w) || w.length < 2 || LAENGE_TEXT_NICHT.has(w.toLowerCase()) || LAENGE_PARTIKEL.has(w.toLowerCase())) return w;
         if(/^(…|\.\.\.)/.test(t.slice(off + w.length))) return w;
+        if(/(^|[^a-z0-9])madha-$/i.test(t.slice(0, off))) return w;   // madha-bina/-bik/-bih …: Suffix nach madha- ist kein eigenes Wort (bina = „wir bauten“ würde sonst bīna)
         if(roh && seg0 && off === 0 && w + '-' === t) return w;   // fett gesetzter Präfix (**ma-**, **yi-**): Beschriftung, kein Wort
         if(grossNein && /^[A-ZÄÖÜ]/.test(w)) return w;
         return kursWortL(w);
