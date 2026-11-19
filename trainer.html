@@ -6120,7 +6120,7 @@ function datenChecks(){
   const AR_TR_AUSNAHMEN = new Set(AR_TR_OK);
   //     Ausgeglichen wird, was nur Schreibweise ist: إ ohne Vokal = i, Schluss-Alif nach و, Artikel nach bi- (بِالطَّبِيعَة = bit-tabi3a),
   //     و/ي zwischen Vokalen (7loua = حْلُوَة, radio = رَادْيُو), ay = ai, w/y am Ende nach Konsonant = u/i.
-  const ohneArt = w => w.replace(/^(el|il|e[a-z0-9]{1,2})-/, '');
+  const ohneArt = w => w.replace(/^b-el-/, 'bi').replace(/^(el|il|e[a-z0-9]{1,2})-/, '');   // b-el- (Mondbuchstabe): Arabisch liest bi + Wort (atrAr lässt den Artikel nach bi weg)
   const atrN = x => x.replace(/^a(?=[aiuE])/, '').replace(/uw(?=[aiuE])/g, 'u').replace(/([^aiuEy])y(?=[aiuE])/g, '$1i').replace(/([aE])y(?![aiuEy])/g, '$1i')
     .replace(/([^aiuE])y$/, '$1i').replace(/([^aiuE])w$/, '$1u').replace(/([aiu])\1+/g, '$1').replace(/([^aiuE])\1\1+/g, '$1$1');
   const atrMuster = t => new RegExp('^'+atrN(rkNorm(ohneArt(t), 'e').replace(/e/g, 'E')).replace(/E+/g, '[ai]')+'$');
@@ -6206,6 +6206,7 @@ const KURS_HDT_OK = [
 // Ausnahmen der Prüfungen 15/16 (Vokabel-id) — Arabisch und Umschrift passen, der Vergleich kann es nicht sehen
 const AR_TR_OK = [
   282, 283, 424, 928, 931, 1488, 2252, 2570, 2593, 2695,   // Lehnwörter (pièce, espadrille, kilomètre, parking, sport, souvenir, plombier, gants, plateau): p = ب, Umschrift nach dem Französischen
+  2352,                         // b-el-car: بِالكار, Lehnwort car „Bus“ (frz.), c = ك
   562, 4365,                    // shukran, khassatan: MSA mit Tanwin (شُكْرًا, خَاصَّةً), die Prüfung liest ً nicht als -n
   768, 3666,                    // allah, wallahi: اللَّه / وَاللهِ in fester Schreibung mit Artikel
   738,                          // sidaliyya: صَيْدَلِيَّة wie TUNICO, markierte Fatha bleibt (SKILL.md, Lautlehre Regel 9)
