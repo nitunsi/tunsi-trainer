@@ -37,3 +37,30 @@ Alles bisher nur gelesen und gesammelt, **nichts in Supabase geändert**. Detail
 - Fehlende Verben: welche anlegen, fällig oder nicht.
 - Plurale: welche wir führen wollen.
 - Imperative: reicht „abgeleitet“, oder soll jede Form aus einer Quelle stammen?
+
+---
+
+# Ergänzung (19.11. abends): alle übrigen TUNICO-Daten
+
+Oben stehen nur die **Verben** und der **Plural** der Nomen. TUNICO hat 7543 Lemmata (3978 Nomen, 1543 Verben, 527 ohne Wortart, 348 Adjektive, 208 Partizipien, 205 Sammelnomen, 153 aktive und 87 passive Partizipien, 105 Adverbien, 73 Ortsnamen, 52 Pluralnomen, 34 Zahlwörter, 34 Konjunktionen, 30 Präpositionen …) und im Korpus 300 Verben, 300 Nomen, 64 Adjektive und 9874 Wortformen. Weitere Aufgaben:
+
+10. **Wurzel gegen TUNICO (begonnen, siehe unten).**
+11. **Nomen und Adjektive, Singularschreibung und Vokale:** von 3978 TUNICO-Nomen stehen bei uns nur 729 exakt gleich geschrieben (87 von 348 Adjektiven). Gerüst-gleiche Wörter mit anderer Schreibung sichten (Klasse: nur Schreibweise, Vokal, Genus). Dazu Genus (`#n_f`).
+12. **Partizipien und Adjektivformen:** aktives und passives Partizip, Feminin (`#ap_f`, `#pp_f`, `#adj_f` 306), Plural (`#ap_pl`, `#pp_pl`, `#adj_pl` 316), Elativ (`#adj_elative` 19) gegen unsere Zeilen.
+13. **Dual, Einheitsnomen, Sammelnomen:** `#n_dual` 95, `#n_unit` 141 und 98 Plurale dazu, Sammelnomen (205) gegen unsere Zeilen (z. B. Ei / Eier, Orange / Orangen).
+14. **Fehlende häufige Nomen und Adjektive** nach Korpus-Häufigkeit (`tunico_corpus_nouns`, `_adjectives`, `_wordforms`), nur nach Rückfrage anlegen.
+15. **Übrige Wortarten:** Adverbien (105), Zahlwörter (34), Konjunktionen (34), Präpositionen (30), Pronomen, Ortsnamen (73), Interjektionen.
+16. **Bedeutungen der Nomen und Adjektive** (Facetten wie bei den Verben), danach.
+17. **Die 1243 Verben außerhalb der Korpus-Top-300** (`tunico_import` hat 1543 Verben): Grundform, Präsens (3. Sg.), Bedeutung.
+18. **Peace Corps und Ninja** systematisch gegen unsere Zeilen (bisher nur zum Nachschlagen), danach SL24-Sätze auf Schreibweisen.
+
+## Ergebnis Wurzel (Aufgabe 10, nur gelesen)
+
+- **Aus TUNICO verknüpfte Wurzeln (1943 Einträge, `wurzel_quelle` beginnt mit `tunico:`):** Die Verknüpfung stimmt überall (alle IDs vorhanden), die Wurzel ist bei 1936 gleich. Die 7 Abweichungen: 4 sind nur Leerzeichen (j y b gegen j-y-b: 1712 jab, 1354 jibt, 1199 njib, 2236 yjib); **3 zeigen auf das falsche TUNICO-Verb tab** („bereuen“, Wurzel t-w-b) statt auf „gar werden“ (t-y-b): 3392 tab, 4778 tibt, 3429 ytib. Aufgabe: Verknüpfung dort korrigieren (nur nach Rückfrage).
+- **Nicht aus TUNICO (416):** 59 gleich, 14 anders, 343 ohne exaktes TUNICO-Lemma. Die 14 sind meist bewusste Handarbeit mit vollständigen schwachen Buchstaben (ukht ʔ-kh-w, damm d-m-m, fumm f-w-h, yidd y-d-y, mya m-ʔ-y, nsa n-s-w) und kein Fehler; zu klären bleibt msattak (m-s-t, TUNICO stk) und 7it (7-y-t, TUNICO 7wt, im Arabischen beides möglich). Für die 343 ohne exaktes Lemma müsste man über Formen/Familien gehen.
+- **Unsere 291 Verbtabellen:** jede hat genau eine Wurzel, einen Stamm und einen Verbtyp. Das ist in sich stimmig.
+- **Einträge ohne Wurzel:** 578 Einzelwörter, davon 186 mit exaktem TUNICO-Lemma samt Wurzel (178 eindeutig). Das sind überwiegend Lehnwörter und Partikel (bnk, vrl, drys, blkn …), für die TUNICO eine Pseudowurzel angibt. Nicht blind übernehmen: erst festlegen, welche Wortarten überhaupt eine Wurzel bekommen (nur echte Wurzelwörter, keine Lehnwörter), dann ergänzen.
+
+## Zusätzliche Entscheidungen von Nils
+- Welche Wortarten bekommen eine Wurzel (keine Lehnwörter, keine Partikel)?
+- msattak und 7it: Wurzel so lassen oder an TUNICO angleichen?
