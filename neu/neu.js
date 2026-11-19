@@ -1371,6 +1371,7 @@ window.neuVReset = function(){
   NEUF.due = NEUF.neu = NEUF.audio = NEUF.flag = NEUF.lw = false;
   vocabLevelFilter = 'all'; vocabTopicFilter = vocabLsFilter = vocabPsFilter = vocabAudioFilter = 'all';
   ['lvl-filter-select','vl-topic-filter','vl-ls-filter','vl-ps-filter','vl-audio-filter'].forEach(id => { const e = $(id); if(e) e.value = 'all'; });
+  vocabWzFilter = null;
   const q = $('vocab-search'); if(q) q.value = '';
   const d = $('due-until-filter'); if(d) d.value = '';
   document.querySelectorAll('#neu-vchips .neu-chip[data-k]').forEach(e => e.classList.remove('on'));
@@ -1425,11 +1426,12 @@ window.renderVocabTableRows = function(){
     const psIcon = ps==='approved'?'✅' : ps==='rejected'?'❌' : ps==='unknown'?'❓' : ps==='pending'?'⏳' : ps==='skipped'?'⏭' : ps==='suggested'?'💡' : ps==='accepted'?'🆗' : '';
     // Anzeige-Schreibweise mit Länge/Klang (hǟtha, sbǟ7) neben der Umschrift, wenn sie abweicht (Nils 2026-11-14)
     let trLx = ''; try{ const d = typeof trL === 'function' ? trL(v) : ''; if(d && d.replace(/<[^>]+>/g,'') !== v.tr) trLx = ' <span style="color:var(--gold2)" title="Aussprache: Länge und Klang">· '+d+'</span>'; }catch(e){}
+    const wzBtn = v.wz ? '<button class="ib wz-ib" onclick="event.stopPropagation();showWurzelModal('+v.id+')" title="Wurzel und gleiche Wurzel" aria-label="Wurzel">🌿</button>' : '';
     const audio = v.au ? '<button class="ib" onclick="event.stopPropagation();playVocabAudio(\''+v.au.replace(/'/g,"\\'")+'\',event,'+(v.aus||0)+','+(v.aue||0)+')" title="Aussprache" aria-label="Aussprache">🔊</button>' : '';
     h += '<div class="neu-vrow" style="box-shadow:inset 4px 0 0 '+col+'" onclick="neuRowTap(event,'+(v.id||0)+','+i+')"><input type="checkbox" data-vid="'+v.id+'" onchange="toggleVocabSelect(this)"'+(selectedVocabIds.has(v.id)?' checked':'')+'/>'
       + '<div class="ar">'+hl(v.ar, hq, true)+'</div>'
       + '<div class="mid"><div class="t1">'+hl(v.en, hq)+'</div><div class="t2 neu-mono">'+hl(v.tr, hq)+trLx+conj+(v.lw?' <span class="neu-lw" title="Lehnwort: '+({frz:'französisch',engl:'englisch',ital:'italienisch','türk':'türkisch',span:'spanisch',sonst:'andere Sprache'}[v.lw]||v.lw)+'">⇄</span>':'')+'</div><div class="t2">'+v.ls+flag+(psIcon?' · '+psIcon:'')+'</div></div>'
-      + '<div class="rt"><div class="lv"><span class="dot" style="background:'+col+'"></span>'+(!cs.isNew?'Stufe '+level:'Neu')+'</div><div class="t2" style="'+(isDueNow?'color:var(--red)':'')+'">'+(started?due:'—')+'</div>'+(audio?'<div style="margin-top:.3rem">'+audio+'</div>':'')+'</div></div>';
+      + '<div class="rt"><div class="lv"><span class="dot" style="background:'+col+'"></span>'+(!cs.isNew?'Stufe '+level:'Neu')+'</div><div class="t2" style="'+(isDueNow?'color:var(--red)':'')+'">'+(started?due:'—')+'</div>'+((audio||wzBtn)?'<div style="margin-top:.3rem;display:flex;gap:.2rem;justify-content:flex-end">'+audio+wzBtn+'</div>':'')+'</div></div>';
   });
   h += '</div>';
   if(vocab.length < vocabFull.length){
@@ -1453,6 +1455,7 @@ function fillSheet(id){
   const sum = $('ei-summary'); if(sum) sum.innerHTML = parts.join(' · ');
   const au = $('ei-audio'); if(au) au.style.display = v.au ? '' : 'none';
   const cjb = $('ei-conj'); if(cjb) cjb.style.display = v.cj ? '' : 'none';
+  const wzb = $('ei-wz'); if(wzb) wzb.style.display = v.wz ? '' : 'none';
 }
 window.neuEditAudio = function(){ const v = vById(_editSheetVocabId); if(v && v.au) playVocabAudio(v.au, null, v.aus||0, v.aue||0); };
 window.neuDueNow = function(){ const e = $('ei-nr'); if(e) e.value = toLocalInputDE(new Date()); };

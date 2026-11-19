@@ -4990,6 +4990,7 @@ let vocabTopicFilter = 'all';
 let vocabLsFilter = 'all';
 let vocabPsFilter = 'all';
 let vocabAudioFilter = 'all'; // 'all' | 'with' | 'without'
+let vocabWzFilter = null;   // {wz, wzg}: nur Wörter dieser Wurzel (Knopf 🌿 in der Vokabelliste)
 let vocabSinceDays = null; // z.B. 7 = "nur status_updated_at innerhalb der letzten 7 Tage"
 const selectedVocabIds = new Set();
 let vocabTableRenderedIds = []; // IDs der aktuell in #vocab-table gerenderten Zeilen (fuer schnellen Select-All-Abgleich ohne DOM-Scan)
@@ -5234,7 +5235,7 @@ function filterVocabList(){
   const dueUntilEl = document.getElementById('due-until-filter');
   const dueUntil = dueUntilEl && dueUntilEl.value ? new Date(dueUntilEl.value + 'T23:59:59') : null;
 
-  let vocab = vocabSourceFilter === 'course' ? [] : (cLesson==='all' ? ALL_VOCAB : gv());
+  let vocab = vocabSourceFilter === 'course' ? [] : (vocabWzFilter ? ALL_VOCAB.filter(e => e.wz === vocabWzFilter.wz && (e.wzg||'') === (vocabWzFilter.wzg||'') && !e.ausb && !e.cr) : (cLesson==='all' ? ALL_VOCAB : gv()));
   if(showOnlyFlagged) vocab = vocab.filter(v => flaggedVocab.has(v.tr));
 
   // Level-Filter
@@ -5307,12 +5308,62 @@ function filterVocabList(){
 function renderSinceBanner(){
   const el = document.getElementById('vl-since-banner');
   if(!el) return;
+  if(vocabWzFilter && !vocabSinceDays){
+    el.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;padding:.5rem .7rem;background:rgba(74,158,109,.1);border:1px solid var(--green);border-radius:6px;font-size:.78rem;color:var(--text);gap:.6rem">'
+      + '<span>🌿 Nur Wurzel '+escHtml(vocabWzFilter.wz)+'</span>'
+      + '<button onclick="clearWurzelFilter()" style="background:none;border:1px solid var(--green);color:var(--green);font-family:\'IBM Plex Mono\',monospace;font-size:.68rem;padding:.15rem .5rem;cursor:pointer;border-radius:3px">✕ Filter aufheben</button></div>';
+    return;
+  }
   if(!vocabSinceDays){ el.innerHTML = ''; return; }
   el.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;padding:.5rem .7rem;background:rgba(74,158,109,.1);border:1px solid var(--green);border-radius:5px;font-size:.75rem;color:var(--green)">'
     + '<span>🕐 Freigegeben in den letzten ' + vocabSinceDays + ' Tagen</span>'
     + '<button onclick="clearSinceFilter()" style="background:none;border:1px solid var(--green);color:var(--green);font-family:\'IBM Plex Mono\',monospace;font-size:.68rem;padding:.15rem .5rem;cursor:pointer;border-radius:3px">✕ zurücksetzen</button>'
     + '</div>';
 }
+// ── Wurzel-Fenster der Vokabelliste (Nils 2026-11-19): Wurzel, Stamm, Verbtyp, alle Wörter mit gleicher Wurzel ──
+const WZ_SCHWACH = new Set(['hohl','schwaches_ende','schwach_anfang','mehrfach']);
+function showWurzelModal(vocabId){
+  const v = VOCAB_BY_ID[vocabId]; if(!v || !v.wz) return;
+  const st = !v.st || v.st==='?' ? '' : v.st==='Iq' ? 'Stamm I (vier Buchstaben)' : v.st==='t-I' ? 't-Stamm I' : v.st+'. Stamm';
+  const art = v.vt ? (WZ_SCHWACH.has(v.vt) ? 'schwaches Verb · ' : '') + (VERBTYP_DE[v.vt] || v.vt) : '';
+  const ar = v.wza ? '<div dir="rtl" style="font-family:\'Playfair Display\',serif;font-size:2rem;color:var(--gold2);letter-spacing:.3em;text-align:center;margin:.2rem 0 .1rem">'+escHtml(v.wza)+'</div>' : '';
+  let h = ar + '<div style="text-align:center;font-size:.95rem;color:var(--text);margin-bottom:.6rem">Wurzel <b>'+escHtml(v.wz)+'</b></div>';
+  if(st || art) h += '<div style="font-size:.85rem;color:var(--muted);line-height:1.6;margin-bottom:.6rem">'+[st, art].filter(Boolean).map(t => (typeof glossarWrap==='function' ? glossarWrap(escHtml(t)) : escHtml(t))).join(' · ')+'</div>';
+  wortfamilie(v);   // baut _wzIndex
+  const alle = (_wzIndex && _wzIndex[v.wz+'|'+(v.wzg||'')]) || [];
+  const fk = e => e.cj ? (e._fk || (e._fk = JSON.stringify(e.cj))) : null;
+  const eigenFk = fk(v), formDe = e => /^(er|sie|ich|du|wir|ihr|man)\s/i.test(e.en||'') || /!\s*$/.test(e.en||'') || /^\(?(Perfekt|Präsens)/i.test(e.en||'');
+  const verbGrp = new Map();   // ein Eintrag je Verb (alle Zeilen einer Konjugationstabelle gehören zu demselben Verb)
+  alle.forEach(e => { const k = fk(e); if(!k || k === eigenFk) return; const alt = verbGrp.get(k), p3 = e.cj && e.cj.past && e.cj.past['3sg_m'] && e.cj.past['3sg_m'].darija; if(!alt || (p3 && String(e.tr||'').toLowerCase() === String(p3).toLowerCase())) verbGrp.set(k, e); });
+  const gesehenTr = new Set([String(v.tr||'').toLowerCase()]);
+  const rest0 = alle.filter(e => e.id !== v.id && !e.cj && !formDe(e) && !gesehenTr.has(String(e.tr||'').toLowerCase()) && gesehenTr.add(String(e.tr||'').toLowerCase()));
+  const fam = [...verbGrp.values(), ...rest0];
+  const zeile = e => '<div style="display:flex;gap:.6rem;align-items:baseline;padding:.25rem 0;border-bottom:1px solid rgba(58,50,40,.4)"><span style="flex:0 0 auto;min-width:6rem;font-size:.8rem"><a href="#" onclick="event.preventDefault();showWurzelModal('+e.id+')" style="color:var(--text);text-decoration:none;border-bottom:1px dotted var(--muted)">'+(typeof trL==='function' ? trL(e) : escHtml(e.tr))+'</a></span>'
+    +'<span dir="rtl" style="font-family:\'Playfair Display\',serif;font-size:1rem;color:var(--gold2);flex:0 0 auto">'+escHtml(e.ar||'')+'</span>'
+    +'<span style="font-size:.78rem;color:var(--muted);min-width:0">'+escHtml(String(e.en||'').slice(0, 60))+'</span></div>';
+  if(!fam.length){
+    h += '<div style="font-size:.82rem;color:var(--muted)">Keine weiteren Wörter mit dieser Wurzel in der Liste.</div>';
+  } else {
+    const verben = [...verbGrp.values()], rest = rest0;
+    h += '<div style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin:.3rem 0 .2rem">Gleiche Wurzel · '+fam.length+'</div>';
+    if(verben.length) h += '<div style="font-size:.68rem;color:var(--muted);margin-top:.3rem">Verben</div>'+verben.map(zeile).join('');
+    if(rest.length) h += '<div style="font-size:.68rem;color:var(--muted);margin-top:.4rem">Nomen, Adjektive und anderes</div>'+rest.map(zeile).join('');
+    h += '<div style="margin-top:.7rem"><button onclick="setWurzelFilter('+v.id+')" style="padding:.45rem .9rem;background:var(--surface);border:1px solid var(--gold);color:var(--gold2);border-radius:5px;font-size:.78rem;font-family:\'IBM Plex Mono\',monospace;cursor:pointer">Nur diese Wurzel in der Liste zeigen ('+alle.length+' Einträge)</button></div>';
+  }
+  document.getElementById('wz-modal-title').innerHTML = '<bdi dir="rtl">'+escHtml(v.ar||v.tr||'')+'</bdi>' + (v.tr ? ' · <bdi dir="ltr">'+(typeof trL==='function' ? trL(v) : escHtml(v.tr))+'</bdi>' : '');
+  document.getElementById('wz-modal-body').innerHTML = h;
+  document.getElementById('wz-modal').style.display = 'block';
+}
+function closeWurzelModal(){ const m = document.getElementById('wz-modal'); if(m) m.style.display = 'none'; }
+function setWurzelFilter(vocabId){
+  const v = VOCAB_BY_ID[vocabId]; if(!v || !v.wz) return;
+  vocabWzFilter = {wz: v.wz, wzg: v.wzg || ''};
+  closeWurzelModal();
+  if(typeof closeVocabEdit === 'function') closeVocabEdit();
+  filterVocabList();
+}
+function clearWurzelFilter(){ vocabWzFilter = null; filterVocabList(); }
+function showWurzelFromSheet(){ if(_editSheetVocabId) showWurzelModal(_editSheetVocabId); }
 function clearSinceFilter(){
   vocabSinceDays = null;
   filterVocabList();
@@ -11779,6 +11830,15 @@ window.addEventListener('unhandledrejection', (e) => {
     <div id="conj-modal-body"></div>
   </div>
 </div>
+<div id="wz-modal" style="display:none;position:fixed;inset:0;z-index:215;background:rgba(0,0,0,.6)" onclick="if(event.target===this)closeWurzelModal()">
+  <div style="position:absolute;bottom:0;left:0;right:0;background:var(--surface2);border-top:2px solid var(--gold);padding:1rem;box-shadow:0 -4px 14px rgba(0,0,0,.5);max-height:80vh;max-height:80dvh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem">
+      <span id="wz-modal-title" style="font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold)">Wurzel</span>
+      <button onclick="closeWurzelModal()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:.2rem .5rem">✕</button>
+    </div>
+    <div id="wz-modal-body"></div>
+  </div>
+</div>
 
 <!-- Grammatik Modal (Kurs-Übungen) -->
 <div id="grammar-modal" style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.6)" onclick="if(event.target===this)closeGrammarModal()">
@@ -11799,6 +11859,7 @@ window.addEventListener('unhandledrejection', (e) => {
       <div style="flex:1;min-width:0"><div class="sh-title">Vokabel bearbeiten</div><div id="ei-summary" class="sh-sum"></div></div>
       <button id="ei-audio" class="sh-ib" style="display:none" onclick="neuEditAudio()" aria-label="Aussprache">🔊</button>
       <button id="ei-conj" class="sh-ib" style="display:none" onclick="showConjModal(_editSheetVocabId)" aria-label="Konjugationstabelle" title="Konjugationstabelle">🔠</button>
+      <button id="ei-wz" class="sh-ib" style="display:none" onclick="showWurzelFromSheet()" aria-label="Wurzel und gleiche Wurzel" title="Wurzel und gleiche Wurzel">🌿</button>
       <button class="sh-ib" onclick="closeVocabEdit()" aria-label="Schließen">✕</button>
     </div>
   </div>
