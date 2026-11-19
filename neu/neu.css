@@ -910,3 +910,6 @@ body.neu-bar main{padding-bottom:calc(var(--barh,0px) + 1.2rem)!important}
 #result-screen .neu-res .msg{font-size:1.1rem;font-weight:500;margin-top:.1rem;color:var(--text)}
 #result-screen .neu-res .sub{font-size:.95rem;margin-top:.1rem}
 .neu-lw{color:var(--muted);font-size:.8em;margin-left:.25rem;cursor:help}
+
+/* Wurzel-Knopf in der Vokabelliste: bei wenig Platz nur im Bearbeiten-Blatt (Nils 2026-11-19) */
+@media (max-width:420px){ .neu-vrow .rt .wz-ib{display:none} }
