@@ -8025,7 +8025,7 @@ function showGlossar(){
 }
 // Verbformen im Fließtext der Regelkarten mit Länge/Klang anzeigen (yakul → yǟkul, kla → klä), Arabisch aus den Verb-Vokabeln
 let _verbArByTr = null;
-const LAENGE_TEXT_NICHT = new Set(['tut','allahu','trank','damit','zur','bus','ich','du','wir','ihr','sie','ein','und','oder','nicht','ist','sind','bat','kam','fand','sang','rief','ging','hat','bin','war','man','kann','da','so','wo','am','im','um','an','in','es','er','die','das','der','den','mit','mal','nur','nie','tun']);   // deutsche Wörter, die zufällig wie eine tunesische Form aussehen
+const LAENGE_TEXT_NICHT = new Set(['tut','allahu','trank','damit','zur','bus','ich','du','wir','ihr','sie','ein','und','oder','nicht','ist','sind','bat','kam','fand','sang','rief','ging','hat','bin','war','man','kann','da','so','wo','am','im','um','an','in','es','er','die','das','der','den','mit','mal','nur','nie','tun','fatha','kasra','damma','shadda','sukun','tanwin']);   // deutsche Wörter, die zufällig wie eine tunesische Form aussehen; Fachwörter der arabischen Schrift (Fatha usw.) sind kein Tunesisch (Nils 2026-11-19)
 function laengeImText(html){
   if(!_verbArByTr){
     _verbArByTr = {};
