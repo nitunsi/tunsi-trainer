@@ -64,3 +64,13 @@ Oben stehen nur die **Verben** und der **Plural** der Nomen. TUNICO hat 7543 Lem
 ## Zusätzliche Entscheidungen von Nils
 - Welche Wortarten bekommen eine Wurzel (keine Lehnwörter, keine Partikel)?
 - msattak und 7it: Wurzel so lassen oder an TUNICO angleichen?
+
+## Ergebnis Punkt 11–14 (19.11., nur gesammelt, nichts geändert)
+
+**Punkt 11 – Vokalabweichungen Einzelwörter:** Nach Abzug exakter Lemmata, Formen ((pl.)/(f.)/(komp.)) und der th/dh-Schreibung bleiben 35 echte Vokalunterschiede. Fast alle sind durch Ninja/Peace Corps (Audio, vokalisiertes Arabisch) gedeckt, TUNICO ist dort Dialekt-/Schreibvariante; -iyya statt -iya ist unsere Konvention (17.11.). Prüfliste: 998 stu7 (TUNICO sta7; stu7 evtl. Plural), 1005 dhaw (TUNICO thaww); optional 2740 sabnakh/sibnakh, 4294 disar/desar (e→i-Konvention). Genus ist nicht prüfbar (TUNICO hat keins).
+
+**Punkt 12 – Feminin/Plural/Elativ bei Adjektiven:** #adj_f 293 Formen (86 Lemmata bei uns, 23 exakt, 63 fehlen), #adj_pl 303 (98 Lemmata, 31 exakt, 67 fehlen), #adj_elative 19 (14 Lemmata, 10 exakt, 4 fehlen: abann, azyan, arkhas, azghar). Fehlende Feminine meist nur -iya statt -iyya (Notation) und einfache -a-Formen (3ziza, 7zina, bsita, fhima …).
+
+**Punkt 13 – Dual, Einheitsnomen, Instrumentalnomen:** Bei Lemmata, die wir führen: #n_dual 81 Formen (41 Lemmata, 6 exakt, 35 fehlen), #n_unit 136 (44 Lemmata, 12 exakt, 32 fehlen), #n_unit_pl 93 (33 Lemmata, 2 exakt, 31 fehlen), #n_inst 19 / #n_inst_pl 10 (je 3 Lemmata, fast alles fehlt). Beispiele Dual: 3ushrin, 7ajtin, dqiqtin, marrtin, nharayn, shahrin, yumin, nusfin, sub3in. Beispiele Einheitsnomen: 3adsa, 7abba, 7dida, babbusha. Das sind regelmäßige Bildungen (Dual -tin/-in/-ayn), nur lehrreich für wenige häufige Wörter (marrtin, yumin, shahrin, dqiqtin, nharayn). Vorschlag: nur häufige Dualformen als Anmerkung bei der Karte, nicht als eigene Vokabeln.
+
+**Punkt 14 – häufige Korpus-Nomen/Adjektive, die uns fehlen:** Nomen 61 von 300 (239 vorhanden), Adjektive 13 von 64 (51 vorhanden). Davon überwiegend Hochsprache/Politik/Lehnwörter oder Fremdwort-Marker: muzika/musiqa, nahtha, i3tisam (Streik), dustur, mawthu3 (Thema), mashru3 (Projekt), thaqafa (Kultur), mujtama3 (Gesellschaft), program, diplom, makyaj, itha3a (Radio), talfza (Fernseher), sbadri (Sportschuhe), shatt (Strand), dukhkhan (Rauch), bdan (Körper), tarikh (Datum/Geschichte), num (Schlaf), sil3a (Ware), nuqta, qat3a; Adjektive: watani (national), mgarba3 (durchgeknallt), zghayyir. Echte Alltagskandidaten (zuerst fragen: anlegen? fällig?): shatt, dukhkhan, bdan, num, tarikh, talfza, sbadri, qat3a, mawthu3, thaqafa, mgarba3, watani. Erst prüfen, ob sie bei uns unter anderer Schreibung schon stehen (Skelett-Abgleich nutzt nur das erste Wort).
