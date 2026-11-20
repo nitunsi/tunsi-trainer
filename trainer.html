@@ -482,9 +482,17 @@ function synonymNote(v){
 const VERBTYP_DE = {stark:'starkes Verb', hohl:'Hohlverb', geminiert:'geminiert', schwaches_ende:'schwaches Ende', schwach_anfang:'schwacher Anfang (w)', knacklaut_anfang:'Knacklaut am Anfang', knacklaut_ende:'Knacklaut am Ende', mehrfach:'mehrere schwache Buchstaben', vierkonsonantig:'vier Wurzelbuchstaben'};
 // Formen (Nils 2026-11-20): Feminin, Plural, Dual, Einzelnes, Elativ als Zeile auf der Rückseite der Karte, nie davor und nie im Deutsch.
 // Spalte vocabulary.formen, Kürzel „f. 3ziza · Pl. 3zaz“; Länge und Klang nur für Formen, die der Trainer kennt (Vokabeln, Anzeige, Kurs).
+// gespeicherte Formen tragen Länge und Klang schon (3zǟz); die Anzeige-Stufe (Klang / nur Länge / aus) wird hier nachgezogen
+function formenMarke(w){
+  const m = LAENGE_MODUS;
+  if(m === 'aus') w = w.replace(/[ǟä]/g, 'a').replace(/ā/g, 'a').replace(/ī/g, 'i').replace(/ū/g, 'u');
+  else if(m === 'laenge') w = w.replace(/ǟ/g, 'ā').replace(/ä/g, 'a');
+  return escHtml(w).replace(/[ǟäāīū]/g, '<span class="vl">$&</span>');
+}
 function formenZeile(v){
   if(!v || !v.fo) return '';
-  const txt = String(v.fo).split(/\s*·\s*/).map(x => x.trim()).filter(Boolean).map(x => { const m = x.match(/^(\S+)\s+(.*)$/); return m ? '<span style="opacity:.75">'+escHtml(m[1])+'</span> '+kursLaenge(escHtml(m[2]), false, true) : kursLaenge(escHtml(x), false, true); }).join(' &nbsp;·&nbsp; ');
+  const txt = String(v.fo).split(/\s*·\s*/).map(x => x.trim()).filter(Boolean).map(x => { const m = x.match(/^(\S+)\s+(.*)$/); const wort = s => s.replace(/[^\s\/]+/g, w => /[ǟäāīūēō]/.test(w) ? formenMarke(w) : kursLaenge(escHtml(w), false, true));   // schon markierte Formen (3zǟz) unangetastet, sonst würde ein Stück wie „ma“ in 7ashshǟma noch einmal markiert
+    return m ? '<span style="opacity:.75">'+escHtml(m[1])+'</span> '+wort(m[2]) : wort(x); }).join(' &nbsp;·&nbsp; ');
   return '<div class="formen-zeile" style="margin-top:.35rem;font-size:.9rem;color:var(--muted);line-height:1.6"><span style="font-size:.72rem;letter-spacing:.12em;text-transform:uppercase">Formen</span>&nbsp;&nbsp;'+txt+'</div>';
 }
 function wurzelZeile(v){
