@@ -497,7 +497,7 @@ function formenZeile(v){
 }
 // Vorschlag für das Feld „Formen“ aus TUNICO (Knopf im Bearbeiten-Fenster): gleiche Logik wie tools/formen_vorschlag.js.
 // TUNICO-Schreibung (orig, mit Strichen) → Pseudo-Arabisch → laengeHtml(): Länge und Klang nach der Regel des Trainers.
-const FORMEN_ANA = {'#adj_f':'f.', '#adj_pl':'Pl.', '#n_pl':'Pl.', '#n_dual':'Dual', '#n_unit':'Einzelnes', '#n_unit_pl':'Einzelne Pl.', '#adj_elative':'Elativ', '#n_inst':'Inst.'};
+const FORMEN_ANA = {'#ap_f':'f.', '#ap_pl':'Pl.', '#pp_f':'f.', '#pp_pl':'Pl.', '#p_f':'f.', '#p_pl':'Pl.', '#adj_f':'f.', '#adj_pl':'Pl.', '#n_pl':'Pl.', '#n_dual':'Dual', '#n_unit':'Einzelnes', '#n_unit_pl':'Einzelne Pl.', '#adj_elative':'Elativ', '#n_inst':'Inst.'};
 const FORMEN_ORDER = ['f.', 'Pl.', 'Dual', 'Einzelnes', 'Einzelne Pl.', 'Elativ', 'Inst.'];
 const FORMEN_MAP = {'ʕ':'ع','ṛ':'ر','r':'ر','ḥ':'ح','ž':'ج','j':'ج','x':'خ','q':'ق','g':'ق','ṭ':'ط','ṣ':'ص','ḏ':'ض','ẓ':'ظ','ṯ':'ث','š':'ش','ġ':'غ','z':'ز','d':'د','b':'ب','ḅ':'ب','t':'ت','f':'ف','k':'ك','l':'ل','ḷ':'ل','m':'م','ṃ':'م','n':'ن','h':'ه','s':'س','w':'و','y':'ي','ʔ':'ء','v':'ڤ','p':'پ'};
 function formenPseudoAr(orig){
@@ -521,7 +521,7 @@ function formenPseudoAr(orig){
 }
 async function formenVorschlag(v){
   const sel = 'lemma_chatalpha,lemma_orig,pos,inflected,senses';
-  const pos = 'pos=in.(noun,collectiveNoun,adjective)';
+  const pos = 'pos=in.(noun,collectiveNoun,adjective,participle,activeParticiple,passiveParticiple)';
   const q = x => encodeURIComponent(x);
   let rows = await sbApi('tunico_import?select='+sel+'&'+pos+'&lemma_chatalpha=eq.'+q(v.tr));
   let via = 'Lemma';
@@ -560,7 +560,7 @@ async function formenVorschlag(v){
   const lemIds = lem ? lem.map(e => e.id) : [];
   let sgTxt = lem ? strip(trL(lem[0])) : lemTr;
   if(!lem && r.lemma_orig){ const ar = formenPseudoAr(r.lemma_orig); if(ar){ try{ sgTxt = strip(laengeHtml(fix(lemTr), ar, /r/.test(r.lemma_orig) && !/ṛ/.test(r.lemma_orig))); }catch(e){} } }
-  const foSg = foPlain ? (r.pos === 'adjective' ? 'm. ' : 'Sg. ')+sgTxt+' · '+foPlain : '';
+  const foSg = foPlain ? (/^(noun|collectiveNoun)$/.test(r.pos) ? 'Sg. ' : 'm. ')+sgTxt+' · '+foPlain : '';
   const istLemma = lemTr.toLowerCase() === String(v.tr||'').toLowerCase();
   const fo = istLemma ? foPlain : foSg;
   if(via === 'Form') hinweis += 'TUNICO-Lemma: '+r.lemma_chatalpha+'. ';

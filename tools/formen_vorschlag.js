@@ -1,5 +1,5 @@
 // Vorschlag für vocabulary.formen (Feminin, Plural, Dual, Einzelnes, Elativ) aus TUNICO.
-// Aufruf:  node tools/formen_vorschlag.js adj|nomen [ausgabe.json]
+// Aufruf:  node tools/formen_vorschlag.js adj|nomen|partizip [ausgabe.json]
 // Läuft mit Playwright gegen trainer.html (nur GET gegen Supabase; Schreibzugriffe werden blockiert),
 // liest tunico_import über sbApi, setzt Länge und Klang aus der TUNICO-Schreibung (orig) über laengeHtml().
 // Regel und Format: skills/tunsi/SKILL.md → „Formen“. Schreiben nie ohne Bestätigung von Nils.
@@ -7,7 +7,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
-const modus = process.argv[2] === 'nomen' ? 'nomen' : 'adj';
+const modus = ['nomen', 'partizip'].includes(process.argv[2]) ? process.argv[2] : 'adj';
 const ausgabe = process.argv[3] || path.join(process.cwd(), 'formen_' + modus + '.json');
 
 (async () => {
@@ -27,13 +27,17 @@ const ausgabe = process.argv[3] || path.join(process.cwd(), 'formen_' + modus + 
   const out = await p.evaluate(async (modus) => {
     const sel = modus === 'adj'
       ? 'tunico_import?select=lemma_chatalpha,pos,inflected,senses&pos=eq.adjective&limit=2000'
-      : 'tunico_import?select=lemma_chatalpha,pos,inflected,senses&pos=in.(noun,collectiveNoun)&limit=6000';
+      : modus === 'partizip'
+        ? 'tunico_import?select=lemma_chatalpha,pos,inflected,senses&pos=in.(participle,activeParticiple,passiveParticiple)&limit=2000'
+        : 'tunico_import?select=lemma_chatalpha,pos,inflected,senses&pos=in.(noun,collectiveNoun)&limit=6000';
     const rows = await sbApi(sel);
     const ANA = modus === 'adj'
       ? { '#adj_f': 'f', '#adj_pl': 'pl', '#adj_elative': 'el' }
-      : { '#n_pl': 'pl', '#n_dual': 'du', '#n_unit': 'un', '#n_unit_pl': 'unpl', '#n_inst': 'inst' };
+      : modus === 'partizip'
+        ? { '#ap_f': 'f', '#ap_pl': 'pl', '#pp_f': 'f', '#pp_pl': 'pl', '#p_f': 'f', '#p_pl': 'pl' }
+        : { '#n_pl': 'pl', '#n_dual': 'du', '#n_unit': 'un', '#n_unit_pl': 'unpl', '#n_inst': 'inst' };
     const LABEL = { f: 'f.', pl: 'Pl.', el: 'Elativ', du: 'Dual', un: 'Einzelnes', unpl: 'Einzelne Pl.', inst: 'Inst.' };
-    const ORDER = modus === 'adj' ? ['f', 'pl', 'el'] : ['pl', 'du', 'un', 'unpl', 'inst'];
+    const ORDER = (modus === 'adj' || modus === 'partizip') ? ['f', 'pl', 'el'] : ['pl', 'du', 'un', 'unpl', 'inst'];
     // TUNICO-orig → Pseudo-Arabisch, damit laengeHtml() Länge und Klang nach der Regel des Trainers setzt
     const MAP = { 'ʕ': 'ع', 'ṛ': 'ر', 'r': 'ر', 'ḥ': 'ح', 'ž': 'ج', 'j': 'ج', 'x': 'خ', 'q': 'ق', 'g': 'ق', 'ṭ': 'ط', 'ṣ': 'ص', 'ḏ': 'ض', 'ẓ': 'ظ', 'ṯ': 'ث', 'š': 'ش', 'ġ': 'غ', 'z': 'ز', 'd': 'د', 'b': 'ب', 'ḅ': 'ب', 't': 'ت', 'f': 'ف', 'k': 'ك', 'l': 'ل', 'ḷ': 'ل', 'm': 'م', 'ṃ': 'م', 'n': 'ن', 'h': 'ه', 's': 'س', 'w': 'و', 'y': 'ي', 'ʔ': 'ء', 'v': 'ڤ', 'p': 'پ' };
     const FA = 'َ', KA = 'ِ', DA = 'ُ', SU = 'ْ', SH = 'ّ';

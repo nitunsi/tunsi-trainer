@@ -1,0 +1,174 @@
+[
+ {
+  "id": 389,
+  "tr": "bahi",
+  "de": "okay / gut",
+  "art": "lemma",
+  "neu": "f. bǟhya · Pl. bǟhīn / bǟhyīn"
+ },
+ {
+  "id": 961,
+  "tr": "bahya",
+  "de": "schön / gut (f.)",
+  "art": "zeile",
+  "neu": "m. bǟhi · f. bǟhya · Pl. bǟhīn / bǟhyīn"
+ },
+ {
+  "id": 2040,
+  "tr": "dafi",
+  "de": "warm (m.)",
+  "art": "lemma",
+  "neu": "f. dǟfya · Pl. dǟfīn / dǟfyīn"
+ },
+ {
+  "id": 2046,
+  "tr": "3ali",
+  "de": "hoch (m.)",
+  "art": "lemma",
+  "neu": "f. 3ālya · Pl. 3ālīn"
+ },
+ {
+  "id": 2039,
+  "tr": "wati",
+  "de": "niedrig (m.)",
+  "art": "lemma",
+  "neu": "f. wātya · Pl. wātīn"
+ },
+ {
+  "id": 1196,
+  "tr": "mashi",
+  "de": "gehend / unterwegs",
+  "art": "lemma",
+  "neu": "f. mǟshya · Pl. mäshīn"
+ },
+ {
+  "id": 2045,
+  "tr": "mala7",
+  "de": "salzig (m.)",
+  "art": "lemma",
+  "neu": "f. mǟl7a · Pl. mǟl7īn"
+ },
+ {
+  "id": 3210,
+  "tr": "mmakhkhar",
+  "de": "zu spät / verspätet / jemand der zu spät kommt",
+  "art": "lemma",
+  "neu": "f. mmakhkhra / makhkhra / mwakhkhra · Pl. mmakhkhrīn / makhkhrīn / mwakhkhrīn"
+ },
+ {
+  "id": 4314,
+  "tr": "mkassar",
+  "de": "kaputt, zerbrochen",
+  "art": "lemma",
+  "neu": "f. mkassra · Pl. mkassrīn"
+ },
+ {
+  "id": 1819,
+  "tr": "mitghashshish",
+  "de": "wütend / böse / verärgert / zornig",
+  "art": "lemma",
+  "neu": "f. mitghashsha · Pl. mitghashshīn"
+ },
+ {
+  "id": 2041,
+  "tr": "safi",
+  "de": "klar / rein (m.)",
+  "art": "lemma",
+  "neu": "f. sāfya · Pl. sāfyīn / sāfīn"
+ },
+ {
+  "id": 2809,
+  "tr": "mistanis",
+  "de": "gewöhnt an / ich bin es gewohnt",
+  "art": "lemma",
+  "neu": "f. mistǟnsa / mustǟnsa · Pl. mistǟnsīn / mustǟnsīn"
+ },
+ {
+  "id": 927,
+  "tr": "mitwassit",
+  "de": "mittel / mittelweit",
+  "art": "lemma",
+  "neu": "f. mitwassta / mutwassta · Pl. mitwasstīn / mutwasstīn"
+ },
+ {
+  "id": 2037,
+  "tr": "kasa7",
+  "de": "hart(herzig) / unbarmherzig / grausam (m.)",
+  "art": "lemma",
+  "neu": "f. kǟs7a · Pl. kǟs7īn"
+ },
+ {
+  "id": 4678,
+  "tr": "baqi",
+  "de": "noch / übrig",
+  "art": "lemma",
+  "neu": "f. bǟqya · Pl. bǟqīn"
+ },
+ {
+  "id": 2055,
+  "tr": "qari",
+  "de": "lesend / gebildet",
+  "art": "lemma",
+  "neu": "f. qārya · Pl. qārīn"
+ },
+ {
+  "id": 2934,
+  "tr": "mitakkid",
+  "de": "sicher (Bist du sicher? )",
+  "art": "lemma",
+  "neu": "f. mitäkkda / mutäkkda · Pl. mitäkkdīn / mutäkkdīn"
+ },
+ {
+  "id": 3301,
+  "tr": "msattak",
+  "de": "dickköpfig / begriffsstutzig / Dummkopf",
+  "art": "lemma",
+  "neu": "f. msattka · Pl. msattkīn"
+ },
+ {
+  "id": 4251,
+  "tr": "mnaffakh",
+  "de": "ein-, aufgeweicht; geschwollen",
+  "art": "lemma",
+  "neu": "f. mnaffkha · Pl. mnaffkhīn"
+ },
+ {
+  "id": 4250,
+  "tr": "mnaththam",
+  "de": "geordnet, planmäßig",
+  "art": "lemma",
+  "neu": "f. mnaththma · Pl. mnaththmīn"
+ },
+ {
+  "id": 1957,
+  "tr": "3azib",
+  "de": "ledig (m.)",
+  "art": "ergaenzung",
+  "alt": "f. 3āzba",
+  "neu": "f. 3āzba · Pl. 3uzzǟb"
+ },
+ {
+  "id": 3094,
+  "tr": "3azba",
+  "de": "ledig (f.)",
+  "art": "ergaenzung",
+  "alt": "m. 3āzib · f. 3āzba",
+  "neu": "m. 3āzib · f. 3āzba · Pl. 3uzzǟb"
+ },
+ {
+  "id": 3097,
+  "tr": "mtallaq",
+  "de": "geschieden (m.)",
+  "art": "ergaenzung",
+  "alt": "f. mtallqa",
+  "neu": "f. mtallqa · Pl. mtallqīn"
+ },
+ {
+  "id": 3098,
+  "tr": "mtallqa",
+  "de": "geschieden (f.)",
+  "art": "ergaenzung",
+  "alt": "m. mtallaq · f. mtallqa",
+  "neu": "m. mtallaq · f. mtallqa · Pl. mtallqīn"
+ }
+]
