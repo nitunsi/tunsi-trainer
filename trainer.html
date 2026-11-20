@@ -8100,8 +8100,10 @@ function laengeImText(html){
 let _kursWortIdx = null;
 const _kursWortCache = {};
 const KURS_ENDUNGEN = ['hum','kum','ha','ni','na','ek','ik','ak','u','k','i','a'];   // Besitz- und Objektendungen, längste zuerst
+let _RG_FORMEN = null;   // Formen der gerade gezeigten Regelkarte (Umschrift → Arabisch): Beispielwörter im Fließtext wie in der Tabelle markieren
 function kursWortL(w){
   const k = w.toLowerCase();
+  if(_RG_FORMEN && _RG_FORMEN[k]){ const h = laengeHtml(w, _RG_FORMEN[k]); if(h !== w) return h; }
   if(w in _kursWortCache) return _kursWortCache[w];   // Schlüssel mit Großschreibung: „Vor“ und „vor“ sind verschiedene Einträge
   kursIdx();
   let h = w;
@@ -8243,6 +8245,8 @@ function regelFrageInnen(rg){
 function regelLoesungHtml(rg){
   GL_SEEN = new Set();
   const a = rg.ant || {};
+  _RG_FORMEN = {};
+  [[a.tr_von, a.ar_von], [a.tr_nach, a.ar_nach]].concat((rg.bsp || []).reduce((l, x) => l.concat([[x.tr_von, x.ar_von], [x.tr_nach, x.ar_nach]]), [])).forEach(([tr, ar]) => { if(tr && ar && !/\s/.test(tr) && /[ً-ْ]/.test(ar)) _RG_FORMEN[String(tr).toLowerCase()] = ar; });
   const arrow = '<div style="color:var(--muted);text-align:center">→</div>';
   const cell = (t, ar) => '<div style="text-align:center;padding:0 4px">'+rgTr(t, ar)+'</div>';
   let h = '<div style="background:var(--surface);color:var(--text);border-radius:10px;padding:.9rem .8rem;font-size:1.05rem;line-height:1.5">' + regelEinordnungHtml(rg);
