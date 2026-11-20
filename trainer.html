@@ -520,7 +520,7 @@ function formenPseudoAr(orig){
   return ar;
 }
 async function formenVorschlag(v){
-  const sel = 'lemma_chatalpha,pos,inflected,senses';
+  const sel = 'lemma_chatalpha,lemma_orig,pos,inflected,senses';
   const pos = 'pos=in.(noun,collectiveNoun,adjective)';
   const q = x => encodeURIComponent(x);
   let rows = await sbApi('tunico_import?select='+sel+'&'+pos+'&lemma_chatalpha=eq.'+q(v.tr));
@@ -552,12 +552,19 @@ async function formenVorschlag(v){
     (forms[lab] = forms[lab] || []);
     if(!forms[lab].includes(m)) forms[lab].push(m);
   }
-  // die eigene Form der Zeile gehört in die Zeile, nicht doppelt als Fremdform
-  const fo = FORMEN_ORDER.filter(k => forms[k] && forms[k].length).map(k => k+' '+forms[k].join(' / ')).join(' · ');
+  const foPlain = FORMEN_ORDER.filter(k => forms[k] && forms[k].length).map(k => k+' '+forms[k].join(' / ')).join(' · ');
   const lem = byTr[String(r.lemma_chatalpha||'').toLowerCase()];
   if(lem) lem.forEach(e => fam.add(e.id));
+  // Singular vorn (Nils 2026-11-20): Zeilen, die nicht das Lemma sind (Plural-, Femininzeile), zeigen zuerst den Singular („Sg. karta“, bei Adjektiven „m. kbir“)
+  const lemTr = String(r.lemma_chatalpha||'');
+  const lemIds = lem ? lem.map(e => e.id) : [];
+  let sgTxt = lem ? strip(trL(lem[0])) : lemTr;
+  if(!lem && r.lemma_orig){ const ar = formenPseudoAr(r.lemma_orig); if(ar){ try{ sgTxt = strip(laengeHtml(fix(lemTr), ar, /r/.test(r.lemma_orig) && !/ṛ/.test(r.lemma_orig))); }catch(e){} } }
+  const foSg = foPlain ? (r.pos === 'adjective' ? 'm. ' : 'Sg. ')+sgTxt+' · '+foPlain : '';
+  const istLemma = lemTr.toLowerCase() === String(v.tr||'').toLowerCase();
+  const fo = istLemma ? foPlain : foSg;
   if(via === 'Form') hinweis += 'TUNICO-Lemma: '+r.lemma_chatalpha+'. ';
-  return {fo, hinweis: fo ? hinweis : 'TUNICO hat zu diesem Eintrag keine Formen. '+hinweis, fam: [...fam].filter(id => id !== v.id)};
+  return {fo, foPlain, foSg, lemIds, hinweis: fo ? hinweis : 'TUNICO hat zu diesem Eintrag keine Formen. '+hinweis, fam: [...fam].filter(id => id !== v.id)};
 }
 window._formenFam = [];
 async function neuFormenVorschlag(btn){
@@ -568,6 +575,7 @@ async function neuFormenVorschlag(btn){
     const r = await formenVorschlag(v);
     if(r.fo){ inp.value = r.fo; }
     window._formenFam = r.fam || [];
+    window._formenFamSet = {foPlain: r.foPlain, foSg: r.foSg, lemIds: r.lemIds || []};
     const famTxt = window._formenFam.length ? window._formenFam.map(id => (vById(id)||{}).tr).filter(Boolean).join(', ') : '';
     out.textContent = (r.fo ? 'Vorschlag aus TUNICO eingetragen, mit „Speichern“ übernehmen. ' : '') + r.hinweis + (famTxt ? 'Zeilen derselben Familie: '+famTxt+'.' : '');
     const cbw = document.getElementById('ei-fo-fam-wrap'); if(cbw){ cbw.style.display = window._formenFam.length && r.fo ? '' : 'none'; if(cb) cb.checked = true; }
@@ -6730,7 +6738,14 @@ async function saveVocabEditSheet(){
     if(newLw !== null) vocabPatch.lehnwort = newLw || null;
     if(newFg !== null){ vocabPatch.flag_grund = newFg || null; if(newFg && !flaggedVocab.has(v.tr)){ vocabPatch.flagged = true; } }   // ein Grund setzt die Flagge
     await sbApi('vocabulary?id=eq.'+vocabId, 'PATCH', vocabPatch);
-    if(famIds.length){ await sbApi('vocabulary?id=in.('+famIds.join(',')+')', 'PATCH', {formen: newFo}); famIds.forEach(id => { const e = vById(id); if(e) e.fo = newFo; }); window._formenFam = []; }
+    if(famIds.length){
+      // das Lemma bekommt die Formen ohne Singular-Vorsatz, alle anderen Zeilen der Familie mit
+      const fs = window._formenFamSet || {}, lemSet = new Set(fs.lemIds || []);
+      const plain = famIds.filter(id => lemSet.has(id)), mit = famIds.filter(id => !lemSet.has(id));
+      if(plain.length && fs.foPlain){ await sbApi('vocabulary?id=in.('+plain.join(',')+')', 'PATCH', {formen: fs.foPlain}); plain.forEach(id => { const e = vById(id); if(e) e.fo = fs.foPlain; }); }
+      if(mit.length){ const txt = fs.foSg || newFo; await sbApi('vocabulary?id=in.('+mit.join(',')+')', 'PATCH', {formen: txt}); mit.forEach(id => { const e = vById(id); if(e) e.fo = txt; }); }
+      window._formenFam = [];
+    }
     const progId = srsProgress[vocabId] ? srsProgress[vocabId].id : null;
     const patchProg = {};
     if(newNr) patchProg.next_review = fromLocalInputDE(newNr).toISOString();
