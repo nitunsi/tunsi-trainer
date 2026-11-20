@@ -480,6 +480,13 @@ function synonymNote(v){
 // ist es verschieden; synonymNote verlangt gleiches Deutsch, hier ist es verschieden.
 // Wurzel, Stamm und Verbtyp einer Vokabel als eine Zeile (Spalten wurzel, wurzel_ar, stamm, verbtyp)
 const VERBTYP_DE = {stark:'starkes Verb', hohl:'Hohlverb', geminiert:'geminiert', schwaches_ende:'schwaches Ende', schwach_anfang:'schwacher Anfang (w)', knacklaut_anfang:'Knacklaut am Anfang', knacklaut_ende:'Knacklaut am Ende', mehrfach:'mehrere schwache Buchstaben', vierkonsonantig:'vier Wurzelbuchstaben'};
+// Formen (Nils 2026-11-20): Feminin, Plural, Dual, Einzelnes, Elativ als Zeile auf der Rückseite der Karte, nie davor und nie im Deutsch.
+// Spalte vocabulary.formen, Kürzel „f. 3ziza · Pl. 3zaz“; Länge und Klang nur für Formen, die der Trainer kennt (Vokabeln, Anzeige, Kurs).
+function formenZeile(v){
+  if(!v || !v.fo) return '';
+  const txt = String(v.fo).split(/\s*·\s*/).map(x => x.trim()).filter(Boolean).map(x => { const m = x.match(/^(\S+)\s+(.*)$/); return m ? '<span style="opacity:.75">'+escHtml(m[1])+'</span> '+kursLaenge(escHtml(m[2]), false, true) : kursLaenge(escHtml(x), false, true); }).join(' &nbsp;·&nbsp; ');
+  return '<div class="formen-zeile" style="margin-top:.35rem;font-size:.9rem;color:var(--muted);line-height:1.6"><span style="font-size:.72rem;letter-spacing:.12em;text-transform:uppercase">Formen</span>&nbsp;&nbsp;'+txt+'</div>';
+}
 function wurzelZeile(v){
   if(!v || !v.wz) return '';
   const st = !v.st || v.st==='?' ? '' : v.st==='Iq' ? 'Stamm I (vier Buchstaben)' : v.st==='t-I' ? 't-Stamm I' : v.st+'. Stamm';
@@ -1250,7 +1257,7 @@ function retryLoad(){
 // Holt Vokabeln und Fortschritt (parallel). Wird auch genutzt, um den Zwischenspeicher im Hintergrund aufzufrischen.
 function srsFetchRows(onVocab, onProg){
   const loadVocabTask = sbApiPaged(
-      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,audio_gain,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,r_hell,english,wurzel,wurzel_ar,wurzel_gruppe,stamm,verbtyp,ausgeblendet,lehnwort,anzeige,flag_grund,lessons(lesson_number)&order=id.asc',
+      'vocabulary?select=id,darija,arabic_script,german,topic,flagged,partner_status,partner_comment,status_updated_at,ninja_audio_url,ninja_audio_start,ninja_audio_end,audio_gain,homonym_ok,internal_note,external_confirmed,external_confirmed_source,conjugation,conj_rotate,r_hell,english,wurzel,wurzel_ar,wurzel_gruppe,stamm,verbtyp,ausgeblendet,lehnwort,anzeige,flag_grund,formen,lessons(lesson_number)&order=id.asc',
       1000,
       (loaded) => { if(onVocab) onVocab(loaded); }
     );
@@ -1291,7 +1298,7 @@ async function srsLoadFromSupabase(){
     allVocab.forEach(v => {
       const ls = v.lessons ? 'L' + v.lessons.lesson_number : 'L1';
       const tp = v.topic || 'Allgemein';
-      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null, cr: !!v.conj_rotate, rh: v.r_hell===true, eg: v.english||'', wz: v.wurzel||'', wza: v.wurzel_ar||'', wzg: v.wurzel_gruppe||'', st: v.stamm||'', vt: v.verbtyp||'', ausb: v.ausgeblendet===true, lw: v.lehnwort||'', az: v.anzeige||'', fg: v.flag_grund||'' };
+      const entry = { id: v.id, ar: v.arabic_script||'', tr: v.darija||'', en: v.german||'', ls, tp, ps: v.partner_status||null, pc: v.partner_comment||null, psu: v.status_updated_at||null, au: v.ninja_audio_url||null, aus: v.ninja_audio_start||0, aue: v.ninja_audio_end||0, hok: !!v.homonym_ok, nt: v.internal_note||'', xc: !!v.external_confirmed, xcs: v.external_confirmed_source||null, cj: v.conjugation||null, cr: !!v.conj_rotate, rh: v.r_hell===true, eg: v.english||'', wz: v.wurzel||'', wza: v.wurzel_ar||'', wzg: v.wurzel_gruppe||'', st: v.stamm||'', vt: v.verbtyp||'', ausb: v.ausgeblendet===true, lw: v.lehnwort||'', az: v.anzeige||'', fg: v.flag_grund||'', fo: v.formen||'' };
       ALL_VOCAB.push(entry);
       if(v.ninja_audio_url && v.audio_gain) AUDIO_GAIN[audioKey(v.ninja_audio_url, v.ninja_audio_start, v.ninja_audio_end)] = v.audio_gain;
       VOCAB_BY_ID[v.id] = entry;
@@ -3586,7 +3593,7 @@ function aMC(btn,ok,ca,con,v){
   if(fbMC){
     fbMC.className='feedback show '+(ok?'correct':'wrong');
     const darija = v ? `<span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">${trL(v)}</span>` : '';
-    const homNote = wurzelZeile(v)+homonymNote(v)+synonymNote(v)+schreibungNote(v);
+    const homNote = wurzelZeile(v)+formenZeile(v)+homonymNote(v)+synonymNote(v)+schreibungNote(v);
     window._lastFlashFbBody = '<span style="font-size:1.2rem">'+ca+'</span>'+darija+homNote;
     fbMC.innerHTML='<span style="font-size:1.2rem">'+(ok?'✓ ':'✗ ')+ca+'</span>'+darija+homNote;
   }
@@ -3731,7 +3738,7 @@ function chkFlash(){
   const solAr = '<span style="font-family:\'Playfair Display\',serif;font-size:2.2rem;color:var(--gold2);display:block">'+v.ar+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+trL(v)+'</span>';
   const solDe = '<span style="font-family:\'Playfair Display\',serif;font-size:1.5rem;display:block">'+deHtml(v)+'</span><span style="color:var(--muted);font-size:1.1rem;display:block;margin-top:.2rem">'+trL(v)+'</span>';
   const sol = ex.dir==='au2de' ? solDe+'<span style="font-family:\'Playfair Display\',serif;font-size:2.2rem;color:var(--gold2);display:block;margin-top:.3rem">'+v.ar+'</span>' : (dir==='ar2de' ? solDe : solAr);
-  const homNote = wurzelZeile(v)+homonymNote(v)+synonymNote(v)+schreibungNote(v);
+  const homNote = wurzelZeile(v)+formenZeile(v)+homonymNote(v)+synonymNote(v)+schreibungNote(v);
   window._lastFlashFbBody = sol + homNote;   // bleibt bei „War doch richtig/falsch“ stehen (Nils 2026-11-13)
   if(ok){
     fb.className='feedback show correct';
@@ -6585,6 +6592,7 @@ function openVocabEdit(vocabId, i){
     const lwSel = document.getElementById('ei-lw'); if(lwSel) lwSel.value = v.lw || '';
     const fgSel = document.getElementById('ei-fg'); if(fgSel) fgSel.value = v.fg || '';
     const azInp = document.getElementById('ei-az'); if(azInp) azInp.value = v.az || '';
+    const foInp = document.getElementById('ei-fo'); if(foInp) foInp.value = v.fo || '';
   });
 }
 
@@ -6612,6 +6620,7 @@ async function saveVocabEditSheet(){
   const newAz = document.getElementById('ei-az') ? document.getElementById('ei-az').value.trim() : null;
   const newLw = document.getElementById('ei-lw') ? document.getElementById('ei-lw').value : null;
   const newFg = document.getElementById('ei-fg') ? document.getElementById('ei-fg').value : null;
+  const newFo = document.getElementById('ei-fo') ? document.getElementById('ei-fo').value.trim() : null;
   if(newAz && !azGueltig(newTr, newAz)){ neuNote('Aussprache-Anzeige: Die Buchstaben müssen der Umschrift entsprechen (nur ǟ ä ā ī ū dürfen abweichen).'); return; }
   const oldTr = v.tr;
   try{
@@ -6627,6 +6636,7 @@ async function saveVocabEditSheet(){
     if(newPc !== null) vocabPatch.partner_comment = newPc || null;
     if(newNt !== null) vocabPatch.internal_note = newNt || null;
     if(newAz !== null) vocabPatch.anzeige = newAz || null;
+    if(newFo !== null) vocabPatch.formen = newFo || null;
     if(newLw !== null) vocabPatch.lehnwort = newLw || null;
     if(newFg !== null){ vocabPatch.flag_grund = newFg || null; if(newFg && !flaggedVocab.has(v.tr)){ vocabPatch.flagged = true; } }   // ein Grund setzt die Flagge
     await sbApi('vocabulary?id=eq.'+vocabId, 'PATCH', vocabPatch);
@@ -6646,7 +6656,7 @@ async function saveVocabEditSheet(){
       srsProgress[vocabId].level = newLvl;
     }
     v.ar = newAr; v.tr = newTr; v.en = newEn; v.tp = newTp; v.ls = newLs; v.ps = newPsNorm; v.pc = newPc||null; v.nt = newNt||'';
-    if(newAz !== null) v.az = newAz; if(newLw !== null) v.lw = newLw; if(newFg !== null) v.fg = newFg;
+    if(newAz !== null) v.az = newAz; if(newFo !== null) v.fo = newFo; if(newLw !== null) v.lw = newLw; if(newFg !== null) v.fg = newFg;
     if(vocabPatch.flagged === true){ flaggedVocab.add(newTr); }
     azNeu();
     if(vocabPatch.status_updated_at) v.psu = vocabPatch.status_updated_at;
@@ -11937,6 +11947,9 @@ window.addEventListener('unhandledrejection', (e) => {
     <label class="sh-l">Aussprache-Anzeige (nur Einzelwörter)</label>
     <input id="ei-az" class="sh-in" placeholder="gehörte Schreibweise, z. B. mǟkish – leer = Regel" autocomplete="off">
     <div style="font-size:.7rem;color:var(--muted);margin:-.2rem 0 .5rem">Buchstaben wie die Umschrift, nur ǟ ä ā ī ū dürfen anders stehen. Gilt auch in Phrasen und im Kurs.</div>
+    <label class="sh-l">Formen (Feminin, Plural …)</label>
+    <input id="ei-fo" class="sh-in" placeholder="z. B. f. 3ziza · Pl. 3zaz – erscheint auf der Rückseite der Karte" autocomplete="off">
+    <div style="font-size:.7rem;color:var(--muted);margin:-.2rem 0 .5rem">Kürzel f. · Pl. · Dual · Einzelnes · Elativ, getrennt durch „ · “. Nur Umschrift.</div>
     <label class="sh-l">Interner Kommentar</label>
     <textarea id="ei-nt" class="sh-in" placeholder="z. B. Quelle/Sicherheit: Ninja-bestätigt, arabisch selbst erstellt …" rows="2"></textarea>
     <div style="height:5.5rem"></div>
