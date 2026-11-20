@@ -5107,7 +5107,7 @@ function courseExPreviewHtml(e){
   return '<div style="border:1px solid var(--border);border-radius:8px;padding:.7rem .8rem;margin-top:.6rem;background:var(--bg)">'
     + '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Vorschau · '+escHtml(courseTypeLabel(e))+'</div>'
     + (instr ? '<div style="font-size:.75rem;color:var(--muted);margin-top:.3rem">'+escHtml(instr)+'</div>' : '')
-    + '<div style="font-size:1.05rem;margin:.3rem 0">'+escHtml(cv ? cv.prompt : (e.prompt||''))+'</div>'
+    + '<div style="font-size:1.05rem;margin:.3rem 0">'+(cv ? escHtml(cv.prompt) : kursPromptL(escHtml(e.prompt||''), e.prompt||''))+'</div>'
     + (cv && cv.qHtml ? '<div style="margin-bottom:.5rem">'+cv.qHtml+'</div>' : '')
     + '<div style="border-top:1px dashed var(--border);padding-top:.5rem;color:var(--gold2);font-size:.9rem">'+courseExSolutionHtml(e)+'</div></div>';
 }

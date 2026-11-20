@@ -397,3 +397,4 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - 20.11. Punkt 17–18 gesammelt: 1235 TUNICO-Verben außerhalb Top-300 (444 bei uns, 791 fehlen; viel Spezialwortschatz); PC/Ninja-Verben fehlend 3147 Skelette, davon 307 in allen drei Quellen, 512 in zwei. Vorschlag: gestufte Anlegeliste. Noch nichts geändert. Damit ist der Abgleich Punkt 10–18 durchgesammelt.
 - 20.11. Mögliche Neuanlagen gemerkt: exports/neuanlagen_kandidaten_2026-11-20.md (Nils: erst Prüfergebnisse auswerten und Bestand korrigieren, dann Neuanlagen). PR 458 gemerged.
 - 20.11. Neu angelegt (Nils ja, fällig): 4875 shulika (Putzlappen, Anzeige shulika; TUNICO/PC shuliqa) und 4876 shwaliq (Plural). Nils hört k statt q.
+- 20.11. Vorschau einer Kurs-Übung (Bearbeiten-Fenster) zeigte keine Längen (ā ū): neu.js courseExSolutionHtml ohne kursLaenge, Vorschau-Prompt ohne kursPromptL. Behoben (Beispiel #491: stūshi, f-ed-dār). Noch nicht gemerged.
