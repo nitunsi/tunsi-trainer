@@ -398,3 +398,4 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - 20.11. Mögliche Neuanlagen gemerkt: exports/neuanlagen_kandidaten_2026-11-20.md (Nils: erst Prüfergebnisse auswerten und Bestand korrigieren, dann Neuanlagen). PR 458 gemerged.
 - 20.11. Neu angelegt (Nils ja, fällig): 4875 shulika (Putzlappen, Anzeige shulika; TUNICO/PC shuliqa) und 4876 shwaliq (Plural). Nils hört k statt q.
 - 20.11. Vorschau einer Kurs-Übung (Bearbeiten-Fenster) zeigte keine Längen (ā ū): neu.js courseExSolutionHtml ohne kursLaenge, Vorschau-Prompt ohne kursPromptL. Behoben (Beispiel #491: stūshi, f-ed-dār). Noch nicht gemerged.
+- 20.11. Lernkarten ohne Längen (Nils: Karte mit ma-, #813 sa7bik yashar): die Lösung, die nach dem Aufdecken erscheint (courseExSolutionHtml in neu.js), lief ohne kursLaenge (Fix 5eafd92); zusätzlich „Neg: ma-…“ im deutschen Schwanz (12 Übungen, z. B. #801) jetzt mit kursLaenge. Geprüft: #813 und #801 zeigen mä-.

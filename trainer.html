@@ -8150,7 +8150,7 @@ function kursLaenge(html, roh, grossNein){   // roh: Fließtext der Regelkarten 
     const seg0 = vorB; vorB = false;
     const cut = roh ? -1 : seg.search(/\s[—–]\s(?=[A-ZÄÖÜ„])/);
     let rest = '';
-    if(cut >= 0){ rest = seg.slice(cut); seg = seg.slice(0, cut); de = true; }
+    if(cut >= 0){ rest = seg.slice(cut).replace(/(\bNeg:\s*)([^<]+)$/, (m, k, tn) => k + kursLaenge(tn)); seg = seg.slice(0, cut); de = true; }   // „Neg: ma-nikthbu-sh.“ im deutschen Schwanz ist Tounsi
     return seg.split(/(„[^“]*“|&#?\w+;)/).map(t => {
       if(!t || (!roh && t.charAt(0) === '„') || t.charAt(0) === '&') return t;
       return t.replace(/[A-Za-z0-9'ʔ]+/g, (w, off) => {
