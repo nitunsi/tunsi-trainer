@@ -1,0 +1,1712 @@
+{
+ "res": [
+  {
+   "id": 1248,
+   "tr": "ta7fun",
+   "de": "toll / wunderbar / Spaß / lustig / unterhaltsam",
+   "f": [
+    {
+     "tr": "ta7funa",
+     "m": "ta7fūna",
+     "orig": "taḥfūna"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "t7afin",
+     "m": "t7āfin",
+     "orig": "tḥāfin"
+    },
+    {
+     "tr": "ta7funin",
+     "m": "ta7fūnīn",
+     "orig": "taḥfūnīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 3106,
+   "tr": "ta3ban",
+   "de": "müde / erschöpft (m.)",
+   "f": [
+    {
+     "tr": "ta3bana",
+     "m": "ta3bǟna",
+     "orig": "taʕbāna"
+    }
+   ],
+   "pl": [],
+   "el": []
+  },
+  {
+   "id": 591,
+   "tr": "murr",
+   "de": "bitter (m.)",
+   "f": [],
+   "pl": [
+    {
+     "tr": "murrin",
+     "m": "murrīn",
+     "orig": "muṛṛīn"
+    },
+    {
+     "tr": "mrar",
+     "m": "mrār",
+     "orig": "mṛāṛ"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 587,
+   "tr": "skhun",
+   "de": "heiß (m.)",
+   "f": [],
+   "pl": [
+    {
+     "tr": "skhunin",
+     "m": "skhūnīn",
+     "orig": "sxūnīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 3377,
+   "tr": "shbab",
+   "de": "junger Mann / Jugend",
+   "f": [
+    {
+     "tr": "shabba",
+     "m": "shǟbba",
+     "orig": "šābba"
+    }
+   ],
+   "pl": [],
+   "el": []
+  },
+  {
+   "id": 2504,
+   "tr": "tamma3",
+   "de": "gierig / habgierig",
+   "f": [
+    {
+     "tr": "tamma3a",
+     "m": "tammǟ3a",
+     "orig": "ṭammāʕa"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "tamma3in",
+     "m": "tammǟ3īn",
+     "orig": "ṭammāʕīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 2050,
+   "tr": "ghlith",
+   "de": "grob / rau (m.)",
+   "f": [
+    {
+     "tr": "ghlitha",
+     "m": "ghlītha",
+     "orig": "ġlīḏ̣a"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "ghlath",
+     "m": "ghlāth",
+     "orig": "ġlāḏ̣"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 2479,
+   "tr": "mughyar",
+   "de": "eifersüchtig",
+   "f": [
+    {
+     "tr": "mughyara",
+     "m": "mughyāra",
+     "orig": "muġyāṛa"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "mughyarin",
+     "m": "mughyārīn",
+     "orig": "muġyāṛīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 4743,
+   "tr": "mumtaz",
+   "de": "ausgezeichnet, hervorragend",
+   "f": [
+    {
+     "tr": "mumtaza",
+     "m": "mumtǟza",
+     "orig": "mumtāza"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "mumtazin",
+     "m": "mumtǟzīn",
+     "orig": "mumtāzīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 4737,
+   "tr": "hijri",
+   "de": "Hidschri- (islamischer Kalender)",
+   "f": [
+    {
+     "tr": "hijriyya",
+     "m": "hijriyya",
+     "orig": "hižrīya"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "hijriyya",
+     "m": "hijriyya",
+     "orig": "hižrīya"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 3652,
+   "tr": "swisri",
+   "de": "schweizerisch, Schweizer (m.)",
+   "f": [],
+   "pl": [
+    {
+     "tr": "swisriyyin",
+     "m": "swīsriyyīn",
+     "orig": "swīsrīyīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 375,
+   "tr": "ghali",
+   "de": "teuer / lieb, kostbar",
+   "f": [
+    {
+     "tr": "ghalya",
+     "m": "ghālya",
+     "orig": "ġālya"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "ghalin",
+     "m": "ghālīn",
+     "orig": "ġālīn"
+    },
+    {
+     "tr": "ghalyin",
+     "m": "ghālyīn",
+     "orig": "ġālyīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 3899,
+   "tr": "ghrib",
+   "de": "fremd / seltsam / eigenartig",
+   "f": [
+    {
+     "tr": "ghriba",
+     "m": "ghrība",
+     "orig": "ġrība"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "ghribin",
+     "m": "ghrībīn",
+     "orig": "ġrībīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 685,
+   "tr": "3ziz",
+   "de": "Verlobter / Schatz / lieb, hochgeschätzt",
+   "f": [
+    {
+     "tr": "3ziza",
+     "m": "3zīza",
+     "orig": "ʕzīza"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "3zaz",
+     "m": "3zǟz",
+     "orig": "ʕzāz"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 2619,
+   "tr": "s7i7",
+   "de": "gesund / in Ordnung / stimmt",
+   "f": [],
+   "pl": [
+    {
+     "tr": "s7a7",
+     "m": "s7ā7",
+     "orig": "ṣḥāḥ"
+    },
+    {
+     "tr": "s7i7in",
+     "m": "s7ī7īn",
+     "orig": "ṣḥīḥīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 438,
+   "tr": "qdim",
+   "de": "alt / abgetragen (m.)",
+   "f": [],
+   "pl": [
+    {
+     "tr": "qdam",
+     "m": "qdǟm",
+     "orig": "qdām"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 3023,
+   "tr": "bnin",
+   "de": "lecker / köstlich (m.)",
+   "f": [],
+   "pl": [],
+   "el": [
+    {
+     "tr": "abann",
+     "m": "äbänn",
+     "orig": "abann"
+    }
+   ]
+  },
+  {
+   "id": 376,
+   "tr": "rkhis",
+   "de": "günstig",
+   "f": [
+    {
+     "tr": "rkhisa",
+     "m": "rkhīsa",
+     "orig": "ṛxīṣa"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "rkhas",
+     "m": "rkhās",
+     "orig": "ṛxāṣ"
+    }
+   ],
+   "el": [
+    {
+     "tr": "arkhas",
+     "m": "arkhas",
+     "orig": "aṛxaṣ"
+    }
+   ]
+  },
+  {
+   "id": 378,
+   "tr": "7lu",
+   "de": "süß / mild",
+   "f": [
+    {
+     "tr": "7luwa",
+     "m": "7lūwa",
+     "orig": "ḥlūwa"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "7luwin",
+     "m": "7lūwīn",
+     "orig": "ḥlūwīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 2714,
+   "tr": "ji3an",
+   "de": "hungrig (m.)",
+   "f": [
+    {
+     "tr": "ji3ana",
+     "m": "jī3āna",
+     "orig": "žīʕāna"
+    }
+   ],
+   "pl": [],
+   "el": []
+  },
+  {
+   "id": 4138,
+   "tr": "akhar",
+   "de": "andere / anderer / anderes",
+   "f": [
+    {
+     "tr": "ukhra",
+     "m": "ukhra",
+     "orig": "uxṛa"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "ukhrin",
+     "m": "ukhrīn",
+     "orig": "uxṛīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 4216,
+   "tr": "ghatt",
+   "de": "schwül",
+   "f": [
+    {
+     "tr": "ghatta",
+     "m": "ghātta",
+     "orig": "ġāṭṭa"
+    }
+   ],
+   "pl": [],
+   "el": []
+  },
+  {
+   "id": 1218,
+   "tr": "3utshan",
+   "de": "durstig",
+   "f": [
+    {
+     "tr": "3utshana",
+     "m": "3utshǟna",
+     "orig": "ʕuṭšāna"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "3tasha",
+     "m": "3tāsha",
+     "orig": "ʕṭāša"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 2402,
+   "tr": "mizyan",
+   "de": "gut / schön / hübsch (m.)",
+   "f": [],
+   "pl": [
+    {
+     "tr": "mizyanin",
+     "m": "mizyǟnīn",
+     "orig": "mizyānīn"
+    }
+   ],
+   "el": [
+    {
+     "tr": "azyan",
+     "m": "äzyän",
+     "orig": "azyan"
+    }
+   ]
+  },
+  {
+   "id": 2043,
+   "tr": "thki",
+   "de": "intelligent / klug (m.)",
+   "f": [
+    {
+     "tr": "thkiyya",
+     "m": "thkiyya",
+     "orig": "ḏkīya"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "thkiyyin",
+     "m": "thkiyyīn",
+     "orig": "ḏkīyīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 2042,
+   "tr": "ghni",
+   "de": "reich (m.)",
+   "f": [
+    {
+     "tr": "ghniyya",
+     "m": "ghniyya",
+     "orig": "ġnīya"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "ghniyyin",
+     "m": "ghniyyīn",
+     "orig": "ġnīyīn"
+    },
+    {
+     "tr": "ghunya",
+     "m": "ghunya",
+     "orig": "ġunya"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 2044,
+   "tr": "tri",
+   "de": "frisch (m.)",
+   "f": [
+    {
+     "tr": "triyya",
+     "m": "triyya",
+     "orig": "ṭṛīya"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "triyyin",
+     "m": "triyyīn",
+     "orig": "ṭṛīyīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 4675,
+   "tr": "tayyib",
+   "de": "gut / ordentlich",
+   "f": [],
+   "pl": [
+    {
+     "tr": "tayybin",
+     "m": "tayybīn",
+     "orig": "ṭayybīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 2759,
+   "tr": "thqil",
+   "de": "schwer / langsam (m.)",
+   "f": [
+    {
+     "tr": "thqila",
+     "m": "thqīla",
+     "orig": "ṯqīla"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "thqal",
+     "m": "thqāl",
+     "orig": "ṯqāl"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 2032,
+   "tr": "smin",
+   "de": "dick / fett (m.)",
+   "f": [
+    {
+     "tr": "smina",
+     "m": "smīna",
+     "orig": "smīna"
+    }
+   ],
+   "pl": [],
+   "el": []
+  },
+  {
+   "id": 2758,
+   "tr": "rzin",
+   "de": "langsam / besonnen (m.)",
+   "f": [],
+   "pl": [
+    {
+     "tr": "rzan",
+     "m": "rzǟn",
+     "orig": "ṛzān"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 2048,
+   "tr": "rkik",
+   "de": "schwach / dünn (m.)",
+   "f": [
+    {
+     "tr": "rkika",
+     "m": "rkīka",
+     "orig": "rkīka"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "rkak",
+     "m": "rkǟk",
+     "orig": "rkāk"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 2049,
+   "tr": "blid",
+   "de": "dumm / stumpf (m.)",
+   "f": [
+    {
+     "tr": "blida",
+     "m": "blīda",
+     "orig": "blīda"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "bulada",
+     "m": "buläda",
+     "orig": "buladā"
+    },
+    {
+     "tr": "blidin",
+     "m": "blīdīn",
+     "orig": "blīdīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 3885,
+   "tr": "shib3an",
+   "de": "satt (m.)",
+   "f": [
+    {
+     "tr": "shib3ana",
+     "m": "shib3āna",
+     "orig": "šibʕāna"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "shba3a",
+     "m": "shbǟ3a",
+     "orig": "šbāʕa"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 4443,
+   "tr": "marruki",
+   "de": "marokkanisch, Marokkaner (m.) [Synonym zu maghribi]",
+   "f": [],
+   "pl": [
+    {
+     "tr": "marrukiyyin",
+     "m": "marrūkiyyīn",
+     "orig": "maṛṛūkīyīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 544,
+   "tr": "fhim",
+   "de": "er verstand",
+   "f": [
+    {
+     "tr": "fhima",
+     "m": "fhīma",
+     "orig": "fhīma"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "fhimin",
+     "m": "fhīmīn",
+     "orig": "fhīmīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 3654,
+   "tr": "3arbi",
+   "de": "Araber, arabisch (m.)",
+   "f": [
+    {
+     "tr": "3arabiyya",
+     "m": "3arabiyya",
+     "orig": "ʕaṛabīya"
+    }
+   ],
+   "pl": [],
+   "el": []
+  },
+  {
+   "id": 1023,
+   "tr": "sghir",
+   "de": "klein",
+   "f": [
+    {
+     "tr": "zghira",
+     "m": "zghīra",
+     "orig": "zġīra"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "zghar",
+     "m": "zghār",
+     "orig": "zġāṛ"
+    },
+    {
+     "tr": "sghirin",
+     "m": "sghīrīn",
+     "orig": "ṣġīrīn"
+    },
+    {
+     "tr": "zghirin",
+     "m": "zghīrīn",
+     "orig": "zġīrīn"
+    }
+   ],
+   "el": [
+    {
+     "tr": "azghar",
+     "m": "azghar",
+     "orig": "azġaṛ"
+    }
+   ]
+  },
+  {
+   "id": 442,
+   "tr": "ak7al",
+   "de": "schwarz (m.)",
+   "f": [],
+   "pl": [
+    {
+     "tr": "k7il",
+     "m": "k7il",
+     "orig": "kḥil"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 3637,
+   "tr": "libi",
+   "de": "libysch, Libyer (m.)",
+   "f": [],
+   "pl": [
+    {
+     "tr": "libiyyin",
+     "m": "lībiyyīn",
+     "orig": "lībīyīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 3634,
+   "tr": "muritani",
+   "de": "mauretanisch, Mauretanier (m.)",
+   "f": [],
+   "pl": [
+    {
+     "tr": "muritaniyyin",
+     "m": "mūrītāniyyīn",
+     "orig": "mūrīṭānīyīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 2031,
+   "tr": "s3ib",
+   "de": "schwierig / schwer",
+   "f": [
+    {
+     "tr": "s3iba",
+     "m": "s3ība",
+     "orig": "ṣʕība"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "s3ab",
+     "m": "s3āb",
+     "orig": "ṣʕāb"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 4454,
+   "tr": "malyan",
+   "de": "voll (m.)",
+   "f": [
+    {
+     "tr": "malyana",
+     "m": "mälyǟna",
+     "orig": "malyāna"
+    },
+    {
+     "tr": "milyana",
+     "m": "milyǟna",
+     "orig": "milyāna"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "malyanin",
+     "m": "mälyǟnīn",
+     "orig": "malyānīn"
+    },
+    {
+     "tr": "milyanin",
+     "m": "milyǟnīn",
+     "orig": "milyānīn"
+    },
+    {
+     "tr": "mlaya",
+     "m": "mlǟya",
+     "orig": "mlāya"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 4136,
+   "tr": "miskin",
+   "de": "arm / bemitleidenswert / Bedauernswerter",
+   "f": [
+    {
+     "tr": "miskina",
+     "m": "miskīna",
+     "orig": "miskīna"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "msakin",
+     "m": "msǟkin",
+     "orig": "msākin"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 4018,
+   "tr": "frishk",
+   "de": "frisch (Obst, Gemüse) (m.)",
+   "f": [
+    {
+     "tr": "farshka",
+     "m": "farshka",
+     "orig": "farška"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "farshkin",
+     "m": "farshkīn",
+     "orig": "farškīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 2484,
+   "tr": "7ashsham",
+   "de": "schüchtern",
+   "f": [
+    {
+     "tr": "7ashshama",
+     "m": "7ashshǟma",
+     "orig": "ḥaššāma"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "7ashshamin",
+     "m": "7ashshǟmīn",
+     "orig": "ḥaššāmīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 3669,
+   "tr": "isbani",
+   "de": "spanisch, Spanier (m.)",
+   "f": [],
+   "pl": [
+    {
+     "tr": "isbaniyyin",
+     "m": "isbǟniyyīn",
+     "orig": "isḅānīyīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 4366,
+   "tr": "dini",
+   "de": "religiös",
+   "f": [
+    {
+     "tr": "diniyya",
+     "m": "dīniyya",
+     "orig": "dīnīya"
+    }
+   ],
+   "pl": [],
+   "el": []
+  },
+  {
+   "id": 3823,
+   "tr": "sudani",
+   "de": "Sudanese, sudanesisch",
+   "f": [
+    {
+     "tr": "sudaniyya",
+     "m": "sūdǟniyya",
+     "orig": "sūdānīya"
+    }
+   ],
+   "pl": [],
+   "el": []
+  },
+  {
+   "id": 3831,
+   "tr": "lubnani",
+   "de": "Libanese, libanesisch",
+   "f": [
+    {
+     "tr": "lubnaniyya",
+     "m": "lubnǟniyya",
+     "orig": "lubnānīya"
+    }
+   ],
+   "pl": [],
+   "el": []
+  },
+  {
+   "id": 3835,
+   "tr": "masri",
+   "de": "ägyptisch, Ägypter",
+   "f": [
+    {
+     "tr": "masriyya",
+     "m": "masriyya",
+     "orig": "maṣṛīya"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "masriyyin",
+     "m": "masriyyīn",
+     "orig": "maṣṛīyīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 4439,
+   "tr": "nimsawi",
+   "de": "österreichisch, Österreicher (m.)",
+   "f": [],
+   "pl": [
+    {
+     "tr": "nimsawiyyin",
+     "m": "nimsǟwiyyīn",
+     "orig": "nimsāwīyīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 3882,
+   "tr": "talyani",
+   "de": "Italiener (m., Singular)",
+   "f": [],
+   "pl": [
+    {
+     "tr": "tlayn",
+     "m": "tlǟyn",
+     "orig": "ṭlāyn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 3879,
+   "tr": "inglizi",
+   "de": "Engländer (m.sg.) / englisch",
+   "f": [
+    {
+     "tr": "ingliziyya",
+     "m": "inglīziyya",
+     "orig": "inglīzīya"
+    },
+    {
+     "tr": "angliziyya",
+     "m": "anglīziyya",
+     "orig": "anglīzīya"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "angliz",
+     "m": "anglīz",
+     "orig": "anglīz"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 3881,
+   "tr": "urubbi",
+   "de": "Europäer (sg.)",
+   "f": [
+    {
+     "tr": "urubbiyya",
+     "m": "urubbiyya",
+     "orig": "ūṛubbīya"
+    }
+   ],
+   "pl": [],
+   "el": []
+  },
+  {
+   "id": 3883,
+   "tr": "7zin",
+   "de": "traurig (m.)",
+   "f": [
+    {
+     "tr": "7zina",
+     "m": "7zīna",
+     "orig": "ḥzīna"
+    }
+   ],
+   "pl": [],
+   "el": []
+  },
+  {
+   "id": 2922,
+   "tr": "nayy",
+   "de": "roh (m.)",
+   "f": [
+    {
+     "tr": "nayya",
+     "m": "näyya",
+     "orig": "nayya"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "nayyin",
+     "m": "näyyīn",
+     "orig": "nayyīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 3454,
+   "tr": "bhim",
+   "de": "Esel / (fig.) Dummkopf",
+   "f": [
+    {
+     "tr": "bhima",
+     "m": "bhīma",
+     "orig": "bhīma"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "bhaym",
+     "m": "bhǟym",
+     "orig": "bhāym"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 259,
+   "tr": "wa7id",
+   "de": "eins / 1 (m.)",
+   "f": [
+    {
+     "tr": "wa7ida",
+     "m": "wa7īda",
+     "orig": "waḥīda"
+    }
+   ],
+   "pl": [],
+   "el": []
+  },
+  {
+   "id": 2272,
+   "tr": "bsit",
+   "de": "einfach / schlicht",
+   "f": [
+    {
+     "tr": "bsita",
+     "m": "bsīta",
+     "orig": "bṣīṭa"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "bsat",
+     "m": "bsāt",
+     "orig": "bṣāṭ"
+    },
+    {
+     "tr": "busata",
+     "m": "busata",
+     "orig": "busaṭā"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 2503,
+   "tr": "khawwaf",
+   "de": "feige",
+   "f": [
+    {
+     "tr": "khawwafa",
+     "m": "khawwǟfa",
+     "orig": "xawwāfa"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "khawwafin",
+     "m": "khawwǟfīn",
+     "orig": "xawwāfīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 2047,
+   "tr": "rqiq",
+   "de": "dünn / zart (m.)",
+   "f": [
+    {
+     "tr": "rqiqa",
+     "m": "rqīqa",
+     "orig": "rqīqa"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "rqiqin",
+     "m": "rqīqīn",
+     "orig": "rqīqīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 3899,
+   "tr": "ghrib",
+   "de": "fremd / seltsam / eigenartig",
+   "f": [
+    {
+     "tr": "ghriba",
+     "m": "ghrība",
+     "orig": "ġrība"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "ghribin",
+     "m": "ghrībīn",
+     "orig": "ġrībīn"
+    },
+    {
+     "tr": "ghurba",
+     "m": "ghurba",
+     "orig": "ġuṛba"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 3321,
+   "tr": "shabb",
+   "de": "Alaunstein (natürliches Deo)",
+   "f": [
+    {
+     "tr": "shabba",
+     "m": "shǟbba",
+     "orig": "šābba"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "shabbin",
+     "m": "shǟbbīn",
+     "orig": "šābbīn"
+    }
+   ],
+   "el": []
+  },
+  {
+   "id": 2478,
+   "tr": "wa7dani",
+   "de": "einsam",
+   "f": [
+    {
+     "tr": "wa7daniyya",
+     "m": "wa7dǟniyya",
+     "orig": "waḥdānīya"
+    }
+   ],
+   "pl": [
+    {
+     "tr": "wa7danin",
+     "m": "wa7dǟnīn",
+     "orig": "waḥdānīn"
+    }
+   ],
+   "el": []
+  }
+ ],
+ "val": [
+  {
+   "tr": "ta3banin",
+   "gen": "ta3bǟnīn",
+   "vocab": "ta3bǟnīn",
+   "ok": true
+  },
+  {
+   "tr": "murra",
+   "gen": "murra",
+   "vocab": "murra",
+   "ok": true
+  },
+  {
+   "tr": "khfifa",
+   "gen": "khfīfa",
+   "vocab": "khfīfa",
+   "ok": true
+  },
+  {
+   "tr": "khfaf",
+   "gen": "khfǟf",
+   "vocab": "khfǟf",
+   "ok": true
+  },
+  {
+   "tr": "akhaff",
+   "gen": "akhaff",
+   "vocab": "akhaff",
+   "ok": true
+  },
+  {
+   "tr": "skhuna",
+   "gen": "skhūna",
+   "vocab": "skhūna",
+   "ok": true
+  },
+  {
+   "tr": "skhan",
+   "gen": "skhān",
+   "vocab": "skhān",
+   "ok": true
+  },
+  {
+   "tr": "fransawiyya",
+   "gen": "fransāwiyya",
+   "vocab": "fransawiyya",
+   "ok": false
+  },
+  {
+   "tr": "fransis",
+   "gen": "fransīs",
+   "vocab": "fransīs",
+   "ok": true
+  },
+  {
+   "tr": "swisriyya",
+   "gen": "swīsriyya",
+   "vocab": "swīsriyya",
+   "ok": true
+  },
+  {
+   "tr": "jdida",
+   "gen": "jdīda",
+   "vocab": "jdīda",
+   "ok": true
+  },
+  {
+   "tr": "jdud",
+   "gen": "jdud",
+   "vocab": "jdud",
+   "ok": true
+  },
+  {
+   "tr": "kbira",
+   "gen": "kbīra",
+   "vocab": "kbīra",
+   "ok": true
+  },
+  {
+   "tr": "kbar",
+   "gen": "kbār",
+   "vocab": "kbār",
+   "ok": true
+  },
+  {
+   "tr": "akbar",
+   "gen": "akbar",
+   "vocab": "akbar",
+   "ok": true
+  },
+  {
+   "tr": "aghla",
+   "gen": "aghla",
+   "vocab": "aghla",
+   "ok": true
+  },
+  {
+   "tr": "ghrab",
+   "gen": "ghrāb",
+   "vocab": "ghrāb",
+   "ok": true
+  },
+  {
+   "tr": "s7i7a",
+   "gen": "s7ī7a",
+   "vocab": "s7ī7a",
+   "ok": true
+  },
+  {
+   "tr": "asa77",
+   "gen": "asa77",
+   "vocab": "asa77",
+   "ok": true
+  },
+  {
+   "tr": "qdima",
+   "gen": "qdīma",
+   "vocab": "qdīma",
+   "ok": true
+  },
+  {
+   "tr": "qdum",
+   "gen": "qdum",
+   "vocab": "qdum",
+   "ok": true
+  },
+  {
+   "tr": "qriba",
+   "gen": "qrība",
+   "vocab": "qrība",
+   "ok": true
+  },
+  {
+   "tr": "qrab",
+   "gen": "qrāb",
+   "vocab": "qrāb",
+   "ok": true
+  },
+  {
+   "tr": "was3a",
+   "gen": "wǟs3a",
+   "vocab": "wǟs3a",
+   "ok": true
+  },
+  {
+   "tr": "was3in",
+   "gen": "wǟs3īn",
+   "vocab": "wǟs3īn",
+   "ok": true
+  },
+  {
+   "tr": "awsa3",
+   "gen": "awsa3",
+   "vocab": "awsa3",
+   "ok": true
+  },
+  {
+   "tr": "bnina",
+   "gen": "bnīna",
+   "vocab": "bnīna",
+   "ok": true
+  },
+  {
+   "tr": "bnan",
+   "gen": "bnǟn",
+   "vocab": "bnǟn",
+   "ok": true
+  },
+  {
+   "tr": "qwiyya",
+   "gen": "qwiyya",
+   "vocab": "qwiyya",
+   "ok": true
+  },
+  {
+   "tr": "qwiyyin",
+   "gen": "qwiyyīn",
+   "vocab": "qwīyyin",
+   "ok": false
+  },
+  {
+   "tr": "aqwa",
+   "gen": "aqwa",
+   "vocab": "aqwa",
+   "ok": true
+  },
+  {
+   "tr": "a7la",
+   "gen": "a7la",
+   "vocab": "a7la",
+   "ok": true
+  },
+  {
+   "tr": "ji3anin",
+   "gen": "jī3ānīn",
+   "vocab": "jī3ānīn",
+   "ok": true
+  },
+  {
+   "tr": "zarqa",
+   "gen": "zarqa",
+   "vocab": "zarqa",
+   "ok": true
+  },
+  {
+   "tr": "zruq",
+   "gen": "zruq",
+   "vocab": "zruq",
+   "ok": true
+  },
+  {
+   "tr": "3utshanin",
+   "gen": "3utshǟnīn",
+   "vocab": "3utshǟnīn",
+   "ok": true
+  },
+  {
+   "tr": "mizyana",
+   "gen": "mizyǟna",
+   "vocab": "mizyǟna",
+   "ok": true
+  },
+  {
+   "tr": "7ayya",
+   "gen": "7ayya",
+   "vocab": "7ayya",
+   "ok": true
+  },
+  {
+   "tr": "7ayyin",
+   "gen": "7ayyīn",
+   "vocab": "7ayyīn",
+   "ok": true
+  },
+  {
+   "tr": "nthifa",
+   "gen": "nthīfa",
+   "vocab": "nthīfa",
+   "ok": true
+  },
+  {
+   "tr": "nthaf",
+   "gen": "nthāf",
+   "vocab": "nthāf",
+   "ok": true
+  },
+  {
+   "tr": "b3ida",
+   "gen": "b3īda",
+   "vocab": "b3īda",
+   "ok": true
+  },
+  {
+   "tr": "b3ad",
+   "gen": "b3ād",
+   "vocab": "b3ād",
+   "ok": true
+  },
+  {
+   "tr": "qsira",
+   "gen": "qsīra",
+   "vocab": "qsīra",
+   "ok": true
+  },
+  {
+   "tr": "qsar",
+   "gen": "qsār",
+   "vocab": "qsār",
+   "ok": true
+  },
+  {
+   "tr": "aqsar",
+   "gen": "aqsar",
+   "vocab": "aqsar",
+   "ok": true
+  },
+  {
+   "tr": "sman",
+   "gen": "smǟn",
+   "vocab": "smän",
+   "ok": false
+  },
+  {
+   "tr": "rzina",
+   "gen": "rzīna",
+   "vocab": "rzīna",
+   "ok": true
+  },
+  {
+   "tr": "twila",
+   "gen": "twīla",
+   "vocab": "twīla",
+   "ok": true
+  },
+  {
+   "tr": "twal",
+   "gen": "twǟl",
+   "vocab": "twǟl",
+   "ok": true
+  },
+  {
+   "tr": "atwal",
+   "gen": "atwal",
+   "vocab": "atwal",
+   "ok": true
+  },
+  {
+   "tr": "shib3anin",
+   "gen": "shib3ānīn",
+   "vocab": "shib3ānīn",
+   "ok": true
+  },
+  {
+   "tr": "tunsiyya",
+   "gen": "tūnsiyya",
+   "vocab": "tūnsiyya",
+   "ok": true
+  },
+  {
+   "tr": "twansa",
+   "gen": "twǟnsa",
+   "vocab": "twǟnsa",
+   "ok": true
+  },
+  {
+   "tr": "marrukiyya",
+   "gen": "marrūkiyya",
+   "vocab": "marrukiyya",
+   "ok": false
+  },
+  {
+   "tr": "3arbiyya",
+   "gen": "3arbiyya",
+   "vocab": "3arbiyya",
+   "ok": true
+  },
+  {
+   "tr": "almaniyya",
+   "gen": "älmǟniyya",
+   "vocab": "älmǟniyya",
+   "ok": true
+  },
+  {
+   "tr": "alman",
+   "gen": "älmǟn",
+   "vocab": "älmǟn",
+   "ok": true
+  },
+  {
+   "tr": "amrikaniyya",
+   "gen": "amrikǟniyya",
+   "vocab": "amrikaniyya",
+   "ok": false
+  },
+  {
+   "tr": "sghira",
+   "gen": "sghīra",
+   "vocab": "sghīra",
+   "ok": true
+  },
+  {
+   "tr": "sghar",
+   "gen": "sghār",
+   "vocab": "sghār",
+   "ok": true
+  },
+  {
+   "tr": "asghar",
+   "gen": "asghar",
+   "vocab": "asghar",
+   "ok": true
+  },
+  {
+   "tr": "7amra",
+   "gen": "7amra",
+   "vocab": "7amra",
+   "ok": true
+  },
+  {
+   "tr": "7mur",
+   "gen": "7mur",
+   "vocab": "7mur",
+   "ok": true
+  },
+  {
+   "tr": "safra",
+   "gen": "safra",
+   "vocab": "safra",
+   "ok": true
+  },
+  {
+   "tr": "sfur",
+   "gen": "sfur",
+   "vocab": "sfur",
+   "ok": true
+  },
+  {
+   "tr": "ka7la",
+   "gen": "ka7la",
+   "vocab": "ka7la",
+   "ok": true
+  },
+  {
+   "tr": "k7ul",
+   "gen": "k7ul",
+   "vocab": "k7ul",
+   "ok": true
+  },
+  {
+   "tr": "libiyya",
+   "gen": "lībiyya",
+   "vocab": "lībiyya",
+   "ok": true
+  },
+  {
+   "tr": "muritaniyya",
+   "gen": "mūrītāniyya",
+   "vocab": "mūrītǟniyya",
+   "ok": false
+  },
+  {
+   "tr": "frishka",
+   "gen": "frishka",
+   "vocab": "frishka",
+   "ok": true
+  },
+  {
+   "tr": "isbaniyya",
+   "gen": "isbǟniyya",
+   "vocab": "isbǟniyya",
+   "ok": true
+  },
+  {
+   "tr": "sudaniyyin",
+   "gen": "sūdǟniyyīn",
+   "vocab": "sūdǟniyyīn",
+   "ok": true
+  },
+  {
+   "tr": "lubnaniyyin",
+   "gen": "lubnǟniyyīn",
+   "vocab": "lubnǟniyyīn",
+   "ok": true
+  },
+  {
+   "tr": "nimsawiyya",
+   "gen": "nimsǟwiyya",
+   "vocab": "nimsǟwiyya",
+   "ok": true
+  },
+  {
+   "tr": "talyaniyya",
+   "gen": "talyǟniyya",
+   "vocab": "talyǟniyya",
+   "ok": true
+  },
+  {
+   "tr": "tlayin",
+   "gen": "tlǟyin",
+   "vocab": "tlǟyin",
+   "ok": true
+  },
+  {
+   "tr": "ingliz",
+   "gen": "inglīz",
+   "vocab": "inglīz",
+   "ok": true
+  },
+  {
+   "tr": "urubbiyyin",
+   "gen": "urubbiyyīn",
+   "vocab": "urubbiyyīn",
+   "ok": true
+  },
+  {
+   "tr": "7zan",
+   "gen": "7zǟn",
+   "vocab": "7zǟn",
+   "ok": true
+  },
+  {
+   "tr": "7zana",
+   "gen": "7zǟna",
+   "vocab": "7zǟna",
+   "ok": true
+  }
+ ]
+}
