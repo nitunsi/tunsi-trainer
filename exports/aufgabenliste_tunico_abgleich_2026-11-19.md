@@ -85,3 +85,13 @@ Oben stehen nur die **Verben** und der **Plural** der Nomen. TUNICO hat 7543 Lem
 - Vorgehen später: je Gruppe Nils fragen (anlegen? fällig?), vorher Skelett-/Wendungsabgleich, damit keine Dubletten entstehen.
 
 **Punkt 16 – Bedeutungen Nomen/Adjektive (Einzelwörter mit exaktem TUNICO-Lemma):** 830 vergleichbar, 663 mit gemeinsamem deutschen Wort, 167 ohne. Fast alles Rauschen: TUNICO-Homographe bei Verbformen (shra „er kaufte“ ↔ „Kaufen“, 3am „er schwamm“ ↔ „Jahr“, mat ↔ Mathe), Synonyme unter 4 Buchstaben (Ohr, Tag) und verschiedene Wörter gleicher Schreibung (7uta Fisch ↔ Bizeps, safra gelb ↔ Reise, qmar Mond ↔ Glücksspiel, bash ↔ Zeltplane). Echte Prüfkandidaten: 1183 qa3da („gerade (f.)“ ↔ TUNICO „feste Regel/Prinzip; Beisammensein“), 1391 aman („Bitte (a...)“ ↔ „Sicherheit/Schutz; Vertrauen“), 1572 nsib („Schwiegervater/Angeheirateter“ ↔ „Schwager“), 2038 qaris („sauer/scharf“ ↔ „Zitronen“), 923 tul („geradeaus“ ↔ „Länge/Größe“, vermutlich Redewendung tul), 583 shqala („Waage“ ↔ „große Schüssel“), 411 tarbusha („Mütze/Hut“ ↔ „Kapuze“). Jeweils Quelle (Ninja/Peace Corps) prüfen, bevor etwas geändert wird.
+
+## Ergebnis Punkt 17–18 (20.11., nur gesammelt, nichts geändert)
+
+**Punkt 17 – TUNICO-Verben außerhalb der Korpus-Top-300:** 1543 Verblemmata, 308 in den Top-300, 1235 außerhalb. Von diesen stehen 444 bei uns (Skelett-Abgleich), 791 fehlen (787 mit Präsensform in TUNICO). Das ist überwiegend Spezialwortschatz (Wollverarbeitung: butar, afinar, batir; Derbes: ba3bas, baznis; Tierlaute: ba3ba3; Fachsprache: 7allil, bannij) neben nützlichem Alltag (3shaq lieben, 7taj brauchen, 7tram respektieren, 7qar verachten, 7sad ernten, 7addid bügeln, 3annaq umarmen, 3attal aufhalten, blugh Pubertät, ayyis verzweifeln). Zuerst die mit PC/Ninja-Beleg (siehe Punkt 18) vorschlagen, je Gruppe fragen: anlegen? fällig?
+
+**Punkt 18 – Peace Corps / Ninja gegen unseren Bestand (Skelett):**
+- Ninja: Nomen 7157 (2428 bei uns), Verben 3878 (785), Adjektive 1866 (570), Adverbien 162 (71), Präpositionen 32 (24), Pronomen 20 (17), Zahlwörter 18 (17), Wendungen (PHR) 2683 (114 bei uns, bewusst kaum geführt).
+- Peace Corps: Verben 1711 (869 bei uns), Nomen m/f zusammen ca. 1430 (rund 800 bei uns), Adjektive ca. 570 (ca. 310), Adverbien 156 (92), Präpositionen 53 (45).
+- Verben, die uns fehlen, aber in Peace Corps oder Ninja stehen: 3147 Skelette; in allen drei Quellen (TUNICO, PC, Ninja) 307, in zwei Quellen 512. Die 307 sind die besten Kandidaten (mehrfach belegt). Hinweis: PC führt englische Stichwörter (ADMIRE (to) …), Zuordnung über Skelett, daher vor dem Anlegen Handprüfung.
+- Praktisch: eine gestufte Anlegeliste bauen (3 Quellen → 2 Quellen → 1), nach Häufigkeit/Alltag sortiert, Nils je Stufe entscheiden lassen.
