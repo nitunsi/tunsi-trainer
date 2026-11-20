@@ -732,7 +732,7 @@ window.neuUpdateAll = async function(){
     await rcForceRefresh();
     LS.set('neu-upd-at', String(Date.now()));
     say('Trainer wird neu geladen …');
-    try{ if('caches' in window){ const c = await caches.open('tounsi-shell-v1'); await Promise.all(['/trainer.html', '/neu/neu.js', '/neu/neu.css'].map(u => c.delete(u))); } }catch(e){}
+    try{ if('caches' in window){ const c = await caches.open('tounsi-shell-v2'); await Promise.all(['/trainer.html', '/neu/neu.js', '/neu/neu.css'].map(u => c.delete(u))); } }catch(e){}
     try{ const reg = await navigator.serviceWorker.getRegistration(); if(reg) await reg.update(); }catch(e){}
     location.reload();
   }catch(e){
