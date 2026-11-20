@@ -14,7 +14,7 @@ Der Trainer prüft den Bestand selbst (*Mehr → Prüfungen*, Zahl auf *Lernen*)
 
 ## Welche Arbeitsregeln du liest — und wann
 
-Die Regeln liegen **in diesem Repo**, nicht im gleichnamigen „tunsi"-Skill im Claude-Account: der ist ein manuell hochgeladener Snapshot (zuletzt 2026-11-20, deckungsgleich mit dem Repo-Stand dieses Tages). Änderungen an den Arbeitsregeln gehören hierher (committen + pushen); danach Nils eine neue ZIP von `skills/tunsi/` zum Hochladen geben und das Datum hier anpassen.
+Die Regeln liegen **in diesem Repo** (`skills/tunsi/`), nur hier. Den gleichnamigen „tunsi"-Skill im Claude-Account gibt es als alten Snapshot (Stand 2026-11-20), er ist **inaktiv und wird nicht gepflegt** (Nils nutzt nur Claude Code für den Trainer). Änderungen an den Arbeitsregeln: hier eintragen, committen, pushen und auf main mergen, denn eine neue Sitzung sieht nur main. **Kein ZIP und kein Upload nötig, auch nicht danach fragen.**
 
 **Lies die Datei, die zu deiner Aufgabe gehört — nicht alle.** Zusammen füllen sie knapp die Hälfte eines Kontextfensters, bevor du irgendetwas getan hast. SKILL.md beginnt mit **„Häufige Fehler“ und den Folgeorten** — die gelten bei jeder Korrektur.
 
