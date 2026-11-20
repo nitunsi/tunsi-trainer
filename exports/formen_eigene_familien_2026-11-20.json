@@ -1,0 +1,710 @@
+[
+ {
+  "n": "weiß",
+  "farbe": true,
+  "rows": [
+   {
+    "id": 444,
+    "tr": "abyadh",
+    "de": "weiß (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. bīdha · Pl. byudh"
+   },
+   {
+    "id": 445,
+    "tr": "bidha",
+    "de": "weiß (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. abyadh · f. bīdha · Pl. byudh"
+   },
+   {
+    "id": 2174,
+    "tr": "byudh",
+    "de": "weiß (Pl.)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. abyadh · f. bīdha · Pl. byudh"
+   }
+  ]
+ },
+ {
+  "n": "grün",
+  "farbe": true,
+  "rows": [
+   {
+    "id": 452,
+    "tr": "akhdhar",
+    "de": "grün (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. khadhra · Pl. khdhur"
+   },
+   {
+    "id": 453,
+    "tr": "khadhra",
+    "de": "grün (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. akhdhar · f. khadhra · Pl. khdhur"
+   },
+   {
+    "id": 2178,
+    "tr": "khdhur",
+    "de": "grün (Pl.)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. akhdhar · f. khadhra · Pl. khdhur"
+   }
+  ]
+ },
+ {
+  "n": "dunkel",
+  "farbe": true,
+  "rows": [
+   {
+    "id": 457,
+    "tr": "ghamiq",
+    "de": "dunkel (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. ghāmqa · Pl. ghāmqīn"
+   },
+   {
+    "id": 1178,
+    "tr": "ghamqa",
+    "de": "dunkel (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. ghāmiq · f. ghāmqa · Pl. ghāmqīn"
+   },
+   {
+    "id": 1179,
+    "tr": "ghamqin",
+    "de": "dunkel (Plural)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. ghāmiq · f. ghāmqa · Pl. ghāmqīn"
+   }
+  ]
+ },
+ {
+  "n": "hell",
+  "farbe": true,
+  "rows": [
+   {
+    "id": 458,
+    "tr": "fati7",
+    "de": "hell (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. fǟt7a · Pl. fǟt7īn · Elativ afta7"
+   },
+   {
+    "id": 1180,
+    "tr": "fat7a",
+    "de": "hell (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. fǟti7 · f. fǟt7a · Pl. fǟt7īn · Elativ afta7"
+   },
+   {
+    "id": 1181,
+    "tr": "fat7in",
+    "de": "hell (Plural)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. fǟti7 · f. fǟt7a · Pl. fǟt7īn · Elativ afta7"
+   }
+  ]
+ },
+ {
+  "n": "berühmt",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 2078,
+    "tr": "mashhur",
+    "de": "berühmt (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. mashhūra"
+   },
+   {
+    "id": 2079,
+    "tr": "mashhura",
+    "de": "berühmt (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. mashhūr · f. mashhūra"
+   }
+  ]
+ },
+ {
+  "n": "breit",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 2034,
+    "tr": "3ridh",
+    "de": "breit (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. 3rīdha · Pl. 3rādh"
+   },
+   {
+    "id": 2115,
+    "tr": "3ridha",
+    "de": "breit (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. 3rīdh · f. 3rīdha · Pl. 3rādh"
+   },
+   {
+    "id": 2116,
+    "tr": "3radh",
+    "de": "breit (Pl.)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. 3rīdh · f. 3rīdha · Pl. 3rādh"
+   }
+  ]
+ },
+ {
+  "n": "dünn/schwach",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 2033,
+    "tr": "dh3if",
+    "de": "dünn / schwach (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "Pl. dh3āf"
+   },
+   {
+    "id": 3975,
+    "tr": "dh3af",
+    "de": "dünn / schwach (Pl.)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. dh3īf · Pl. dh3āf"
+   }
+  ]
+ },
+ {
+  "n": "eingeschrieben",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 4084,
+    "tr": "msugir",
+    "de": "eingeschrieben (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "Pl. msūgrīn"
+   },
+   {
+    "id": 4085,
+    "tr": "msugrin",
+    "de": "eingeschrieben (Pl.)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. msūgir · Pl. msūgrīn"
+   }
+  ]
+ },
+ {
+  "n": "eng",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 435,
+    "tr": "dhayyiq",
+    "de": "eng (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. dhayyqa · Pl. dhayyqīn"
+   },
+   {
+    "id": 1130,
+    "tr": "dhayyqa",
+    "de": "eng (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. dhäyyiq · f. dhayyqa · Pl. dhayyqīn"
+   },
+   {
+    "id": 1134,
+    "tr": "dhayyqin",
+    "de": "eng (Plural)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. dhäyyiq · f. dhayyqa · Pl. dhayyqīn"
+   }
+  ]
+ },
+ {
+  "n": "geschieden",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 3097,
+    "tr": "mtallaq",
+    "de": "geschieden (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. mtallqa"
+   },
+   {
+    "id": 3098,
+    "tr": "mtallqa",
+    "de": "geschieden (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. mtallaq · f. mtallqa"
+   }
+  ]
+ },
+ {
+  "n": "geschmacklos/fad",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 2883,
+    "tr": "masit",
+    "de": "fade / geschmacklos / langweilig (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. māsta · Pl. māstīn"
+   },
+   {
+    "id": 4013,
+    "tr": "masta",
+    "de": "geschmacklos, fad (Essen) / fad (Person) (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. māsit · f. māsta · Pl. māstīn"
+   },
+   {
+    "id": 4014,
+    "tr": "mastin",
+    "de": "geschmacklos, fad (Essen) / fad (Person) (Pl.)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. māsit · f. māsta · Pl. māstīn"
+   }
+  ]
+ },
+ {
+  "n": "hergestellt",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 3154,
+    "tr": "makhdum",
+    "de": "hergestellt / gemacht (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. makhdūma"
+   },
+   {
+    "id": 3155,
+    "tr": "makhduma",
+    "de": "hergestellt / gemacht (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. makhdūm · f. makhdūma"
+   }
+  ]
+ },
+ {
+  "n": "kalt",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 588,
+    "tr": "barid",
+    "de": "kalt (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. bǟrda · Pl. bǟrdīn"
+   },
+   {
+    "id": 589,
+    "tr": "barda",
+    "de": "kalt (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. bǟrid · f. bǟrda · Pl. bǟrdīn"
+   },
+   {
+    "id": 1088,
+    "tr": "bardin",
+    "de": "kalt (Plural)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. bǟrid · f. bǟrda · Pl. bǟrdīn"
+   }
+  ]
+ },
+ {
+  "n": "ledig",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 1957,
+    "tr": "3azib",
+    "de": "ledig (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. 3āzba"
+   },
+   {
+    "id": 3094,
+    "tr": "3azba",
+    "de": "ledig (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. 3āzib · f. 3āzba"
+   }
+  ]
+ },
+ {
+  "n": "leer",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 1777,
+    "tr": "faragh",
+    "de": "leer (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. fārgha · Pl. fārghīn"
+   },
+   {
+    "id": 2119,
+    "tr": "fargha",
+    "de": "leer (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. fāragh · f. fārgha · Pl. fārghīn"
+   },
+   {
+    "id": 2120,
+    "tr": "farghin",
+    "de": "leer (Pl.)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. fāragh · f. fārgha · Pl. fārghīn"
+   }
+  ]
+ },
+ {
+  "n": "mexikanisch",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 615,
+    "tr": "miksiki",
+    "de": "mexikanisch (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. miksīkiyya · Pl. meksīkiyyīn"
+   },
+   {
+    "id": 2104,
+    "tr": "miksikiyya",
+    "de": "mexikanisch (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. miksīki · f. miksīkiyya · Pl. meksīkiyyīn"
+   },
+   {
+    "id": 2109,
+    "tr": "meksikiyyin",
+    "de": "Mexikaner (Pl.)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. miksīki · f. miksīkiyya · Pl. meksīkiyyīn"
+   }
+  ]
+ },
+ {
+  "n": "richtig/stark",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 3887,
+    "tr": "shih",
+    "de": "richtig; stark (bei guter Gesundheit) (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. shīha · Pl. shīhīn"
+   },
+   {
+    "id": 3976,
+    "tr": "shiha",
+    "de": "richtig; stark (bei guter Gesundheit) (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. shīh · f. shīha · Pl. shīhīn"
+   },
+   {
+    "id": 3977,
+    "tr": "shihin",
+    "de": "richtig; stark (bei guter Gesundheit) (Pl.)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. shīh · f. shīha · Pl. shīhīn"
+   }
+  ]
+ },
+ {
+  "n": "schmutzig",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 440,
+    "tr": "massakh",
+    "de": "schmutzig (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. masskha · Pl. masskhīn"
+   },
+   {
+    "id": 1141,
+    "tr": "masskha",
+    "de": "schmutzig (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. massakh · f. masskha · Pl. masskhīn"
+   },
+   {
+    "id": 1145,
+    "tr": "masskhin",
+    "de": "schmutzig (Plural)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. massakh · f. masskha · Pl. masskhīn"
+   }
+  ]
+ },
+ {
+  "n": "toll",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 4015,
+    "tr": "hayil",
+    "de": "toll, super (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. hǟyla · Pl. hǟylīn"
+   },
+   {
+    "id": 4016,
+    "tr": "hayla",
+    "de": "toll, super (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. hǟyil · f. hǟyla · Pl. hǟylīn"
+   },
+   {
+    "id": 4017,
+    "tr": "haylin",
+    "de": "toll, super (Pl.)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. hǟyil · f. hǟyla · Pl. hǟylīn"
+   }
+  ]
+ },
+ {
+  "n": "tot",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 2290,
+    "tr": "mayyit",
+    "de": "tot (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. mäyyta · Pl. mäyytīn"
+   },
+   {
+    "id": 2291,
+    "tr": "mayyta",
+    "de": "tot (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. mäyyit · f. mäyyta · Pl. mäyytīn"
+   },
+   {
+    "id": 2197,
+    "tr": "mayytin",
+    "de": "tot (Plural)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. mäyyit · f. mäyyta · Pl. mäyytīn"
+   }
+  ]
+ },
+ {
+  "n": "verheiratet",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 1956,
+    "tr": "m3arris",
+    "de": "verheiratet (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. m3arrsa"
+   },
+   {
+    "id": 3096,
+    "tr": "m3arrsa",
+    "de": "verheiratet (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. m3arris · f. m3arrsa"
+   }
+  ]
+ },
+ {
+  "n": "verwitwet",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 3099,
+    "tr": "hajjal",
+    "de": "verwitwet (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. häjjǟla"
+   },
+   {
+    "id": 3100,
+    "tr": "hajjala",
+    "de": "verwitwet (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. häjjǟl · f. häjjǟla"
+   }
+  ]
+ },
+ {
+  "n": "voll",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 1776,
+    "tr": "m3abbi",
+    "de": "voll (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. m3abbya · Pl. m3abbyin"
+   },
+   {
+    "id": 2117,
+    "tr": "m3abbya",
+    "de": "voll (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. m3abbi · f. m3abbya · Pl. m3abbyin"
+   },
+   {
+    "id": 2118,
+    "tr": "m3abbyin",
+    "de": "voll (Pl.)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. m3abbi · f. m3abbya · Pl. m3abbyin"
+   }
+  ]
+ },
+ {
+  "n": "vollständig",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 4087,
+    "tr": "kamil",
+    "de": "vollständig, ganz (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. kǟmla"
+   },
+   {
+    "id": 4088,
+    "tr": "kamla",
+    "de": "vollständig, ganz (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. kǟmil · f. kǟmla"
+   }
+  ]
+ },
+ {
+  "n": "wohnhaft",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 4871,
+    "tr": "sakin",
+    "de": "wohnhaft (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. säkna · Pl. säknin"
+   },
+   {
+    "id": 4872,
+    "tr": "sakna",
+    "de": "wohnhaft (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. sǟkin · f. säkna · Pl. säknin"
+   },
+   {
+    "id": 4873,
+    "tr": "saknin",
+    "de": "wohnhaft (Pl.)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. sǟkin · f. säkna · Pl. säknin"
+   }
+  ]
+ },
+ {
+  "n": "zerrissen",
+  "farbe": false,
+  "rows": [
+   {
+    "id": 441,
+    "tr": "mqatta3",
+    "de": "zerrissen (m.)",
+    "art": "m",
+    "alt": null,
+    "neu": "f. mqat3a · Pl. mqat3īn"
+   },
+   {
+    "id": 1139,
+    "tr": "mqat3a",
+    "de": "zerrissen (f.)",
+    "art": "f",
+    "alt": null,
+    "neu": "m. mqatta3 · f. mqat3a · Pl. mqat3īn"
+   },
+   {
+    "id": 1143,
+    "tr": "mqat3in",
+    "de": "zerrissen (Plural)",
+    "art": "pl",
+    "alt": null,
+    "neu": "m. mqatta3 · f. mqat3a · Pl. mqat3īn"
+   }
+  ]
+ }
+]
