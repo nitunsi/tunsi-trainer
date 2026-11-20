@@ -495,6 +495,85 @@ function formenZeile(v){
     return m ? '<span style="opacity:.75">'+escHtml(m[1])+'</span> '+wort(m[2]) : wort(x); }).join(' &nbsp;·&nbsp; ');
   return '<div class="formen-zeile" style="margin-top:.35rem;font-size:.9rem;color:var(--muted);line-height:1.6"><span style="font-size:.72rem;letter-spacing:.12em;text-transform:uppercase">Formen</span>&nbsp;&nbsp;'+txt+'</div>';
 }
+// Vorschlag für das Feld „Formen“ aus TUNICO (Knopf im Bearbeiten-Fenster): gleiche Logik wie tools/formen_vorschlag.js.
+// TUNICO-Schreibung (orig, mit Strichen) → Pseudo-Arabisch → laengeHtml(): Länge und Klang nach der Regel des Trainers.
+const FORMEN_ANA = {'#adj_f':'f.', '#adj_pl':'Pl.', '#n_pl':'Pl.', '#n_dual':'Dual', '#n_unit':'Einzelnes', '#n_unit_pl':'Einzelne Pl.', '#adj_elative':'Elativ', '#n_inst':'Inst.'};
+const FORMEN_ORDER = ['f.', 'Pl.', 'Dual', 'Einzelnes', 'Einzelne Pl.', 'Elativ', 'Inst.'];
+const FORMEN_MAP = {'ʕ':'ع','ṛ':'ر','r':'ر','ḥ':'ح','ž':'ج','j':'ج','x':'خ','q':'ق','g':'ق','ṭ':'ط','ṣ':'ص','ḏ':'ض','ẓ':'ظ','ṯ':'ث','š':'ش','ġ':'غ','z':'ز','d':'د','b':'ب','ḅ':'ب','t':'ت','f':'ف','k':'ك','l':'ل','ḷ':'ل','m':'م','ṃ':'م','n':'ن','h':'ه','s':'س','w':'و','y':'ي','ʔ':'ء','v':'ڤ','p':'پ'};
+function formenPseudoAr(orig){
+  const FA='َ', KA='ِ', DA='ُ', SU='ْ', SH='ّ';
+  const ch = [...String(orig).normalize('NFC').replace(/īy/g,'iyy').replace(/[\u0323ᵊ()\-]/g,'')];
+  const isV = c => 'aiuāīū'.includes(c);
+  let ar = '', i = 0;
+  if(isV(ch[0])){ const c = ch[0]; ar += (c==='i'||c==='ī') ? 'إ' : 'أ'; ar += (c==='a'||c==='ā') ? FA : (c==='i'||c==='ī') ? KA : DA; if('āīū'.includes(c)) ar += c==='ā' ? 'ا' : c==='ī' ? 'ي' : 'و'; i = 1; }
+  for(; i < ch.length; i++){
+    const c = ch[i]; if(isV(c)) continue; const L = FORMEN_MAP[c]; if(!L) return null;
+    let dbl = false; if(ch[i+1] === c){ dbl = true; i++; }
+    const n = ch[i+1];
+    if(n && isV(n)){
+      const last = i + 2 >= ch.length;
+      const d = (n==='a'||n==='ā') ? FA : (n==='i'||n==='ī') ? KA : DA; i++;
+      ar += L + (dbl ? SH : '') + d + (n==='ā' ? 'ا' : n==='ī' ? 'ي' : n==='ū' ? 'و' : '');
+      if(last && n === 'a') ar += 'ة';
+    } else ar += L + (dbl ? SH : '') + SU;
+  }
+  return ar;
+}
+async function formenVorschlag(v){
+  const sel = 'lemma_chatalpha,pos,inflected,senses';
+  const pos = 'pos=in.(noun,collectiveNoun,adjective)';
+  const q = x => encodeURIComponent(x);
+  let rows = await sbApi('tunico_import?select='+sel+'&'+pos+'&lemma_chatalpha=eq.'+q(v.tr));
+  let via = 'Lemma';
+  if(!rows || !rows.length){   // Plural- oder Femininzeile: TUNICO-Eintrag über die Form finden
+    rows = await sbApi('tunico_import?select='+sel+'&'+pos+'&inflected=cs.'+q(JSON.stringify([{chatalpha: v.tr}])));
+    via = 'Form';
+  }
+  if(!rows || !rows.length) return {fo:'', hinweis:'Keine Formen in TUNICO gefunden.', fam:[]};
+  const stamm = s => (String(s||'').toLowerCase().match(/[a-zäöüß]{4,}/g) || []).map(w => w.slice(0,4));
+  const mine = String(v.en||'').toLowerCase();
+  const passt = rows.filter(r => stamm((r.senses||[]).map(z => (z.de||[]).join(' ')).join(' ')).some(w => mine.includes(w)));
+  let hinweis = '';
+  let use = passt.length ? passt : rows;
+  if(!passt.length) hinweis = 'Bedeutung nicht bestätigt, bitte prüfen. ';
+  if(use.length > 1){ use = [use[0]]; hinweis += 'Mehrere TUNICO-Einträge, der erste ist genommen. '; }
+  const r = use[0];
+  const byTr = {}; ALL_VOCAB.forEach(e => { if(!e.ausb) (byTr[e.tr.toLowerCase()] = byTr[e.tr.toLowerCase()] || []).push(e); });
+  const fix = ch => ch.replace(/iya$/,'iyya').replace(/iyin$/,'iyyin');
+  const strip = h => String(h).replace(/<[^>]*>/g,'');
+  const forms = {}, fam = new Set();
+  for(const x of (r.inflected||[])){
+    const lab = FORMEN_ANA[x.ana]; if(!lab || !x.chatalpha || !/^[a-z0-9']+$/.test(x.chatalpha)) continue;
+    const tr = fix(x.chatalpha);
+    let m = tr;
+    const ex = byTr[tr.toLowerCase()];
+    if(ex){ m = strip(trL(ex[0])); ex.forEach(e => fam.add(e.id)); }
+    else { const ar = formenPseudoAr(x.orig); if(ar){ try{ m = strip(laengeHtml(tr, ar, /r/.test(x.orig) && !/ṛ/.test(x.orig))); }catch(e){} } }
+    (forms[lab] = forms[lab] || []);
+    if(!forms[lab].includes(m)) forms[lab].push(m);
+  }
+  // die eigene Form der Zeile gehört in die Zeile, nicht doppelt als Fremdform
+  const fo = FORMEN_ORDER.filter(k => forms[k] && forms[k].length).map(k => k+' '+forms[k].join(' / ')).join(' · ');
+  const lem = byTr[String(r.lemma_chatalpha||'').toLowerCase()];
+  if(lem) lem.forEach(e => fam.add(e.id));
+  if(via === 'Form') hinweis += 'TUNICO-Lemma: '+r.lemma_chatalpha+'. ';
+  return {fo, hinweis: fo ? hinweis : 'TUNICO hat zu diesem Eintrag keine Formen. '+hinweis, fam: [...fam].filter(id => id !== v.id)};
+}
+window._formenFam = [];
+async function neuFormenVorschlag(btn){
+  const v = vById(_editSheetVocabId); const out = document.getElementById('ei-fo-hint'); const inp = document.getElementById('ei-fo'); const cb = document.getElementById('ei-fo-fam');
+  if(!v || !out || !inp) return;
+  if(btn) btn.disabled = true; out.textContent = 'Suche in TUNICO …';
+  try{
+    const r = await formenVorschlag(v);
+    if(r.fo){ inp.value = r.fo; }
+    window._formenFam = r.fam || [];
+    const famTxt = window._formenFam.length ? window._formenFam.map(id => (vById(id)||{}).tr).filter(Boolean).join(', ') : '';
+    out.textContent = (r.fo ? 'Vorschlag aus TUNICO eingetragen, mit „Speichern“ übernehmen. ' : '') + r.hinweis + (famTxt ? 'Zeilen derselben Familie: '+famTxt+'.' : '');
+    const cbw = document.getElementById('ei-fo-fam-wrap'); if(cbw){ cbw.style.display = window._formenFam.length && r.fo ? '' : 'none'; if(cb) cb.checked = true; }
+  }catch(e){ out.textContent = 'Fehler: '+(e && e.message || e); }
+  finally{ if(btn) btn.disabled = false; }
+}
 function wurzelZeile(v){
   if(!v || !v.wz) return '';
   const st = !v.st || v.st==='?' ? '' : v.st==='Iq' ? 'Stamm I (vier Buchstaben)' : v.st==='t-I' ? 't-Stamm I' : v.st+'. Stamm';
@@ -6601,6 +6680,7 @@ function openVocabEdit(vocabId, i){
     const fgSel = document.getElementById('ei-fg'); if(fgSel) fgSel.value = v.fg || '';
     const azInp = document.getElementById('ei-az'); if(azInp) azInp.value = v.az || '';
     const foInp = document.getElementById('ei-fo'); if(foInp) foInp.value = v.fo || '';
+    window._formenFam = []; const foHint = document.getElementById('ei-fo-hint'); if(foHint) foHint.textContent = ''; const foW = document.getElementById('ei-fo-fam-wrap'); if(foW) foW.style.display = 'none';
   });
 }
 
@@ -6645,9 +6725,12 @@ async function saveVocabEditSheet(){
     if(newNt !== null) vocabPatch.internal_note = newNt || null;
     if(newAz !== null) vocabPatch.anzeige = newAz || null;
     if(newFo !== null) vocabPatch.formen = newFo || null;
+    const famBox = document.getElementById('ei-fo-fam');
+    const famIds = (newFo && famBox && famBox.checked && window._formenFam && window._formenFam.length) ? window._formenFam.slice() : [];
     if(newLw !== null) vocabPatch.lehnwort = newLw || null;
     if(newFg !== null){ vocabPatch.flag_grund = newFg || null; if(newFg && !flaggedVocab.has(v.tr)){ vocabPatch.flagged = true; } }   // ein Grund setzt die Flagge
     await sbApi('vocabulary?id=eq.'+vocabId, 'PATCH', vocabPatch);
+    if(famIds.length){ await sbApi('vocabulary?id=in.('+famIds.join(',')+')', 'PATCH', {formen: newFo}); famIds.forEach(id => { const e = vById(id); if(e) e.fo = newFo; }); window._formenFam = []; }
     const progId = srsProgress[vocabId] ? srsProgress[vocabId].id : null;
     const patchProg = {};
     if(newNr) patchProg.next_review = fromLocalInputDE(newNr).toISOString();
@@ -11956,7 +12039,9 @@ window.addEventListener('unhandledrejection', (e) => {
     <input id="ei-az" class="sh-in" placeholder="gehörte Schreibweise, z. B. mǟkish – leer = Regel" autocomplete="off">
     <div style="font-size:.7rem;color:var(--muted);margin:-.2rem 0 .5rem">Buchstaben wie die Umschrift, nur ǟ ä ā ī ū dürfen anders stehen. Gilt auch in Phrasen und im Kurs.</div>
     <label class="sh-l">Formen (Feminin, Plural …)</label>
-    <input id="ei-fo" class="sh-in" placeholder="z. B. f. 3ziza · Pl. 3zaz – erscheint auf der Rückseite der Karte" autocomplete="off">
+    <div style="display:flex;gap:.4rem;align-items:center"><input id="ei-fo" class="sh-in" style="flex:1;min-width:0" placeholder="z. B. f. 3ziza · Pl. 3zaz – erscheint auf der Rückseite der Karte" autocomplete="off"><button type="button" class="neu-btn ghost" style="min-height:0;padding:.45rem .7rem;white-space:nowrap" onclick="neuFormenVorschlag(this)">Vorschlag</button></div>
+    <div id="ei-fo-hint" style="font-size:.7rem;color:var(--muted);margin:.2rem 0"></div>
+    <label id="ei-fo-fam-wrap" style="display:none;font-size:.75rem;color:var(--muted);margin:.1rem 0 .4rem"><input type="checkbox" id="ei-fo-fam" checked> auch auf die Zeilen derselben Familie schreiben</label>
     <div style="font-size:.7rem;color:var(--muted);margin:-.2rem 0 .5rem">Kürzel f. · Pl. · Dual · Einzelnes · Elativ, getrennt durch „ · “. Nur Umschrift.</div>
     <label class="sh-l">Interner Kommentar</label>
     <textarea id="ei-nt" class="sh-in" placeholder="z. B. Quelle/Sicherheit: Ninja-bestätigt, arabisch selbst erstellt …" rows="2"></textarea>
