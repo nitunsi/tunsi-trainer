@@ -2407,7 +2407,7 @@ const sea=`<svg viewBox="0 0 220 100" width="220"><path d="M60 62a50 50 0 0 1 10
   };
   const _ex = window.courseExSolutionHtml;
   if(typeof _ex === 'function') window.courseExSolutionHtml = function(ex){
-    const f = ex && ex.exercise_type !== 'answer_pattern' ? format(escHtml(ex.solution || ''), ex) : (ex && !PAREN.test(ex.solution || '') ? format(escHtml(ex.solution || ''), ex) : null);
+    const f = ex && ex.exercise_type !== 'answer_pattern' ? format(typeof kursLaenge === 'function' ? kursLaenge(escHtml(ex.solution || '')) : escHtml(ex.solution || ''), ex) : (ex && !PAREN.test(ex.solution || '') ? format(typeof kursLaenge === 'function' ? kursLaenge(escHtml(ex.solution || '')) : escHtml(ex.solution || ''), ex) : null);
     return f ? f + (typeof courseMetaGermanHtml === 'function' ? courseMetaGermanHtml(ex) : '') : _ex.apply(this, arguments);
   };
 })();

@@ -5107,7 +5107,7 @@ function courseExPreviewHtml(e){
   return '<div style="border:1px solid var(--border);border-radius:8px;padding:.7rem .8rem;margin-top:.6rem;background:var(--bg)">'
     + '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Vorschau · '+escHtml(courseTypeLabel(e))+'</div>'
     + (instr ? '<div style="font-size:.75rem;color:var(--muted);margin-top:.3rem">'+escHtml(instr)+'</div>' : '')
-    + '<div style="font-size:1.05rem;margin:.3rem 0">'+escHtml(cv ? cv.prompt : (e.prompt||''))+'</div>'
+    + '<div style="font-size:1.05rem;margin:.3rem 0">'+(cv ? escHtml(cv.prompt) : kursPromptL(escHtml(e.prompt||''), e.prompt||''))+'</div>'
     + (cv && cv.qHtml ? '<div style="margin-bottom:.5rem">'+cv.qHtml+'</div>' : '')
     + '<div style="border-top:1px dashed var(--border);padding-top:.5rem;color:var(--gold2);font-size:.9rem">'+courseExSolutionHtml(e)+'</div></div>';
 }
@@ -8100,8 +8100,10 @@ function laengeImText(html){
 let _kursWortIdx = null;
 const _kursWortCache = {};
 const KURS_ENDUNGEN = ['hum','kum','ha','ni','na','ek','ik','ak','u','k','i','a'];   // Besitz- und Objektendungen, längste zuerst
+let _RG_FORMEN = null;   // Formen der gerade gezeigten Regelkarte (Umschrift → Arabisch): Beispielwörter im Fließtext wie in der Tabelle markieren
 function kursWortL(w){
   const k = w.toLowerCase();
+  if(_RG_FORMEN && _RG_FORMEN[k]){ const h = laengeHtml(w, _RG_FORMEN[k]); if(h !== w) return h; }
   if(w in _kursWortCache) return _kursWortCache[w];   // Schlüssel mit Großschreibung: „Vor“ und „vor“ sind verschiedene Einträge
   kursIdx();
   let h = w;
@@ -8150,7 +8152,7 @@ function kursLaenge(html, roh, grossNein){   // roh: Fließtext der Regelkarten 
     const seg0 = vorB; vorB = false;
     const cut = roh ? -1 : seg.search(/\s[—–]\s(?=[A-ZÄÖÜ„])/);
     let rest = '';
-    if(cut >= 0){ rest = seg.slice(cut); seg = seg.slice(0, cut); de = true; }
+    if(cut >= 0){ rest = seg.slice(cut).replace(/(\bNeg:\s*)([^<]+)$/, (m, k, tn) => k + kursLaenge(tn)); seg = seg.slice(0, cut); de = true; }   // „Neg: ma-nikthbu-sh.“ im deutschen Schwanz ist Tounsi
     return seg.split(/(„[^“]*“|&#?\w+;)/).map(t => {
       if(!t || (!roh && t.charAt(0) === '„') || t.charAt(0) === '&') return t;
       return t.replace(/[A-Za-z0-9'ʔ]+/g, (w, off) => {
@@ -8243,6 +8245,8 @@ function regelFrageInnen(rg){
 function regelLoesungHtml(rg){
   GL_SEEN = new Set();
   const a = rg.ant || {};
+  _RG_FORMEN = {};
+  [[a.tr_von, a.ar_von], [a.tr_nach, a.ar_nach]].concat((rg.bsp || []).reduce((l, x) => l.concat([[x.tr_von, x.ar_von], [x.tr_nach, x.ar_nach]]), [])).forEach(([tr, ar]) => { if(tr && ar && !/\s/.test(tr) && /[ً-ْ]/.test(ar)) _RG_FORMEN[String(tr).toLowerCase()] = ar; });
   const arrow = '<div style="color:var(--muted);text-align:center">→</div>';
   const cell = (t, ar) => '<div style="text-align:center;padding:0 4px">'+rgTr(t, ar)+'</div>';
   let h = '<div style="background:var(--surface);color:var(--text);border-radius:10px;padding:.9rem .8rem;font-size:1.05rem;line-height:1.5">' + regelEinordnungHtml(rg);
