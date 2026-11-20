@@ -3,14 +3,14 @@
    Lerndaten liegen NICHT hier, sondern in IndexedDB (siehe Lese-Cache in trainer.html).
    Es werden ausschließlich GET-Anfragen der eigenen Herkunft behandelt: nie POST/PATCH/DELETE,
    nie Supabase, nie Audio, keine Schlüssel/Tokens. */
-const SHELL = 'tounsi-shell-v1';
+const SHELL = 'tounsi-shell-v2';
 const FONTS = 'tounsi-fonts-v1';
 const META  = 'tounsi-meta-v1';
 const NET_TIMEOUT = 3000;
 const CORE = [
   '/trainer.html', '/neu/neu.css', '/neu/neu.js',
   '/neu/app/manifest.webmanifest', '/neu/app/icon-192.png', '/neu/app/icon-512.png', '/neu/app/apple-touch-icon.png', '/neu/app/icon.svg', '/neu/app/badge-96.png',
-  '/neu/fonts/plexmono-400.woff2', '/neu/fonts/plexmono-500.woff2', '/neu/fonts/playfair.woff2', '/neu/fonts/naskh.woff2'
+  '/neu/fonts/plexmono-400.woff2', '/neu/fonts/plexmono-500.woff2', '/neu/fonts/plexmono-ext-400.woff2', '/neu/fonts/plexmono-ext-500.woff2', '/neu/fonts/playfair.woff2', '/neu/fonts/naskh.woff2'
 ];
 
 self.addEventListener('install', e => {
