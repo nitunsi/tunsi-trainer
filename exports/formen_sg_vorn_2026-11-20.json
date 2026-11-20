@@ -1,0 +1,681 @@
+[
+ {
+  "id": 1252,
+  "tr": "ta3banin",
+  "lem": "ta3ban",
+  "alt": "f. ta3bǟna · Pl. ta3bǟnīn",
+  "neu": "m. ta3bǟn · f. ta3bǟna · Pl. ta3bǟnīn"
+ },
+ {
+  "id": 1092,
+  "tr": "murra",
+  "lem": "murr",
+  "alt": "f. murra · Pl. murrīn / mrār",
+  "neu": "m. murr · f. murra · Pl. murrīn / mrār"
+ },
+ {
+  "id": 1090,
+  "tr": "khfifa",
+  "lem": "khfif",
+  "alt": "f. khfīfa · Pl. khfǟf · Elativ akhaff",
+  "neu": "m. khfīf · f. khfīfa · Pl. khfǟf · Elativ akhaff"
+ },
+ {
+  "id": 1093,
+  "tr": "khfaf",
+  "lem": "khfif",
+  "alt": "f. khfīfa · Pl. khfǟf · Elativ akhaff",
+  "neu": "m. khfīf · f. khfīfa · Pl. khfǟf · Elativ akhaff"
+ },
+ {
+  "id": 653,
+  "tr": "skhuna",
+  "lem": "skhun",
+  "alt": "f. skhūna · Pl. skhān / skhūnīn",
+  "neu": "m. skhūn · f. skhūna · Pl. skhān / skhūnīn"
+ },
+ {
+  "id": 1087,
+  "tr": "skhan",
+  "lem": "skhun",
+  "alt": "f. skhūna · Pl. skhān / skhūnīn",
+  "neu": "m. skhūn · f. skhūna · Pl. skhān / skhūnīn"
+ },
+ {
+  "id": 2100,
+  "tr": "fransawiyya",
+  "lem": "fransawi",
+  "alt": "f. fransawiyya · Pl. fransīs",
+  "neu": "m. fransǟwi · f. fransawiyya · Pl. fransīs"
+ },
+ {
+  "id": 2106,
+  "tr": "fransis",
+  "lem": "fransawi",
+  "alt": "f. fransawiyya · Pl. fransīs",
+  "neu": "m. fransǟwi · f. fransawiyya · Pl. fransīs"
+ },
+ {
+  "id": 3653,
+  "tr": "swisriyya",
+  "lem": "swisri",
+  "alt": "f. swīsriyya · Pl. swīsriyyīn",
+  "neu": "m. swīsri · f. swīsriyya · Pl. swīsriyyīn"
+ },
+ {
+  "id": 1137,
+  "tr": "jdida",
+  "lem": "jdid",
+  "alt": "f. jdīda · Pl. jdud",
+  "neu": "m. jdīd · f. jdīda · Pl. jdud"
+ },
+ {
+  "id": 1142,
+  "tr": "jdud",
+  "lem": "jdid",
+  "alt": "f. jdīda · Pl. jdud",
+  "neu": "m. jdīd · f. jdīda · Pl. jdud"
+ },
+ {
+  "id": 617,
+  "tr": "kbira",
+  "lem": "kbir",
+  "alt": "f. kbīra · Pl. kbār · Elativ akbar",
+  "neu": "m. kbīr · f. kbīra · Pl. kbār · Elativ akbar"
+ },
+ {
+  "id": 960,
+  "tr": "kbar",
+  "lem": "kbir",
+  "alt": "f. kbīra · Pl. kbār · Elativ akbar",
+  "neu": "m. kbīr · f. kbīra · Pl. kbār · Elativ akbar"
+ },
+ {
+  "id": 3072,
+  "tr": "s7i7a",
+  "lem": "s7i7",
+  "alt": "f. s7ī7a · Pl. s7ā7 / s7ī7īn · Elativ asa77",
+  "neu": "m. s7ī7 · f. s7ī7a · Pl. s7ā7 / s7ī7īn · Elativ asa77"
+ },
+ {
+  "id": 1138,
+  "tr": "qdima",
+  "lem": "qdim",
+  "alt": "f. qdīma · Pl. qdum / qdǟm",
+  "neu": "m. qdīm · f. qdīma · Pl. qdum / qdǟm"
+ },
+ {
+  "id": 3981,
+  "tr": "qdum",
+  "lem": "qdim",
+  "alt": "f. qdīma · Pl. qdum / qdǟm",
+  "neu": "m. qdīm · f. qdīma · Pl. qdum / qdǟm"
+ },
+ {
+  "id": 2111,
+  "tr": "qriba",
+  "lem": "qrib",
+  "alt": "f. qrība · Pl. qrāb",
+  "neu": "m. qrīb · f. qrība · Pl. qrāb"
+ },
+ {
+  "id": 2112,
+  "tr": "qrab",
+  "lem": "qrib",
+  "alt": "f. qrība · Pl. qrāb",
+  "neu": "m. qrīb · f. qrība · Pl. qrāb"
+ },
+ {
+  "id": 1131,
+  "tr": "was3a",
+  "lem": "wasa3",
+  "alt": "f. wǟs3a · Pl. wǟs3īn · Elativ awsa3",
+  "neu": "m. wǟsa3 · f. wǟs3a · Pl. wǟs3īn · Elativ awsa3"
+ },
+ {
+  "id": 1135,
+  "tr": "was3in",
+  "lem": "wasa3",
+  "alt": "f. wǟs3a · Pl. wǟs3īn · Elativ awsa3",
+  "neu": "m. wǟsa3 · f. wǟs3a · Pl. wǟs3īn · Elativ awsa3"
+ },
+ {
+  "id": 1243,
+  "tr": "bnina",
+  "lem": "bnin",
+  "alt": "f. bnīna · Pl. bnǟn · Elativ äbänn",
+  "neu": "m. bnīn · f. bnīna · Pl. bnǟn · Elativ äbänn"
+ },
+ {
+  "id": 4011,
+  "tr": "bnan",
+  "lem": "bnin",
+  "alt": "f. bnīna · Pl. bnǟn · Elativ äbänn",
+  "neu": "m. bnīn · f. bnīna · Pl. bnǟn · Elativ äbänn"
+ },
+ {
+  "id": 1091,
+  "tr": "qwiyya",
+  "lem": "qwi",
+  "alt": "f. qwiyya · Pl. qwīyyin · Elativ aqwa",
+  "neu": "m. qwi · f. qwiyya · Pl. qwīyyin · Elativ aqwa"
+ },
+ {
+  "id": 1094,
+  "tr": "qwiyyin",
+  "lem": "qwi",
+  "alt": "f. qwiyya · Pl. qwīyyin · Elativ aqwa",
+  "neu": "m. qwi · f. qwiyya · Pl. qwīyyin · Elativ aqwa"
+ },
+ {
+  "id": 4615,
+  "tr": "ji3anin",
+  "lem": "ji3an",
+  "alt": "f. jī3āna · Pl. jī3ānīn",
+  "neu": "m. jī3ān · f. jī3āna · Pl. jī3ānīn"
+ },
+ {
+  "id": 1177,
+  "tr": "zarqa",
+  "lem": "azraq",
+  "alt": "f. zarqa · Pl. zruq",
+  "neu": "m. azraq · f. zarqa · Pl. zruq"
+ },
+ {
+  "id": 2177,
+  "tr": "zruq",
+  "lem": "azraq",
+  "alt": "f. zarqa · Pl. zruq",
+  "neu": "m. azraq · f. zarqa · Pl. zruq"
+ },
+ {
+  "id": 3961,
+  "tr": "3utshanin",
+  "lem": "3utshan",
+  "alt": "f. 3utshǟna · Pl. 3utshǟnīn / 3tāsha",
+  "neu": "m. 3utshǟn · f. 3utshǟna · Pl. 3utshǟnīn / 3tāsha"
+ },
+ {
+  "id": 2403,
+  "tr": "mizyana",
+  "lem": "mizyan",
+  "alt": "f. mizyǟna · Pl. mizyǟnīn · Elativ äzyän",
+  "neu": "m. mizyǟn · f. mizyǟna · Pl. mizyǟnīn · Elativ äzyän"
+ },
+ {
+  "id": 2288,
+  "tr": "7ayya",
+  "lem": "7ayy",
+  "alt": "f. 7ayya · Pl. 7ayyīn",
+  "neu": "m. 7ayy · f. 7ayya · Pl. 7ayyīn"
+ },
+ {
+  "id": 2289,
+  "tr": "7ayyin",
+  "lem": "7ayy",
+  "alt": "f. 7ayya · Pl. 7ayyīn",
+  "neu": "m. 7ayy · f. 7ayya · Pl. 7ayyīn"
+ },
+ {
+  "id": 1140,
+  "tr": "nthifa",
+  "lem": "nthif",
+  "alt": "f. nthīfa · Pl. nthāf",
+  "neu": "m. nthīf · f. nthīfa · Pl. nthāf"
+ },
+ {
+  "id": 1144,
+  "tr": "nthaf",
+  "lem": "nthif",
+  "alt": "f. nthīfa · Pl. nthāf",
+  "neu": "m. nthīf · f. nthīfa · Pl. nthāf"
+ },
+ {
+  "id": 2113,
+  "tr": "b3ida",
+  "lem": "b3id",
+  "alt": "f. b3īda · Pl. b3ād",
+  "neu": "m. b3īd · f. b3īda · Pl. b3ād"
+ },
+ {
+  "id": 2114,
+  "tr": "b3ad",
+  "lem": "b3id",
+  "alt": "f. b3īda · Pl. b3ād",
+  "neu": "m. b3īd · f. b3īda · Pl. b3ād"
+ },
+ {
+  "id": 1128,
+  "tr": "qsira",
+  "lem": "qsir",
+  "alt": "f. qsīra · Pl. qsār · Elativ aqsar",
+  "neu": "m. qsīr · f. qsīra · Pl. qsār · Elativ aqsar"
+ },
+ {
+  "id": 1132,
+  "tr": "qsar",
+  "lem": "qsir",
+  "alt": "f. qsīra · Pl. qsār · Elativ aqsar",
+  "neu": "m. qsīr · f. qsīra · Pl. qsār · Elativ aqsar"
+ },
+ {
+  "id": 3068,
+  "tr": "rzina",
+  "lem": "rzin",
+  "alt": "f. rzīna · Pl. rzǟn",
+  "neu": "m. rzīn · f. rzīna · Pl. rzǟn"
+ },
+ {
+  "id": 1024,
+  "tr": "twila",
+  "lem": "twil",
+  "alt": "f. twīla · Pl. twǟl · Elativ atwal",
+  "neu": "m. twīl · f. twīla · Pl. twǟl · Elativ atwal"
+ },
+ {
+  "id": 1133,
+  "tr": "twal",
+  "lem": "twil",
+  "alt": "f. twīla · Pl. twǟl · Elativ atwal",
+  "neu": "m. twīl · f. twīla · Pl. twǟl · Elativ atwal"
+ },
+ {
+  "id": 3974,
+  "tr": "shib3anin",
+  "lem": "shib3an",
+  "alt": "f. shib3āna · Pl. shib3ānīn / shbǟ3a",
+  "neu": "m. shib3ān · f. shib3āna · Pl. shib3ānīn / shbǟ3a"
+ },
+ {
+  "id": 500,
+  "tr": "tunsiyya",
+  "lem": "tunsi",
+  "alt": "f. tūnsiyya · Pl. twǟnsa",
+  "neu": "m. tūnsi · f. tūnsiyya · Pl. twǟnsa"
+ },
+ {
+  "id": 2105,
+  "tr": "twansa",
+  "lem": "tunsi",
+  "alt": "f. tūnsiyya · Pl. twǟnsa",
+  "neu": "m. tūnsi · f. tūnsiyya · Pl. twǟnsa"
+ },
+ {
+  "id": 4444,
+  "tr": "marrukiyya",
+  "lem": "marruki",
+  "alt": "f. marrukiyya · Pl. marrūkiyyīn",
+  "neu": "m. marruki · f. marrukiyya · Pl. marrūkiyyīn"
+ },
+ {
+  "id": 3655,
+  "tr": "3arbiyya",
+  "lem": "3arbi",
+  "alt": "f. 3arbiyya / 3arabiyya",
+  "neu": "m. 3arbi · f. 3arbiyya / 3arabiyya"
+ },
+ {
+  "id": 2102,
+  "tr": "almaniyya",
+  "lem": "almani",
+  "alt": "f. älmǟniyya · Pl. älmǟn",
+  "neu": "m. almǟni · f. älmǟniyya · Pl. älmǟn"
+ },
+ {
+  "id": 2108,
+  "tr": "alman",
+  "lem": "almani",
+  "alt": "f. älmǟniyya · Pl. älmǟn",
+  "neu": "m. almǟni · f. älmǟniyya · Pl. älmǟn"
+ },
+ {
+  "id": 2101,
+  "tr": "amrikaniyya",
+  "lem": "amrikani",
+  "alt": "f. amrikaniyya",
+  "neu": "m. amrīkǟni · f. amrikaniyya"
+ },
+ {
+  "id": 2121,
+  "tr": "sghira",
+  "lem": "sghir",
+  "alt": "f. sghīra / zghīra · Pl. sghār / zghār / sghīrīn / zghīrīn · Elativ asghar / azghar",
+  "neu": "m. sghīr · f. sghīra / zghīra · Pl. sghār / zghār / sghīrīn / zghīrīn · Elativ asghar / azghar"
+ },
+ {
+  "id": 447,
+  "tr": "7amra",
+  "lem": "a7mar",
+  "alt": "f. 7amra · Pl. 7mur",
+  "neu": "m. a7mar · f. 7amra · Pl. 7mur"
+ },
+ {
+  "id": 2175,
+  "tr": "7mur",
+  "lem": "a7mar",
+  "alt": "f. 7amra · Pl. 7mur",
+  "neu": "m. a7mar · f. 7amra · Pl. 7mur"
+ },
+ {
+  "id": 449,
+  "tr": "safra",
+  "lem": "asfar",
+  "alt": "f. safra · Pl. sfur",
+  "neu": "m. asfar · f. safra · Pl. sfur"
+ },
+ {
+  "id": 2176,
+  "tr": "sfur",
+  "lem": "asfar",
+  "alt": "f. safra · Pl. sfur",
+  "neu": "m. asfar · f. safra · Pl. sfur"
+ },
+ {
+  "id": 443,
+  "tr": "ka7la",
+  "lem": "ak7al",
+  "alt": "f. ka7la · Pl. k7ul / k7il",
+  "neu": "m. ak7al · f. ka7la · Pl. k7ul / k7il"
+ },
+ {
+  "id": 2173,
+  "tr": "k7ul",
+  "lem": "ak7al",
+  "alt": "f. ka7la · Pl. k7ul / k7il",
+  "neu": "m. ak7al · f. ka7la · Pl. k7ul / k7il"
+ },
+ {
+  "id": 3638,
+  "tr": "libiyya",
+  "lem": "libi",
+  "alt": "f. lībiyya · Pl. lībiyyīn",
+  "neu": "m. lībi · f. lībiyya · Pl. lībiyyīn"
+ },
+ {
+  "id": 3635,
+  "tr": "muritaniyya",
+  "lem": "muritani",
+  "alt": "f. mūrītǟniyya · Pl. mūrītāniyyīn",
+  "neu": "m. mūrītǟni · f. mūrītǟniyya · Pl. mūrītāniyyīn"
+ },
+ {
+  "id": 4019,
+  "tr": "frishka",
+  "lem": "frishk",
+  "alt": "f. frishka / farshka · Pl. farshkīn",
+  "neu": "m. frishk · f. frishka / farshka · Pl. farshkīn"
+ },
+ {
+  "id": 3670,
+  "tr": "isbaniyya",
+  "lem": "isbani",
+  "alt": "f. isbǟniyya · Pl. isbǟniyyīn",
+  "neu": "m. isbǟni · f. isbǟniyya · Pl. isbǟniyyīn"
+ },
+ {
+  "id": 4105,
+  "tr": "sudaniyyin",
+  "lem": "sudani",
+  "alt": "f. sūdǟniyya · Pl. sūdǟniyyīn",
+  "neu": "m. sūdǟni · f. sūdǟniyya · Pl. sūdǟniyyīn"
+ },
+ {
+  "id": 4106,
+  "tr": "lubnaniyyin",
+  "lem": "lubnani",
+  "alt": "f. lubnǟniyya · Pl. lubnǟniyyīn",
+  "neu": "m. lubnǟni · f. lubnǟniyya · Pl. lubnǟniyyīn"
+ },
+ {
+  "id": 4440,
+  "tr": "nimsawiyya",
+  "lem": "nimsawi",
+  "alt": "f. nimsǟwiyya · Pl. nimsǟwiyyīn",
+  "neu": "m. nimsǟwi · f. nimsǟwiyya · Pl. nimsǟwiyyīn"
+ },
+ {
+  "id": 2103,
+  "tr": "talyaniyya",
+  "lem": "talyani",
+  "alt": "f. talyǟniyya · Pl. tlǟyn / tlǟyin",
+  "neu": "m. talyǟni · f. talyǟniyya · Pl. tlǟyn / tlǟyin"
+ },
+ {
+  "id": 2110,
+  "tr": "tlayin",
+  "lem": "talyani",
+  "alt": "f. talyǟniyya · Pl. tlǟyn / tlǟyin",
+  "neu": "m. talyǟni · f. talyǟniyya · Pl. tlǟyn / tlǟyin"
+ },
+ {
+  "id": 3970,
+  "tr": "ingliz",
+  "lem": "inglizi",
+  "alt": "f. inglīziyya / anglīziyya · Pl. inglīz / anglīz",
+  "neu": "m. inglīzi · f. inglīziyya / anglīziyya · Pl. inglīz / anglīz"
+ },
+ {
+  "id": 3971,
+  "tr": "urubbiyyin",
+  "lem": "urubbi",
+  "alt": "f. urubbiyya · Pl. urubbiyyīn",
+  "neu": "m. urubbi · f. urubbiyya · Pl. urubbiyyīn"
+ },
+ {
+  "id": 3973,
+  "tr": "7zan",
+  "lem": "7zin",
+  "alt": "f. 7zīna · Pl. 7zǟn / 7zǟna",
+  "neu": "m. 7zīn · f. 7zīna · Pl. 7zǟn / 7zǟna"
+ },
+ {
+  "id": 3972,
+  "tr": "7zana",
+  "lem": "7zin",
+  "alt": "f. 7zīna · Pl. 7zǟn / 7zǟna",
+  "neu": "m. 7zīn · f. 7zīna · Pl. 7zǟn / 7zǟna"
+ },
+ {
+  "id": 4663,
+  "tr": "buldan",
+  "lem": "blad",
+  "alt": "Pl. bildǟn / buldǟn",
+  "neu": "Sg. blǟd · Pl. bildǟn / buldǟn"
+ },
+ {
+  "id": 4665,
+  "tr": "byar",
+  "lem": "bir",
+  "alt": "Pl. byār",
+  "neu": "Sg. bīr · Pl. byār"
+ },
+ {
+  "id": 1542,
+  "tr": "jaddat",
+  "lem": "jadda",
+  "alt": "Pl. jäddǟt / jiddǟt",
+  "neu": "Sg. jädda · Pl. jäddǟt / jiddǟt"
+ },
+ {
+  "id": 2187,
+  "tr": "jim3at",
+  "lem": "jim3a",
+  "alt": "Pl. jim3āt · Dual jim3tīn",
+  "neu": "Sg. jim3a · Pl. jim3āt · Dual jim3tīn"
+ },
+ {
+  "id": 4659,
+  "tr": "7alqat",
+  "lem": "7alqa",
+  "alt": "Pl. 7alqāt",
+  "neu": "Sg. 7alqa · Pl. 7alqāt"
+ },
+ {
+  "id": 1561,
+  "tr": "khalat",
+  "lem": "khala",
+  "alt": "Pl. khālǟt",
+  "neu": "Sg. khāla · Pl. khālǟt"
+ },
+ {
+  "id": 4469,
+  "tr": "akhwa",
+  "lem": "khu",
+  "alt": "Pl. ikhwa / akhwa / khwǟt",
+  "neu": "Sg. khu · Pl. ikhwa / akhwa / khwǟt"
+ },
+ {
+  "id": 1528,
+  "tr": "khwat",
+  "lem": "khu",
+  "alt": "Pl. ikhwa / akhwa / khwǟt",
+  "neu": "Sg. khu · Pl. ikhwa / akhwa / khwǟt"
+ },
+ {
+  "id": 626,
+  "tr": "dinarat",
+  "lem": "dinar",
+  "alt": "Pl. dīnārāt · Dual dīnārīn",
+  "neu": "Sg. dīnār · Pl. dīnārāt · Dual dīnārīn"
+ },
+ {
+  "id": 279,
+  "tr": "dinarin",
+  "lem": "dinar",
+  "alt": "Pl. dīnārāt · Dual dīnārīn",
+  "neu": "Sg. dīnār · Pl. dīnārāt · Dual dīnārīn"
+ },
+ {
+  "id": 4063,
+  "tr": "swaya3",
+  "lem": "sa3a",
+  "alt": "Pl. swǟya3 / sǟ3āt · Dual sǟ3tīn",
+  "neu": "Sg. sǟ3a · Pl. swǟya3 / sǟ3āt · Dual sǟ3tīn"
+ },
+ {
+  "id": 2353,
+  "tr": "sa3tin",
+  "lem": "sa3a",
+  "alt": "Pl. swǟya3 / sǟ3āt · Dual sǟ3tīn",
+  "neu": "Sg. sǟ3a · Pl. swǟya3 / sǟ3āt · Dual sǟ3tīn"
+ },
+ {
+  "id": 4644,
+  "tr": "shu3ub",
+  "lem": "sha3b",
+  "alt": "Pl. shu3ūb",
+  "neu": "Sg. sha3b · Pl. shu3ūb"
+ },
+ {
+  "id": 4876,
+  "tr": "shwaliq",
+  "lem": "shuliqa",
+  "alt": "Pl. shwǟliq",
+  "neu": "Sg. shulīqa · Pl. shwǟliq"
+ },
+ {
+  "id": 1147,
+  "tr": "trabish",
+  "lem": "tarbusha",
+  "alt": "Pl. trābish",
+  "neu": "Sg. tarbūsha · Pl. trābish"
+ },
+ {
+  "id": 2110,
+  "tr": "tlayin",
+  "lem": "talyani",
+  "alt": "f. talyǟniyya · Pl. tlǟyn / tlǟyin",
+  "neu": "Sg. talyǟni · f. talyǟniyya · Pl. tlǟyn / tlǟyin"
+ },
+ {
+  "id": 1082,
+  "tr": "tnajir",
+  "lem": "tanjra",
+  "alt": "Pl. tnǟjir",
+  "neu": "Sg. tanjra · Pl. tnǟjir"
+ },
+ {
+  "id": 1516,
+  "tr": "3aylat",
+  "lem": "3ayla",
+  "alt": "Pl. 3āylǟt",
+  "neu": "Sg. 3āyla · Pl. 3āylǟt"
+ },
+ {
+  "id": 1557,
+  "tr": "3ammat",
+  "lem": "3amma",
+  "alt": "Pl. 3ammǟt",
+  "neu": "Sg. 3amma · Pl. 3ammǟt"
+ },
+ {
+  "id": 4638,
+  "tr": "fazat",
+  "lem": "faza",
+  "alt": "Pl. fǟzǟt",
+  "neu": "Sg. fǟza · Pl. fǟzǟt"
+ },
+ {
+  "id": 585,
+  "tr": "fnajin",
+  "lem": "finjan",
+  "alt": "Pl. fnǟjīn / fnǟjil",
+  "neu": "Sg. finjǟn · Pl. fnǟjīn / fnǟjil"
+ },
+ {
+  "id": 4669,
+  "tr": "qtatis",
+  "lem": "qattus",
+  "alt": "Pl. qtātis",
+  "neu": "Sg. qattūs · Pl. qtātis"
+ },
+ {
+  "id": 2148,
+  "tr": "qhawi",
+  "lem": "qahwa",
+  "alt": "Pl. qhǟwi · Dual qahwtīn",
+  "neu": "Sg. qahwa · Pl. qhǟwi · Dual qahwtīn"
+ },
+ {
+  "id": 2158,
+  "tr": "qahwtin",
+  "lem": "qahwa",
+  "alt": "Pl. qhǟwi · Dual qahwtīn",
+  "neu": "Sg. qahwa · Pl. qhǟwi · Dual qahwtīn"
+ },
+ {
+  "id": 584,
+  "tr": "kisan",
+  "lem": "kas",
+  "alt": "Pl. kīsǟn",
+  "neu": "Sg. kǟs · Pl. kīsǟn"
+ },
+ {
+  "id": 891,
+  "tr": "ktub",
+  "lem": "ktab",
+  "alt": "Pl. ktub / ktubba / ktubbǟt / ktǟbǟt / uktba",
+  "neu": "Sg. ktǟb · Pl. ktub / ktubba / ktubbǟt / ktǟbǟt / uktba"
+ },
+ {
+  "id": 3571,
+  "tr": "ka3ka",
+  "lem": "ka3k",
+  "alt": "Einzelnes ka3ka · Einzelne Pl. ka3kǟt",
+  "neu": "Sg. ka3k · Einzelnes ka3ka · Einzelne Pl. ka3kǟt"
+ },
+ {
+  "id": 2154,
+  "tr": "marrat",
+  "lem": "marra",
+  "alt": "Pl. marrat · Dual marrtīn",
+  "neu": "Sg. marra · Pl. marrat · Dual marrtīn"
+ },
+ {
+  "id": 1075,
+  "tr": "mgharif",
+  "lem": "mgharfa",
+  "alt": "Pl. mghārif · Dual mgharftīn",
+  "neu": "Sg. mgharfa · Pl. mghārif · Dual mgharftīn"
+ }
+]
