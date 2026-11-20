@@ -567,6 +567,13 @@ async function formenVorschlag(v){
   return {fo, foPlain, foSg, lemIds, hinweis: fo ? hinweis : 'TUNICO hat zu diesem Eintrag keine Formen. '+hinweis, fam: [...fam].filter(id => id !== v.id)};
 }
 window._formenFam = [];
+// Knopf in der Kopfzeile des Bearbeiten-Fensters (neben Wurzel): zum Feld „Formen“ springen, bei leerem Feld gleich den Vorschlag holen
+function neuFormenSprung(){
+  const inp = document.getElementById('ei-fo'); if(!inp) return;
+  inp.scrollIntoView({block:'center', behavior:'smooth'});
+  if(!inp.value.trim()){ const b = document.querySelector('#vocab-edit-sheet button[onclick^="neuFormenVorschlag"]'); neuFormenVorschlag(b); }
+  else inp.focus();
+}
 async function neuFormenVorschlag(btn){
   const v = vById(_editSheetVocabId); const out = document.getElementById('ei-fo-hint'); const inp = document.getElementById('ei-fo'); const cb = document.getElementById('ei-fo-fam');
   if(!v || !out || !inp) return;
@@ -11983,6 +11990,7 @@ window.addEventListener('unhandledrejection', (e) => {
       <button id="ei-audio" class="sh-ib" style="display:none" onclick="neuEditAudio()" aria-label="Aussprache">🔊</button>
       <button id="ei-conj" class="sh-ib" style="display:none" onclick="showConjModal(_editSheetVocabId)" aria-label="Konjugationstabelle" title="Konjugationstabelle">🔠</button>
       <button id="ei-wz" class="sh-ib" style="display:none" onclick="showWurzelFromSheet()" aria-label="Wurzel und gleiche Wurzel" title="Wurzel und gleiche Wurzel">🌿</button>
+      <button id="ei-fo-btn" class="sh-ib" onclick="neuFormenSprung()" aria-label="Formen (Feminin, Plural …)" title="Formen: zum Feld springen, bei leerem Feld Vorschlag aus TUNICO">⇆</button>
       <button class="sh-ib" onclick="closeVocabEdit()" aria-label="Schließen">✕</button>
     </div>
   </div>
