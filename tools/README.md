@@ -70,7 +70,7 @@ Sichert alle Audios von Derja Ninja und Sprachenlernen24 (auch die noch nicht be
 ## `formen_vorschlag.js`
 
 `node tools/formen_vorschlag.js adj|nomen [ausgabe.json]` — Vorschlag für die Spalte `vocabulary.formen`
-(Feminin, Plural, Elativ bzw. Plural, Dual, Einzelnes). Startet `trainer.html` mit Playwright (nur GET gegen
+(Feminin, Plural, Elativ bzw. Plural, Dual, Singulativ). Startet `trainer.html` mit Playwright (nur GET gegen
 Supabase, Schreibzugriffe werden blockiert), liest `tunico_import` über die Trainer-API, setzt Länge und Klang
 aus der TUNICO-Schreibung (`orig`) über `laengeHtml()` und schreibt je Lemma die Formen-Zeile samt den Zeilen
 der Familie. Regel und Format: `skills/tunsi/SKILL.md` → „Formen“. Schreiben nie ohne Bestätigung.
