@@ -480,7 +480,7 @@ function synonymNote(v){
 // ist es verschieden; synonymNote verlangt gleiches Deutsch, hier ist es verschieden.
 // Wurzel, Stamm und Verbtyp einer Vokabel als eine Zeile (Spalten wurzel, wurzel_ar, stamm, verbtyp)
 const VERBTYP_DE = {stark:'starkes Verb', hohl:'Hohlverb', geminiert:'geminiert', schwaches_ende:'schwaches Ende', schwach_anfang:'schwacher Anfang (w)', knacklaut_anfang:'Knacklaut am Anfang', knacklaut_ende:'Knacklaut am Ende', mehrfach:'mehrere schwache Buchstaben', vierkonsonantig:'vier Wurzelbuchstaben'};
-// Formen (Nils 2026-11-20): Feminin, Plural, Dual, Einzelnes, Elativ als Zeile auf der Rückseite der Karte, nie davor und nie im Deutsch.
+// Formen (Nils 2026-11-20): Feminin, Plural, Dual, Singulativ, Elativ als Zeile auf der Rückseite der Karte, nie davor und nie im Deutsch.
 // Spalte vocabulary.formen, Kürzel „f. 3ziza · Pl. 3zaz“; Länge und Klang nur für Formen, die der Trainer kennt (Vokabeln, Anzeige, Kurs).
 // gespeicherte Formen tragen Länge und Klang schon (3zǟz); die Anzeige-Stufe (Klang / nur Länge / aus) wird hier nachgezogen
 function formenMarke(w){
@@ -497,8 +497,8 @@ function formenZeile(v){
 }
 // Vorschlag für das Feld „Formen“ aus TUNICO (Knopf im Bearbeiten-Fenster): gleiche Logik wie tools/formen_vorschlag.js.
 // TUNICO-Schreibung (orig, mit Strichen) → Pseudo-Arabisch → laengeHtml(): Länge und Klang nach der Regel des Trainers.
-const FORMEN_ANA = {'#ap_f':'f.', '#ap_pl':'Pl.', '#pp_f':'f.', '#pp_pl':'Pl.', '#p_f':'f.', '#p_pl':'Pl.', '#adj_f':'f.', '#adj_pl':'Pl.', '#n_pl':'Pl.', '#n_dual':'Dual', '#n_unit':'Einzelnes', '#n_unit_pl':'Einzelne Pl.', '#adj_elative':'Elativ', '#n_inst':'Inst.'};
-const FORMEN_ORDER = ['f.', 'Pl.', 'Dual', 'Einzelnes', 'Einzelne Pl.', 'Elativ', 'Inst.'];
+const FORMEN_ANA = {'#ap_f':'f.', '#ap_pl':'Pl.', '#pp_f':'f.', '#pp_pl':'Pl.', '#p_f':'f.', '#p_pl':'Pl.', '#adj_f':'f.', '#adj_pl':'Pl.', '#n_pl':'Pl.', '#n_dual':'Dual', '#n_unit':'Singulativ', '#n_unit_pl':'Singulativ Pl.', '#adj_elative':'Elativ', '#n_inst':'Inst.'};
+const FORMEN_ORDER = ['f.', 'Pl.', 'Dual', 'Singulativ', 'Singulativ Pl.', 'Elativ', 'Inst.'];
 const FORMEN_MAP = {'ʕ':'ع','ṛ':'ر','r':'ر','ḥ':'ح','ž':'ج','j':'ج','x':'خ','q':'ق','g':'ق','ṭ':'ط','ṣ':'ص','ḏ':'ض','ẓ':'ظ','ṯ':'ث','š':'ش','ġ':'غ','z':'ز','d':'د','b':'ب','ḅ':'ب','t':'ت','f':'ف','k':'ك','l':'ل','ḷ':'ل','m':'م','ṃ':'م','n':'ن','h':'ه','s':'س','w':'و','y':'ي','ʔ':'ء','v':'ڤ','p':'پ'};
 function formenPseudoAr(orig){
   const FA='َ', KA='ِ', DA='ُ', SU='ْ', SH='ّ';
@@ -627,7 +627,7 @@ function formenWortSet(v){
   const s = new Set();
   if(!v || !v.fo) return s;
   String(v.fo).split(/[\s\/·]+/).forEach(w => {
-    w = w.trim(); if(!w || /^(f\.|m\.|Sg\.|Pl\.|Dual|Einzelnes|Einzelne|Elativ|Inst\.)$/.test(w)) return;
+    w = w.trim(); if(!w || /^(f\.|m\.|Sg\.|Pl\.|Dual|Singulativ|Elativ|Inst\.)$/.test(w)) return;
     s.add(w.toLowerCase().replace(/[ǟä]/g,'a').replace(/ā/g,'a').replace(/ī/g,'i').replace(/ū/g,'u'));
   });
   return s;
@@ -12077,7 +12077,7 @@ window.addEventListener('unhandledrejection', (e) => {
     <div style="margin:.35rem 0 .1rem"><button type="button" class="neu-btn ghost" style="width:auto;min-height:0;padding:.45rem 1.1rem;font-size:.9rem" onclick="neuFormenVorschlag(this)">Vorschlag aus TUNICO</button></div>
     <div id="ei-fo-hint" style="font-size:.7rem;color:var(--muted);margin:.2rem 0"></div>
     <label id="ei-fo-fam-wrap" style="display:none;font-size:.75rem;color:var(--muted);margin:.1rem 0 .4rem"><input type="checkbox" id="ei-fo-fam" checked> auch auf die Zeilen derselben Familie schreiben</label>
-    <div style="font-size:.7rem;color:var(--muted);margin:-.2rem 0 .5rem">Kürzel Sg. · m. · f. · Pl. · Dual · Einzelnes · Elativ, getrennt durch „ · “. Nur Umschrift.</div>
+    <div style="font-size:.7rem;color:var(--muted);margin:-.2rem 0 .5rem">Kürzel Sg. · m. · f. · Pl. · Dual · Singulativ · Elativ, getrennt durch „ · “. Nur Umschrift. Singulativ = ein einzelnes Exemplar eines Sammelbegriffs (3ads Linsen → Singulativ 3adsa eine Linse).</div>
     <label class="sh-l">Interner Kommentar</label>
     <textarea id="ei-nt" class="sh-in" placeholder="z. B. Quelle/Sicherheit: Ninja-bestätigt, arabisch selbst erstellt …" rows="2"></textarea>
     <div style="height:5.5rem"></div>
