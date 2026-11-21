@@ -461,3 +461,9 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 ## 2026-11-21 · Weitere Abweichungen (DB gegen review_log)
 - 2306 Karten verglichen: khwat (1528): Fortschritt stammt von der Dublette 4470 (Zusammenführung 18.11.), Antworten 31.10./13.11. nicht sichtbar, Stufe 6 → unverändert gelassen (Nils: Vorschlag „nichts ändern“ nicht beanstandet).
 - mitakkid (2934): 10 Antworten Juli, keine `progress`-Zeile → **angelegt** (Nils: „Ja, A schreiben“): progress-id 2594, Stufe 0, wrong 3, review 10, last_reviewed 28.07., last_correct 26.07., next_review jetzt (fällig). Neue Zeile, kein Backup nötig; löschen = `DELETE FROM progress WHERE id=2594`.
+
+## 2026-11-21 · Audio-Sicherung (Punkt I) Schritt 1 und 2 erledigt
+- Colab-Lauf fertig: 25 Pakete, 24.585 von 24.586 Dateien (`ninja/21760.mp3`, Ninja-Eintrag 20242 „t7rrr“, ist beim Anbieter 404, von keiner Vokabel genutzt). Manifest 24.586 Zeilen, keine leeren Dateien, Stichprobe 20 je Quelle ok (sl24 „Auffällig“ = FF FA, gültiger MP3-Kopf, Prüfung zu streng).
+- Nicht getestet: Abspielen über Ersatz-Ordner im Trainer (Trainer liest nicht aus der Sicherung).
+- Colab-Zugriff: kein Eintrag unter Berechtigungen (Sitzungs-Token); Nils trennt die Laufzeit.
+- View `audio_sicherung_liste`: Definition gesichert in `exports/audio_sicherung_liste_view_2026-11-21.sql`; keine abhängigen Objekte; anon hat alle Rechte darauf (liest über die View Ninja- und SL24-Tabellen). Löschen wartet auf Nils' Bestätigung. Danach: `ninja-audio` verkleinern (Liste vorher zeigen).
