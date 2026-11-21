@@ -2265,21 +2265,22 @@ async function rcLocalProgOverlay(){
   try{
     const hit = await rcGet(RC_LOCALPROG_KEY);
     if(!hit || !hit.v || !hit.v.rows || hit.v.u !== currentUser.id || Date.now() - hit.v.lt > RC_LOCALPROG_DAYS*86400000) return;
-    const d = s => s ? new Date(s) : null; let n = 0;
+    const d = s => s ? new Date(s) : null; let n = 0, skip = 0; const abw = [];
     for(const k in hit.v.rows){
       const r = hit.v.rows[k], cur = srsProgress[k];
       if(cur){
         // Server hat eine neuere Antwort (anderes Gerät): Vergleich mit dem Zeitpunkt der Antwort in der Sicherung, nicht mit dem
         // Zeitpunkt des Sicherns (sonst überschrieb eine später gesicherte, veraltete Zeile den Server-Stand dauerhaft; Nils 2026-11-21: sabir, warrit)
-        if((cur.last_reviewed ? +new Date(cur.last_reviewed) : 0) > (r.l ? +new Date(r.l) : 0)) continue;
+        if((cur.last_reviewed ? +new Date(cur.last_reviewed) : 0) > (r.l ? +new Date(r.l) : 0)){ skip++; continue; }
         if(cur.id && r.id && cur.id !== r.id) continue;
+        if((cur.level||0) !== Math.min(r.c || 0, 6) || (cur.next_review ? +new Date(cur.next_review) : 0) !== (r.n ? +new Date(r.n) : 0)) abw.push((VOCAB_BY_ID[k] ? VOCAB_BY_ID[k].tr : k)+' S'+(cur.level||0)+'→S'+Math.min(r.c || 0, 6));
       }
       srsProgress[k] = Object.assign(cur || { id: r.id, vocabulary_id: +k }, {
         level: Math.min(r.c || 0, 6), next_review: d(r.n), review_count: r.r, wrong_count: r.w, last_reviewed: d(r.l), last_correct: d(r.k)
       });
       n++;
     }
-    if(n) dbg('Lokaler Lernstand über geladenen Stand gelegt: '+n, 'info');
+    if(n || skip) dbg('Lokaler Lernstand über geladenen Stand gelegt: '+n+' · Server neuer, übersprungen: '+skip+(abw.length ? ' · geändert: '+abw.slice(0,12).join(', ')+(abw.length>12?' …':'') : ''), 'info');
   }catch(e){}
 }
 async function rcLocalCourseOverlay(){
