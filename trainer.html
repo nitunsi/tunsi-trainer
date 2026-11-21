@@ -751,7 +751,6 @@ function dbg(msg, cls){
   const panel = document.getElementById('debug-panel');
   const log = document.getElementById('debug-log');
   if(!panel || !log) return;
-  panel.style.display = 'block';
   const d = document.createElement('div');
   d.style.color = cls==='err' ? '#c94c4c' : cls==='ok' ? '#4cac6e' : '#f0e8d8';
   d.textContent = new Date().toLocaleTimeString() + ' ' + msg;
@@ -2261,6 +2260,8 @@ async function rcLocalProgSave(){
     await rcSet(RC_LOCALPROG_KEY, { lt: now, u: currentUser.id, rows, ex });
   }catch(e){}
 }
+// Karten, bei denen der lokale Lernstand beim Start vom Server abweicht und nicht in der Warteschlange wartet (für Mehr → Prüfungen)
+let LERNSTAND_ABW = [];
 async function rcLocalProgOverlay(){
   try{
     const hit = await rcGet(RC_LOCALPROG_KEY);
@@ -2273,14 +2274,15 @@ async function rcLocalProgOverlay(){
         // Zeitpunkt des Sicherns (sonst überschrieb eine später gesicherte, veraltete Zeile den Server-Stand dauerhaft; Nils 2026-11-21: sabir, warrit)
         if((cur.last_reviewed ? +new Date(cur.last_reviewed) : 0) > (r.l ? +new Date(r.l) : 0)){ skip++; continue; }
         if(cur.id && r.id && cur.id !== r.id) continue;
-        if((cur.level||0) !== Math.min(r.c || 0, 6) || (cur.next_review ? +new Date(cur.next_review) : 0) !== (r.n ? +new Date(r.n) : 0)) abw.push((VOCAB_BY_ID[k] ? VOCAB_BY_ID[k].tr : k)+' S'+(cur.level||0)+'→S'+Math.min(r.c || 0, 6));
+        if((cur.level||0) !== Math.min(r.c || 0, 6) || (cur.next_review ? +new Date(cur.next_review) : 0) !== (r.n ? +new Date(r.n) : 0)) abw.push({id: +k, txt: (VOCAB_BY_ID[k] ? VOCAB_BY_ID[k].tr : k)+': Datenbank Stufe '+(cur.level||0)+', Gerät Stufe '+Math.min(r.c || 0, 6)});
       }
       srsProgress[k] = Object.assign(cur || { id: r.id, vocabulary_id: +k }, {
         level: Math.min(r.c || 0, 6), next_review: d(r.n), review_count: r.r, wrong_count: r.w, last_reviewed: d(r.l), last_correct: d(r.k)
       });
       n++;
     }
-    if(n || skip) dbg('Lokaler Lernstand über geladenen Stand gelegt: '+n+' · Server neuer, übersprungen: '+skip+(abw.length ? ' · geändert: '+abw.slice(0,12).join(', ')+(abw.length>12?' …':'') : ''), 'info');
+    try{ const wartend = new Set((await oqGetAll()).filter(i => !i.failed && !i.type && i.vocabId).map(i => i.vocabId)); LERNSTAND_ABW = abw.filter(x => !wartend.has(x.id)).map(x => x.txt); }catch(e){ LERNSTAND_ABW = abw.map(x => x.txt); }
+    if(n || skip) dbg('Lokaler Lernstand über geladenen Stand gelegt: '+n+' · Server neuer, übersprungen: '+skip+(abw.length ? ' · geändert: '+abw.slice(0,12).map(x => x.txt).join(', ')+(abw.length>12?' …':'') : ''), 'info');
   }catch(e){}
 }
 async function rcLocalCourseOverlay(){
@@ -2556,6 +2558,24 @@ async function oqUpdatePayload(qid, changes){
   });
 }
 
+// Korrektur („War doch richtig/falsch“) in den jüngsten noch nicht gesendeten Queue-Eintrag derselben Vokabel einarbeiten, statt sie
+// direkt zu senden: sonst überholt die Korrektur den wartenden Antwort-Eintrag, der danach den Server-Stand wieder auf die alte
+// Antwort setzt (Gerät zeigt die Korrektur, Datenbank nicht; Nils 2026-11-21, sabir/warrit).
+async function oqMergeVocab(vid, changes){
+  try{
+    const items = (await oqGetAll()).filter(i => !i.failed && !i.type && i.vocabId === vid).sort((a, b) => (a.ts || 0) - (b.ts || 0));
+    if(!items.length) return false;
+    return !!(await oqUpdatePayload(items[items.length - 1].qid, changes));
+  }catch(e){ return false; }
+}
+// Protokoll der Korrekturen (letzte 40, nur auf diesem Gerät): zeigt in Mehr → Prüfungen, wie jede Korrektur gesendet wurde
+function korrekturLog(vid, toOk, weg, fehler){
+  try{
+    const l = JSON.parse(localStorage.getItem('training_korrektur_log') || '[]');
+    l.push({t: new Date().toISOString(), vid, tr: (VOCAB_BY_ID[vid] || {}).tr || String(vid), ok: !!toOk, weg, fehler: fehler ? String(fehler).slice(0, 120) : ''});
+    localStorage.setItem('training_korrektur_log', JSON.stringify(l.slice(-40)));
+  }catch(e){}
+}
 async function oqGetAll(){
   const db = await oqOpen();
   return new Promise((res, rej) => {
@@ -2613,6 +2633,8 @@ async function oqMarkFailed(qid, msg){
 // gilt weiter als voruebergehend.
 const OQ_PERMANENT_STATUS = [400, 404, 409, 410, 422];
 
+// Abgelehnte Queue-Einträge (für Mehr → Prüfungen): Name der Karte und Grund
+let OQ_ABGELEHNT = [];
 // Sync-Status-Icon aktualisieren
 async function syncUpdateIcon(){
   const btn = document.getElementById('sync-btn');
@@ -2621,6 +2643,7 @@ async function syncUpdateIcon(){
     const all = await oqGetAll();
     const nFailed = all.filter(i => i.failed).length;
     const n = all.length - nFailed;
+    OQ_ABGELEHNT = all.filter(i => i.failed).map(i => (i.vocabId && VOCAB_BY_ID[i.vocabId] ? VOCAB_BY_ID[i.vocabId].tr : (i.type || 'Eintrag')+' '+(i.exerciseId || i.existing_id || ''))+': '+(i.error || 'abgelehnt'));
     btn.style.display = '';
     if(nFailed > 0){
       btn.textContent = '⚠ ' + nFailed + (n ? ' · ⏳ ' + n : '');
@@ -3941,6 +3964,13 @@ async function _applyFlashCorrection(vid, toOk, orig){
     p.level = newLevel; p.correct_count = newLevel; p.wrong_count = origWrongCount;
     p.next_review = nextReview; p.last_correct = new Date();
     updateLessonChips();
+    if(await oqMergeVocab(vid, patchPayload)){
+      dbg('_applyFlashCorrection(true): wartender Queue-Eintrag der Vokabel angepasst', 'ok');
+      korrekturLog(vid, true, 'queue-merge');
+      syncUpdateIcon();
+      await correctLastFlashLog(true);
+      return;
+    }
     if(!p.id){
       dbg('_applyFlashCorrection(true): keine id (offline) → Korrektur-Upsert in Queue','info');
       try{
@@ -3957,10 +3987,10 @@ async function _applyFlashCorrection(vid, toOk, orig){
     }
     try{
       await sbApi('progress?id=eq.'+p.id, 'PATCH', patchPayload);
-      dbg('_applyFlashCorrection(true) ✓ level='+newLevel, 'ok');
+      dbg('_applyFlashCorrection(true) ✓ level='+newLevel, 'ok'); korrekturLog(vid, true, 'direkt');
       syncUpdateIcon();
     }catch(e){
-      dbg('_applyFlashCorrection(true) offline → Queue: '+e.message,'err');
+      dbg('_applyFlashCorrection(true) offline → Queue: '+e.message,'err'); korrekturLog(vid, true, 'queue', e.message);
       try{ await oqPush({ vocabId: vid, existing_id: p.id, is_patch: true, payload: patchPayload }); syncUpdateIcon(); }
       catch(qe){ dbg('Queue FEHLER: '+qe.message,'err'); }
     }
@@ -3981,6 +4011,13 @@ async function _applyFlashCorrection(vid, toOk, orig){
     p.level = 0; p.correct_count = 0; p.wrong_count = newWrongCount;
     p.next_review = nextReview; p.last_correct = orig ? orig.last_correct : null;
     updateLessonChips();
+    if(await oqMergeVocab(vid, patchPayload)){
+      dbg('_applyFlashCorrection(false): wartender Queue-Eintrag der Vokabel angepasst', 'ok');
+      korrekturLog(vid, false, 'queue-merge');
+      syncUpdateIcon();
+      await correctLastFlashLog(false);
+      return;
+    }
     if(!p.id){
       dbg('_applyFlashCorrection(false): keine id (offline) → Korrektur-Upsert in Queue','info');
       try{
@@ -3997,10 +4034,10 @@ async function _applyFlashCorrection(vid, toOk, orig){
     }
     try{
       await sbApi('progress?id=eq.'+p.id, 'PATCH', patchPayload);
-      dbg('_applyFlashCorrection(false) ✓', 'ok');
+      dbg('_applyFlashCorrection(false) ✓', 'ok'); korrekturLog(vid, false, 'direkt');
       syncUpdateIcon();
     }catch(e){
-      dbg('_applyFlashCorrection(false) offline → Queue: '+e.message,'err');
+      dbg('_applyFlashCorrection(false) offline → Queue: '+e.message,'err'); korrekturLog(vid, false, 'queue', e.message);
       try{ await oqPush({ vocabId: vid, existing_id: p.id, is_patch: true, payload: patchPayload }); syncUpdateIcon(); }
       catch(qe){ dbg('Queue FEHLER: '+qe.message,'err'); }
     }
@@ -6362,6 +6399,14 @@ function datenChecks(){
     if(!ok) wzReihe.push(v.id+' '+v.tr+' ['+String(v.en||'').slice(0, 18)+']: Wurzel '+v.wz+' ↔ '+v.ar);
   });
   out.push({label: 'Wurzelbuchstaben nicht in Reihenfolge im Arabischen des Wortes', n: wzReihe.length, bsp: wzReihe});
+  // Lernstand (Nils 2026-11-21): was das Gerät anzeigt, muss in der Datenbank stehen. A) beim Start gefunden: lokaler Stand weicht vom Server ab
+  // und wartet nicht in der Warteschlange (Antwort oder Korrektur ist nie angekommen). B) Warteschlange: vom Server abgelehnte Einträge.
+  // Beides erscheint erst nach einem Start bzw. Sync; Abhilfe: die Karte in der Vokabelliste neu speichern (Fälligkeit setzen).
+  out.push({label: 'Lernstand: Gerät und Datenbank weichen ab (beim Start festgestellt)', n: LERNSTAND_ABW.length, bsp: LERNSTAND_ABW.slice()});
+  out.push({label: 'Lernstand: Warteschlange hat Einträge abgelehnt', n: OQ_ABGELEHNT.length, bsp: OQ_ABGELEHNT.slice()});
+  let kl = []; try{ kl = JSON.parse(localStorage.getItem('training_korrektur_log') || '[]'); }catch(e){}
+  out.push({label: 'Korrekturen „War doch richtig/falsch“ der letzten Zeit: so gesendet (nur Anzeige, zählt nicht mit)', n: kl.length, leise: true,
+    bsp: kl.slice(-15).reverse().map(x => new Date(x.t).toLocaleString('de-DE', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})+' '+x.tr+' → '+(x.ok ? 'richtig' : 'falsch')+' ('+x.weg+(x.fehler ? ', '+x.fehler : '')+')')});
   return out;
 }
 // Ausnahmen der Prüfungen 12 und 13 — gleich geschrieben, aber anderes Wort (jeweils mit Grund)
@@ -11956,10 +12001,10 @@ window.addEventListener('unhandledrejection', (e) => {
 
 </script>
 
-<div id="debug-panel" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a1612;border-top:2px solid #c9a84c;padding:.5rem;font-size:.6rem;font-family:monospace;color:#f0e8d8;max-height:40vh;overflow-y:auto;z-index:200;">
+<div id="debug-panel" style="display:none;position:fixed;bottom:calc(var(--tabh, 0px) + env(safe-area-inset-bottom, 0px));left:0;right:0;background:#1a1612;border-top:2px solid #c9a84c;padding:.5rem;font-size:.6rem;font-family:monospace;color:#f0e8d8;max-height:40vh;overflow-y:auto;z-index:200;">
   <div style="display:flex;justify-content:space-between;margin-bottom:.3rem;">
     <span style="color:#c9a84c;font-weight:700;">DEBUG</span>
-    <button onclick="document.getElementById('debug-panel').style.display='none'" style="background:none;border:none;color:#c94c4c;cursor:pointer;font-size:.8rem;">✕</button>
+    <button onclick="toggleDebug()" aria-label="Debug schließen" style="background:none;border:none;color:#c94c4c;cursor:pointer;font-size:1.1rem;padding:.2rem .6rem;">✕</button>
   </div>
   <div id="debug-log"></div>
 </div>
