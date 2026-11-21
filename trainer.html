@@ -622,8 +622,19 @@ function wortfamilie(v){
   const g = wortfamilieGruppen(v);
   return [...g.rest, ...g.verben];
 }
+// Wörter, die schon in der Formen-Zeile stehen (Nils 2026-11-21): in der Wortfamilie nicht noch einmal zeigen
+function formenWortSet(v){
+  const s = new Set();
+  if(!v || !v.fo) return s;
+  String(v.fo).split(/[\s\/·]+/).forEach(w => {
+    w = w.trim(); if(!w || /^(f\.|m\.|Sg\.|Pl\.|Dual|Einzelnes|Einzelne|Elativ|Inst\.)$/.test(w)) return;
+    s.add(w.toLowerCase().replace(/[ǟä]/g,'a').replace(/ā/g,'a').replace(/ī/g,'i').replace(/ū/g,'u'));
+  });
+  return s;
+}
 function wortfamilieHtml(v){
-  const fam = wortfamilie(v); if(!fam.length) return '';
+  const fs = formenWortSet(v);
+  const fam = wortfamilie(v).filter(e => !fs.size || !fs.has(String(e.tr||'').trim().toLowerCase())); if(!fam.length) return '';
   const kurz = e => escHtml(String(e.en||'').split(/\s*[\/(;]/)[0].slice(0, 22));
   const teile = fam.slice(0, 8).map(e => '<span style="white-space:nowrap">'+(typeof trL==='function' ? trL(e) : escHtml(e.tr))+' <span style="opacity:.7">('+kurz(e)+')</span></span>');
   return '<div class="wortfamilie" style="margin-top:.25rem;font-size:.85rem;line-height:1.7">Wortfamilie: '+teile.join(' · ')+(fam.length > 8 ? ' · +'+(fam.length-8) : '')+'</div>';
