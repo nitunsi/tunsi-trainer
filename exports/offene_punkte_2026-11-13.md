@@ -432,3 +432,8 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - Nils: „bäddälna“ steht in der Tabelle richtig, bei der Abfrage „bäddälnä“.
 - Ursache: Wechselkarten (`conj_rotate`) rechneten Länge/Klang aus dem Arabischen der gezogenen Form (Wort-Ende -نَا ohne dunklen Laut → ä), die Tabelle über `conjZelleL`. 292 Formen wichen ab (klīnä, mshīnä, skunnä, jīnä, nǟkhthu …).
 - Fix: `pickRandomConjSlot` liefert Zeit/Person mit, die Karte setzt `_trL` über `conjZelleL`. Keine DB-Änderung. Prüfungen: 0.
+
+## 2026-11-21 · „Einzelnes“ → „Singulativ“
+- Nils: „Einzelnes“ unklar, „1 Stück“ suggeriert die Zahl eins (es ist ein Gattungsbegriff) → Beschriftung **Singulativ** / **Singulativ Pl.**
+- Code: `FORMEN_ANA`, `FORMEN_ORDER`, Erkennung in `formenWortSet`, Hinweistext im Bearbeiten-Fenster (mit Erklärung), `tools/formen_vorschlag.js`, `SKILL.md` (mit Erklärung).
+- DB: 29 `formen`-Zeilen umgeschrieben (21 mit Pl.), Backup `backup_formen_singulativ_20261121` (löschbar ab 5.12.). Nachprüfung: 0 alte, 29 neue. Prüfungen: 0.
