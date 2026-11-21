@@ -437,3 +437,8 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - Nils: „Einzelnes“ unklar, „1 Stück“ suggeriert die Zahl eins (es ist ein Gattungsbegriff) → Beschriftung **Singulativ** / **Singulativ Pl.**
 - Code: `FORMEN_ANA`, `FORMEN_ORDER`, Erkennung in `formenWortSet`, Hinweistext im Bearbeiten-Fenster (mit Erklärung), `tools/formen_vorschlag.js`, `SKILL.md` (mit Erklärung).
 - DB: 29 `formen`-Zeilen umgeschrieben (21 mit Pl.), Backup `backup_formen_singulativ_20261121` (löschbar ab 5.12.). Nachprüfung: 0 alte, 29 neue. Prüfungen: 0.
+
+## 2026-11-21 · Entscheidung Nils
+- **Neuanlagen pausiert:** „Neues zurzeit nicht aufnehmen, habe noch viel zu aktivieren.“ Die Kandidatenlisten (20 Verben, Alltagswörter) bleiben liegen (`neuanlagen_kandidaten_2026-11-20.md`), nicht anlegen, nicht danach fragen, bis Nils es wieder aufnimmt.
+- **Nächstes:** Audio-Sicherung in Colab (Punkt I) oder Kleines zwischendurch.
+- Hinweis zur Bewertung des Trainers: Hören (Hörkarten, `listening`), Sprechen (`ar-TN`-Erkennung, „Vorbild anhören“), Audio bei Vokabeln wird immer abgespielt/abgefragt – vorhanden, vor Aussagen zu Lücken im Code nachsehen.
