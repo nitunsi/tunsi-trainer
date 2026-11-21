@@ -447,3 +447,8 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - Nils: Frage „shkun timshi m3aya l-el-qahwa?“ und „hǟthi“ statt „hiyya“.
 - Befund: Ninja (19 Beispiele), Kurs (11 Übungen): nach `shkun` immer männliche Form `y-`; Peace Corps/SL24 ohne Treffer. `timshi` nach `shkun` nicht belegt (und = „du gehst“). `hǟthi` (diese hier) bleibt, ist ein Demonstrativ, kein „sie“.
 - DB: 871 Lösung → `shkun yimshi m3aya l-el-qahwa? — … Diese (hier) geht mit mir ins Café.` Backup `backup_course_ex871_20261121` (löschbar ab 5.12.).
+
+## 2026-11-21 · Lernseite zeigte 3 statt 5 fällige (sabir, warrit fehlten)
+- Push zählte aus der DB (5), die App auf Nils' Gerät 3: sabir „Stufe 3, in 7T“ statt Stufe 0, fällig seit 20.11.; Sync-Anzeige ✅ (keine Warteschlange).
+- Ursache: `rcLocalProgOverlay` (lokale Lernstand-Sicherung der letzten 3 Tage) verglich `last_reviewed` des Servers mit dem **Sicherungszeitpunkt** `lt`, nicht mit dem Zeitpunkt der Antwort in der Sicherung. Eine veraltete Zeile (Stand 17.11., vor den Antworten vom 20.11. 06:44 von anderem Gerät/Sitzung), die später gesichert wurde, überschrieb den Server-Stand und sicherte sich bei jedem Start neu.
+- Fix: Vergleich mit `r.l` (Zeitpunkt der Antwort in der Sicherung), für Vokabeln und Kurs. Test (Playwright, veraltete Sicherung simuliert): alter Code → Stufe 3, nicht fällig (Symptom reproduziert); neuer Code → Server-Stand bleibt, eine lokal neuere Antwort gewinnt weiter. Prüfungen 0. Keine DB-Änderung.
