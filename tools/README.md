@@ -65,6 +65,8 @@ Bestand und Quelltabellen per REST auf die Platte holen und in Node auswerten, n
 
 ## Audio-Sicherung (`audio_sichern.py`, `audio_sichern.ipynb`)
 
+**Stand 2026-11-21: Sicherung gelaufen und geprüft (25 Pakete im Drive), die Ansicht `public.audio_sicherung_liste` ist gelöscht.** Für einen weiteren Lauf die Ansicht aus `exports/audio_sicherung_liste_view_2026-11-21.sql` neu anlegen (und danach wieder löschen: `anon` darf sie sonst lesen).
+
 Sichert alle Audios von Derja Ninja und Sprachenlernen24 (auch die noch nicht benutzten; ca. 24.600 Dateien, 9–10 GB (Ninja-Dateien im Schnitt 530 KB)) als `.tar`-Pakete plus `manifest.csv`. Die „Extra-Audios“ (`17min.io` und `…/Extra-Audios/`, zusammen 23.176 Dateien) fehlen absichtlich: keine Verlagskennzeichnung, im Oktober 2026 neu erzeugt, vermutlich Computerstimmen; mit `--mit-extra` kommen sie dazu. Läuft lokal oder in Google Colab (Notizbuch, schreibt direkt ins Drive). Die Adressen kommen aus der Ansicht `public.audio_sicherung_liste` (nur Lesen, anon). Die Ansicht enthält SL24-Texte und ist nur für die Dauer der Sicherung gedacht: danach `DROP VIEW public.audio_sicherung_liste;` (führt Nils im SQL-Editor aus). Neue Läufe überspringen fertige Pakete; für eine spätere Wiederholung die Ansicht neu anlegen.
 
 ## `formen_vorschlag.js`
