@@ -467,3 +467,4 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - Nicht getestet: Abspielen über Ersatz-Ordner im Trainer (Trainer liest nicht aus der Sicherung).
 - Colab-Zugriff: kein Eintrag unter Berechtigungen (Sitzungs-Token); Nils trennt die Laufzeit.
 - View `audio_sicherung_liste`: Definition gesichert in `exports/audio_sicherung_liste_view_2026-11-21.sql`; keine abhängigen Objekte; anon hat alle Rechte darauf (liest über die View Ninja- und SL24-Tabellen). Löschen wartet auf Nils' Bestätigung. Danach: `ninja-audio` verkleinern (Liste vorher zeigen).
+- 21.11. View `audio_sicherung_liste` von Nils im Supabase-Dashboard gelöscht, von Claude geprüft: View weg, kein anon-Zugriff mehr, Quell-Tabellen unverändert (derja_ninja_entries 17335, sl24_import 5585, sl24_inhalt 2736, Vokabeln 3925). Offen aus Punkt I: `ninja-audio` verkleinern (446 nötig, 991 / 374 MB überflüssig; Liste vorher zeigen, Löschen nur nach Bestätigung).
