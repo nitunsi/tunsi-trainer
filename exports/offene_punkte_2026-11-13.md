@@ -442,3 +442,8 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - **Neuanlagen pausiert:** „Neues zurzeit nicht aufnehmen, habe noch viel zu aktivieren.“ Die Kandidatenlisten (20 Verben, Alltagswörter) bleiben liegen (`neuanlagen_kandidaten_2026-11-20.md`), nicht anlegen, nicht danach fragen, bis Nils es wieder aufnimmt.
 - **Nächstes:** Audio-Sicherung in Colab (Punkt I) oder Kleines zwischendurch.
 - Hinweis zur Bewertung des Trainers: Hören (Hörkarten, `listening`), Sprechen (`ar-TN`-Erkennung, „Vorbild anhören“), Audio bei Vokabeln wird immer abgespielt/abgefragt – vorhanden, vor Aussagen zu Lücken im Code nachsehen.
+
+## 2026-11-21 · Kursübung 871 (Lektion 6)
+- Nils: Frage „shkun timshi m3aya l-el-qahwa?“ und „hǟthi“ statt „hiyya“.
+- Befund: Ninja (19 Beispiele), Kurs (11 Übungen): nach `shkun` immer männliche Form `y-`; Peace Corps/SL24 ohne Treffer. `timshi` nach `shkun` nicht belegt (und = „du gehst“). `hǟthi` (diese hier) bleibt, ist ein Demonstrativ, kein „sie“.
+- DB: 871 Lösung → `shkun yimshi m3aya l-el-qahwa? — … Diese (hier) geht mit mir ins Café.` Backup `backup_course_ex871_20261121` (löschbar ab 5.12.).
