@@ -3456,7 +3456,7 @@ function pickRandomConjSlot(cj){
   const pool=[];
   CONJ_ROTATE_SLOTS.forEach(([tense,key,weight])=>{
     const cell = cj[tense] && cj[tense][key];
-    if(cell && cell.darija && cell.german){ for(let i=0;i<weight;i++) pool.push(cell); }
+    if(cell && cell.darija && cell.german){ const c2 = Object.assign({}, cell, {_tense:tense, _key:key}); for(let i=0;i<weight;i++) pool.push(c2); }
   });
   if(!pool.length) return null;
   return pool[Math.floor(Math.random()*pool.length)];
@@ -3727,7 +3727,7 @@ function bFlash(vocab){
       // _trL (Längenanzeige) gehört zur Grundzeile und darf nicht in die gezogene Form kopiert werden (zeigte sonst „nēkol“ für „wir essen“)
       const slot = pickRandomConjSlot(v.cj);
       if(slot){
-        items.push({type:'flash', v: Object.assign({}, v, {ar:slot.ar||conjBelegtAr(v.cj, slot.darija), tr:slot.darija, en:slot.german, _trL:undefined}), dir:'de2ar'});
+        items.push({type:'flash', v: Object.assign({}, v, {ar:slot.ar||conjBelegtAr(v.cj, slot.darija), tr:slot.darija, en:slot.german, _trL:conjZelleL(v.cj, slot.darija, slot._tense, slot._key)}), dir:'de2ar'});   // Länge/Klang wie in der Tabelle (baddalna, nicht baddalnä; Nils 2026-11-21)
         return;
       }
     }

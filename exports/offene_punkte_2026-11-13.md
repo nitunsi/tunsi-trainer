@@ -427,3 +427,8 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - 21.11. Wortfamilie auf der Karte zeigt keine Wörter mehr, die schon in der Formen-Zeile stehen (Nils: dhayyqa/dhayyqin doppelt): wortfamilieHtml filtert über formenWortSet(v). Test: 435 dhayyiq, 3ziz, fumm, msattak, masit ohne Familienzeile, kbir zeigt noch das Verb. Wurzel-Fenster unverändert (zeigt weiter alles). Noch nicht gemerged.
 - 21.11. 3734 wust il-blad → wust li-blad, il-mdina → li-mdina (Nils hört in SL24 und Ninja le-blad; e wird bei uns i). Arabisch an Ninja angeglichen (لِبْلَاد). Kurs bleibt (li-blad passt). Sicherung backup_2026_11_21_leblad (löschbar ab ca. 5.12.). Audios Ninja 1050/11410 und SL24 an Nils gegeben.
 - 21.11. Regelkarten 2469 (7abb, geminiert), 2470 (kra), 2496 (kla): ī statt i im Text (Fettdruck zerlegte das Wort, Länge fehlte). 2469 jetzt „Bei gedoppelten Verben kommt vor einer Endung mit Konsonant immer ein langes ī (7abbīt)“ (Nils: auf der Geminiert-Karte nur das, nichts über andere Typen). Geprüft: alle 24 geminierten Verben des I. Stamms haben -it/-ina/-u; Verben auf -a haben dieselbe Regel (krit, klit, bnit), hohle nicht (shuft, kunt). Sicherung backup_2026_11_21_regel_ii. Prüfungen 0.
+
+## 2026-11-21 · Wechselkarten: Länge/Klang wie in der Tabelle
+- Nils: „bäddälna“ steht in der Tabelle richtig, bei der Abfrage „bäddälnä“.
+- Ursache: Wechselkarten (`conj_rotate`) rechneten Länge/Klang aus dem Arabischen der gezogenen Form (Wort-Ende -نَا ohne dunklen Laut → ä), die Tabelle über `conjZelleL`. 292 Formen wichen ab (klīnä, mshīnä, skunnä, jīnä, nǟkhthu …).
+- Fix: `pickRandomConjSlot` liefert Zeit/Person mit, die Karte setzt `_trL` über `conjZelleL`. Keine DB-Änderung. Prüfungen: 0.
