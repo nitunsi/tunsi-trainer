@@ -2269,7 +2269,9 @@ async function rcLocalProgOverlay(){
     for(const k in hit.v.rows){
       const r = hit.v.rows[k], cur = srsProgress[k];
       if(cur){
-        if((cur.last_reviewed ? +new Date(cur.last_reviewed) : 0) > hit.v.lt) continue;   // Server hat eine neuere Antwort (anderes Gerät)
+        // Server hat eine neuere Antwort (anderes Gerät): Vergleich mit dem Zeitpunkt der Antwort in der Sicherung, nicht mit dem
+        // Zeitpunkt des Sicherns (sonst überschrieb eine später gesicherte, veraltete Zeile den Server-Stand dauerhaft; Nils 2026-11-21: sabir, warrit)
+        if((cur.last_reviewed ? +new Date(cur.last_reviewed) : 0) > (r.l ? +new Date(r.l) : 0)) continue;
         if(cur.id && r.id && cur.id !== r.id) continue;
       }
       srsProgress[k] = Object.assign(cur || { id: r.id, vocabulary_id: +k }, {
@@ -2288,7 +2290,7 @@ async function rcLocalCourseOverlay(){
     for(const k in hit.v.ex){
       const r = hit.v.ex[k], cur = COURSE_EX_PROGRESS[k];
       if(cur){
-        if((cur.last_reviewed ? +courseParseTs(cur.last_reviewed) : 0) > hit.v.lt) continue;   // Server hat eine neuere Antwort (anderes Gerät)
+        if((cur.last_reviewed ? +courseParseTs(cur.last_reviewed) : 0) > (r.l ? +courseParseTs(r.l) : 0)) continue;   // Server hat eine neuere Antwort (anderes Gerät), Zeitpunkt der Antwort in der Sicherung
         if(cur.id && r.id && cur.id !== r.id) continue;
       }
       COURSE_EX_PROGRESS[k] = Object.assign(cur || { id: r.id, exercise_id: +k, user_id: currentUser.id }, {
