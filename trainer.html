@@ -6405,7 +6405,7 @@ function datenChecks(){
   out.push({label: 'Lernstand: Gerät und Datenbank weichen ab (beim Start festgestellt)', n: LERNSTAND_ABW.length, bsp: LERNSTAND_ABW.slice()});
   out.push({label: 'Lernstand: Warteschlange hat Einträge abgelehnt', n: OQ_ABGELEHNT.length, bsp: OQ_ABGELEHNT.slice()});
   let kl = []; try{ kl = JSON.parse(localStorage.getItem('training_korrektur_log') || '[]'); }catch(e){}
-  out.push({label: 'Korrekturen „War doch richtig/falsch“ der letzten Zeit: so gesendet (nur Anzeige, zählt nicht mit)', n: kl.length, leise: true,
+  out.push({label: 'Korrekturen „War doch richtig/falsch“ der letzten Zeit: so gesendet', n: kl.length, leise: true,
     bsp: kl.slice(-15).reverse().map(x => new Date(x.t).toLocaleString('de-DE', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})+' '+x.tr+' → '+(x.ok ? 'richtig' : 'falsch')+' ('+x.weg+(x.fehler ? ', '+x.fehler : '')+')')});
   return out;
 }
@@ -10403,7 +10403,7 @@ function renderTranslitCheck(c){
     return;
   }
 
-  const total = groups.reduce((s,g)=>s+g.entries.length,0) + extraN;
+  const total = groups.reduce((s,g)=>s+g.entries.length,0) + extraR.reduce((s, r) => s + (r.leise ? 0 : r.n), 0);   // leise Zeilen (nur Anzeige) zählen nicht mit
   let html = '<div>'
     + '<div style="color:var(--gold2);font-size:1rem;font-weight:700;margin-bottom:.4rem">\ud83d\udd24 Transliterations-Pr\u00fcfung</div>'
     + '<div style="color:var(--muted);font-size:.78rem;margin-bottom:1.2rem">'+total+' Auff\u00e4lligkeit'+(total!==1?'en':'')+' in '+groups.length+' Kategorie'+(groups.length!==1?'n':'')+' \u00b7 '+fuss+'</div>';
@@ -10417,7 +10417,7 @@ function renderTranslitCheck(c){
 
   extraR.filter(r => r.n > 0).forEach(r => {
     html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;margin-bottom:1rem;overflow:hidden">'
-      + '<div style="background:var(--surface2);padding:.5rem .8rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);border-bottom:1px solid var(--border)">'+escHtml(r.label)+' \u00b7 '+r.n+'</div>'
+      + '<div style="background:var(--surface2);padding:.5rem .8rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);border-bottom:1px solid var(--border)">'+escHtml(r.label)+' \u00b7 '+r.n+(r.leise ? ' \u00b7 nur Anzeige' : '')+'</div>'
       + '<div style="padding:.5rem .8rem;font-size:.78rem;font-family:\'IBM Plex Mono\',monospace;line-height:1.6">'
       + r.bsp.slice(0, 40).map(b => escHtml(b)).join('<br>') + (r.bsp.length > 40 ? '<br>\u2026 und '+(r.bsp.length-40)+' weitere' : '') + '</div></div>';
   });
