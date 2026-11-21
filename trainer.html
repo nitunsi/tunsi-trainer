@@ -751,7 +751,6 @@ function dbg(msg, cls){
   const panel = document.getElementById('debug-panel');
   const log = document.getElementById('debug-log');
   if(!panel || !log) return;
-  panel.style.display = 'block';
   const d = document.createElement('div');
   d.style.color = cls==='err' ? '#c94c4c' : cls==='ok' ? '#4cac6e' : '#f0e8d8';
   d.textContent = new Date().toLocaleTimeString() + ' ' + msg;
@@ -11956,10 +11955,10 @@ window.addEventListener('unhandledrejection', (e) => {
 
 </script>
 
-<div id="debug-panel" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a1612;border-top:2px solid #c9a84c;padding:.5rem;font-size:.6rem;font-family:monospace;color:#f0e8d8;max-height:40vh;overflow-y:auto;z-index:200;">
+<div id="debug-panel" style="display:none;position:fixed;bottom:calc(var(--tabh, 0px) + env(safe-area-inset-bottom, 0px));left:0;right:0;background:#1a1612;border-top:2px solid #c9a84c;padding:.5rem;font-size:.6rem;font-family:monospace;color:#f0e8d8;max-height:40vh;overflow-y:auto;z-index:200;">
   <div style="display:flex;justify-content:space-between;margin-bottom:.3rem;">
     <span style="color:#c9a84c;font-weight:700;">DEBUG</span>
-    <button onclick="document.getElementById('debug-panel').style.display='none'" style="background:none;border:none;color:#c94c4c;cursor:pointer;font-size:.8rem;">✕</button>
+    <button onclick="toggleDebug()" aria-label="Debug schließen" style="background:none;border:none;color:#c94c4c;cursor:pointer;font-size:1.1rem;padding:.2rem .6rem;">✕</button>
   </div>
   <div id="debug-log"></div>
 </div>
