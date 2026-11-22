@@ -548,7 +548,7 @@ async function formenVorschlag(v){
     let m = tr;
     const ex = byTr[tr.toLowerCase()];
     if(ex){ m = strip(trL(ex[0])); ex.forEach(e => fam.add(e.id)); }
-    else { const ar = formenPseudoAr(x.orig); if(ar){ try{ m = strip(laengeHtml(tr, ar, /r/.test(x.orig) && !/ṛ/.test(x.orig))); }catch(e){} } }
+    else { const ar = formenPseudoAr(x.orig); if(ar){ try{ m = strip(laengeHtmlRoh(tr, ar, /r/.test(x.orig) && !/ṛ/.test(x.orig))); }catch(e){} } }
     (forms[lab] = forms[lab] || []);
     if(!forms[lab].includes(m)) forms[lab].push(m);
   }
@@ -559,7 +559,7 @@ async function formenVorschlag(v){
   const lemTr = String(r.lemma_chatalpha||'');
   const lemIds = lem ? lem.map(e => e.id) : [];
   let sgTxt = lem ? strip(trL(lem[0])) : lemTr;
-  if(!lem && r.lemma_orig){ const ar = formenPseudoAr(r.lemma_orig); if(ar){ try{ sgTxt = strip(laengeHtml(fix(lemTr), ar, /r/.test(r.lemma_orig) && !/ṛ/.test(r.lemma_orig))); }catch(e){} } }
+  if(!lem && r.lemma_orig){ const ar = formenPseudoAr(r.lemma_orig); if(ar){ try{ sgTxt = strip(laengeHtmlRoh(fix(lemTr), ar, /r/.test(r.lemma_orig) && !/ṛ/.test(r.lemma_orig))); }catch(e){} } }
   const foSg = foPlain ? (/^(noun|collectiveNoun)$/.test(r.pos) ? 'Sg. ' : 'm. ')+sgTxt+' · '+foPlain : '';
   const istLemma = lemTr.toLowerCase() === String(v.tr||'').toLowerCase();
   const fo = istLemma ? foPlain : foSg;
@@ -868,7 +868,16 @@ function wortEndeHell(w, v){
   const ix = kursIdx(), k = String(w||'').toLowerCase();
   return ix.c[k] ? true : endeHell(ix.v[k]);
 }
+// w zwischen zwei Konsonanten wird in der Anzeige zu u (Nils 2026-11-22: qahwtu klingt qahutu, ajwba ajuba): ohne Vokal dahinter kann w keine
+// Silbe beginnen und wird zum Vokal. Nur Anzeige im Klang-Modus; die Umschrift, Eingabe und Prüfung bleiben bei w. Tags bleiben unberührt.
+function wuAnz(h){
+  if(LAENGE_MODUS !== 'klang' || !h || String(h).indexOf('w') < 0) return h;
+  return String(h).split(/(<[^>]*>)/).map(seg => seg.charAt(0) === '<' ? seg : seg.replace(/([bcdfghjklmnpqrstvxz37'ʔ])w(?=[bcdfghjklmnpqrstvxz37'ʔ])/gi, '$1u')).join('');
+}
 function laengeHtml(tr, ar, rHell, v){
+  return wuAnz(laengeHtmlRoh(tr, ar, rHell, v));
+}
+function laengeHtmlRoh(tr, ar, rHell, v){
   tr = String(tr||'');
   if(!tr || LAENGE_PARTIKEL.has(tr.toLowerCase())) return tr;
   const h = laengeHtmlSlots(tr, /[ً-ْ]/.test(ar||'') ? laengeSlots(ar, rHell, true) : null, v);
@@ -1002,7 +1011,8 @@ function lwMark(v){ return v && v.lw ? ' <span class="neu-lw" title="Lehnwort: '
 function trL(v){ if(!v) return ''; if(v._trL === undefined) v._trL = laengeHtml(v.tr, v.ar, v.rh, v); return v._trL; }
 // Tabellenzellen haben kein eigenes Arabisch: Länge aus der Vokabelzeile derselben Tabelle (gleiche Grundform)
 let _conjLaenge = null;
-function conjZelleL(cj, t, tzH, pH){
+function conjZelleL(cj, t, tzH, pH){ return wuAnz(conjZelleLRoh(cj, t, tzH, pH)); }
+function conjZelleLRoh(cj, t, tzH, pH){
   if(!_conjLaenge){
     _conjLaenge = {};
     ALL_VOCAB.forEach(e => { if(!e.cj || !/[َُِ]/.test(e.ar||'')) return; const g = conjGrund(e.cj); if(g && !(g+'|'+e.tr in _conjLaenge)) _conjLaenge[g+'|'+e.tr] = trL(e); });
@@ -8286,7 +8296,8 @@ let _kursWortIdx = null;
 const _kursWortCache = {};
 const KURS_ENDUNGEN = ['hum','kum','ha','ni','na','ek','ik','ak','u','k','i','a'];   // Besitz- und Objektendungen, längste zuerst
 let _RG_FORMEN = null;   // Formen der gerade gezeigten Regelkarte (Umschrift → Arabisch): Beispielwörter im Fließtext wie in der Tabelle markieren
-function kursWortL(w){
+function kursWortL(w){ return wuAnz(kursWortLRoh(w)); }
+function kursWortLRoh(w){
   const k = w.toLowerCase();
   if(_RG_FORMEN && _RG_FORMEN[k]){ const h = laengeHtml(w, _RG_FORMEN[k]); if(h !== w) return h; }
   if(w in _kursWortCache) return _kursWortCache[w];   // Schlüssel mit Großschreibung: „Vor“ und „vor“ sind verschiedene Einträge

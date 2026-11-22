@@ -76,7 +76,7 @@ const ausgabe = process.argv[3] || path.join(process.cwd(), 'formen_' + modus + 
         let m = tr;
         if (exist) { const ex = exist.find(e => e.id !== me.id) || exist[0]; m = strip(trL(ex)); if (!forms[k].some(y => y.tr === tr)) forms[k].push({ tr, m, rowId: ex.id, own: true }); continue; }
         const ar = mkAr(x.orig);
-        if (ar) { try { m = strip(laengeHtml(tr, ar, rHellOf(x.orig))); } catch (e) { /* bleibt unmarkiert */ } }
+        if (ar) { try { m = strip(laengeHtmlRoh(tr, ar, rHellOf(x.orig))); } catch (e) { /* bleibt unmarkiert */ } }
         if (!forms[k].some(y => y.tr === tr)) forms[k].push({ tr, m, orig: x.orig });
       }
       if (!ORDER.some(k => forms[k].length)) continue;

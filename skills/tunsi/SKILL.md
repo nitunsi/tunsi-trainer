@@ -542,7 +542,7 @@ Das gilt auch dann, wenn die Neuanlage aus einem 🚩-Auftrag herausfällt — d
 2. **Beleg:** `external_confirmed` und `external_confirmed_source` (`tunico`, `ninja`, `peacecorps`), wenn eine Quelle das Wort führt; abgeleitete Formen ohne Beleg bleiben `false`, Vermerk in `internal_note`.
 3. **Lehnwort:** `lehnwort` setzen (frz, engl, ital, türk, span, sonst).
 4. **Wortfamilie:** gleiche Wurzel schon im Bestand? Passt die Familie? Homonym → `wurzel_gruppe`.
-5. **Karte im Trainer ansehen:** Länge und Klang (ǟ, ā, ī, ū) prüfen. Die Anzeige (`anzeige`) darf nur Vokale ändern (`azGueltig`); hört Nils k statt q, gehört das in `darija`, nicht in die Anzeige.
+5. **Karte im Trainer ansehen:** Länge und Klang (ǟ, ā, ī, ū) prüfen. **Zusätzlich zeigt die Anzeige im Klang-Modus ein w zwischen zwei Konsonanten als u (`wuAnz`, Nils 2026-11-22: qahwtu → qahutu, ajwba → ajuba); Umschrift, Eingabe und Prüfung bleiben bei w, nichts in der Datenbank ändern.** Die Anzeige (`anzeige`) darf nur Vokale ändern (`azGueltig`); hört Nils k statt q, gehört das in `darija`, nicht in die Anzeige.
 6. **Verben:** Konjugationstabelle, Stamm/Verbtyp und alle Zeilen der Familie (3-Zeilen-Modell, siehe oben).
 7. **Formen:** Feminin, Plural, Dual, Singulativ, Elativ in das Feld `formen` (Abschnitt „Formen“ bei den Wurzeln), alle Zeilen der Familie gleich; eigene Zeilen für Formen nur auf Nils' Wunsch.
 8. **Fällig?** getrennt fragen (siehe oben); `progress`-Zeile mit `next_review = now() at time zone 'utc'`.
