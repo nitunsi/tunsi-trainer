@@ -502,3 +502,4 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - Kursübung 801: Markierung entfernt (inhaltlich ok, Konjugation kthib/nikthbu).
 - Nach Nils' „Beide gelöscht“: 1856 und 1883 weg, Semias Queue leer (kein pending); 1501 und 4089 behalten Fragetext in der Notiz, ruhen (Nils).
 - 22.11. Markierungen bei 815 und 1820 entfernt (Nils: „Markierungen entfernen“). Jetzt sind keine Vokabeln und keine Kursübungen markiert.
+- 22.11. Kursübung 872 (Lektion 5): Aufgabe `tishri l-7lib min monopri.` → `nishri l-7lib min monopri.` (Nils: deutsche Lösung „Ich kaufe“ passt nur zu nishri; Frage mnin tishri bleibt). Backup `backup_course_ex872_20261122`, löschbar ab 6.12. Prüfung der übrigen „Stelle eine Frage“-Übungen (864–871) und der Übersetzungsübungen (Ich/Du/Er/Wir/Ihr gegen Präfix n/t/y im Tounsi): keine weitere Abweichung zwischen Person im Tounsi und im Deutschen. Prüfungen 0.
