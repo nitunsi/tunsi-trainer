@@ -478,3 +478,6 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - Zurückgenommen: eigener Vorschlag, `barak allahu fik` → `barak allah fik` zu vereinheitlichen (Nils hat allahu am 18.11. festgelegt, Vokabel 465 hat baraka allahu fik); und `khams-alaf` → `khamsa laf` (Kurs schreibt durchgehend khams-alaf).
 - Offen/unsicher: `gadi` im Dialog Text der Lektion 6 („y3ish fi-fransa bash yikhdim gadi“, id 7): nicht im Bestand, Bedeutung/Schreibung klären.
 - DB-Änderungen warten auf Bestätigung (siehe Vorschlag im Chat).
+- 22.11. GESCHRIEBEN (Nils: „Ja, 18 Stellen schreiben“): Backups `backup_course_lessons_gir_20261122` (3 Zeilen: id 3, 5, 8) und `backup_course_exercises_gir_20261122` (8 Zeilen: 508, 1181, 1242, 1244, 1245, 1249, 1251, 1256), löschbar ab 6.12. `gir` → `ghir` in dialog_text (id 3, 5, 8), grammar_notes (id 8) und den 8 Übungen, `tnazzim` → `tnajjim` (dialog_text id 5). Nachprüfung: 0 `gir`, 0 `tnazzim`, ghir in 3 Dialogen und 8 Übungen.
+- `gadi` (Lektion-6-Geschichte, course_lessons id 7) → `ghadi` „dort“: Ninja غَادِي, TUNICO ġādi (adverb there/over there), Peace Corps THERE ghadi. Nils: „wird ghadi sein“; Schreiben wartet auf Bestätigung.
+- baba/mama: Ninja بَابَا / مَامَا, TUNICO ḅāḅa „father“ und māma „grandmother“ (lang notiert). Anzeige baba jetzt ohne ä (Nils), mama unverändert „mǟma“ (nicht entschieden).
