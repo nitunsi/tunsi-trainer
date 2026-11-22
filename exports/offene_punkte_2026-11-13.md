@@ -501,3 +501,4 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - 4862–4864 (ta33ib-Familie): Deutsch nach TUNICO (ermüden, strapazieren): `german` der drei Zeilen und die 14 Zellen der gemeinsamen Tabelle. 4864 entmarkiert.
 - Kursübung 801: Markierung entfernt (inhaltlich ok, Konjugation kthib/nikthbu).
 - Nach Nils' „Beide gelöscht“: 1856 und 1883 weg, Semias Queue leer (kein pending); 1501 und 4089 behalten Fragetext in der Notiz, ruhen (Nils).
+- 22.11. Markierungen bei 815 und 1820 entfernt (Nils: „Markierungen entfernen“). Jetzt sind keine Vokabeln und keine Kursübungen markiert.
