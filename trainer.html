@@ -605,9 +605,9 @@ function wortfamilieGruppen(v){
   if(!v || !v.wz) return {verben: [], rest: [], alle: []};
   if(!_wzIndex || _wzIndexN !== ALL_VOCAB.length){
     _wzIndex = {}; _wzIndexN = ALL_VOCAB.length;
-    ALL_VOCAB.forEach(e => { if(e.wz && !e.ausb && !e.cr) (_wzIndex[e.wz+'|'+(e.wzg||'')] = _wzIndex[e.wz+'|'+(e.wzg||'')] || []).push(e); });   // homonyme Wurzeln (wurzel_gruppe) bilden getrennte Familien
+    ALL_VOCAB.forEach(e => { if(e.wz && !e.ausb && !e.cr) (_wzIndex[e.wz+'|'+(e.wzg||'')+'|'+(e.wza||'')] = _wzIndex[e.wz+'|'+(e.wzg||'')+'|'+(e.wza||'')] || []).push(e); });   // homonyme Wurzeln (wurzel_gruppe) und gleiche Umschrift mit verschiedenen arabischen Buchstaben (th-l-m: ث ل م ausgekerbt / ظ ل م ungerecht) bilden getrennte Familien
   }
-  const alle = _wzIndex[v.wz+'|'+(v.wzg||'')] || [];
+  const alle = _wzIndex[v.wz+'|'+(v.wzg||'')+'|'+(v.wza||'')] || [];
   const fk = e => e.cj ? (e._fk || (e._fk = JSON.stringify(e.cj))) : null;
   const eigenFk = fk(v);
   const formDe = e => /^(er|sie|ich|du|wir|ihr|man)\s/i.test(e.en||'') || /!\s*$/.test(e.en||'') || /^\(?(Perfekt|Präsens)/i.test(e.en||'');
@@ -5225,7 +5225,7 @@ let vocabTopicFilter = 'all';
 let vocabLsFilter = 'all';
 let vocabPsFilter = 'all';
 let vocabAudioFilter = 'all'; // 'all' | 'with' | 'without'
-let vocabWzFilter = null;   // {wz, wzg}: nur Wörter dieser Wurzel (Knopf 🌿 in der Vokabelliste)
+let vocabWzFilter = null;   // {wz, wzg, wza}: nur Wörter dieser Wurzel (Knopf 🌿 in der Vokabelliste)
 let vocabSinceDays = null; // z.B. 7 = "nur status_updated_at innerhalb der letzten 7 Tage"
 const selectedVocabIds = new Set();
 let vocabTableRenderedIds = []; // IDs der aktuell in #vocab-table gerenderten Zeilen (fuer schnellen Select-All-Abgleich ohne DOM-Scan)
@@ -5470,7 +5470,7 @@ function filterVocabList(){
   const dueUntilEl = document.getElementById('due-until-filter');
   const dueUntil = dueUntilEl && dueUntilEl.value ? new Date(dueUntilEl.value + 'T23:59:59') : null;
 
-  let vocab = vocabSourceFilter === 'course' ? [] : (vocabWzFilter ? ALL_VOCAB.filter(e => e.wz === vocabWzFilter.wz && (e.wzg||'') === (vocabWzFilter.wzg||'') && !e.ausb && !e.cr) : (cLesson==='all' ? ALL_VOCAB : gv()));
+  let vocab = vocabSourceFilter === 'course' ? [] : (vocabWzFilter ? ALL_VOCAB.filter(e => e.wz === vocabWzFilter.wz && (e.wzg||'') === (vocabWzFilter.wzg||'') && (e.wza||'') === (vocabWzFilter.wza||'') && !e.ausb && !e.cr) : (cLesson==='all' ? ALL_VOCAB : gv()));
   if(showOnlyFlagged) vocab = vocab.filter(v => flaggedVocab.has(v.tr));
 
   // Level-Filter
@@ -5584,7 +5584,7 @@ function showWurzelModal(vocabId){
 function closeWurzelModal(){ const m = document.getElementById('wz-modal'); if(m) m.style.display = 'none'; }
 function setWurzelFilter(vocabId){
   const v = VOCAB_BY_ID[vocabId]; if(!v || !v.wz) return;
-  vocabWzFilter = {wz: v.wz, wzg: v.wzg || ''};
+  vocabWzFilter = {wz: v.wz, wzg: v.wzg || '', wza: v.wza || ''};
   closeWurzelModal();
   if(typeof closeVocabEdit === 'function') closeVocabEdit();
   filterVocabList();
