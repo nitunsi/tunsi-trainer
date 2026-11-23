@@ -875,7 +875,7 @@ function wuAnz(h){
   return String(h).split(/(<[^>]*>)/).map(seg => seg.charAt(0) === '<' ? seg : seg.replace(/([bcdfghjklmnpqrstvxz37'ʔ])w(?=[bcdfghjklmnpqrstvxz37'ʔ])/gi, '$1u')).join('');
 }
 function laengeHtml(tr, ar, rHell, v){
-  return wuAnz(laengeHtmlRoh(tr, ar, rHell, v));
+  return feinAnz(wuAnz(laengeHtmlRoh(tr, ar, rHell, v)), ar);
 }
 function laengeHtmlRoh(tr, ar, rHell, v){
   tr = String(tr||'');
@@ -953,8 +953,53 @@ function laengeModusSetzen(m){
   ALL_VOCAB.forEach(v => { delete v._trL; }); _conjLaenge = null;
   if(typeof _kursWortCache !== 'undefined') Object.keys(_kursWortCache).forEach(k => { delete _kursWortCache[k]; });
 }
+// Feine Konsonanten (Nils 2026-11-23): die Umschrift schreibt ص/س als s, ط/ت als t, ض dh, ظ/ذ/ث th. Die Anzeige zeigt aus dem Arabischen die genauen
+// Buchstaben: ṣ ṭ ḍ ẓ (dunkle Laute, 'emph') und zusätzlich ḏ ṯ ('alle'). Daten und Eingabe bleiben unverändert (s, t, dh, th). Einstellung: Mehr → Darstellung.
+let FEIN_MODUS = 'alle';
+try{ const m = localStorage.getItem('fein-modus'); if(m === 'aus' || m === 'emph' || m === 'alle') FEIN_MODUS = m; }catch(e){}
+function feinModusSetzen(m){
+  if(m !== 'aus' && m !== 'emph') m = 'alle';
+  FEIN_MODUS = m; try{ localStorage.setItem('fein-modus', m); }catch(e){}
+  ALL_VOCAB.forEach(v => { delete v._trL; }); _conjLaenge = null;
+  if(typeof _kursWortCache !== 'undefined') Object.keys(_kursWortCache).forEach(k => { delete _kursWortCache[k]; });
+}
+const FEIN_AR = {'ص':['s','ṣ'], 'ط':['t','ṭ'], 'ض':['dh','ḍ'], 'ظ':['th','ẓ'], 'ذ':['th','ḏ'], 'ث':['th','ṯ'], 'س':['s',''], 'ت':['t','']};
+const FEIN_GROSS = {'ṣ':'Ṣ','ṭ':'Ṭ','ḍ':'Ḍ','ẓ':'Ẓ','ḏ':'Ḏ','ṯ':'Ṯ'};
+// Buchstaben der Arabisch-Zeile, die in der Umschrift s, t, dh oder th heißen, in Lesereihenfolge; Schadda zählt doppelt, ال vor Sonnenbuchstaben auch (es-sma)
+function feinArabisch(ar, artDoppelt){
+  const out = [];
+  String(ar||'').split(/[\s\/·]+/).forEach(w => {
+    const ch = [...w]; let art = /^[وفبكل]?[اٱ][ً-ْٰ]*ل(?=[ً-ْٰ]*[صطضظذثست])/.test(w);
+    for(let i = 0; i < ch.length; i++){
+      const c = ch[i]; if(!FEIN_AR[c]) continue;
+      let sh = false; for(let j = i + 1; j < ch.length && /[ً-ْٰ]/.test(ch[j]); j++) if(ch[j] === 'ّ') sh = true;
+      out.push(c);
+      if(art){ if(artDoppelt) out.push(c); art = false; }   // Artikel: der Sonnenbuchstabe erscheint in der Umschrift zweimal (es-sma); ein Schadda darauf ist dieselbe Assimilation
+      else if(sh) out.push(c);
+    }
+  });
+  return out;
+}
+function feinAnz(h, ar){
+  if(FEIN_MODUS === 'aus' || !h || !ar || !/[صطضظذث]/.test(ar)) return h;
+  const toks = [];   // Stellen im Text, die s/t/dh/th heißen
+  const segs = String(h).split(/(<[^>]*>|&#?\w+;)/);
+  segs.forEach((seg, si) => { if(!seg || seg.charAt(0) === '<' || seg.charAt(0) === '&') return;
+    const re = /sh|kh|gh|th|dh|[st]/gi; let m; while((m = re.exec(seg))){ const t = m[0].toLowerCase(); if(t === 'sh' || t === 'kh' || t === 'gh') continue; toks.push([si, m.index, m[0]]); } });
+  // Artikel vor Sonnenbuchstaben: die Umschrift schreibt ihn assimiliert (es-sma, zwei s) oder unassimiliert (el sa77a); beides probieren
+  let al = null;
+  for(const dop of [true, false]){ const a = feinArabisch(ar, dop);
+    if(a.length === toks.length && a.every((c, k) => FEIN_AR[c][0] === toks[k][2].toLowerCase())){ al = a; break; } }
+  if(!al) return h;   // Arabisch und Umschrift passen nicht Zeichen für Zeichen: nichts ändern
+  const emph = FEIN_MODUS === 'emph';
+  const ers = segs.map(() => []);
+  toks.forEach(([si, ix, t], k) => { const f = FEIN_AR[al[k]][1]; if(!f || (emph && (al[k] === 'ذ' || al[k] === 'ث'))) return;
+    ers[si].push([ix, t.length, t.charAt(0) === t.charAt(0).toUpperCase() && t.charAt(0) !== t.charAt(0).toLowerCase() ? FEIN_GROSS[f] : f]); });
+  return segs.map((seg, si) => { if(!ers[si].length) return seg; let r = '', p = 0;
+    ers[si].forEach(([ix, len, f]) => { r += seg.slice(p, ix) + f; p = ix + len; }); return r + seg.slice(p); }).join('');
+}
 // Prüfungen rechnen immer mit der vollen Anzeige, unabhängig von der Einstellung
-function laengeVoll(v){ const m = LAENGE_MODUS; LAENGE_MODUS = 'klang'; try{ return laengeHtml(v.tr, v.ar, v.rh, v); } finally { LAENGE_MODUS = m; } }
+function laengeVoll(v){ const m = LAENGE_MODUS, f = FEIN_MODUS; LAENGE_MODUS = 'klang'; FEIN_MODUS = 'aus'; try{ return laengeHtml(v.tr, v.ar, v.rh, v); } finally { LAENGE_MODUS = m; FEIN_MODUS = f; } }   // Prüfungen und Dublettenschlüssel ohne feine Konsonanten
 function laengeHtmlSlots(tr, sl, v){
   tr = String(tr||'');
   if(LAENGE_MODUS === 'aus') return tr;
@@ -1011,7 +1056,13 @@ function lwMark(v){ return v && v.lw ? ' <span class="neu-lw" title="Lehnwort: '
 function trL(v){ if(!v) return ''; if(v._trL === undefined) v._trL = laengeHtml(v.tr, v.ar, v.rh, v); return v._trL; }
 // Tabellenzellen haben kein eigenes Arabisch: Länge aus der Vokabelzeile derselben Tabelle (gleiche Grundform)
 let _conjLaenge = null;
-function conjZelleL(cj, t, tzH, pH){ return wuAnz(conjZelleLRoh(cj, t, tzH, pH)); }
+function conjZelleL(cj, t, tzH, pH){ return feinAnz(wuAnz(conjZelleLRoh(cj, t, tzH, pH)), conjZelleAr(cj, t)); }
+function conjZelleAr(cj, t){   // Arabisch der Tabellenzelle (belegt oder abgeleitet), für die feinen Konsonanten
+  if(!cj || !t) return '';
+  for(const z of ['past','present','imperative']){ const b = cj[z]; if(!b || typeof b !== 'object') continue;
+    for(const k of Object.keys(b)){ const c = b[k]; if(c && c.ar && c.darija === t) return c.ar; } }
+  return '';
+}
 function conjZelleLRoh(cj, t, tzH, pH){
   if(!_conjLaenge){
     _conjLaenge = {};
@@ -8358,7 +8409,7 @@ function kursWortLRoh(w){
   if(w in _kursWortCache) return _kursWortCache[w];   // Schlüssel mit Großschreibung: „Vor“ und „vor“ sind verschiedene Einträge
   kursIdx();
   let h = w;
-  if(lwGet(k)) return _kursWortCache[w] = laengeHtmlSlots(w, null);
+  if(lwGet(k)){ const vv = _kursWortIdx.v[k]; return _kursWortCache[w] = feinAnz(laengeHtmlSlots(w, null), vv && vv.ar); }
   try{
     const v = _kursWortIdx.v[k], c = _kursWortIdx.c[k];
     if(v) h = laengeHtml(w, v.ar, v.rh, v);
