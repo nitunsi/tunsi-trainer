@@ -6387,6 +6387,26 @@ function datenChecks(){
   });
   out.push({label: geladen ? 'Kurstext: dh/th vertauscht (Wort steht in keiner Vokabel, mit dh↔th getauscht aber doch)' : 'Kurs: Kursdaten nicht geladen', n: dtL.length, bsp: dtL});
 
+  // 12d) Wort im Dialog oder in einer Aufgabe (Tounsi-Teil), das weder Vokabel noch Form noch Konjugationszelle ist (Nils 2026-11-23: „sind alle Wörter klar –
+  //      entweder angelegt oder eine gebeugte Form?“). Artikel und Vorsilben (el-, w-, b-, l- …), Besitz- und Objektendungen und -sh werden abgezogen; Namen stehen in
+  //      KURS_NAMEN. Zählt nicht mit (leise), weil Konstruktionen und Schreibvarianten Rauschen machen; je Lektion eine Zeile, Ziel: jede Zeile erklärt oder angelegt.
+  const kgTypes = new Set(['translate_de_tn', 'answer_pattern', 'fill_blank', 'fixed_response', 'grammar_drill', 'build_dialog']);
+  const kgLn = {}; lekL.forEach(l => { kgLn[l.id] = l.course_number; });
+  const kgStrip = w => { let x = w; for(let i = 0; i < 2; i++) x = x.replace(/^(el|er|es|esh|et|en|ed|ej|ez|l|w|b|f|bel|fel|lel|3a|3la|m|min|ma)-/, ''); return x.replace(/-sh$/, ''); };
+  const kgSuf = /^(.{3,}?)(ik|i|u|ha|na|kum|hum|ni|lu|lha|k|h|ti|tu|t|a)$/;
+  const kgKennt = w => { if(nvLex.has(w) || nvLex.has(w.replace(/-/g, '')) || nvDe.has(w) || KURS_NAMEN.has(w)) return true;
+    const m = w.match(kgSuf); if(m && (nvLex.has(m[1]) || nvLex.has(m[1] + 'a'))) return true;
+    const parts = w.split('-').filter(Boolean); return parts.length > 1 && parts.every(x => nvLex.has(x) || nvDe.has(x) || x.length < 3 || KURS_NAMEN.has(x)); };
+  const kgUn = new Map();
+  const kgScan = (txt, wo, ln) => String(txt || '').replace(/\([^)]*\)/g, ' ').split(/\s[—–]\s/)[0].split(/\s+/).forEach(tok => {
+    const w = nvNorm(tok); if(!w || w.length < 2 || /^\d+$/.test(w) || /[A-ZÄÖÜ]/.test(tok.charAt(0)) || !/^[a-z0-9'ʔ-]+$/.test(w)) return;
+    if(kgKennt(w) || kgKennt(kgStrip(w))) return;
+    const k = ln + '|' + w; if(!kgUn.has(k)) kgUn.set(k, 'L' + ln + ': ' + w + ' (' + wo + ')'); });
+  ex.forEach(e => { if(!kgTypes.has(e.exercise_type)) return; const ln = kgLn[e.course_lesson_id]; if(!ln) return;
+    kgScan(e.solution, 'Übung ' + e.id, ln); if(e.exercise_type !== 'translate_de_tn') kgScan(e.prompt, 'Übung ' + e.id, ln); });
+  lekL.forEach(l => kgScan(l.dialog_text, 'Dialog', l.course_number));
+  out.push({label: geladen ? 'Kurs: Wort in Dialog oder Aufgabe steht in keiner Vokabel, Form oder Konjugationszelle (Namen ausgenommen)' : 'Kurs: Kursdaten nicht geladen', n: kgUn.size, bsp: [...kgUn.values()].sort((a, b) => parseInt(a.slice(1)) - parseInt(b.slice(1))), leise: true});
+
   // 13) Wort in einer Aufgabe, das erst in einer späteren Lektion verknüpft ist (vocab_lesson_refs)
   const ersteLek = new Map();
   const merkeLek = (t, cn) => { t = String(t || '').toLowerCase(); if(t && (!ersteLek.has(t) || ersteLek.get(t) > cn)) ersteLek.set(t, cn); };
@@ -6548,6 +6568,7 @@ const KURS_HDT_OK = [
 const AR_TR_OK = [
   282, 283, 424, 928, 931, 1488, 2252, 2570, 2593, 2695,   // Lehnwörter (pièce, espadrille, kilomètre, parking, sport, souvenir, plombier, gants, plateau): p = ب, Umschrift nach dem Französischen
   2352,                         // b-el-car: بِالكار, Lehnwort car „Bus“ (frz.), c = ك
+  250,                          // b-es-slama: بِالسَّلَامَة, Artikel nach bi- assimiliert (wie im Kurs, Nils 2026-11-23)
   562, 4365,                    // shukran, khassatan: MSA mit Tanwin (شُكْرًا, خَاصَّةً), die Prüfung liest ً nicht als -n
   768, 3666,                    // allah, wallahi: اللَّه / وَاللهِ in fester Schreibung mit Artikel
   738,                          // sidaliyya: صَيْدَلِيَّة wie TUNICO, markierte Fatha bleibt (SKILL.md, Lautlehre Regel 9)
@@ -6555,6 +6576,7 @@ const AR_TR_OK = [
   3220, 3223,                   // kliti-shi, jiti-shi: Bindestrich-Schreibung mit -i-, Arabisch zusammengeschrieben
   2624, 2851, 1343  // Rückfrage Semia offen (Fragen in ihrer Prüf-Warteschlange): tqeldi, ya3sser (von ihr bestätigt, Ausnahme bleibt), si'lit
 ];
+const KURS_NAMEN = new Set(['hedi', 'jalal', 'nabil', 'sunya', 'maryam', 'fatma', 'karim', 'tariq', 'salma', 'nadia', 'slim', 'layla', 'hsan', 'muhsin', 'kamal', 'thomas', 'ali', 'li', 'sa7bi']);   // Vornamen im Kurs (Prüfung „Wort in Dialog oder Aufgabe steht in keiner Vokabel“)
 const KURS_VORGRIFF_OK = [
   'sin', 'bit', 'lil', 'hat', 'bank', 'allah', 'bin', // Deutsch („Französin“, „hat“, „Bank“, „ich bin“), Präposition bi-t-/lil-, Formel allah ykhallik
   'dur', 'qaddem', 'ju3', 'radd', 'hazz', '3add', 'daqq', 'bard',   // Imperativ/Partizip, gleich geschrieben wie die verknüpfte Vergangenheits- bzw. Nomenform
