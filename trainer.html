@@ -594,7 +594,7 @@ function wurzelZeile(v){
   const st = !v.st || v.st==='?' ? '' : v.st==='Iq' ? 'Stamm I (vier Buchstaben)' : v.st==='t-I' ? 't-Stamm I' : v.st+'. Stamm';
   const teile = [st, VERBTYP_DE[v.vt] || ''].filter(Boolean).join(' · ');
   const ar = v.wza ? '<span dir="rtl" style="display:inline-block;direction:rtl;unicode-bidi:isolate;font-family:\'Playfair Display\',serif;font-size:1.35rem;color:var(--gold2);letter-spacing:.25em">'+escHtml(v.wza)+'</span> ' : '';
-  const txt = 'Wurzel '+escHtml(v.wz)+(teile ? ' · '+teile : '');
+  const txt = 'Wurzel '+feinAnz(escHtml(v.wz), v.wza)+(teile ? ' · '+teile : '');
   return '<div class="wurzel-zeile" style="margin-top:.45rem;font-size:.9rem;color:var(--muted);line-height:1.6">'+ar+(typeof glossarWrap==='function' ? glossarWrap(txt) : txt)+wortfamilieHtml(v)+'</div>';
 }
 // Wortfamilie (Nils 2026-11-13): andere Vokabeln mit derselben Wurzel, ohne Wechselkarten-Formen und ausgeblendete; höchstens 8, nach Bedeutung gekürzt
@@ -999,7 +999,8 @@ function feinAnz(h, ar){
     ers[si].forEach(([ix, len, f]) => { r += seg.slice(p, ix) + f; p = ix + len; }); return r + seg.slice(p); }).join('');
 }
 // Prüfungen rechnen immer mit der vollen Anzeige, unabhängig von der Einstellung
-function laengeVoll(v){ const m = LAENGE_MODUS, f = FEIN_MODUS; LAENGE_MODUS = 'klang'; FEIN_MODUS = 'aus'; try{ return laengeHtml(v.tr, v.ar, v.rh, v); } finally { LAENGE_MODUS = m; FEIN_MODUS = f; } }   // Prüfungen und Dublettenschlüssel ohne feine Konsonanten
+function laengeVoll(v){ const m = LAENGE_MODUS; LAENGE_MODUS = 'klang'; try{ return feinGrob(laengeHtml(v.tr, v.ar, v.rh, v)); } finally { LAENGE_MODUS = m; } }   // Prüfungen und Dublettenschlüssel ohne feine Konsonanten (nachträglich zurückgerechnet, damit keine Zwischenspeicher ohne ṣ ṭ ḍ ẓ gefüllt werden)
+function feinGrob(h){ return String(h).replace(/[ṢṣṬṭḌḍẒẓḎḏṮṯ]/g, c => ({'ṣ':'s','Ṣ':'S','ṭ':'t','Ṭ':'T','ḍ':'dh','Ḍ':'Dh','ẓ':'th','Ẓ':'Th','ḏ':'th','Ḏ':'Th','ṯ':'th','Ṯ':'Th'})[c]); }
 function laengeHtmlSlots(tr, sl, v){
   tr = String(tr||'');
   if(LAENGE_MODUS === 'aus') return tr;
