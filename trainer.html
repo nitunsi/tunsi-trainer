@@ -6872,10 +6872,58 @@ function openVocabEdit(vocabId, i){
     const lwSel = document.getElementById('ei-lw'); if(lwSel) lwSel.value = v.lw || '';
     const fgSel = document.getElementById('ei-fg'); if(fgSel) fgSel.value = v.fg || '';
     const azInp = document.getElementById('ei-az'); if(azInp) azInp.value = v.az || '';
+    window._eiV = v; window._azOffen = -1; azPickRender();
     const foInp = document.getElementById('ei-fo'); if(foInp) foInp.value = v.fo || '';
     window._formenFam = []; const foHint = document.getElementById('ei-fo-hint'); if(foHint) foHint.textContent = ''; const foW = document.getElementById('ei-fo-fam-wrap'); if(foW) foW.style.display = 'none';
   });
 }
+
+// Aussprache-Anzeige per Antippen (Nils 2026-11-23): jeder Vokal der Umschrift ist ein Knopf mit Auswahl (kurz, lang, hell …); das Feld füllt sich selbst.
+// Vorgabe ist, was die Regel ergibt; geschrieben wird ins Feld erst, wenn du einen Vokal änderst. „Regel“ leert das Feld wieder.
+const AZ_WAHL = {a: [['a','kurz'], ['ā','lang, dunkel'], ['ǟ','lang, hell'], ['ä','kurz, hell']], i: [['i','kurz'], ['ī','lang']], u: [['u','kurz'], ['ū','lang']]};
+function azRegelText(tr){
+  const v = window._eiV; let d = tr;
+  if(v){ const m = LAENGE_MODUS; LAENGE_MODUS = 'klang';
+    try{ d = String(laengeHtmlRoh(tr, v.ar, v.rh, Object.assign({}, v, {tr: tr, az: ''}))).replace(/<[^>]+>/g, ''); }catch(e){ d = tr; } finally { LAENGE_MODUS = m; } }
+  return azGueltig(tr, d) ? d : tr;
+}
+function azPickRender(){
+  const box = document.getElementById('ei-az-pick'), inp = document.getElementById('ei-az'), trI = document.getElementById('ei-tr'); if(!box || !inp || !trI) return;
+  const tr = trI.value.trim();
+  if(!tr || /[\s\/]/.test(tr)){ box.innerHTML = '<span style="font-size:.7rem;color:var(--muted)">Auswahl nur für Einzelwörter.</span>'; return; }
+  const az = inp.value.trim(), eigen = az && azGueltig(tr, az), eff = eigen ? az : azRegelText(tr);
+  const g = vokalGruppen(tr); let h = '', p = 0;
+  g.forEach(([st, en, t], k) => {
+    h += '<span style="font-size:1.25rem">' + escHtml(eff.slice(p, st)) + '</span>';
+    const wahl = AZ_WAHL[t.toLowerCase()[0]] && t.length === 1 ? AZ_WAHL[t.toLowerCase()[0]] : null;
+    const off = window._azOffen === k;
+    h += wahl ? '<button type="button" onclick="azPickOpen('+k+')" style="font-size:1.25rem;min-width:1.6rem;padding:.1rem .3rem;margin:0 .05rem;border-radius:.4rem;border:1.5px solid '+(off ? 'var(--accent,#8a5a00)' : 'var(--border,#c9bfa8)')+';background:var(--card,#fff);color:var(--accent,#8a5a00);font-weight:700">'+escHtml(eff.slice(st, en))+'</button>'
+               : '<span style="font-size:1.25rem">'+escHtml(eff.slice(st, en))+'</span>';
+    p = en;
+  });
+  h += '<span style="font-size:1.25rem">' + escHtml(eff.slice(p)) + '</span>';
+  let opt = '';
+  if(window._azOffen >= 0 && g[window._azOffen]){
+    const k = window._azOffen, t = g[k][2].toLowerCase(), wahl = AZ_WAHL[t[0]];
+    if(wahl) opt = '<div style="display:flex;gap:.35rem;flex-wrap:wrap;margin:.4rem 0 .1rem">' + wahl.map(([z, bez]) =>
+      '<button type="button" onclick="azPickSetze('+k+',\''+z+'\')" style="padding:.3rem .55rem;border-radius:.5rem;border:1px solid var(--border,#c9bfa8);background:var(--card,#fff);color:inherit;font-size:.85rem"><b style="font-size:1.15rem">'+z+'</b> '+bez+'</button>').join('') + '</div>';
+  }
+  let vorschau = '';
+  try{ const v = window._eiV; if(v) vorschau = laengeHtml(tr, v.ar, v.rh, Object.assign({}, v, {tr: tr, az: eigen ? az : ''})); }catch(e){}
+  box.innerHTML = '<div style="font-size:.7rem;color:var(--muted);margin-bottom:.2rem">Vokal antippen und auswählen' + (eigen ? ' · <a href="#" onclick="azPickRegel();return false">zurück zur Regel</a>' : ' · Regel gilt') + '</div>'
+    + '<div style="line-height:2">' + h + '</div>' + opt
+    + (vorschau ? '<div style="font-size:.7rem;color:var(--muted);margin-top:.2rem">Auf der Karte: <span style="font-size:1rem;color:var(--text,inherit)">'+vorschau+'</span></div>' : '');
+}
+function azPickOpen(k){ window._azOffen = window._azOffen === k ? -1 : k; azPickRender(); }
+function azPickSetze(k, z){
+  const inp = document.getElementById('ei-az'), tr = document.getElementById('ei-tr').value.trim(), g = vokalGruppen(tr); if(!g[k]) return;
+  const az = inp.value.trim(), eff = az && azGueltig(tr, az) ? az : azRegelText(tr), st = g[k][0];
+  let neu = eff.slice(0, st) + z + eff.slice(st + 1);
+  if(azNorm(neu) !== tr.toLowerCase()) return;
+  inp.value = neu;   // auch „alles kurz“ (= Umschrift) ist eine bewusste Angabe; leer = Regel nur über „zurück zur Regel“
+  window._azOffen = -1; azPickRender();
+}
+function azPickRegel(){ const inp = document.getElementById('ei-az'); if(inp) inp.value = ''; window._azOffen = -1; azPickRender(); }
 
 function closeVocabEdit(){
   document.getElementById('vocab-edit-sheet').style.display = 'none';
@@ -12180,7 +12228,7 @@ window.addEventListener('unhandledrejection', (e) => {
     <input id="ei-ar" class="sh-in ar" placeholder="Arabisch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     <label class="sh-l">Umschrift</label>
     <div style="display:flex;gap:.5rem">
-      <input id="ei-tr" class="sh-in" placeholder="Transliteration" style="flex:1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <input id="ei-tr" class="sh-in" placeholder="Transliteration" style="flex:1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" oninput="azPickRender()">
       <button class="sh-ib" onclick="suggestTransliterationFromArabic()" title="Umschrift aus Arabisch vorschlagen" aria-label="Umschrift vorschlagen">✨</button>
     </div>
     <label class="sh-l">Deutsch</label>
@@ -12239,7 +12287,8 @@ window.addEventListener('unhandledrejection', (e) => {
       <option value="sonst">andere Sprache</option>
     </select>
     <label class="sh-l">Aussprache-Anzeige (nur Einzelwörter)</label>
-    <input id="ei-az" class="sh-in" placeholder="gehörte Schreibweise, z. B. mǟkish – leer = Regel" autocomplete="off">
+    <input id="ei-az" class="sh-in" placeholder="gehörte Schreibweise, z. B. mǟkish – leer = Regel" autocomplete="off" oninput="azPickRender()">
+    <div id="ei-az-pick" style="margin:.1rem 0 .4rem"></div>
     <div style="font-size:.7rem;color:var(--muted);margin:-.2rem 0 .5rem">Buchstaben wie die Umschrift, nur ǟ ä ā ī ū dürfen anders stehen. Gilt auch in Phrasen und im Kurs.</div>
     <label class="sh-l">Formen (Feminin, Plural …)</label>
     <input id="ei-fo" class="sh-in" placeholder="z. B. f. 3ziza · Pl. 3zaz – erscheint auf der Rückseite der Karte" autocomplete="off">
