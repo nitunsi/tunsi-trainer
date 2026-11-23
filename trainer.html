@@ -875,7 +875,7 @@ function wuAnz(h){
   return String(h).split(/(<[^>]*>)/).map(seg => seg.charAt(0) === '<' ? seg : seg.replace(/([bcdfghjklmnpqrstvxz37'ʔ])w(?=[bcdfghjklmnpqrstvxz37'ʔ])/gi, '$1u')).join('');
 }
 function laengeHtml(tr, ar, rHell, v){
-  return wuAnz(laengeHtmlRoh(tr, ar, rHell, v));
+  return feinAnz(wuAnz(laengeHtmlRoh(tr, ar, rHell, v)), ar);
 }
 function laengeHtmlRoh(tr, ar, rHell, v){
   tr = String(tr||'');
@@ -953,8 +953,53 @@ function laengeModusSetzen(m){
   ALL_VOCAB.forEach(v => { delete v._trL; }); _conjLaenge = null;
   if(typeof _kursWortCache !== 'undefined') Object.keys(_kursWortCache).forEach(k => { delete _kursWortCache[k]; });
 }
+// Feine Konsonanten (Nils 2026-11-23): die Umschrift schreibt ص/س als s, ط/ت als t, ض dh, ظ/ذ/ث th. Die Anzeige zeigt aus dem Arabischen die genauen
+// Buchstaben: ṣ ṭ ḍ ẓ (dunkle Laute, 'emph') und zusätzlich ḏ ṯ ('alle'). Daten und Eingabe bleiben unverändert (s, t, dh, th). Einstellung: Mehr → Darstellung.
+let FEIN_MODUS = 'alle';
+try{ const m = localStorage.getItem('fein-modus'); if(m === 'aus' || m === 'emph' || m === 'alle') FEIN_MODUS = m; }catch(e){}
+function feinModusSetzen(m){
+  if(m !== 'aus' && m !== 'emph') m = 'alle';
+  FEIN_MODUS = m; try{ localStorage.setItem('fein-modus', m); }catch(e){}
+  ALL_VOCAB.forEach(v => { delete v._trL; }); _conjLaenge = null;
+  if(typeof _kursWortCache !== 'undefined') Object.keys(_kursWortCache).forEach(k => { delete _kursWortCache[k]; });
+}
+const FEIN_AR = {'ص':['s','ṣ'], 'ط':['t','ṭ'], 'ض':['dh','ḍ'], 'ظ':['th','ẓ'], 'ذ':['th','ḏ'], 'ث':['th','ṯ'], 'س':['s',''], 'ت':['t','']};
+const FEIN_GROSS = {'ṣ':'Ṣ','ṭ':'Ṭ','ḍ':'Ḍ','ẓ':'Ẓ','ḏ':'Ḏ','ṯ':'Ṯ'};
+// Buchstaben der Arabisch-Zeile, die in der Umschrift s, t, dh oder th heißen, in Lesereihenfolge; Schadda zählt doppelt, ال vor Sonnenbuchstaben auch (es-sma)
+function feinArabisch(ar, artDoppelt){
+  const out = [];
+  String(ar||'').split(/[\s\/·]+/).forEach(w => {
+    const ch = [...w]; let art = /^[وفبكل]?[اٱ][ً-ْٰ]*ل(?=[ً-ْٰ]*[صطضظذثست])/.test(w);
+    for(let i = 0; i < ch.length; i++){
+      const c = ch[i]; if(!FEIN_AR[c]) continue;
+      let sh = false; for(let j = i + 1; j < ch.length && /[ً-ْٰ]/.test(ch[j]); j++) if(ch[j] === 'ّ') sh = true;
+      out.push(c);
+      if(art){ if(artDoppelt) out.push(c); art = false; }   // Artikel: der Sonnenbuchstabe erscheint in der Umschrift zweimal (es-sma); ein Schadda darauf ist dieselbe Assimilation
+      else if(sh) out.push(c);
+    }
+  });
+  return out;
+}
+function feinAnz(h, ar){
+  if(FEIN_MODUS === 'aus' || !h || !ar || !/[صطضظذث]/.test(ar)) return h;
+  const toks = [];   // Stellen im Text, die s/t/dh/th heißen
+  const segs = String(h).split(/(<[^>]*>|&#?\w+;)/);
+  segs.forEach((seg, si) => { if(!seg || seg.charAt(0) === '<' || seg.charAt(0) === '&') return;
+    const re = /sh|kh|gh|th|dh|[st]/gi; let m; while((m = re.exec(seg))){ const t = m[0].toLowerCase(); if(t === 'sh' || t === 'kh' || t === 'gh') continue; toks.push([si, m.index, m[0]]); } });
+  // Artikel vor Sonnenbuchstaben: die Umschrift schreibt ihn assimiliert (es-sma, zwei s) oder unassimiliert (el sa77a); beides probieren
+  let al = null;
+  for(const dop of [true, false]){ const a = feinArabisch(ar, dop);
+    if(a.length === toks.length && a.every((c, k) => FEIN_AR[c][0] === toks[k][2].toLowerCase())){ al = a; break; } }
+  if(!al) return h;   // Arabisch und Umschrift passen nicht Zeichen für Zeichen: nichts ändern
+  const emph = FEIN_MODUS === 'emph';
+  const ers = segs.map(() => []);
+  toks.forEach(([si, ix, t], k) => { const f = FEIN_AR[al[k]][1]; if(!f || (emph && (al[k] === 'ذ' || al[k] === 'ث'))) return;
+    ers[si].push([ix, t.length, t.charAt(0) === t.charAt(0).toUpperCase() && t.charAt(0) !== t.charAt(0).toLowerCase() ? FEIN_GROSS[f] : f]); });
+  return segs.map((seg, si) => { if(!ers[si].length) return seg; let r = '', p = 0;
+    ers[si].forEach(([ix, len, f]) => { r += seg.slice(p, ix) + f; p = ix + len; }); return r + seg.slice(p); }).join('');
+}
 // Prüfungen rechnen immer mit der vollen Anzeige, unabhängig von der Einstellung
-function laengeVoll(v){ const m = LAENGE_MODUS; LAENGE_MODUS = 'klang'; try{ return laengeHtml(v.tr, v.ar, v.rh, v); } finally { LAENGE_MODUS = m; } }
+function laengeVoll(v){ const m = LAENGE_MODUS, f = FEIN_MODUS; LAENGE_MODUS = 'klang'; FEIN_MODUS = 'aus'; try{ return laengeHtml(v.tr, v.ar, v.rh, v); } finally { LAENGE_MODUS = m; FEIN_MODUS = f; } }   // Prüfungen und Dublettenschlüssel ohne feine Konsonanten
 function laengeHtmlSlots(tr, sl, v){
   tr = String(tr||'');
   if(LAENGE_MODUS === 'aus') return tr;
@@ -1011,7 +1056,13 @@ function lwMark(v){ return v && v.lw ? ' <span class="neu-lw" title="Lehnwort: '
 function trL(v){ if(!v) return ''; if(v._trL === undefined) v._trL = laengeHtml(v.tr, v.ar, v.rh, v); return v._trL; }
 // Tabellenzellen haben kein eigenes Arabisch: Länge aus der Vokabelzeile derselben Tabelle (gleiche Grundform)
 let _conjLaenge = null;
-function conjZelleL(cj, t, tzH, pH){ return wuAnz(conjZelleLRoh(cj, t, tzH, pH)); }
+function conjZelleL(cj, t, tzH, pH){ return feinAnz(wuAnz(conjZelleLRoh(cj, t, tzH, pH)), conjZelleAr(cj, t)); }
+function conjZelleAr(cj, t){   // Arabisch der Tabellenzelle (belegt oder abgeleitet), für die feinen Konsonanten
+  if(!cj || !t) return '';
+  for(const z of ['past','present','imperative']){ const b = cj[z]; if(!b || typeof b !== 'object') continue;
+    for(const k of Object.keys(b)){ const c = b[k]; if(c && c.ar && c.darija === t) return c.ar; } }
+  return '';
+}
 function conjZelleLRoh(cj, t, tzH, pH){
   if(!_conjLaenge){
     _conjLaenge = {};
@@ -6280,6 +6331,61 @@ function datenChecks(){
   const hdtL = [...hdt.entries()].map(([w, x]) => w+' → '+x.v+' ('+x.o.slice(0, 3).join(', ')+(x.o.length > 3 ? ' …' : '')+')');
   out.push({label: geladen ? 'Kurstext: Wort weicht nur in h/7, d/dh oder t/th von einer Vokabel ab' : 'Kurs: Kursdaten nicht geladen', n: hdtL.length, bsp: hdtL});
 
+  // 12b) Kurstext-Wort steht in keiner Vokabel und keiner Konjugationszelle, weicht aber um genau EINEN Buchstaben von einem
+  //      bekannten Wort ab (Tippfehler wie m3abbiya/m3abbya, na3rfuh/na3rfu). Nur Tounsi-Teil (vor „ — “), Wörter ab 5 Zeichen,
+  //      die in höchstens 2 Aufgaben/Dialogen vorkommen (echte Wörter kommen öfter vor), Deutsch und Namen (Großbuchstabe) ausgenommen.
+  //      Zeigt nur an, zählt nicht mit (leise): Beugungsformen ohne eigene Vokabel sind keine Fehler. Nils 2026-11-22.
+  const nvNorm = w => String(w || '').toLowerCase().replace(/[.,?!:;()"„“«»–—…]/g, '').replace(/^-+|-+$/g, '');
+  const nvLex = new Set(), nvDe = new Set();
+  const nvAdd = w => { w = nvNorm(w); if(w.length > 1) nvLex.add(w); };
+  ALL_VOCAB.forEach(v => {
+    String(v.tr || '').split(/[\s\/·]+/).forEach(w => { nvAdd(w); w.split('-').forEach(nvAdd); });
+    String(v.fo || '').split(/[\s\/·]+/).forEach(w => { nvAdd(w); w.split('-').forEach(nvAdd); });
+    if(v.cj) ['present', 'past', 'imperative'].forEach(t => Object.values(v.cj[t] || {}).forEach(c => c && c.darija && String(c.darija).split(/[\s\/]+/).forEach(w => { nvAdd(w); w.split('-').forEach(nvAdd); })));
+    String(v.de || '').toLowerCase().split(/[^a-zäöüß]+/).forEach(w => w && nvDe.add(w));
+  });
+  const nvTn = t => String(t || '').split(/\s[—–]\s/)[0];
+  const nvCnt = new Map(), nvOrt = new Map();
+  const nvScan = (txt, wo) => { const seen = new Set(); String(txt || '').split(/\s+/).forEach(tok => {
+    const w = nvNorm(tok); if(!w || /^\d+$/.test(w) || /[A-ZÄÖÜ]/.test(tok[0]) || seen.has(w)) return; seen.add(w);
+    nvCnt.set(w, (nvCnt.get(w) || 0) + 1); if(!nvOrt.has(w)) nvOrt.set(w, wo); }); };
+  ex.forEach(e => { if(e.exercise_type !== 'pronunciation') nvScan(nvTn(e.prompt)+' '+nvTn(e.solution), 'Übung '+e.id); });
+  lekL.forEach(l => nvScan(l.dialog_text, 'Dialog L'+l.course_number));
+  const nvKeys = [...nvLex], nvByLen = {}; nvKeys.forEach(k => (nvByLen[k.length] = nvByLen[k.length] || []).push(k));
+  const nvLev1 = (a, b) => { if(a === b) return false; const la = a.length, lb = b.length; if(Math.abs(la - lb) > 1) return false;
+    let i = 0; while(i < la && i < lb && a[i] === b[i]) i++; let ja = la, jb = lb; while(ja > i && jb > i && a[ja-1] === b[jb-1]){ ja--; jb--; }
+    return Math.max(ja - i, jb - i) <= 1; };
+  const nvL = [];
+  nvCnt.forEach((n, w) => {
+    if(n > 2 || w.length < 5 || nvLex.has(w) || nvDe.has(w)) return;
+    const base = w.replace(/^(el|l|ed|es|en|et|er|ej|ez)-/, ''); if(nvLex.has(base)) return;
+    const parts = base.split('-').filter(Boolean); if(parts.length > 1 && parts.every(x => nvLex.has(x) || x.length < 3)) return;
+    const bb = base.replace(/-/g, ''); if(bb.length < 5) return;
+    let cand = null; for(const L of [bb.length - 1, bb.length, bb.length + 1]){ for(const k of (nvByLen[L] || [])){ if(nvLev1(bb, k)){ cand = k; break; } } if(cand) break; }
+    //  Endungen (flusi/flus, ba3dha/ba3d) und reine Vokalwechsel (tsawwer/tsawwar) sind meist Beugung oder Variante, nicht Fehler
+    const nvAlle = []; for(const L of [bb.length - 1, bb.length, bb.length + 1]) (nvByLen[L] || []).forEach(k => { if(nvLev1(bb, k)) nvAlle.push(k); });
+    const ernst = nvAlle.filter(k => !(bb.startsWith(k) || k.startsWith(bb)) && bb.replace(/[aeiou]/g, '_') !== k.replace(/[aeiou]/g, '_'));
+    if(ernst.length) nvL.push(w+' → '+ernst[0]+' ('+nvOrt.get(w)+')');
+  });
+  out.push({label: geladen ? 'Kurstext: Wort steht in keiner Vokabel, weicht aber um einen Buchstaben von einem bekannten ab' : 'Kurs: Kursdaten nicht geladen', n: nvL.length, bsp: nvL, leise: true});
+
+  // 12c) dh/th vertauscht: Kurstext-Wort steht in keiner Vokabel/Konjugationszelle, wird aber ein bekanntes Wort, wenn man dh↔th tauscht
+  //      (hadhi statt hathi, ya7fadh statt ya7fath). Regel: dh = ض, th = ظ/ذ. Prüfung 12 sieht das nicht, weil sie dh und th getrennt zusammenfasst.
+  const swapDT = w => w.replace(/dh|th/g, m => m === 'dh' ? 'th' : 'dh');
+  const dtL = [];
+  nvCnt.forEach((n, w) => {
+    if(!/dh|th/.test(w) || nvLex.has(w) || nvDe.has(w)) return;
+    const base = w.replace(/^(el|l|ed|es|en|et|er|ej|ez|w|b|f|bi|li)-/, '');
+    if(nvLex.has(base)) return;
+    // jede Kombination der dh/th-Stellen durchprobieren (bei 1–3 Stellen)
+    const stellen = [...base.matchAll(/dh|th/g)].map(m => m.index); if(!stellen.length || stellen.length > 4) return;
+    for(let mask = 1; mask < (1 << stellen.length); mask++){
+      let t = base; for(let i = stellen.length - 1; i >= 0; i--) if(mask & (1 << i)) t = t.slice(0, stellen[i]) + (t.substr(stellen[i], 2) === 'dh' ? 'th' : 'dh') + t.slice(stellen[i] + 2);
+      if(nvLex.has(t)){ dtL.push(w+' → '+t+' ('+nvOrt.get(w)+')'); break; }
+    }
+  });
+  out.push({label: geladen ? 'Kurstext: dh/th vertauscht (Wort steht in keiner Vokabel, mit dh↔th getauscht aber doch)' : 'Kurs: Kursdaten nicht geladen', n: dtL.length, bsp: dtL});
+
   // 13) Wort in einer Aufgabe, das erst in einer späteren Lektion verknüpft ist (vocab_lesson_refs)
   const ersteLek = new Map();
   const merkeLek = (t, cn) => { t = String(t || '').toLowerCase(); if(t && (!ersteLek.has(t) || ersteLek.get(t) > cn)) ersteLek.set(t, cn); };
@@ -6766,10 +6872,58 @@ function openVocabEdit(vocabId, i){
     const lwSel = document.getElementById('ei-lw'); if(lwSel) lwSel.value = v.lw || '';
     const fgSel = document.getElementById('ei-fg'); if(fgSel) fgSel.value = v.fg || '';
     const azInp = document.getElementById('ei-az'); if(azInp) azInp.value = v.az || '';
+    window._eiV = v; window._azOffen = -1; azPickRender();
     const foInp = document.getElementById('ei-fo'); if(foInp) foInp.value = v.fo || '';
     window._formenFam = []; const foHint = document.getElementById('ei-fo-hint'); if(foHint) foHint.textContent = ''; const foW = document.getElementById('ei-fo-fam-wrap'); if(foW) foW.style.display = 'none';
   });
 }
+
+// Aussprache-Anzeige per Antippen (Nils 2026-11-23): jeder Vokal der Umschrift ist ein Knopf mit Auswahl (kurz, lang, hell …); das Feld füllt sich selbst.
+// Vorgabe ist, was die Regel ergibt; geschrieben wird ins Feld erst, wenn du einen Vokal änderst. „Regel“ leert das Feld wieder.
+const AZ_WAHL = {a: [['a','kurz'], ['ā','lang, dunkel'], ['ǟ','lang, hell'], ['ä','kurz, hell']], i: [['i','kurz'], ['ī','lang']], u: [['u','kurz'], ['ū','lang']]};
+function azRegelText(tr){
+  const v = window._eiV; let d = tr;
+  if(v){ const m = LAENGE_MODUS; LAENGE_MODUS = 'klang';
+    try{ d = String(laengeHtmlRoh(tr, v.ar, v.rh, Object.assign({}, v, {tr: tr, az: ''}))).replace(/<[^>]+>/g, ''); }catch(e){ d = tr; } finally { LAENGE_MODUS = m; } }
+  return azGueltig(tr, d) ? d : tr;
+}
+function azPickRender(){
+  const box = document.getElementById('ei-az-pick'), inp = document.getElementById('ei-az'), trI = document.getElementById('ei-tr'); if(!box || !inp || !trI) return;
+  const tr = trI.value.trim();
+  if(!tr || /[\s\/]/.test(tr)){ box.innerHTML = '<span style="font-size:.7rem;color:var(--muted)">Auswahl nur für Einzelwörter.</span>'; return; }
+  const az = inp.value.trim(), eigen = az && azGueltig(tr, az), eff = eigen ? az : azRegelText(tr);
+  const g = vokalGruppen(tr); let h = '', p = 0;
+  g.forEach(([st, en, t], k) => {
+    h += '<span style="font-size:1.25rem">' + escHtml(eff.slice(p, st)) + '</span>';
+    const wahl = AZ_WAHL[t.toLowerCase()[0]] && t.length === 1 ? AZ_WAHL[t.toLowerCase()[0]] : null;
+    const off = window._azOffen === k;
+    h += wahl ? '<button type="button" onclick="azPickOpen('+k+')" style="font-size:1.25rem;min-width:1.6rem;padding:.1rem .3rem;margin:0 .05rem;border-radius:.4rem;border:1.5px solid '+(off ? 'var(--accent,#8a5a00)' : 'var(--border,#c9bfa8)')+';background:var(--card,#fff);color:var(--accent,#8a5a00);font-weight:700">'+escHtml(eff.slice(st, en))+'</button>'
+               : '<span style="font-size:1.25rem">'+escHtml(eff.slice(st, en))+'</span>';
+    p = en;
+  });
+  h += '<span style="font-size:1.25rem">' + escHtml(eff.slice(p)) + '</span>';
+  let opt = '';
+  if(window._azOffen >= 0 && g[window._azOffen]){
+    const k = window._azOffen, t = g[k][2].toLowerCase(), wahl = AZ_WAHL[t[0]];
+    if(wahl) opt = '<div style="display:flex;gap:.35rem;flex-wrap:wrap;margin:.4rem 0 .1rem">' + wahl.map(([z, bez]) =>
+      '<button type="button" onclick="azPickSetze('+k+',\''+z+'\')" style="padding:.3rem .55rem;border-radius:.5rem;border:1px solid var(--border,#c9bfa8);background:var(--card,#fff);color:inherit;font-size:.85rem"><b style="font-size:1.15rem">'+z+'</b> '+bez+'</button>').join('') + '</div>';
+  }
+  let vorschau = '';
+  try{ const v = window._eiV; if(v) vorschau = laengeHtml(tr, v.ar, v.rh, Object.assign({}, v, {tr: tr, az: eigen ? az : ''})); }catch(e){}
+  box.innerHTML = '<div style="font-size:.7rem;color:var(--muted);margin-bottom:.2rem">Vokal antippen und auswählen' + (eigen ? ' · <a href="#" onclick="azPickRegel();return false">zurück zur Regel</a>' : ' · Regel gilt') + '</div>'
+    + '<div style="line-height:2">' + h + '</div>' + opt
+    + (vorschau ? '<div style="font-size:.7rem;color:var(--muted);margin-top:.2rem">Auf der Karte: <span style="font-size:1rem;color:var(--text,inherit)">'+vorschau+'</span></div>' : '');
+}
+function azPickOpen(k){ window._azOffen = window._azOffen === k ? -1 : k; azPickRender(); }
+function azPickSetze(k, z){
+  const inp = document.getElementById('ei-az'), tr = document.getElementById('ei-tr').value.trim(), g = vokalGruppen(tr); if(!g[k]) return;
+  const az = inp.value.trim(), eff = az && azGueltig(tr, az) ? az : azRegelText(tr), st = g[k][0];
+  let neu = eff.slice(0, st) + z + eff.slice(st + 1);
+  if(azNorm(neu) !== tr.toLowerCase()) return;
+  inp.value = neu;   // auch „alles kurz“ (= Umschrift) ist eine bewusste Angabe; leer = Regel nur über „zurück zur Regel“
+  window._azOffen = -1; azPickRender();
+}
+function azPickRegel(){ const inp = document.getElementById('ei-az'); if(inp) inp.value = ''; window._azOffen = -1; azPickRender(); }
 
 function closeVocabEdit(){
   document.getElementById('vocab-edit-sheet').style.display = 'none';
@@ -8303,7 +8457,7 @@ function kursWortLRoh(w){
   if(w in _kursWortCache) return _kursWortCache[w];   // Schlüssel mit Großschreibung: „Vor“ und „vor“ sind verschiedene Einträge
   kursIdx();
   let h = w;
-  if(lwGet(k)) return _kursWortCache[w] = laengeHtmlSlots(w, null);
+  if(lwGet(k)){ const vv = _kursWortIdx.v[k]; return _kursWortCache[w] = feinAnz(laengeHtmlSlots(w, null), vv && vv.ar); }
   try{
     const v = _kursWortIdx.v[k], c = _kursWortIdx.c[k];
     if(v) h = laengeHtml(w, v.ar, v.rh, v);
@@ -12074,7 +12228,7 @@ window.addEventListener('unhandledrejection', (e) => {
     <input id="ei-ar" class="sh-in ar" placeholder="Arabisch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     <label class="sh-l">Umschrift</label>
     <div style="display:flex;gap:.5rem">
-      <input id="ei-tr" class="sh-in" placeholder="Transliteration" style="flex:1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <input id="ei-tr" class="sh-in" placeholder="Transliteration" style="flex:1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" oninput="azPickRender()">
       <button class="sh-ib" onclick="suggestTransliterationFromArabic()" title="Umschrift aus Arabisch vorschlagen" aria-label="Umschrift vorschlagen">✨</button>
     </div>
     <label class="sh-l">Deutsch</label>
@@ -12133,7 +12287,8 @@ window.addEventListener('unhandledrejection', (e) => {
       <option value="sonst">andere Sprache</option>
     </select>
     <label class="sh-l">Aussprache-Anzeige (nur Einzelwörter)</label>
-    <input id="ei-az" class="sh-in" placeholder="gehörte Schreibweise, z. B. mǟkish – leer = Regel" autocomplete="off">
+    <input id="ei-az" class="sh-in" placeholder="gehörte Schreibweise, z. B. mǟkish – leer = Regel" autocomplete="off" oninput="azPickRender()">
+    <div id="ei-az-pick" style="margin:.1rem 0 .4rem"></div>
     <div style="font-size:.7rem;color:var(--muted);margin:-.2rem 0 .5rem">Buchstaben wie die Umschrift, nur ǟ ä ā ī ū dürfen anders stehen. Gilt auch in Phrasen und im Kurs.</div>
     <label class="sh-l">Formen (Feminin, Plural …)</label>
     <input id="ei-fo" class="sh-in" placeholder="z. B. f. 3ziza · Pl. 3zaz – erscheint auf der Rückseite der Karte" autocomplete="off">

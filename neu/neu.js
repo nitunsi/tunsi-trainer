@@ -762,6 +762,8 @@ function showMore(){
     + '<div class="neu-list" style="margin-top:.4rem"><div class="li"><span class="sp">Vokalzeichen anzeigen</span>'+sw(LS.get('neu-arv','1') === '1', "neuToggleArv()")+'</div></div>'
     + '<div class="neu-arprev" id="neu-arprev">'+arPrev()+'</div>'
     + '<div class="neu-cap" style="margin-top:1rem">Aussprache in der Umschrift</div>'+seg([['klang','Länge + Klang'],['laenge','Nur Länge'],['aus','Aus']], (typeof LAENGE_MODUS !== 'undefined' ? LAENGE_MODUS : 'klang'), "neuSetLaenge('%v')")
+    + '<div class="neu-cap" style="margin-top:1rem">Feine Konsonanten in der Umschrift</div>'+seg([['alle','Alle'],['emph','Dunkle Laute'],['aus','Aus']], (typeof FEIN_MODUS !== 'undefined' ? FEIN_MODUS : 'alle'), "neuSetFein('%v')")
+    + '<div class="neu-sub" style="font-size:.8rem;margin-top:.35rem">Aus dem Arabischen: ṣ ṭ ḍ ẓ (dunkle Laute: ص ط ض ظ), bei „Alle“ zusätzlich ḏ ṯ (ذ ث). Eintippen bleibt s, t, dh, th. Beispiel: '+(typeof laengeHtml === 'function' ? laengeHtml('sba7', 'صْبَاح') + ' · ' + laengeHtml('tbib', 'طْبِيب') + ' · ' + laengeHtml('hatha', 'هَذَا') + ' · ' + laengeHtml('thlatha', 'ثْلَاثَة') + ' · ' + laengeHtml('thhar', 'ظَهْر') : '')+'</div>'
     + '<div class="neu-sub" style="font-size:.8rem;margin-top:.35rem">Länge (ā ī ū) steht im Arabischen. Der Klang (ä, ǟ) folgt Semias Aussprache aus Mahdia; anderswo klingt das a oft dunkler.'
     + ' Beispiel: '+(typeof laengeHtml === 'function' ? laengeHtml('hatha', 'هَذَا') + ' · ' + laengeHtml('msha', 'مْشَى', null, {cj:1, tr:'msha'}) + ' · ' + laengeHtml('kbir', 'كْبِير') : '')+'</div>';
   const lernen = '<div class="neu-list"><div class="li"><span class="sp">Ähnlich klingende Buchstaben gelten als richtig<span class="neu-sub" style="display:block;font-size:.8rem">Aus: nur die genauen Buchstaben zählen (Vokalzeichen sind immer egal).</span></span>'+sw(LS.get('neu-tol','1') !== '0', "neuToggleTol()")+'</div></div>'
@@ -820,6 +822,7 @@ window.neuRefreshData = async function(){
 window.neuSetTheme = function(v){ LS.set('neu-theme', v); applyTheme(); showMore(); };
 window.neuSetFont = function(k){ LS.set('neu-font', k); applyFont(); showMore(); };
 window.neuSetLaenge = function(m){ if(typeof laengeModusSetzen === 'function') laengeModusSetzen(m); showMore(); };
+window.neuSetFein = function(m){ if(typeof feinModusSetzen === 'function') feinModusSetzen(m); showMore(); };
 window.neuSetGoal = function(n){ LS.set('neu-goal', String(n)); showMore(); };
 window.neuToggleTol = function(){ LS.set('neu-tol', LS.get('neu-tol','1') === '0' ? '1' : '0'); showMore(); };
 window.neuToggleVib = function(){ LS.set('neu-vib', LS.get('neu-vib','0') === '1' ? '0' : '1'); if(LS.get('neu-vib') === '1' && navigator.vibrate) navigator.vibrate(30); showMore(); };
