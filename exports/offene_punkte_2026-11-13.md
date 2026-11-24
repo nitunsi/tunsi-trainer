@@ -575,3 +575,12 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - **Neue Vokabel `bi-jnab`** (ID 4886, بِجْنَبْ, „neben / bei“; Ninja, Peace Corps; ohne Fälligkeit, Nils). **Vokabel 1925** `m3arsin` → `m3arrsin` (TUNICO). Verknüpfungen L4: 895 stiluwat, 4607 tubb/tubba, 4886 bi-jnab.
 - Code: `KURS_WORT_OK` für L4 erweitert (Präposition + Endung, Zahlen 11–19 mit -in, deutsche Wörter in Drill-Titeln). **L1–L4 sind in allen Prüfungen 0, auch den leisen.**
 - Für spätere Lektionen: `khams-alaf` (L9 entscheiden), `jam3a` „Woche“ → `jim3a` (L7/L9/L10), `libiya` in L4 Grammatik jetzt Plural-Form (kein Fehler).
+
+## 2026-11-24 · Kurs Lektion 5 durchgesehen (Nils: „Sonst ok“)
+
+- **Übungen (Backup `backup_kurs_l5_ex_2026_11_24`, Lektionen `…_lek_…`, Vokabeln `…_vocab_…`; löschbar ab 2026-12-08):** Ü814 yighsil→yaghsil; Ü792 3amlu→a3mlu; Ü882 madbuh→madhbu7; Ü888 hafda→7aftha; Ü866 nihuttu/tihuttu→n7uttu/t7uttu; Ü726 tnajjim→ynajjim; Ü797 b-il-3arbi→b-el-3arbi; Ü839 Schreibblöcke→Hefte; Ü751 Hinweis (a7na); Ü880 far7in→far7anin; Ü744 neu mit qriba min el-busta; Ü2446 „langes ou“→„langes u“; Ü784–792 Kürzel ausgeschrieben; Ü885 el-wlad→el-wild; Ü722/723/730/731 tur7 karta→tur7a karta (Vokabel 3847); Ü731 ya khuti→ya jma3a, Notiz zu Frauen ersetzt; Ü2580 ma-tikhdmu-sh; Ü1035/Ü1226 (L6) r-radio→r-radyu.
+- **Dialog/Grammatik L5:** bark allaw fik→baraka llah fik; ma-tkhidmu-sh/ma-nkhidmu-sh→tikhdmu/nikhdmu (an die Grammatik angeglichen); madruba→madhruba, mab3ut→mab3uth, Tippfehler khjrzin→saknin, „Das gibt es nur“, mya-Satz (-in nicht verpflichtend), el-wild; neue Regel zu Zahlen: Plural, wenn die Zahl auf 3–10 endet (Nils: auch bei 2 ohne Dual).
+- **Verknüpfungen L5:** 509, 512, 513, 514, 903, 270, 2053, 2052, 3009, 2837, 1615, 4173, 404, 3847, 2211, 2208, 2206, 3430, 2070.
+- **Dublette radio/radyu:** 1014 → `radyu` umbenannt (Fortschritt bleibt); 4885 trägt die Notiz „LÖSCHEN“, Nils löscht im Trainer; L3-Verweis 4885 entfernt (1014 war schon dabei).
+- **Trainer:** deutsche Wörter und abgeleitete Partizipformen von L5 in `KURS_WORT_OK`, Namen in `KURS_NAMEN`, `L5:verneinten` in `KURS_ERKL_OK`. Alle Prüfungen für L1–L5 stehen auf 0, auch die leisen.
+- **Offen für Semia:** Plural bei zusammengesetzten Zahlen (205 stiluwat), `lasaq` (TUNICO) / `lasiq` (Ninja), `wdin` (Singular der Vokabel nicht gefunden).
