@@ -491,7 +491,7 @@ function formenMarke(w){
 }
 function formenZeile(v){
   if(!v || !v.fo) return '';
-  const txt = String(v.fo).split(/\s*·\s*/).map(x => x.trim()).filter(Boolean).map(x => { const m = x.match(/^(\S+)\s+(.*)$/); const wort = s => s.replace(/[^\s\/]+/g, w => /[ǟäāīūēō]/.test(w) ? formenMarke(w) : kursLaenge(escHtml(w), false, true));   // schon markierte Formen (3zǟz) unangetastet, sonst würde ein Stück wie „ma“ in 7ashshǟma noch einmal markiert
+  const txt = String(v.fo).split(/\s*·\s*/).map(x => x.trim()).filter(Boolean).map(x => { const m = x.match(/^(\S+)\s+(.*)$/); const wort = s => s.replace(/[^\s\/]+/g, w => feinAnz(/[ǟäāīūēō]/.test(w) ? formenMarke(w) : kursLaenge(escHtml(w), false, true), v.ar));   // schon markierte Formen (3zǟz) unangetastet, sonst würde ein Stück wie „ma“ in 7ashshǟma noch einmal markiert
     return m ? '<span style="opacity:.75">'+escHtml(m[1])+'</span> '+wort(m[2]) : wort(x); }).join(' &nbsp;·&nbsp; ');
   return '<div class="formen-zeile" style="margin-top:.35rem;font-size:.9rem;color:var(--muted);line-height:1.6"><span style="font-size:.72rem;letter-spacing:.12em;text-transform:uppercase">Formen</span>&nbsp;&nbsp;'+txt+'</div>';
 }
