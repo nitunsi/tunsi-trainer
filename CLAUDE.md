@@ -27,6 +27,7 @@ Die Regeln liegen **in diesem Repo** (`skills/tunsi/`), nur hier. Den gleichnami
 | Kurs-Modus (`course_lessons`/`course_exercises`) | `skills/tunsi/COURSE_MODE.md` |
 | Neue Vokabel anlegen (auch einzelne) | `skills/tunsi/SKILL.md` → **„Neuanlage-Checkliste“** (Wurzel, Beleg, Lehnwort, Wortfamilie, Karte ansehen) und **„Quellen-Checkliste“** (alle TUNICO-Tabellen, Ninja, Peace Corps, SL24, Skript) |
 | Neue Quelle importieren, PDF/Foto auswerten | `skills/tunsi/IMPORTS.md` |
+| Neue Quellen im Netz suchen („Quellen-Recherche fällig“ im Trainer) oder fragen, ob eine Quelle schon bewertet ist | `skills/tunsi/QUELLEN.md` |
 | „Hatten wir das schon mal?", Fehler wiederholt sich | `skills/tunsi/PRECEDENTS.md` — **gezielt durchsuchen, nie am Stück lesen** |
 
 Unsicher, wo etwas steht? Die **Schnellzugriff**-Tabelle am Kopf von `SKILL.md` ist der Wegweiser — sie ist kurz und nennt für jede Situation den richtigen Abschnitt.

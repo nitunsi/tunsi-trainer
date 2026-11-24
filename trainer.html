@@ -6617,6 +6617,15 @@ function datenChecks(){
   let kl = []; try{ kl = JSON.parse(localStorage.getItem('training_korrektur_log') || '[]'); }catch(e){}
   out.push({label: 'Korrekturen „War doch richtig/falsch“ der letzten Zeit: so gesendet', n: kl.length, leise: true,
     bsp: kl.slice(-15).reverse().map(x => new Date(x.t).toLocaleString('de-DE', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})+' '+x.tr+' → '+(x.ok ? 'richtig' : 'falsch')+' ('+x.weg+(x.fehler ? ', '+x.fehler : '')+')')});
+  // Quellen-Recherche (Nils 2026-11-24): alle 3 Monate nach neuen Quellen im Netz schauen. Das Datum steht in quellen_recherche
+  // (eine Zeile); nach der Recherche setzt Claude es hoch, die Bewertungen stehen in skills/tunsi/QUELLEN.md.
+  if(QUELLEN_RECH && QUELLEN_RECH.letzte_pruefung){
+    const letzte = new Date(QUELLEN_RECH.letzte_pruefung+'T12:00:00'), faellig = new Date(letzte);
+    faellig.setMonth(faellig.getMonth()+3);
+    const f = d => d.toLocaleDateString('de-DE');
+    out.push({label: 'Quellen-Recherche fällig (nach neuen Quellen im Netz suchen, alle 3 Monate)', n: faellig <= new Date() ? 1 : 0,
+      bsp: ['Letzte Recherche '+f(letzte)+', fällig seit '+f(faellig)+' – bei Claude „Quellen-Recherche“ anstoßen']});
+  }
   return out;
 }
 // Ausnahmen der Prüfungen 12 und 13 — gleich geschrieben, aber anderes Wort (jeweils mit Grund)
@@ -7443,6 +7452,7 @@ async function saveNewLesson(){
 // Datenmodell: course_lessons (1 Zeile/Lektion), course_exercises (Teilaufgaben),
 // course_progress (Fortschritt pro Nutzer/Lektion). Schreibt NICHT in progress/SRS.
 
+let QUELLEN_RECH = null;               // {letzte_pruefung:'JJJJ-MM-TT', notiz} aus quellen_recherche (eine Zeile), nur für die Prüfung „Quellen-Recherche fällig“
 let COURSE_LESSONS = [];               // [{id, course_number, skript, title, dialog_text, grammar_notes, vocab_lesson_refs, chunk_order}]
 let COURSE_EXERCISES_BY_LESSON = {};   // course_lesson_id -> [exercise, ...] sortiert nach position
 let COURSE_EX_BY_ID = {};              // exercise_id -> exercise
@@ -7513,6 +7523,7 @@ async function loadCourseData(force){
   (progress||[]).forEach(p=>{ COURSE_PROGRESS_BY_LESSON[p.course_lesson_id]=p; });
   regelLoesungenFuellen(exercises);
   _courseLoaded = true;
+  try{ const q = await sbApi('quellen_recherche?select=letzte_pruefung,notiz&id=eq.1'); QUELLEN_RECH = (q && q[0]) || null; }catch(e){ QUELLEN_RECH = null; }
   await loadCourseExProgress(force);
   await courseEnsureFrontierUnlocked();
 }
