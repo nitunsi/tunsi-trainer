@@ -6338,13 +6338,15 @@ function datenChecks(){
   //      Zeigt nur an, zählt nicht mit (leise): Beugungsformen ohne eigene Vokabel sind keine Fehler. Nils 2026-11-22.
   const nvNorm = w => String(w || '').toLowerCase().replace(/[.,?!:;()"„“«»–—…]/g, '').replace(/^-+|-+$/g, '');
   const nvLex = new Set(), nvDe = new Set();
-  const nvAdd = w => { w = nvNorm(w); if(w.length > 1) nvLex.add(w); };
+  const nvPlain = w => w.replace(/[ǟäā]/g, 'a').replace(/ī/g, 'i').replace(/ū/g, 'u').replace(/ē/g, 'e').replace(/ō/g, 'o');   // gespeicherte Formen tragen Länge (ghrība): auch ohne Zeichen bekannt
+  const nvAdd = w => { w = nvNorm(w); if(w.length > 1){ nvLex.add(w); nvLex.add(nvPlain(w)); } };
   ALL_VOCAB.forEach(v => {
     String(v.tr || '').split(/[\s\/·]+/).forEach(w => { nvAdd(w); w.split('-').forEach(nvAdd); });
     String(v.fo || '').split(/[\s\/·]+/).forEach(w => { nvAdd(w); w.split('-').forEach(nvAdd); });
     if(v.cj) ['present', 'past', 'imperative'].forEach(t => Object.values(v.cj[t] || {}).forEach(c => c && c.darija && String(c.darija).split(/[\s\/]+/).forEach(w => { nvAdd(w); w.split('-').forEach(nvAdd); })));
     String(v.de || '').toLowerCase().split(/[^a-zäöüß]+/).forEach(w => w && nvDe.add(w));
   });
+  KURS_WORT_OK.forEach(w => nvLex.add(w));
   const nvTn = t => String(t || '').split(/\s[—–]\s/)[0];
   const nvCnt = new Map(), nvOrt = new Map();
   const nvScan = (txt, wo) => { const seen = new Set(); String(txt || '').split(/\s+/).forEach(tok => {
@@ -6352,13 +6354,14 @@ function datenChecks(){
     nvCnt.set(w, (nvCnt.get(w) || 0) + 1); if(!nvOrt.has(w)) nvOrt.set(w, wo); }); };
   ex.forEach(e => { if(e.exercise_type !== 'pronunciation') nvScan(nvTn(e.prompt)+' '+nvTn(e.solution), 'Übung '+e.id); });
   lekL.forEach(l => nvScan(l.dialog_text, 'Dialog L'+l.course_number));
-  const nvKeys = [...nvLex], nvByLen = {}; nvKeys.forEach(k => (nvByLen[k.length] = nvByLen[k.length] || []).push(k));
+  const nvKeys = [...nvLex].filter(k => !KURS_WORT_OK.has(k)), nvByLen = {};   // bestätigte Sonderformen sind keine Vergleichsbasis
+   nvKeys.forEach(k => (nvByLen[k.length] = nvByLen[k.length] || []).push(k));
   const nvLev1 = (a, b) => { if(a === b) return false; const la = a.length, lb = b.length; if(Math.abs(la - lb) > 1) return false;
     let i = 0; while(i < la && i < lb && a[i] === b[i]) i++; let ja = la, jb = lb; while(ja > i && jb > i && a[ja-1] === b[jb-1]){ ja--; jb--; }
     return Math.max(ja - i, jb - i) <= 1; };
   const nvL = [];
   nvCnt.forEach((n, w) => {
-    if(n > 2 || w.length < 5 || nvLex.has(w) || nvDe.has(w)) return;
+    if(n > 2 || w.length < 5 || nvLex.has(w) || nvDe.has(w) || KURS_NAMEN.has(w)) return;
     const base = w.replace(/^(el|l|ed|es|en|et|er|ej|ez)-/, ''); if(nvLex.has(base)) return;
     const parts = base.split('-').filter(Boolean); if(parts.length > 1 && parts.every(x => nvLex.has(x) || x.length < 3)) return;
     const bb = base.replace(/-/g, ''); if(bb.length < 5) return;
@@ -6430,7 +6433,7 @@ function datenChecks(){
   lekL.forEach(l => { const seen = new Set();
     String(l.grammar_notes || '').split('\n').forEach(line => {
       const kand = [];
-      (line.match(/[a-z0-9'][a-z0-9'-]*(?=\s+„)/g) || []).forEach(x => kand.push(x));
+      (line.match(/(?<![A-Za-zÄÖÜäöüß])[a-z0-9'][a-z0-9'-]*(?=\s+„)/g) || []).forEach(x => kand.push(x));
       const tn = x => /[0-9-]|sh|kh|gh|th|dh|aa|ou|ya|ayy/.test(x);   // Merkmale tunesischer Umschrift: sonst zu viel deutsches Rauschen in fetten Wörtern und Tabellen
       (line.match(/\*\*[^*]+\*\*/g) || []).forEach(b => b.replace(/\*\*/g, '').split(/[\s,\/·]+/).forEach(x => { if(tn(x)) kand.push(x); }));
       if(/^\|/.test(line)) line.split('|').slice(1, 3).forEach(cell => cell.split(/[\s,\/·]+/).forEach(x => { if(tn(x)) kand.push(x); }));
@@ -6439,9 +6442,9 @@ function datenChecks(){
   out.push({label: geladen ? 'Grammatiktext: Beispielwort steht in keiner Vokabel, Form oder Konjugationszelle' : 'Kurs: Kursdaten nicht geladen', n: lpGb.length, bsp: lpGb, leise: true});
 
   // L-4) Wort in Dialog oder Aufgabe ist eine Vokabel, aber mit keiner Lektion verknüpft (leise). Bekannt = steht in einer Vokabel, die irgendeiner Lektion zugeordnet ist.
-  const lpLek = new Set();
+  const lpLek = new Set(KURS_WORT_OK);
   lekL.forEach(l => { const f = parseCourseVocabRefs(l.vocab_lesson_refs);
-    f.ids.forEach(i => { const v = VOCAB_BY_ID[i]; if(!v) return; const add = t => String(t || '').split(/[\s\/·]+/).forEach(w => { w = nvNorm(w); if(w){ lpLek.add(w); w.split('-').forEach(x => x && lpLek.add(x)); } });
+    f.ids.forEach(i => { const v = VOCAB_BY_ID[i]; if(!v) return; const add = t => String(t || '').split(/[\s\/·]+/).forEach(w => { w = nvNorm(w); if(w){ lpLek.add(w); lpLek.add(nvPlain(w)); w.split('-').forEach(x => { if(x){ lpLek.add(x); lpLek.add(nvPlain(x)); } }); } });
       add(v.tr); add(v.fo); if(v.cj) ['present', 'past', 'imperative'].forEach(t => Object.values(v.cj[t] || {}).forEach(c => c && c.darija && add(c.darija))); });
     f.tr.forEach(t => { const w = nvNorm(t); if(w) lpLek.add(w); }); });
   const lpUn = new Map();
@@ -6461,7 +6464,7 @@ function datenChecks(){
     order.forEach((c, i) => (c.grammar_headings || []).forEach(hd => { (String(sec[hd] || '').match(/\*\*[^*]+\*\*/g) || []).forEach(b => b.replace(/\*\*/g, '').split(/[\s,\/·]+/).forEach(x => { const w = nvNorm(x); if(w && w.length > 1 && /^[a-z0-9'-]+$/.test(w) && !erkl.has(w)) erkl.set(w, i); })); }));
     const gemeldet = new Set();
     ex.filter(e => e.course_lesson_id === l.id && kgTypes.has(e.exercise_type)).forEach(e => { const i = order.findIndex(c => c.key === e.chunk_key); if(i < 0) return;
-      String((e.solution || '') + ' ' + (e.exercise_type === 'translate_de_tn' ? '' : (e.prompt || ''))).replace(/\([^)]*\)/g, ' ').split(/\s+/).forEach(tok => { const w = nvNorm(tok); if(!w || !erkl.has(w) || erkl.get(w) <= i || !nvLex.has(w) || lpDe.has(w)) return;
+      String((e.solution || '') + ' ' + (e.exercise_type === 'translate_de_tn' ? '' : (e.prompt || ''))).replace(/\([^)]*\)/g, ' ').split(/\s+/).forEach(tok => { const w = nvNorm(tok); if(!w || !erkl.has(w) || erkl.get(w) <= i || !nvLex.has(w) || lpDe.has(w) || KURS_ERKL_OK.has('L'+l.course_number+':'+w)) return;
         const k = w + '|' + e.chunk_key; if(gemeldet.has(k)) return; gemeldet.add(k);
         lpVor.push('L'+l.course_number+': „'+w+'“ in Übung '+e.id+' (Abschnitt '+order[i].key+'), erklärt erst in Abschnitt '+order[erkl.get(w)].key); }); }); });
   out.push({label: geladen ? 'Kurs: Übung benutzt ein Wort, das erst in einem späteren Abschnitt erklärt wird' : 'Kurs: Kursdaten nicht geladen', n: lpVor.length, bsp: lpVor, leise: true});
@@ -6643,7 +6646,15 @@ const AR_TR_OK = [
   3220, 3223,                   // kliti-shi, jiti-shi: Bindestrich-Schreibung mit -i-, Arabisch zusammengeschrieben
   2624, 2851, 1343  // Rückfrage Semia offen (Fragen in ihrer Prüf-Warteschlange): tqeldi, ya3sser (von ihr bestätigt, Ausnahme bleibt), si'lit
 ];
-const KURS_NAMEN = new Set(['hedi', 'jalal', 'nabil', 'sunya', 'maryam', 'fatma', 'karim', 'tariq', 'salma', 'nadia', 'slim', 'layla', 'hsan', 'muhsin', 'kamal', 'thomas', 'ali', 'li', 'sa7bi']);   // Vornamen im Kurs (Prüfung „Wort in Dialog oder Aufgabe steht in keiner Vokabel“)
+// Bestätigte gebeugte Formen und Beispielwörter im Kurs, die keine eigene Vokabel sind (Besitz- und Objektendungen, Aussprachebeispiele, deutsche Wörter in Erklärtabellen).
+// Gelten für die leisen Prüfungen „Wort steht in keiner Vokabel“, „weicht um einen Buchstaben ab“, „Vokalvariante“ und „mit keiner Lektion verknüpft“. Nur eintragen, wenn die Form geprüft ist.
+const KURS_WORT_OK = new Set([
+  'rajli', 'rajlik', 'rajilha', 'ukhti', 'ukhtu', 'buk', 'kum', 'hum', 'darkum', 'darna', 'darhum', 'tbibu', 'tbibna', 'bladi', 'bladu', 'bintna',   // L2: Possessivsuffixe (Tabellen und Übungen)
+  '3ayb',                                      // L2: Ausspracheübung Ü422 (TUNICO ʕāyb „beinbehindert“)
+  'taj', 'bagaj', 'thick', 'this', 'iyya', 'journal', 'stimmhaftes', 'gegurgelte', 'gesprochenes', 'deutsches', 'englisch', 'zungenspitzen-r']);   // L1: Aussprachebeispiele und deutsche Wörter der Erklärtabelle
+// Übungen, die bewusst vor ihrer Grammatik-Erklärung stehen (Übersetzen-Abschnitte vor dem Erklär-Abschnitt; Nils 2026-11-24: so lassen). Schlüssel „L<n>:<wort>“.
+const KURS_ERKL_OK = new Set(['L1:hatha', 'L1:hathi', 'L1:wa7id', 'L2:baba']);
+const KURS_NAMEN = new Set(['hedi', 'jalal', 'nabil', 'sunya', 'maryam', 'fatma', 'karim', 'tariq', 'salma', 'nadia', 'slim', 'layla', 'hsan', 'muhsin', 'kamal', 'thomas', 'ali', 'li', 'sa7bi', 'klaus', 'peter', 'luisa', 'samira', 'jamila', 'mark', 'mu7sin', 'sali7', 'vienna', 'burgiba', 'skul', '3li', 'mas3ud', 'harun', 'rashid', 'yasmina', 'nadya', 'tariq']);   // Vornamen im Kurs (Prüfung „Wort in Dialog oder Aufgabe steht in keiner Vokabel“)
 const KURS_VORGRIFF_OK = [
   'sin', 'bit', 'lil', 'hat', 'bank', 'allah', 'bin', // Deutsch („Französin“, „hat“, „Bank“, „ich bin“), Präposition bi-t-/lil-, Formel allah ykhallik
   'dur', 'qaddem', 'ju3', 'radd', 'hazz', '3add', 'daqq', 'bard',   // Imperativ/Partizip, gleich geschrieben wie die verknüpfte Vergangenheits- bzw. Nomenform
