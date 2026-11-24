@@ -659,3 +659,12 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - **Grammatik:** `raqid`, `ummi`, `ih`, `3la-l-kursi`.
 - **Verknüpft mit L12:** 4274, 566, 4279, 4271, 4735, 704, 3894.
 - **Trainer:** L12-Ausnahmelisten. Alle Prüfungen L1–L12 auf 0, auch die leisen.
+
+## 2026-11-24 · Kurs Lektion 13 durchgesehen; Anzeige von `tfadhdhlu` (Nils: „Ok“, „tfadhdhlu müsste anders angezeigt werden“)
+
+- **Backups:** `backup_kurs_l13_ex_2026_11_24`, `backup_kurs_l13_lek_2026_11_24` (löschbar ab 2026-12-08).
+- **Übungen:** `ykhallas`, `shkun`, `kan jit`, `jibu-li`, `esh-shfa`, `el-fatr`, `mula ed-dar`, `fi-dwaya`; Kürzel ausgeschrieben; **`li-mtar` → `el-mtar` überall** (L10-Übungen und Grammatik, L13).
+- **Dialog/Text:** `en-nas`, `f-esh-shara3`. **Grammatik:** `-hum` statt `-hom` (a3tihum-li, yjibhum-lik, …), `naklu`, `tushrub`, `w-ena`, `mahumsh`, `ummi`, `el-bustaji`.
+- **Verknüpft mit L13:** 394, 395, 385, 1048, 354, 4376, 3768, 319, 384.
+- **Anzeige (Fehler in `trainer.html`):** Wörter, die in keiner Vokabel stehen (z. B. `tfadhdhlu`, Plural von `tfadhdhal`), bekamen keine feinen Konsonanten, weil die Anzeige das Arabische zum Abgleichen braucht. Jetzt wird bei solchen Formen `dh` zu `ḍ` (in unserer Umschrift ist `dh` immer ض). `th` und `s`/`t` bleiben unmarkiert (ohne Arabisch nicht zu unterscheiden), ebenso die Länge bei unbekannten Formen (`uq3du`).
+- **Trainer:** L13-Ausnahmelisten, `L13:bash/ma-3ad-sh/qa3id/yibda` in `KURS_ERKL_OK`. Alle Prüfungen L1–L13 auf 0, auch die leisen.
