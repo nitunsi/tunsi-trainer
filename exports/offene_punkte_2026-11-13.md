@@ -623,3 +623,9 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - **`khams-alaf`/`tlat-alaf` bleiben** (Kursform; Vokabeln heißen `khamsa laf`/`thlatha laf`); stehen in `KURS_WORT_OK`.
 - **Verknüpft mit L9:** 368, 367, 2149, 318, 324, 631, 364, 4322; mit L7: 318.
 - **Trainer:** L9-Ausnahmelisten (`KURS_WORT_OK`, `KURS_ERKL_OK`). Alle Prüfungen L1–L9 auf 0, auch die leisen.
+
+## 2026-11-24 · Zahlen ab 1000: `khamsa laf` statt `khams-alaf` (Nils)
+
+- **Entscheidung (Nils):** Die Kursform der Tausender folgt den Vokabeln: `thlatha laf`, `arb3a laf`, `khamsa laf`, `sitta laf`, `sab3a laf`, `thmanya laf`, `tis3a laf`, `3ashra laf` (statt `tlat-alaf`, `khams-alaf` usw.). Das ersetzt die frühere Entscheidung „Kurs schreibt durchgehend khams-alaf“.
+- **Geändert** (Backups `backup_kurs_alaf_lek_2026_11_24`, `backup_kurs_alaf_ex_2026_11_24`): Dialoge L4, L9, L13; Grammatik L8 und L9 (Tabelle, Beispiele); Ü491, 508, 677, 1419, 1423, 1741, 2097. Die Ausnahmen `khams-alaf` usw. sind aus `KURS_WORT_OK` entfernt, `laf` ist neu drin.
+- **Offen:** `khamsmyat` (Ü508, Dialog L5/L4) gegen `khamsa mya` aus der L5-Grammatik.
