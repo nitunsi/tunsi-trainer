@@ -629,3 +629,13 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - **Entscheidung (Nils):** Die Kursform der Tausender folgt den Vokabeln: `thlatha laf`, `arb3a laf`, `khamsa laf`, `sitta laf`, `sab3a laf`, `thmanya laf`, `tis3a laf`, `3ashra laf` (statt `tlat-alaf`, `khams-alaf` usw.). Das ersetzt die frühere Entscheidung „Kurs schreibt durchgehend khams-alaf“.
 - **Geändert** (Backups `backup_kurs_alaf_lek_2026_11_24`, `backup_kurs_alaf_ex_2026_11_24`): Dialoge L4, L9, L13; Grammatik L8 und L9 (Tabelle, Beispiele); Ü491, 508, 677, 1419, 1423, 1741, 2097. Die Ausnahmen `khams-alaf` usw. sind aus `KURS_WORT_OK` entfernt, `laf` ist neu drin.
 - **Offen:** `khamsmyat` (Ü508, Dialog L5/L4) gegen `khamsa mya` aus der L5-Grammatik.
+
+## 2026-11-24 · Kurs Lektion 10 durchgesehen und korrigiert (Nils: „Ja“)
+
+- **Backups:** `backup_kurs_l10_ex_2026_11_24`, `backup_kurs_l10_lek_2026_11_24` (löschbar ab 2026-12-08).
+- **Übungen:** `ej-jim3a`, `el-ba7r`, `ej-jdida`, `l-barra`, Ü1538 Apostroph, Ü1754 `qaddesh bash tuq3ud` („wie lange“), Ü1766 `3malt`, `fi-shhar`/`fi-fivri`, `en-nas`, `f-el-khrif`, `es-sif`, `es-sghir`, Ü2119 `7fatht`/`7faththum`, Ü2122 `n7awwis` (statt `ndawwish` = duschen), Ü2439 `yal3ab → al3ab`; Kürzel ausgeschrieben.
+- **Dialog:** `ha-l-ayyam`, `ba7thana`, `jwan` (4×), `w-baja` (statt baza = Säule), `w-3um`, `fi-ana nhar`, `es-sma zarqa` (statt esh-shams); **`l-el-maktab`** statt `maktib`.
+- **Grammatik:** `l-kullu`, `l-kullhum`, `mghayyma`.
+- **maktab statt maktib:** Mein Vorschlag, die Vokabel 606 zu `maktab / maktib` zu ergänzen, ist zurückgenommen: Nils hat am 07.11.2026 `maktab` bestätigt (Skript schreibt `lil-maktab`, Ninja `maktib`). Der Dialog folgt der Vokabel.
+- **Verknüpft mit L10:** 449, 756, 606, 2028, 4383.
+- **Trainer:** L10-Ausnahmelisten, `L10:3la/bash/kan/mittleren` in `KURS_ERKL_OK`. Alle Prüfungen L1–L10 auf 0, auch die leisen.
