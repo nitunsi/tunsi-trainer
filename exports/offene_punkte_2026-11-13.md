@@ -639,3 +639,13 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - **maktab statt maktib:** Mein Vorschlag, die Vokabel 606 zu `maktab / maktib` zu ergänzen, ist zurückgenommen: Nils hat am 07.11.2026 `maktab` bestätigt (Skript schreibt `lil-maktab`, Ninja `maktib`). Der Dialog folgt der Vokabel.
 - **Verknüpft mit L10:** 449, 756, 606, 2028, 4383.
 - **Trainer:** L10-Ausnahmelisten, `L10:3la/bash/kan/mittleren` in `KURS_ERKL_OK`. Alle Prüfungen L1–L10 auf 0, auch die leisen.
+
+## 2026-11-24 · Kurs Lektion 11 durchgesehen und korrigiert (Nils: „Ok“)
+
+- **Backups:** `backup_kurs_l11_ex_2026_11_24`, `backup_kurs_l11_lek_2026_11_24` (löschbar ab 2026-12-08).
+- **Übungen:** `mahumsh`, `ba7tha jama3` (statt jami3), `kusksi`, `b-ma zhar`, `ktib-li`, `en-nhar`, `l-a7ad`, `nistannawk`, `nbaddil`, `khalliwna`; Kürzel ausgeschrieben.
+- **Dialog/Text:** `shadditik`, `ma-ddizz-sh`, `mmala kar`, `qassit tiskra` (statt tsakir), `ba7tha`, `kusksi`, `ej-jaya`, `b-ma zhar`.
+- **Grammatik:** `ma-zalit fargha`, `sama7ni`, `sama7una`, `ukhtkum`, `ummi`, `ktib`.
+- **Offen für Semia:** `flayr` (Dialog 2/Text, „klaw flayr“ beim Frühstück) steht in keiner Quelle.
+- **Verknüpft mit L11:** 482, 638, 1015, 2743, 533, 4249, 4698, 760, 3517.
+- **Trainer:** L11-Ausnahmelisten. Alle Prüfungen L1–L11 auf 0, auch die leisen.
