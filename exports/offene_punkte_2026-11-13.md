@@ -603,3 +603,12 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - **Geklärt:** (1) hohle Partizipien: TUNICO belegt `fayq` (ohne i) und `sayim/sayir/hayil` (mit i); Grammatik L6 und Ü2450 jetzt `shayif, fayq, bayit` mit Regel „meist i, manchmal weg“. (2) Vokabel 1777 `faragh` → `farigh / faragh` (beide Varianten; Vokabel-Notiz von 2026-11-07 bestätigt faragh, Peace Corps/TUNICO farigh). (3) Vokabel 477 bekommt `Pl. m7attat`. (4) Neue Vokabel 4887 `wdin` „Ohr“ (Peace Corps, Pl. widnin), ohne Fälligkeit, mit L5 verknüpft. (5) `lasaq`/`lasiq` bleiben beide.
 - **Verknüpft mit L7:** 4097, 1030, 3732, 275, 481, 1026, 1101, 4739, 1266, 3525; mit L5: 4887.
 - **Trainer:** L7-Ausnahmelisten (`KURS_WORT_OK`, `KURS_ERKL_OK`). Alle Prüfungen L1–L7 auf 0, auch die leisen.
+
+## 2026-11-24 · `barak allahu fik` korrigiert; Kurs Lektion 8 durchgesehen und korrigiert (Nils: „Ja, korrigieren und L8 ausführen“)
+
+- **Fehler von mir zurückgenommen:** In L5 (Dialog 1, Ü731) und L7 (Dialog 1) hatte ich `baraka llah fik` eingeführt (Begründung „wie L5“ war ein Zirkelschluss). Kurs und Vokabeln haben `barak allahu fik` (L3, L4, Ü508, Ü2371, Grammatik L3; Vokabel 465 `baraka allahu fik`; Nils hat `allahu` am 18.11. festgelegt). Jetzt überall `barak allahu fik` / `fikum` (L5, L7, L8). Die Zeile im L5/L7-Log oben (`baraka llah fik`) ist damit überholt.
+- **Backups:** `backup_kurs_l8_ex_2026_11_24`, `backup_kurs_l8_lek_2026_11_24` (löschbar ab 2026-12-08).
+- **L8 Übungen:** Ü1356 frishka, Ü1892 el-ftur, ba7thahum, Ü1377 nhar eth-thlatha/tennis/nuss en-nhar, Ü1382 qaddesh min sa3a, Ü1388 biskwit, Ü1389 baba/m-el-marshi, Ü1391 `3andi nuss 3am naqra …`, `fi-n-nimsa`, Ü1401/1402 `ih, n7ibb(u)`, Ü1403 arb3a 3adhmat, Ü1404 7walu, Ü1406 ktabu, Ü1407 qahwtu, Ü1410, f-esh-shams, et-tis3a, f-es-sba7, Ü1895 zituna, Ü1896 khamsa mya, Ü2054, Ü2055 stiluya, Ü2062 qahwit, Ü2459 „langem u“, Ü2460 aqif/aqfu.
+- **L8 Dialog/Grammatik:** 7ashtik, ej-jim3a ej-jaya, esh-shhar, ba7thana/ba7thakum, karhabtik/karhabti, el-banan, sukkur, ummi, 7ashthum, unsichtbarer Trennstrich in „Hammadis“ entfernt.
+- **Trainer:** L8-Ausnahmelisten (`KURS_WORT_OK`), `L8:ersten` in `KURS_ERKL_OK`. Alle Prüfungen L1–L8 auf 0, auch die leisen.
+- **Offen, zur Entscheidung bei L9:** `tlat-alaf` / `khams-alaf` (Skript und Grammatik L4, L8, L9, L13) gegen die Vokabel-Formen `thlatha laf` / `khamsa laf`.
