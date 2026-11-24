@@ -612,3 +612,14 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - **L8 Dialog/Grammatik:** 7ashtik, ej-jim3a ej-jaya, esh-shhar, ba7thana/ba7thakum, karhabtik/karhabti, el-banan, sukkur, ummi, 7ashthum, unsichtbarer Trennstrich in „Hammadis“ entfernt.
 - **Trainer:** L8-Ausnahmelisten (`KURS_WORT_OK`), `L8:ersten` in `KURS_ERKL_OK`. Alle Prüfungen L1–L8 auf 0, auch die leisen.
 - **Offen, zur Entscheidung bei L9:** `tlat-alaf` / `khams-alaf` (Skript und Grammatik L4, L8, L9, L13) gegen die Vokabel-Formen `thlatha laf` / `khamsa laf`.
+
+## 2026-11-24 · Kurs Lektion 9 durchgesehen und korrigiert (Nils: „Ok“)
+
+- **Backups:** `backup_kurs_l9_ex_2026_11_24`, `backup_kurs_l9_lek_2026_11_24` (löschbar ab 2026-12-08).
+- **Übungen:** `baku`/`bakuwat` (TUNICO, statt `7aku`), `biskwit`, `mahush`, `l-wlayyad`, `widnin`, `baba`, `marrtin`, `m-el-7anut`, Ü1467 `ka3btin tuffa7 / zuz ka3bat tuffa7`, `el-ktab`, `kusksi`, `esh-sharab`, Apostrophe in Ü1735/1736/1911 entfernt, `nharin`, `yilzmik`, Ü1751 `ma-tkallimni-sh`, `kull nhar l-a7ad`, Ü2085 „Uhr“, `ma-ti7sib-sh`, `thluttash`, `tis3a mya`, „-u“ statt „-ou“; L7 Ü1311 `kusksi`.
+- **Dialog/Grammatik:** `shnuwwa`, `7ashtik`, `akahaw`, `bakuwat biskwit`, Sprecher `el-baba`, `el-7amdullah`; `baku`, `sukkur`, `sfinnerya`, `jim3a/jim3tin`, `ba7tha`, `ummi`, `kusksi`; L8-Grammatik `yaghurt`; L3-Grammatik `wlayyad`.
+- **Hinweis bei `lazim`/`yilzim`:** Quellen widersprechen sich (Skript gegen Semia); Grammatik L9 enthält jetzt den Satz „Die Quellen widersprechen sich. Semia sagt es genau umgekehrt“. Offen: Hauptlesart festlegen oder Semia fragen.
+- **Unverändert, für Semia notiert:** Dual `kilutin`/`rtalin` (Ü2077, 2078, 2080) in keiner Quelle belegt.
+- **`khams-alaf`/`tlat-alaf` bleiben** (Kursform; Vokabeln heißen `khamsa laf`/`thlatha laf`); stehen in `KURS_WORT_OK`.
+- **Verknüpft mit L9:** 368, 367, 2149, 318, 324, 631, 364, 4322; mit L7: 318.
+- **Trainer:** L9-Ausnahmelisten (`KURS_WORT_OK`, `KURS_ERKL_OK`). Alle Prüfungen L1–L9 auf 0, auch die leisen.
