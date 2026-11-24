@@ -8098,6 +8098,10 @@ function perfektHinweisHtml(ex, res){
 // Formen aus der verknüpften Vokabeltabelle (meta.vocab_id → vocabulary.conjugation) statt aus dem Lösungstext:
 // Perfekt = past, Präsens = present; meta.abw {"3sg_f": "form"} ersetzt einzelne Zellen (gewollte Abweichung).
 // Ohne Verknüpfung, ohne Tabelle oder ohne die Zelle bleibt die Form aus der Lösung stehen.
+// Anzeige der Personwörter in den Tabellen und Karten (Nils 2026-11-24: „entouma“ in der Tabelle, „entūma“ in der Antwort): intern bleiben entouma, houma, houwwa
+// (Schlüssel), angezeigt wird wie im Kurs und in den Vokabeln, mit Länge/Klang (entūma, huma, huwwa)
+const PERSON_ANZ = {entouma: 'entuma', houma: 'huma', houwwa: 'huwwa'};
+function personAnz(p){ const w = PERSON_ANZ[p] || p; try{ return typeof kursWortL === 'function' ? kursWortL(w) : escHtml(w); }catch(e){ return escHtml(w); } }
 const KONJ_PERSON_KEY = {ena:'1sg', enti:'2sg', houwwa:'3sg_m', hiyya:'3sg_f', a7na:'1pl', entouma:'2pl', houma:'3pl'};
 function konjAusVokabel(r, ex){
   const vid = ex && ex.meta && ex.meta.vocab_id;
@@ -8152,7 +8156,7 @@ function courseConjTableHtml(heads, grids, showForm){
   const th = 'text-align:left;padding:.15rem .5rem .35rem 0;font-size:.72rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px';
   let h = '<table style="border-collapse:collapse;width:100%;font-size:.85rem"><tr><th></th>'+heads.map(x => '<th style="'+th+'">'+escHtml(x)+'</th>').join('')+'</tr>';
   grids[0].forEach((r, i) => {
-    h += '<tr><td style="color:var(--muted);font-family:\'IBM Plex Mono\',monospace;padding:.2rem .8rem .2rem 0">'+escHtml(r.person)+'</td>'
+    h += '<tr><td style="color:var(--muted);font-family:\'IBM Plex Mono\',monospace;padding:.2rem .8rem .2rem 0">'+personAnz(r.person)+'</td>'
       + grids.map(g => g[i].form == null ? '<td style="padding:.2rem .5rem .2rem 0;color:var(--muted);opacity:.5" title="Form fehlt noch">—</td>'
         : '<td style="padding:.2rem .5rem .2rem 0;color:'+(showForm ? (g[i].mark ? 'var(--blue)' : 'var(--gold2)') : 'var(--muted)')+(showForm && g[i].mark ? ';font-weight:700' : '')+'">'+(showForm ? kursLaenge(escHtml(g[i].form), false) : '…')+'</td>').join('')+'</tr>';
   });
@@ -9288,7 +9292,7 @@ function parseGrammarDrillSolution(solution){
 function renderGrammarDrillGrid(rows, showForm){
   let g = '<div style="display:grid;grid-template-columns:auto 1fr;gap:.35rem 1rem;font-size:.85rem">';
   rows.forEach(r => {
-    g += '<div style="color:var(--muted);font-family:\'IBM Plex Mono\',monospace">'+escHtml(r.person)+'</div>';
+    g += '<div style="color:var(--muted);font-family:\'IBM Plex Mono\',monospace">'+personAnz(r.person)+'</div>';
     g += r.form == null ? '<div style="color:var(--muted);opacity:.5" title="Form fehlt noch">—</div>'
       : '<div style="color:'+(showForm ? (r.mark ? 'var(--blue)' : 'var(--gold2)') : 'var(--muted)')+(showForm && r.mark ? ';font-weight:700' : '')+'"'+(showForm && r.mark ? ' title="wird anders gebildet als „er“"' : '')+'>'+(showForm?kursLaenge(escHtml(r.form), false):'…')+'</div>';
   });
