@@ -668,3 +668,11 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - **Verknüpft mit L13:** 394, 395, 385, 1048, 354, 4376, 3768, 319, 384.
 - **Anzeige (Fehler in `trainer.html`):** Wörter, die in keiner Vokabel stehen (z. B. `tfadhdhlu`, Plural von `tfadhdhal`), bekamen keine feinen Konsonanten, weil die Anzeige das Arabische zum Abgleichen braucht. Jetzt wird bei solchen Formen `dh` zu `ḍ` (in unserer Umschrift ist `dh` immer ض). `th` und `s`/`t` bleiben unmarkiert (ohne Arabisch nicht zu unterscheiden), ebenso die Länge bei unbekannten Formen (`uq3du`).
 - **Trainer:** L13-Ausnahmelisten, `L13:bash/ma-3ad-sh/qa3id/yibda` in `KURS_ERKL_OK`. Alle Prüfungen L1–L13 auf 0, auch die leisen.
+
+## 2026-11-24 · Kurs Lektion 14 durchgesehen – alle 14 Lektionen durch (Nils: „Ok“)
+
+- **Backups:** `backup_kurs_l14_ex_2026_11_24`, `backup_kurs_l14_lek_2026_11_24` (löschbar ab 2026-12-08).
+- **L14 (Arabisch lesen):** Grammatik `el-ftur`, `el-lila`, `shkar`, `ghsal`, `b-el-karahba / b-el-kar / b-el-metro / b-el-baskla`, `billahi`; Ü2307–2312 `b-el-…`; Ü2566 „Feuer“ statt „Hölle“. Sonst stimmen Arabisch, Umschrift und Hinweise.
+- **Nachträge aus Dialogen (leise Prüfung, nur im Format „Dialog Ln“ sichtbar, vorher übersehen):** L7 `b3adhna` (statt b3adna), L13 `yitfarrju` (statt yitfarriju); Ausnahmen für `qalli`, `qalbu`, `3addih`, `y7ibbik`, `khatru`, `sumha`, `khalliha`.
+- **Stand:** Alle Prüfungen im Trainer haben keinen Treffer, auch nicht die leisen, für alle 14 Lektionen.
+- **Offen:** `lazim`/`yilzim` bei der Verneinung (Skript gegen Semia, L9); `khamsmyat` (Ü508, Dialoge L4/L5) gegen `khamsa mya`; für Semia: Dual `kilutin`/`rtalin` (L9), `flayr` (L11), `lasaq`/`lasiq` (L5), Dual bei 3–10 (Zahlen); Ü2506–2508 (VIII./X. Stamm) in L13 vor der Erklärung; Dublette 4885 `radyu` im Trainer löschen; Backup-Tabellen ab 2026-12-07/08 löschbar.
