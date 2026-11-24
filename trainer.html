@@ -6406,7 +6406,7 @@ function datenChecks(){
     if(kgKennt(w) || kgKennt(kgStrip(w))) return;
     const k = ln + '|' + w; if(!kgUn.has(k)) kgUn.set(k, 'L' + ln + ': ' + w + ' (' + wo + ')'); });
   ex.forEach(e => { if(!kgTypes.has(e.exercise_type)) return; const ln = kgLn[e.course_lesson_id]; if(!ln) return;
-    kgScan(e.solution, 'Übung ' + e.id, ln); if(e.exercise_type !== 'translate_de_tn') kgScan(e.prompt, 'Übung ' + e.id, ln); });
+    if(e.exercise_type !== 'build_dialog') kgScan(e.solution, 'Übung ' + e.id, ln); if(e.exercise_type !== 'translate_de_tn') kgScan(e.prompt, 'Übung ' + e.id, ln); });   // build_dialog: Lösung ist die deutsche Übersetzung
   lekL.forEach(l => kgScan(l.dialog_text, 'Dialog', l.course_number));
   out.push({label: geladen ? 'Kurs: Wort in Dialog oder Aufgabe steht in keiner Vokabel, Form oder Konjugationszelle (Namen ausgenommen)' : 'Kurs: Kursdaten nicht geladen', n: kgUn.size, bsp: [...kgUn.values()].sort((a, b) => parseInt(a.slice(1)) - parseInt(b.slice(1))), leise: true});
 
@@ -6453,7 +6453,7 @@ function datenChecks(){
     const b = nvLex.has(w) ? w : kgStrip(w); if(!nvLex.has(b) || nvDe.has(b) || KURS_NAMEN.has(b)) return;
     if(lpLek.has(b) || lpLek.has(w) || b.split('-').every(x => !x || lpLek.has(x) || x.length < 3)) return;
     const k = ln + '|' + b; if(!lpUn.has(k)) lpUn.set(k, 'L' + ln + ': ' + b + ' (' + wo + ')'); });
-  ex.forEach(e => { if(!kgTypes.has(e.exercise_type)) return; const ln = kgLn[e.course_lesson_id]; if(!ln) return; lpScan(e.solution, 'Übung ' + e.id, ln); if(e.exercise_type !== 'translate_de_tn') lpScan(e.prompt, 'Übung ' + e.id, ln); });
+  ex.forEach(e => { if(!kgTypes.has(e.exercise_type)) return; const ln = kgLn[e.course_lesson_id]; if(!ln) return; if(e.exercise_type !== 'build_dialog') lpScan(e.solution, 'Übung ' + e.id, ln); if(e.exercise_type !== 'translate_de_tn') lpScan(e.prompt, 'Übung ' + e.id, ln); });
   lekL.forEach(l => lpScan(l.dialog_text, 'Dialog', l.course_number));
   out.push({label: geladen ? 'Kurs: Wort in Dialog oder Aufgabe ist eine Vokabel, aber mit keiner Lektion verknüpft' : 'Kurs: Kursdaten nicht geladen', n: lpUn.size, bsp: [...lpUn.values()].sort((a, b) => parseInt(a.slice(1)) - parseInt(b.slice(1))), leise: true});
 
@@ -6651,6 +6651,10 @@ const AR_TR_OK = [
 const KURS_WORT_OK = new Set([
   'rajli', 'rajlik', 'rajilha', 'ukhti', 'ukhtu', 'buk', 'kum', 'hum', 'darkum', 'darna', 'darhum', 'tbibu', 'tbibna', 'bladi', 'bladu', 'bintna',   // L2: Possessivsuffixe (Tabellen und Übungen)
   '3ayb',                                      // L2: Ausspracheübung Ü422 (TUNICO ʕāyb „beinbehindert“)
+  'khwati', 'khwatu', 'stushi', 'stushu', 'stushha', 'buh', 'w-buh', 'qahwit', 'kahwit', 'bnati', 'bnatu', 'wladna', 'li-kbir', 'ykhallik', 'b-jah', 'tinis',   // L3: Possessivformen, Konstruktus, Formeln, Lehnwort tinis (Ninja)
+  'katbha', 'katbik', 'el-munupri', 'rabbi',   // L3: katba + Suffix (Sekretärin), Lehnwort Monoprix, Gott (Vokabeln nur als Phrasen rabbi …)
+  'khams-alaf',                                   // 5000 wie im Skript; Vokabel 301 heißt khamsa laf — Angleichung bei Lektion 9 (Zahlen) entscheiden
+  'ashkun', 'ashnuwwa', 'ashniyya', 'ashnuma', 'vorsilben-vokal', 'lundra', 'el-yasmina',   // L3: Fragewörter mit Vorsilbe (Tabellenzelle „(a)shkun“), Fachwort, Ort
   'taj', 'bagaj', 'thick', 'this', 'iyya', 'journal', 'stimmhaftes', 'gegurgelte', 'gesprochenes', 'deutsches', 'englisch', 'zungenspitzen-r']);   // L1: Aussprachebeispiele und deutsche Wörter der Erklärtabelle
 // Übungen, die bewusst vor ihrer Grammatik-Erklärung stehen (Übersetzen-Abschnitte vor dem Erklär-Abschnitt; Nils 2026-11-24: so lassen). Schlüssel „L<n>:<wort>“.
 const KURS_ERKL_OK = new Set(['L1:hatha', 'L1:hathi', 'L1:wa7id', 'L2:baba']);
