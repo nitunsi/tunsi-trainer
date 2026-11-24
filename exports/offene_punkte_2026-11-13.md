@@ -649,3 +649,13 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - **Offen für Semia:** `flayr` (Dialog 2/Text, „klaw flayr“ beim Frühstück) steht in keiner Quelle.
 - **Verknüpft mit L11:** 482, 638, 1015, 2743, 533, 4249, 4698, 760, 3517.
 - **Trainer:** L11-Ausnahmelisten. Alle Prüfungen L1–L11 auf 0, auch die leisen.
+
+## 2026-11-24 · Kurs Lektion 12 durchgesehen; Arabisch von `laf` vereinheitlicht (Nils: „Ok“, „laf arabisch nicht einheitlich“)
+
+- **Backups:** `backup_kurs_l12_ex_2026_11_24`, `backup_kurs_l12_lek_2026_11_24`, `backup_laf_vocab_2026_11_24` (löschbar ab 2026-12-08).
+- **laf (Arabisch, Nils):** Vokabel 302 `عَشْرَلَافْ` → `عَشْرَة لَاف`, Vokabel 916 `ثْلَاثَة آلَاف` → `ثْلَاثَة لَاف`, gleiche Schreibung wie 301 `خَمْسَة لَاف`. Damit zeigt die Umschrift bei allen drei `lǟf` (vorher bei 916 `laf`). Regel: `alf` wird nach einer Zahl auf Vokal zu `laf` (3000–10 000), ab 11 000 (nach `-in`) bleibt `alf`.
+- **Übungen:** `fi-ana`, `ma-ykhallsu-sh`, `sa7bitha`, `nasihitha … qbal`, `yusknu`, **`garaj` statt `jrada`** (= Heuschrecke; Vokabel 4274), `eth-thaltha/eth-thani/eth-thalith`, `el-ulani`, `ma-7abbina-sh`, `ma-najjmit-sh`, `w-hatha 3lash`, Ü1871 Deutsch im Präsens.
+- **Dialog/Text:** `7ashtik`, `es-sif`, `barak allahu fik`, `eth-thani`, `ma-ykhallsu-sh`, `sa7bitha`, `yikriwha`, `3a-sh-shara3`, `l-a7ad`, `garaj`.
+- **Grammatik:** `raqid`, `ummi`, `ih`, `3la-l-kursi`.
+- **Verknüpft mit L12:** 4274, 566, 4279, 4271, 4735, 704, 3894.
+- **Trainer:** L12-Ausnahmelisten. Alle Prüfungen L1–L12 auf 0, auch die leisen.
