@@ -1893,6 +1893,7 @@ window.renderCourseBrowseTab = function(tc, l){
     const mc = srs.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
     return {all, srs, non, unlocked, st, mc};
   };
+  const KL = (html, roh, grossNein) => typeof kursLaenge === 'function' ? kursLaenge(html, roh, grossNein) : html;   // Umschrift mit Längen/feinen Konsonanten wie in der Lernansicht
   const box = inner => '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.8rem;font-size:.85rem;line-height:1.7">'+inner+'</div>';
   const revT = courseReviewTopics(l.id);
   let h = '<div class="neu-card" style="padding:.1rem .9rem">';
@@ -1908,10 +1909,10 @@ window.renderCourseBrowseTab = function(tc, l){
     if(open){
       h += '<div class="bd"><div style="margin:0 0 .7rem;display:flex;justify-content:flex-end"><span class="neu-chip'+(revT.indexOf(t) >= 0 ? ' on' : '')+'" onclick="courseToggleReview('+l.id+','+ti+')">'+courseBmIcon(revT.indexOf(t) >= 0, 16)+' Nochmal ansehen</span></div>';
       if(t === 'Dialoge'){
-        if(l.dialog_text) h += box(mdLite(l.dialog_text, true));
-        if(cs.some(c => (c.grammar_headings||[]).includes('__intro__')) && sections.__intro__) h += '<div style="margin-top:.6rem">'+box(mdLite(sections.__intro__))+'</div>';
+        if(l.dialog_text) h += box(KL(mdLite(l.dialog_text, true)));
+        if(cs.some(c => (c.grammar_headings||[]).includes('__intro__')) && sections.__intro__) h += '<div style="margin-top:.6rem">'+box(KL(mdLite(sections.__intro__), false, true))+'</div>';
       } else if(sections[t]){
-        h += box(mdLite(t === '__intro__' ? sections[t] : '### '+t+'\n'+sections[t]).replace(/^<div[^>]*>[^<]*<\/div>/, ''));
+        h += box(KL(mdLite(t === '__intro__' ? sections[t] : '### '+t+'\n'+sections[t]).replace(/^<div[^>]*>[^<]*<\/div>/, ''), false, true));
       }
       if(cs.length){
         h += '<div class="neu-cap" style="margin:.9rem 0 .1rem">Übungsgruppen</div>';

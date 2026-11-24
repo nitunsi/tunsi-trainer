@@ -584,3 +584,14 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - **Dublette radio/radyu:** 1014 → `radyu` umbenannt (Fortschritt bleibt); 4885 trägt die Notiz „LÖSCHEN“, Nils löscht im Trainer; L3-Verweis 4885 entfernt (1014 war schon dabei).
 - **Trainer:** deutsche Wörter und abgeleitete Partizipformen von L5 in `KURS_WORT_OK`, Namen in `KURS_NAMEN`, `L5:verneinten` in `KURS_ERKL_OK`. Alle Prüfungen für L1–L5 stehen auf 0, auch die leisen.
 - **Offen für Semia:** Plural bei zusammengesetzten Zahlen (205 stiluwat), `lasaq` (TUNICO) / `lasiq` (Ninja), `wdin` (Singular der Vokabel nicht gefunden).
+
+## 2026-11-24 · Kurs Lektion 6 durchgesehen und korrigiert (Nils: „Alles ok“)
+
+- **Backups:** `backup_kurs_l6_ex_2026_11_24`, `backup_kurs_l6_lek_2026_11_24` (löschbar ab 2026-12-08).
+- **Übungen (Auswahl):** -shi-Fragen Ü906/907 (inkl. neutrales Deutsch in `meta.prompt_de`), Ü907 neu nach Text 2, Ü948 zayra, Ü973 fi-3li, Ü981 nistannaw, Ü992 „Kaffee“ statt „Café“, Ü1002/1026 ma-tnajjam-sh, Ü1015 nnajjim, Ü1005 el-wild, Ü1020 tithba7/nithba7, ba7da→ba7tha (Ü1026, 1044, 1098, 1102), lutil→util/witla, faragh→farigh, Ü1124 fargha + „Bus“, dhayyiq, wasa3, Hinweise il-/id-/ir-/it-→el-/ed-/er-/et-, Ü1089 dars, m7attat, Ü1094 el-wlid, ez-sghir→es-sghir, Ü1114 sman, Ü1121 s3ab, Ü1113–1121 und Ü1148–1161: deutsche Aufgaben in den Plural, karahba→karhba, Ü1137/1151 el-karhba hathika, es-stiluwat, Ü1153 l-bukum, Ü2176 w-khuha, Ü2450 shayif; `akt.Part.`/`pass.Part.` ausgeschrieben; Regelkarte Ü2517 ohne „dh“.
+- **`fi-` vor dem Objekt nach qa3id** (Frage 1): in Ü963–978 ergänzt, damit die Übungen die Regel der Grammatik zeigen.
+- **Grammatik/Dialog:** `shwayya bark`, `nimshi n3arris`, qwiyin→qwiyyin, mfata7ik/mfata7u, n7ibbik, w-khuha, Partizip der hohlen Verben shayif/fayiq/bayit (Frage 2; nicht direkt belegt, passt zu qayim/zayir/dayim).
+- **Verknüpft mit L6:** 1182, 2270, 4668, 4655, 1016, 1030, 608, 2032, 481, 477, 436, 1131, 1130, 592, 1094; `qa3id` (1182) auch mit L5.
+- **Trainer:** Allowlists für L6 in `KURS_WORT_OK`, `L6:y7ibb/direkt/zweite/derselben/richtet` in `KURS_ERKL_OK`. Alle Prüfungen L1–L6 auf 0, auch die leisen.
+- **Fehler in der Anzeige behoben (`neu/neu.js`):** Kurs → Lektion → Übungsgruppen (Dialoge, Grammatik) zeigte die Umschrift mit Längen und feinen Konsonanten nicht, weil dort `kursLaenge` fehlte; jetzt wie in der Lernansicht.
+- **Offen:** `m7attat` (TUNICO/Peace Corps, Grammatik) gegen Vokabel 477 `ma7attit`; `farigh` (Partizip) gegen Vokabel `faragh` (Ninja „Leere“); `shayif`, `fayiq`, `bayit` sind nicht direkt belegt.
