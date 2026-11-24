@@ -6407,6 +6407,74 @@ function datenChecks(){
   lekL.forEach(l => kgScan(l.dialog_text, 'Dialog', l.course_number));
   out.push({label: geladen ? 'Kurs: Wort in Dialog oder Aufgabe steht in keiner Vokabel, Form oder Konjugationszelle (Namen ausgenommen)' : 'Kurs: Kursdaten nicht geladen', n: kgUn.size, bsp: [...kgUn.values()].sort((a, b) => parseInt(a.slice(1)) - parseInt(b.slice(1))), leise: true});
 
+  const lpDe = new Set(nvDe);
+  ex.forEach(e => { const add = t => String(t || '').toLowerCase().split(/[^a-zäöüß]+/).forEach(w => { if(w.length > 1) lpDe.add(w); });
+    if(e.exercise_type === 'translate_de_tn') add(e.prompt); String(e.solution || '').replace(/\(([^)]*)\)/g, (m, g) => { add(g); return ''; }); add(e.instruction); });
+  // ---- Lektions-Prüfungen (Nils 2026-11-24: „erstell erst einmal die Prüfungen für die Lektionen“) -------------------------------------------------
+  // L-1) Übung gehört zu einem Abschnitt (chunk_key), den die Lektion nicht hat: sie wird nie gezeigt (zählt).
+  const lpAbs = [];
+  ex.forEach(e => { const l = lekL.find(x => x.id === e.course_lesson_id); if(!l || !e.chunk_key) return;
+    if(!(l.chunk_order || []).some(c => c.key === e.chunk_key)) lpAbs.push('L'+l.course_number+': Übung '+e.id+' im Abschnitt „'+e.chunk_key+'“, den die Lektion nicht hat'); });
+  out.push({label: geladen ? 'Kurs: Übung gehört zu einem Abschnitt, den die Lektion nicht hat' : 'Kurs: Kursdaten nicht geladen', n: lpAbs.length, bsp: lpAbs});
+
+  // L-2) Verb-Hinweis „Verb: yaghsil“ / „Verben: yaghsil, yukhruj“ in der Lösung: die Form muss in irgendeiner Konjugationstabelle stehen (zählt).
+  const lpCj = new Set();
+  ALL_VOCAB.forEach(v => { if(v.cj) ['present', 'past', 'imperative'].forEach(t => Object.values(v.cj[t] || {}).forEach(c => c && c.darija && String(c.darija).split(/[\s\/]+/).forEach(w => lpCj.add(nvNorm(w))))); });
+  const lpVb = [];
+  ex.forEach(e => { const m = String(e.solution || '').match(/(?:^|[—–\-]\s*|\s)Verb(?:en)?:\s*([^.\n—–]+)/); if(!m) return;
+    m[1].split(/[,\/]|\sund\s/).map(x => nvNorm(x.trim().split(/\s+/)[0])).filter(Boolean).forEach(w => { if(!lpCj.has(w) && !nvLex.has(w)) lpVb.push('Übung '+e.id+': Verb-Hinweis „'+w+'“ steht in keiner Konjugationstabelle'); }); });
+  out.push({label: geladen ? 'Kurs: Verb-Hinweis in der Lösung steht in keiner Konjugationstabelle' : 'Kurs: Kursdaten nicht geladen', n: lpVb.length, bsp: lpVb});
+
+  // L-3) Grammatik-Beispielwörter (vor „…“, fett, erste Tabellenzellen), die in keiner Vokabel und keiner Form stehen (leise, je Lektion).
+  const lpGb = [];
+  lekL.forEach(l => { const seen = new Set();
+    String(l.grammar_notes || '').split('\n').forEach(line => {
+      const kand = [];
+      (line.match(/[a-z0-9'][a-z0-9'-]*(?=\s+„)/g) || []).forEach(x => kand.push(x));
+      const tn = x => /[0-9-]|sh|kh|gh|th|dh|aa|ou|ya|ayy/.test(x);   // Merkmale tunesischer Umschrift: sonst zu viel deutsches Rauschen in fetten Wörtern und Tabellen
+      (line.match(/\*\*[^*]+\*\*/g) || []).forEach(b => b.replace(/\*\*/g, '').split(/[\s,\/·]+/).forEach(x => { if(tn(x)) kand.push(x); }));
+      if(/^\|/.test(line)) line.split('|').slice(1, 3).forEach(cell => cell.split(/[\s,\/·]+/).forEach(x => { if(tn(x)) kand.push(x); }));
+      kand.forEach(x => { const w = nvNorm(x); if(!w || w.length < 3 || /^\d+$/.test(w) || /^-+$/.test(w) || !/^[a-z0-9'-]+$/.test(w) || seen.has(w)) return; seen.add(w);
+        if(kgKennt(w) || kgKennt(kgStrip(w)) || lpDe.has(w)) return; lpGb.push('L'+l.course_number+': '+w); }); }); });
+  out.push({label: geladen ? 'Grammatiktext: Beispielwort steht in keiner Vokabel, Form oder Konjugationszelle' : 'Kurs: Kursdaten nicht geladen', n: lpGb.length, bsp: lpGb, leise: true});
+
+  // L-4) Wort in Dialog oder Aufgabe ist eine Vokabel, aber mit keiner Lektion verknüpft (leise). Bekannt = steht in einer Vokabel, die irgendeiner Lektion zugeordnet ist.
+  const lpLek = new Set();
+  lekL.forEach(l => { const f = parseCourseVocabRefs(l.vocab_lesson_refs);
+    f.ids.forEach(i => { const v = VOCAB_BY_ID[i]; if(!v) return; const add = t => String(t || '').split(/[\s\/·]+/).forEach(w => { w = nvNorm(w); if(w){ lpLek.add(w); w.split('-').forEach(x => x && lpLek.add(x)); } });
+      add(v.tr); add(v.fo); if(v.cj) ['present', 'past', 'imperative'].forEach(t => Object.values(v.cj[t] || {}).forEach(c => c && c.darija && add(c.darija))); });
+    f.tr.forEach(t => { const w = nvNorm(t); if(w) lpLek.add(w); }); });
+  const lpUn = new Map();
+  const lpScan = (txt, wo, ln) => String(txt || '').replace(/\([^)]*\)/g, ' ').split(/\s[—–]\s/)[0].split(/\s+/).forEach(tok => {
+    const w = nvNorm(tok); if(!w || w.length < 3 || /^\d+$/.test(w) || /[A-ZÄÖÜ]/.test(tok.charAt(0)) || !/^[a-z0-9'-]+$/.test(w)) return;
+    const b = nvLex.has(w) ? w : kgStrip(w); if(!nvLex.has(b) || nvDe.has(b) || KURS_NAMEN.has(b)) return;
+    if(lpLek.has(b) || lpLek.has(w) || b.split('-').every(x => !x || lpLek.has(x) || x.length < 3)) return;
+    const k = ln + '|' + b; if(!lpUn.has(k)) lpUn.set(k, 'L' + ln + ': ' + b + ' (' + wo + ')'); });
+  ex.forEach(e => { if(!kgTypes.has(e.exercise_type)) return; const ln = kgLn[e.course_lesson_id]; if(!ln) return; lpScan(e.solution, 'Übung ' + e.id, ln); if(e.exercise_type !== 'translate_de_tn') lpScan(e.prompt, 'Übung ' + e.id, ln); });
+  lekL.forEach(l => lpScan(l.dialog_text, 'Dialog', l.course_number));
+  out.push({label: geladen ? 'Kurs: Wort in Dialog oder Aufgabe ist eine Vokabel, aber mit keiner Lektion verknüpft' : 'Kurs: Kursdaten nicht geladen', n: lpUn.size, bsp: [...lpUn.values()].sort((a, b) => parseInt(a.slice(1)) - parseInt(b.slice(1))), leise: true});
+
+  // L-5) Fettes Wort einer Grammatik-Erklärung steht in einer Übung eines früheren Abschnitts (leise): die Übung kommt vor ihrer Erklärung.
+  const lpVor = [];
+  lekL.forEach(l => { const order = l.chunk_order || []; if(order.length < 2) return; const sec = parseGrammarSections(l.grammar_notes);
+    const erkl = new Map();   // Wort → frühester Abschnitt (Index), in dessen Grammatik es fett steht
+    order.forEach((c, i) => (c.grammar_headings || []).forEach(hd => { (String(sec[hd] || '').match(/\*\*[^*]+\*\*/g) || []).forEach(b => b.replace(/\*\*/g, '').split(/[\s,\/·]+/).forEach(x => { const w = nvNorm(x); if(w && w.length > 1 && /^[a-z0-9'-]+$/.test(w) && !erkl.has(w)) erkl.set(w, i); })); }));
+    const gemeldet = new Set();
+    ex.filter(e => e.course_lesson_id === l.id && kgTypes.has(e.exercise_type)).forEach(e => { const i = order.findIndex(c => c.key === e.chunk_key); if(i < 0) return;
+      String((e.solution || '') + ' ' + (e.exercise_type === 'translate_de_tn' ? '' : (e.prompt || ''))).replace(/\([^)]*\)/g, ' ').split(/\s+/).forEach(tok => { const w = nvNorm(tok); if(!w || !erkl.has(w) || erkl.get(w) <= i || !nvLex.has(w) || lpDe.has(w)) return;
+        const k = w + '|' + e.chunk_key; if(gemeldet.has(k)) return; gemeldet.add(k);
+        lpVor.push('L'+l.course_number+': „'+w+'“ in Übung '+e.id+' (Abschnitt '+order[i].key+'), erklärt erst in Abschnitt '+order[erkl.get(w)].key); }); }); });
+  out.push({label: geladen ? 'Kurs: Übung benutzt ein Wort, das erst in einem späteren Abschnitt erklärt wird' : 'Kurs: Kursdaten nicht geladen', n: lpVor.length, bsp: lpVor, leise: true});
+
+  // L-6) Gleiches Wort, andere Vokale (leise): ein Kurswort ist keine Vokabel, hat aber dasselbe Konsonantengerüst wie eine (ukht/okht, tisba7/tisbe7).
+  const lpSk = w => w.replace(/[aeiouy]/g, '').replace(/(.)\1/g, '$1');
+  const lpSkMap = new Map(); nvKeys.forEach(k => { if(k.length < 3) return; const sk = lpSk(k); if(sk.length < 3) return; if(!lpSkMap.has(sk)) lpSkMap.set(sk, []); lpSkMap.get(sk).push(k); });
+  const lpVs = [];
+  nvCnt.forEach((n, w) => { if(n > 2 || w.length < 4 || nvLex.has(w) || nvDe.has(w) || !/^[a-z0-9'-]+$/.test(w)) return;
+    const b = kgStrip(w).replace(/-/g, ''); if(nvLex.has(b) || b.length < 4) return; const sk = lpSk(b); const c = lpSkMap.get(sk); if(!c) return;
+    const pos = x => x.replace(/[aeiouy]/g, '_'); const ok = c.filter(k => k !== b && k.length === b.length && pos(k) === pos(b)); if(ok.length) lpVs.push(w+' → '+ok.slice(0, 2).join(' / ')+' ('+nvOrt.get(w)+')'); });
+  out.push({label: geladen ? 'Kurstext: Wort steht in keiner Vokabel, hat aber dasselbe Konsonantengerüst wie eine (Vokalvariante)' : 'Kurs: Kursdaten nicht geladen', n: lpVs.length, bsp: lpVs, leise: true});
+
   // 13) Wort in einer Aufgabe, das erst in einer späteren Lektion verknüpft ist (vocab_lesson_refs)
   const ersteLek = new Map();
   const merkeLek = (t, cn) => { t = String(t || '').toLowerCase(); if(t && (!ersteLek.has(t) || ersteLek.get(t) > cn)) ersteLek.set(t, cn); };
