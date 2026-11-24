@@ -595,3 +595,11 @@ E (Wurzeln: 578 offen, E3 Stämme verbinden, Musterkarten, Lexikon), B (Regelkar
 - **Trainer:** Allowlists für L6 in `KURS_WORT_OK`, `L6:y7ibb/direkt/zweite/derselben/richtet` in `KURS_ERKL_OK`. Alle Prüfungen L1–L6 auf 0, auch die leisen.
 - **Fehler in der Anzeige behoben (`neu/neu.js`):** Kurs → Lektion → Übungsgruppen (Dialoge, Grammatik) zeigte die Umschrift mit Längen und feinen Konsonanten nicht, weil dort `kursLaenge` fehlte; jetzt wie in der Lernansicht.
 - **Offen:** `m7attat` (TUNICO/Peace Corps, Grammatik) gegen Vokabel 477 `ma7attit`; `farigh` (Partizip) gegen Vokabel `faragh` (Ninja „Leere“); `shayif`, `fayiq`, `bayit` sind nicht direkt belegt.
+
+## 2026-11-24 · Kurs Lektion 7 durchgesehen und korrigiert; offene Punkte aus L5/L6 geklärt (Nils: „Alles ok, ey auf ay“)
+
+- **Backups:** `backup_kurs_l7_ex_2026_11_24`, `backup_kurs_l7_lek_2026_11_24`, `backup_kurs_l7_vocab_2026_11_24` (löschbar ab 2026-12-08).
+- **Übungen, Dialog, Grammatik (Auswahl):** `t7illu`, `m-eth-thlatha`/`eth-` (statt et-thl/thm), `baraka llah fik`, `ma-tjiw-sh`, `ba7tha…`, `3a-l-3sha`, Ü1192 nakhuth, Ü1204 „bei“, `3umrha`, `ej-jaya`, `jim3a ej-jaya`, `l-el-b7ar`, Ü1308 Person, `karhba`, Ü1319 `ydur/yduru`, Ü1342 `shawya`, Ü1344 `banya`/`jdid`, Ü1348 `3ati`, Partizip `7aki`/`a7ki`, `milqi`, `maqdhi`, `t3um`, `nuq3ud`, `l-ayyam`, `ma7lula`, `mqabil` (unveränderlich), `ena`/`enti`, Ü1350 `es-/eth-/el-/et-`, `qaddesh`, Ü1164 `ay rajil`, Kürzel `akt.Part.` ausgeschrieben. Ü1342 bleibt bei `mashwi/mashwiya` (Vokabel 3120/384), obwohl die Quellen `mishwi` führen: Kurs folgt der Vokabel.
+- **Geklärt:** (1) hohle Partizipien: TUNICO belegt `fayq` (ohne i) und `sayim/sayir/hayil` (mit i); Grammatik L6 und Ü2450 jetzt `shayif, fayq, bayit` mit Regel „meist i, manchmal weg“. (2) Vokabel 1777 `faragh` → `farigh / faragh` (beide Varianten; Vokabel-Notiz von 2026-11-07 bestätigt faragh, Peace Corps/TUNICO farigh). (3) Vokabel 477 bekommt `Pl. m7attat`. (4) Neue Vokabel 4887 `wdin` „Ohr“ (Peace Corps, Pl. widnin), ohne Fälligkeit, mit L5 verknüpft. (5) `lasaq`/`lasiq` bleiben beide.
+- **Verknüpft mit L7:** 4097, 1030, 3732, 275, 481, 1026, 1101, 4739, 1266, 3525; mit L5: 4887.
+- **Trainer:** L7-Ausnahmelisten (`KURS_WORT_OK`, `KURS_ERKL_OK`). Alle Prüfungen L1–L7 auf 0, auch die leisen.
