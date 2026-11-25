@@ -8601,8 +8601,11 @@ function kursWortLRoh(w){
     const v = _kursWortIdx.v[k], c = _kursWortIdx.c[k];
     if(v) h = laengeHtml(w, v.ar, v.rh, v);
     else if(c) h = conjZelleL(c[0], w, c[1], c[2]);
-    else if(!/\d/.test(w)){   // unbekannte Form mit Besitz- oder Objektendung (ukht-i, flus-ik, khwat-ha): Stamm nachschlagen, Endung bleibt unmarkiert (Nils 2026-11-17)
-      for(const en of KURS_ENDUNGEN){
+    else{   // unbekannte Form mit Besitz- oder Objektendung (ukht-i, flus-ik, khwat-ha): Stamm nachschlagen, Endung bleibt unmarkiert (Nils 2026-11-17)
+      // Zahl 11–19 vor dem Nomen bekommt ein -in (thluttashin mat3am, CODA „N of Number Construct“): Stamm (thluttash) nachschlagen, -in bleibt unmarkiert (Nils 2026-11-25)
+      const zs = k.endsWith('in') ? _kursWortIdx.v[k.slice(0, -2)] : null;
+      if(zs && /\/ 1[1-9]$/.test(zs.en || '')){ const st = w.slice(0, -2), hs = kursWortL(st); if(hs !== st) h = hs + w.slice(-2); }
+      else if(!/\d/.test(w)) for(const en of KURS_ENDUNGEN){   // (nur ohne Ziffer, damit khamsa3-… nicht falsch zerlegt wird)
         if(k.length < en.length + 3 || !k.endsWith(en)) continue;
         const st = w.slice(0, w.length - en.length), sk = st.toLowerCase();
         if(!(_kursWortIdx.v[sk] || _kursWortIdx.c[sk] || lwGet(sk))) continue;
