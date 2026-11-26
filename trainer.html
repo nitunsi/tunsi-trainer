@@ -7573,10 +7573,10 @@ function courseChunkHerkunft(c){
   return (c && (c.dialog || (c.grammar_headings||[]).length)) ? 'uniwien' : 'constructed';
 }
 let _courseHerkunft = 'all';
-try{ const h0 = localStorage.getItem('course-herkunft'); if(h0 === 'all' || COURSE_HERKUNFT[h0]) _courseHerkunft = h0; }catch(e){}
+// Herkunftsfilter gilt nur für die offene Sitzung: nach dem Neuladen immer „Alle“ (Nils 2026-11-26)
+try{ localStorage.removeItem('course-herkunft'); }catch(e){}
 function courseSetHerkunft(v){
   _courseHerkunft = (v === 'all' || COURSE_HERKUNFT[v]) ? v : 'all';
-  try{ localStorage.setItem('course-herkunft', _courseHerkunft); }catch(e){}
   renderCourseOverview();
 }
 function courseFlattenChunks(){

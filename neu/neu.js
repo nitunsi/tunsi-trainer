@@ -1247,7 +1247,7 @@ window.renderCourseOverview = function(){
     const unlocked = items.filter(e => COURSE_EX_PROGRESS[e.id]).length;
     const mastered = items.filter(e => COURSE_EX_PROGRESS[e.id] && (COURSE_EX_PROGRESS[e.id].correct_count||0) >= 4).length;
     const due = items.filter(e => { const p = COURSE_EX_PROGRESS[e.id]; return p && p.next_review && !courseExAus(e) && isDueByDay(courseParseTs(p.next_review)); }).length;
-    const v = hk === 'all' ? courseVocabInfo(l) : {total: 0, started: 0, solid: 0, due: 0, lv: []};
+    const v = courseVocabInfo(l); // Vokabeln gehören zur Lektion, nicht zur Herkunft der Abschnitte: Filter ändert sie nicht
     // Level je Bereich: so hoch, wie 90 % der aktivierten Karten mindestens stehen (max. 4 = sicher); grün erst, wenn alles aktiv ist
     const exLv = items.filter(e => COURSE_EX_PROGRESS[e.id]).map(e => COURSE_EX_PROGRESS[e.id].correct_count||0);
     const ex = areaLevel(exLv, total), vo = areaLevel(v.lv, v.total);

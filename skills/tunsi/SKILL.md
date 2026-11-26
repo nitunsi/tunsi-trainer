@@ -63,6 +63,8 @@ Was in den Prüfungen immer wieder auftaucht (Gesamtprüfung 2026-11-07; Fallges
 
 Unerledigte Altlasten aus früheren Sessions — bei Gelegenheit aufgreifen, nicht Teil der laufenden Regeln:
 
+- **Formen nachtragen, Rest** (begonnen 2026-11-26, Nils: „später evtl.“): Block 1 (gebrochene Plurale, eindeutig) und die Sammelwörter sind eingetragen. Noch offen, jeweils erst als Vorschlag mit TUNICO-Beleg (`tunico_import`, `inflected`, Kennungen `#n_pl`, `#n_l_pl`, `#n_dual`, `#n_unit`) zeigen: (a) Block 2: Zeilen mit mehreren, widersprüchlichen Pluralen (`wzir`, `rukba`, `tajrba`, `sura`, `kiswa`, `nahj`, `mula`, `taq`) und mit Längenabgleich (`mashmum`, `makla`, `3ada`); (b) Fehltreffer, bei denen eher der Eintrag als die Form zu prüfen ist (`zuz`, `7atta`, `7add`, `7uth`, `maqful`, `nuss`, `thmun`, `3shur`, `7athaq`, `khamij`, `dabdub`); (c) rund 100 reguläre `-āt`-Plurale (`matar`, `villa`, `shurba` …). Abfrage live neu ziehen (Zahlen veralten): `vocabulary` ohne `formen`, Nomen/Adjektiv, mit `tunico_import`-Treffer auf `lemma_chatalpha`.
+
 - **Ninja-Transliteration in Trainer-Konvention** (besprochen 2026-09-05, bewusst zurückgestellt): `derja_ninja_entries.darija` ist in Ninjas eigener Konvention, nicht unserer — anders als bei TUNICO/Peace Corps gibt es dafür noch keine `chatalpha`-Spalte. Wäre nur aus dem vollvokalisierten `arabic_script` heraus zuverlässig baubar (nicht aus Ninjas `darija` selbst), mit eigenem Validierungsaufwand. Bisher kein Bedarf, seit klar ist: Original-Transliteration wird ohnehin nur im Zweifelsfall herangezogen, `chatalpha` reicht für den Regelfall.
 
 - **Audio-Sicherung abschließen und Ninja-Ordner verkleinern** (beschlossen 2026-11-02, Reihenfolge einhalten):
