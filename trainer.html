@@ -964,6 +964,11 @@ function feinModusSetzen(m){
   if(typeof _kursWortCache !== 'undefined') Object.keys(_kursWortCache).forEach(k => { delete _kursWortCache[k]; });
 }
 const FEIN_AR = {'ص':['s','ṣ'], 'ط':['t','ṭ'], 'ض':['dh','ḍ'], 'ظ':['th','ẓ'], 'ذ':['th','ḏ'], 'ث':['th','ṯ'], 'س':['s',''], 'ت':['t','']};
+// Stämme auf د, an die ein Pronomen mit h tritt (dh heißt dort d+h, nicht ض); Fallback in kursWortLRoh
+const _dhGeraten = new Set();   // Kursformen, bei denen dh ohne Arabisch als ḍ geraten wurde (Prüfung „dh ohne Arabisch“)
+// geprüft: dh heißt in diesen Kursformen wirklich ض (Nils 2026-11-26); neue Formen erscheinen in der leisen Prüfung, bis sie hier stehen oder als Vokabel angelegt sind
+const DH_GEPRUEFT = new Set(['rumdhanik','tfadhdhlu','madhrub','madhruba','madhbu7','dh3ifa','edh','dhabt','madhi','dhaww','3adhmat','murdha','dhiddi','ya7dhar','3adhdha','3adhdhin','b3adhna','dhidd','maqdhi','tqdhi','t7adhdhruha','nqdhiw','7dhar','riyadh','tidhrab','tidhrbu','dhayyqa','dhayyiq','dh3if','raydha']);
+const DH_D_STAEMME = new Set(['wa77ad', 'wa7d', 'wa7ad', 'wild', 'wlad', 'ysa3id', '3and', 'bid', 'blad']);
 const FEIN_GROSS = {'ṣ':'Ṣ','ṭ':'Ṭ','ḍ':'Ḍ','ẓ':'Ẓ','ḏ':'Ḏ','ṯ':'Ṯ'};
 // Buchstaben der Arabisch-Zeile, die in der Umschrift s, t, dh oder th heißen, in Lesereihenfolge; Schadda zählt doppelt, ال vor Sonnenbuchstaben auch (es-sma)
 function feinArabisch(ar, artDoppelt){
@@ -6390,6 +6395,13 @@ function datenChecks(){
   });
   out.push({label: geladen ? 'Kurstext: dh/th vertauscht (Wort steht in keiner Vokabel, mit dh↔th getauscht aber doch)' : 'Kurs: Kursdaten nicht geladen', n: dtL.length, bsp: dtL});
 
+  // 12c2) dh ohne Arabisch: Kursform, die in keiner Vokabel steht und bei der dh nur als ض (ḍ) geraten wurde. Falls es d+h heißt (wa77adha), die Form als Vokabel anlegen oder
+  //       den Stamm in DH_D_STAEMME eintragen; stimmt ḍ, in DH_GEPRUEFT aufnehmen. Zählt nicht mit (leise).
+  const dhGer = [];
+  nvCnt.forEach((n, w) => { if(!/dh/.test(w)) return; w.split(/[-\/]/).forEach(part => { if(part.length < 3 || !/dh/.test(part)) return; kursWortL(part);
+    if(_dhGeraten.has(part) && !DH_GEPRUEFT.has(part) && !dhGer.some(x => x.startsWith(part+' '))) dhGer.push(part+' ('+nvOrt.get(w)+')'); }); });
+  out.push({label: geladen ? 'Kurs: dh ohne Arabisch als ḍ geraten (Form steht in keiner Vokabel) – ist es ض oder d+h?' : 'Kurs: Kursdaten nicht geladen', n: dhGer.length, bsp: dhGer, leise: true});
+
   // 12d) Wort im Dialog oder in einer Aufgabe (Tounsi-Teil), das weder Vokabel noch Form noch Konjugationszelle ist (Nils 2026-11-23: „sind alle Wörter klar –
   //      entweder angelegt oder eine gebeugte Form?“). Artikel und Vorsilben (el-, w-, b-, l- …), Besitz- und Objektendungen und -sh werden abgezogen; Namen stehen in
   //      KURS_NAMEN. Zählt nicht mit (leise), weil Konstruktionen und Schreibvarianten Rauschen machen; je Lektion eine Zeile, Ziel: jede Zeile erklärt oder angelegt.
@@ -8614,8 +8626,12 @@ function kursWortLRoh(w){
       }
     }
   }catch(e){ h = w; }
+  // dh = د+ه (nicht ض): Stamm auf -d plus Pronomen -ha/-hum/-hom/-hin (wa77adha, wa7dha, wildha, ysa3idhum). Nur für Stämme, die als د-Wort belegt sind (Vokabel mit Arabisch auf د) oder in DH_D_STAEMME stehen (Nils 2026-11-26)
+  if(h === w){ const m = /^(.+d)(ha|hum|hom|hin)$/i.exec(w);
+    if(m){ const st = m[1], sk = st.toLowerCase(), sv = _kursWortIdx.v[sk];
+      if(sk !== 'b3ad' && (DH_D_STAEMME.has(sk) || (sv && /د[ً-ْٰ]*$/.test(String(sv.ar || '').trim())))){ const hs = kursWortL(st); h = hs + m[2]; return _kursWortCache[w] = h; } } }
   // Form, die in keiner Vokabel steht (tfadhdhlu, Plural von tfadhdhal): dh heißt in unserer Umschrift immer ض (ذ/ظ/ث = th), also ḍ – ohne Arabisch geht nur dieses eine feine Zeichen (Nils 2026-11-24)
-  if(h === w && FEIN_MODUS !== 'aus' && /dh/i.test(w) && !/madha/i.test(w)) h = w.replace(/dh/g, 'ḍ').replace(/Dh/g, 'Ḍ');
+  if(h === w && FEIN_MODUS !== 'aus' && /dh/i.test(w) && !/madha/i.test(w)){ h = w.replace(/dh/g, 'ḍ').replace(/Dh/g, 'Ḍ'); _dhGeraten.add(k); }
   return _kursWortCache[w] = h;
 }
 function kursIdx(){
