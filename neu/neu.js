@@ -533,13 +533,14 @@ function flame(n){
 // „Profi“ (p) zählt Vokabeln UND Kurs-Übungen zusammen (Stufe 5–6). Marken: bis 3000 alle 250, danach alle 500.
 const mkRange = (a, b, st) => { const o = []; for(let x = a; x <= b; x += st) o.push(x); return o; };
 // Marken wie bei Duolingo dicht: Gestartet / Fortgeschritten / Profi alle 100 bis zum ganzen Bestand (die letzte Marke ist „alle“, siehe milesMarks);
-// Richtige Antworten alle 500 bis 10.000, danach alle 100; Serie bis 100 Tage wie gewohnt, danach alle 50
+// Richtige Antworten alle 500 bis 10.000, danach alle 100; Serie bis 50 Tage alle 10, danach alle 25.
+// Meldung je Marke: normal = kurzer Hinweis; alle 500 (Serie: alle 100) = Feier-Fenster; alle 1.000 (Serie: alle 200) und die Marke „alle“ = große Feier
 const MILES = [
   {key:'g', name:'Gestartet', all:true, marks:mkRange(100, 9900, 100)},
   {key:'a', name:'Fortgeschritten', all:true, marks:mkRange(100, 9900, 100)},
   {key:'p', name:'Profi', all:true, marks:mkRange(100, 9900, 100)},
   {key:'r', name:'Richtige Antworten', marks:mkRange(500, 9500, 500).concat(mkRange(10000, 300000, 100))},
-  {key:'s', name:'Tage in Folge', marks:[3,7,14,30,60,100].concat(mkRange(150, 1000, 50))}
+  {key:'s', name:'Tage in Folge', marks:mkRange(10, 50, 10).concat(mkRange(75, 1500, 25))}
 ];
 // Bestand, auf den sich „Gestartet“, „Fortgeschritten“ und „Profi“ beziehen: Vokabeln im Trainer + Kurs-Übungen
 function poolTotal(){
@@ -594,17 +595,32 @@ function milesCheck(streak){
     const val = now[m.key]; if(val == null) return;
     const mark = milesMarks(m).filter(x => val >= x).pop() || 0;
     reached[m.key] = mark;
-    if(seen && (m.key in seen) && mark > seen[m.key]) fresh.push({m, mark});
+    if(seen && (m.key in seen) && mark > seen[m.key]){   // übersprungene Marken zählen mit: die mit der größten Meldung wird gezeigt
+      const dazwischen = milesMarks(m).filter(x => x > seen[m.key] && x <= mark);
+      const best = dazwischen.reduce((b, x) => milesTier(m, x) >= milesTier(m, b) ? x : b, mark);
+      fresh.push({m, mark: best});
+    }
   });
   const merged = Object.assign({}, seen || {}, reached);
   LS.set('neu-mseen', JSON.stringify(merged));
-  if(fresh.length) showCelebration(fresh[fresh.length - 1].m, fresh[fresh.length - 1].mark);
+  if(fresh.length){   // mehrere Marken auf einmal: die größte Meldung gewinnt
+    fresh.forEach(f => { f.tier = milesTier(f.m, f.mark); });
+    const best = fresh.reduce((b, f) => f.tier >= b.tier ? f : b, fresh[0]);
+    showCelebration(best.m, best.mark, best.tier);
+  }
 }
-function showCelebration(m, mark){
+// Stärke der Meldung: 0 = kurzer Hinweis, 1 = Feier-Fenster, 2 = große Feier
+function milesTier(m, mark){
+  if(m.key === 's') return mark % 200 === 0 ? 2 : mark % 100 === 0 ? 1 : 0;
+  if(m.all && mark === poolTotal()) return 2;   // alles gestartet / fortgeschritten / Profi
+  return mark % 1000 === 0 ? 2 : mark % 500 === 0 ? 1 : 0;
+}
+function showCelebration(m, mark, tier){
   if($('neu-celeb')) return;
   const what = m.key === 'g' ? fmtN(mark)+' Vokabeln und Übungen gestartet' : m.key === 'a' ? fmtN(mark)+' Einträge fortgeschritten' : m.key === 'p' ? fmtN(mark)+' Profi-Einträge' : m.key === 'r' ? fmtN(mark)+' richtige Antworten' : fmtN(mark)+' Tage in Folge';
+  if(!tier){ try{ showToast(what, 'ok'); }catch(e){} return; }
   const o = document.createElement('div'); o.id = 'neu-celeb';
-  o.innerHTML = '<div class="neu-celeb-box"><div class="neu-art">'+ART.sun+'</div><div class="neu-celeb-h">Neuer Meilenstein!</div><div class="neu-celeb-t">'+what+'</div><div class="neu-sub" style="margin:.3rem 0 1rem">Ya3tik es-sa77a — weiter so.</div><button class="neu-btn" onclick="document.getElementById(\'neu-celeb\').remove()">Weiter</button></div>';
+  o.innerHTML = '<div class="neu-celeb-box"'+(tier > 1 ? ' style="transform:scale(1.06);border-width:2px"' : '')+'><div class="neu-art">'+ART.sun+'</div><div class="neu-celeb-h">'+(tier > 1 ? 'Großer Meilenstein!' : 'Neuer Meilenstein!')+'</div><div class="neu-celeb-t"'+(tier > 1 ? ' style="font-size:1.45rem;font-weight:800;margin:.5rem 0"' : '')+'>'+what+'</div><div class="neu-sub" style="margin:.3rem 0 1rem">Ya3tik es-sa77a — weiter so.</div><button class="neu-btn" onclick="document.getElementById(\'neu-celeb\').remove()">Weiter</button></div>';
   o.addEventListener('click', e => { if(e.target === o) o.remove(); });
   document.body.appendChild(o);
   try{ if(LS.get('neu-vib','0') === '1' && navigator.vibrate) navigator.vibrate([30, 40, 60]); }catch(e){}
