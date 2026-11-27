@@ -5702,7 +5702,7 @@ function renderVocabTableRows(){
                  : ps==='pending'?'<span title="Wartet auf Prüfung" style="color:var(--gold)">⏳</span>'
                  : ps==='skipped'?'<span title="Übersprungen" style="color:var(--muted)">⏭</span>'
                  : ps==='suggested'?'<span title="Vorschlag" style="color:var(--blue)">💡</span>'
-                 : ps==='accepted'?'<span title="Nicht von Semia bestätigt, aber ok (nicht gesperrt, nicht in Semias Warteschlange)" style="color:var(--green)">🆗</span>'
+                 : ps==='accepted'?'<span title="Nicht von der Partnerin bestätigt, aber ok (nicht gesperrt, nicht in ihrer Warteschlange)" style="color:var(--green)">🆗</span>'
                  : '<span style="color:var(--border)">·</span>';
     h += '<td style="text-align:center;padding:.3rem">'+psIcon+'</td>';
     const audioBtn = v.au ? '<button onclick="playVocabAudio(\''+v.au.replace(/'/g,"\\'")+'\',event,'+(v.aus||0)+','+(v.aue||0)+')" title="Aussprache abspielen" style="background:none;border:1px solid var(--border);color:var(--gold2);font-size:.75rem;padding:.15rem .4rem;cursor:pointer;border-radius:3px">🔊</button>' : (extConfirmIcon(v) || '<span style="color:var(--border)">·</span>');
@@ -9514,7 +9514,7 @@ function renderCourseTestTab(tc, l){
     solHtml = irrMark(solHtml, ex) + courseMetaGermanHtml(ex) + courseBelegHtml(ex);
     h += '<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:6px;padding:.7rem .8rem;font-size:.9rem;color:var(--gold2);margin-bottom:.8rem">'+solHtml+'</div>';
     if((ex.partner_status===null || ex.partner_status===undefined) && !(ex.meta && ex.meta.beleg)){
-      h += '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.6rem">⚠️ ungeprüft — wartet auf Semias Prüfung</div>';
+      h += '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.6rem">⚠️ ungeprüft — wartet auf die Prüfung der Partnerin</div>';
     }
     h += '<div style="display:flex;gap:.5rem">';
     h += '<button onclick="courseNextItem(true)" style="flex:1;padding:.6rem;background:rgba(90,168,90,.15);border:1px solid var(--green);color:var(--green);font-family:\'IBM Plex Mono\',monospace;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:4px">✔️ Richtig</button>';
@@ -9988,9 +9988,9 @@ function buildKnowledgeMD(data, today){
   lines.push('## Regeln');
   lines.push('- lesson_id immer frisch nachschlagen, nie hardcoden');
   lines.push('- Duplikat-Check über arabic_script, darija UND german separat');
-  lines.push('- partner_status null = ungeprüft, pending = wartet auf Prüfung, accepted = nicht von Semia bestätigt, aber ok (sperrt nicht, nicht in Semias Warteschlange)');
+  lines.push('- partner_status null = ungeprüft, pending = wartet auf Prüfung, accepted = nicht von der Partnerin bestätigt, aber ok (sperrt nicht, nicht in ihrer Warteschlange)');
   lines.push('- Transliteration: Chat-Alphabet (3=ayin, 7=ha, q=qaf, sh=shin)');
-  lines.push('- Kurs-Übungen (course_exercises) mit partner_status null erscheinen in Semias Prüf-Queue, original/approved nicht');
+  lines.push('- Kurs-Übungen (course_exercises) mit partner_status null erscheinen in der Prüf-Queue der Partnerin, original/approved nicht');
   lines.push('- Diese Datei entsteht immer zusammen mit einem tounsi_backup_'+today+'.sql-Vollbackup (Backup-Routine im Export-Screen) — ihr Datum zeigt also auch, dass ein Backup gemacht wurde');
   lines.push('');
   lines.push('## Lessons');
@@ -10246,7 +10246,7 @@ function pqRecentHtml(){
     body += '<div style="display:flex;gap:.5rem;font-size:.78rem;padding:.12rem 0"><span style="flex-shrink:0">' + (ic[r.s]||'') + '</span><span style="min-width:0"><span>' + escHtml(r.a) + '</span> <span style="color:var(--muted)">' + escHtml(r.b) + '</span></span></div>';
   });
   return '<details style="border:1px solid var(--border);border-radius:8px;padding:.6rem .8rem;margin-bottom:1rem">'
-    + '<summary style="cursor:pointer;font-size:.75rem;color:var(--muted)">Zuletzt von Semia geprüft (7 Tage): ✅ ' + n.approved + ' · ❌ ' + n.rejected + ' · ❓ ' + n.unknown + '</summary>'
+    + '<summary style="cursor:pointer;font-size:.75rem;color:var(--muted)">Zuletzt von der Partnerin geprüft (7 Tage): ✅ ' + n.approved + ' · ❌ ' + n.rejected + ' · ❓ ' + n.unknown + '</summary>'
     + body + '</details>';
 }
 
@@ -10333,7 +10333,7 @@ function nudgeNext(){
 function nudgeCardHtml(){
   if(_nudgeText === null) _nudgeText = NUDGE_TEXTS[_nudgeIdx = Math.floor(Math.random()*NUDGE_TEXTS.length)];
   return '<div style="border:1px solid var(--border);border-radius:8px;padding:.8rem;margin-bottom:1rem">'+
-    '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.4rem">Semia erinnern (Push, Text vorher änderbar)</div>'+
+    '<div style="font-size:.75rem;color:var(--muted);margin-bottom:.4rem">Partnerin erinnern (Push, Text vorher änderbar)</div>'+
     '<textarea id="nudge-text" maxlength="140" rows="2" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:.5rem .6rem;color:var(--text);font-family:inherit;font-size:.85rem;resize:none" oninput="_nudgeText=this.value">'+escHtml(_nudgeText)+'</textarea>'+
     '<div style="display:flex;gap:.5rem;margin-top:.5rem;align-items:center">'+
     '<button onclick="nudgeNext()" style="padding:.35rem .7rem;font-size:.75rem;cursor:pointer;border-radius:4px;background:transparent;border:1px solid var(--border);color:var(--muted)">Anderer Text</button>'+
@@ -10348,8 +10348,8 @@ async function nudgeSend(){
   try{
     const r = await fetch(SB_URL+'/functions/v1/partner-nudge',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({text})});
     const j = await r.json().catch(()=>({}));
-    if(j.sent > 0){ m.textContent = 'Gesendet'; showToast('Erinnerung an Semia gesendet','ok'); }
-    else m.textContent = j.reason === 'no subscriptions' ? 'Semia hat die Erinnerung noch nicht eingeschaltet' : j.reason === 'too soon' ? 'Gerade erst gesendet – bitte kurz warten' : 'Nicht gesendet ('+(j.reason||j.error||r.status)+')';
+    if(j.sent > 0){ m.textContent = 'Gesendet'; showToast('Erinnerung an die Partnerin gesendet','ok'); }
+    else m.textContent = j.reason === 'no subscriptions' ? 'Die Partnerin hat die Erinnerung noch nicht eingeschaltet' : j.reason === 'too soon' ? 'Gerade erst gesendet – bitte kurz warten' : 'Nicht gesendet ('+(j.reason||j.error||r.status)+')';
   }catch(e){ m.textContent = 'Fehler: '+e.message; }
   b.disabled = false;
 }
