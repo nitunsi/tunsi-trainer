@@ -532,24 +532,13 @@ function flame(n){
 // Meilensteine: je Kategorie die höchste erreichte Marke und wie weit es bis zur nächsten ist
 // „Profi“ (p) zählt Vokabeln UND Kurs-Übungen zusammen (Stufe 5–6). Marken: bis 3000 alle 250, danach alle 500.
 const MILES = [
-  {key:'v', name:'Vokabeln gestartet', marks:[100,250,500,750,1000,1250,1500,1750,2000,2250,2500,2750,3000,3250,3500,3750,4000,4500,5000]},
-  {key:'p', name:'Profi gesamt (Vokabeln + Kurs)', marks:[50,100,250,500,750,1000,1250,1500,1750,2000,2250,2500,2750,3000,3500,4000,4500,5000,5500,6000]},
-  {key:'l', name:'Lektionen abgeschlossen', marks:[1,2,3,4,5,6,7,8,9,10,11,12,13,14]},
+  {key:'g', name:'Gestartet', marks:[100,250,500,750,1000,1250,1500,1750,2000,2250,2500,2750,3000,3250,3500,3750,4000,4500,5000,5500,6000,6500,7000]},
+  {key:'a', name:'Sicher', marks:[50,100,250,500,1000,1500,2000,3000,4000,5000,6000]},
+  {key:'p', name:'Profi', marks:[50,100,250,500,750,1000,1250,1500,1750,2000,2250,2500,2750,3000,3500,4000,4500,5000,5500,6000]},
   {key:'r', name:'Richtige Antworten', marks:[1000,2500,5000,10000,25000,50000,100000,250000]},
   {key:'s', name:'Tage in Folge', marks:[3,7,14,30,60,100,200,365]}
 ];
-// Lektionen mit ✓ in der Kursübersicht: alle Übungen aktiviert und ≥ 90 % davon gemeistert (Stufe 4), Vokabeln ebenso
-function courseLessonsDone(){
-  const chunks = courseFlattenChunks();
-  return COURSE_LESSONS.filter(l => {
-    const items = chunks.filter(ch => ch.lessonId === l.id).reduce((a, ch) => a.concat(ch.srsItems), []);
-    if(!items.length) return false;
-    const lv = items.filter(e => COURSE_EX_PROGRESS[e.id]).map(e => COURSE_EX_PROGRESS[e.id].correct_count || 0);
-    if(lv.length < items.length || lv.filter(x => x >= 4).length < Math.ceil(items.length * 0.9)) return false;
-    const v = courseVocabInfo(l);
-    return v.total === 0 || (v.started >= v.total && v.solid >= Math.ceil(v.total * 0.9));
-  }).length;
-}
+// Gestartet = Vokabeln + Kurs-Übungen mit Fälligkeit; Sicher = ab Stufe 4; Profi = Stufe 5–6 (jeweils Vokabeln + Kurs)
 function richtigGesamt(){
   let n = 0;
   Object.values(srsProgress).forEach(q => { n += Math.max(0, (q.review_count || 0) - (q.wrong_count || 0)); });
@@ -569,14 +558,14 @@ function milesHtml(vals){
 }
 // Feier bei neuer Marke: Stand pro Kategorie merken; beim allerersten Mal nur merken, nicht feiern
 function milesNow(streak){
-  let v = 0, p = 0;
-  ALL_VOCAB.forEach(x => { const q = srsProgress[x.id]; if(q && q.next_review){ v++; if((q.level || 0) >= 5) p++; } });
-  const o = {v, p, s: streak};
+  let v = 0, a = 0, p = 0;
+  ALL_VOCAB.forEach(x => { const q = srsProgress[x.id]; if(q && q.next_review){ v++; if((q.level || 0) >= 4) a++; if((q.level || 0) >= 5) p++; } });
+  const o = {s: streak};
   if(_courseLoaded){   // Kurs: ohne geladene Kursdaten nichts melden, sonst wirkt der erste Stand wie ein neuer Meilenstein
     const ps = Object.values(COURSE_EX_PROGRESS);
-    o.p = p + ps.filter(q => (q.correct_count || 0) >= 5).length;   // Profi gesamt = Vokabeln + Kurs
-    o.l = courseLessonsDone(); o.r = richtigGesamt();
-  } else delete o.p;
+    o.g = v + ps.length; o.a = a + ps.filter(q => (q.correct_count || 0) >= 4).length; o.p = p + ps.filter(q => (q.correct_count || 0) >= 5).length;
+    o.r = richtigGesamt();
+  }
   return o;
 }
 function milesCheck(streak){
@@ -598,7 +587,7 @@ function milesCheck(streak){
 }
 function showCelebration(m, mark){
   if($('neu-celeb')) return;
-  const what = m.key === 'v' ? fmtN(mark)+' Vokabeln gestartet' : m.key === 'p' ? fmtN(mark)+' Profi-Einträge (Vokabeln + Kurs)' : m.key === 'l' ? fmtN(mark)+(mark === 1 ? ' Lektion' : ' Lektionen')+' abgeschlossen' : m.key === 'r' ? fmtN(mark)+' richtige Antworten' : fmtN(mark)+' Tage in Folge';
+  const what = m.key === 'g' ? fmtN(mark)+' Vokabeln und Übungen gestartet' : m.key === 'a' ? fmtN(mark)+' Einträge sicher (ab Stufe 4)' : m.key === 'p' ? fmtN(mark)+' Profi-Einträge (Stufe 5–6)' : m.key === 'r' ? fmtN(mark)+' richtige Antworten' : fmtN(mark)+' Tage in Folge';
   const o = document.createElement('div'); o.id = 'neu-celeb';
   o.innerHTML = '<div class="neu-celeb-box"><div class="neu-art">'+ART.sun+'</div><div class="neu-celeb-h">Neuer Meilenstein!</div><div class="neu-celeb-t">'+what+'</div><div class="neu-sub" style="margin:.3rem 0 1rem">Ya3tik es-sa77a — weiter so.</div><button class="neu-btn" onclick="document.getElementById(\'neu-celeb\').remove()">Weiter</button></div>';
   o.addEventListener('click', e => { if(e.target === o) o.remove(); });
@@ -624,7 +613,7 @@ async function loadPace(){
 }
 // Serie und Meilensteine kompakt: je eine Zeile mit Streifen bis zur nächsten Marke; die ganze Liste klappt darunter auf
 function milesRows(vals){
-  const order = ['v','p','l','r','s'];
+  const order = ['g','a','p','r','s'];
   return order.map(k => {
     const m = MILES.find(x => x.key === k), v = vals[k]; if(!m || v == null) return '';
     const nxt = m.marks.find(x => v < x), last = m.marks.filter(x => v >= x).pop() || 0;
@@ -637,8 +626,9 @@ function milesRows(vals){
 function renderMilestones(vStarted, vTotal, vProfi, course){
   const el = $('neu-miles-rows'); if(!el) return;
   const set = vals => { const r = $('neu-miles-rows'); if(r) r.innerHTML = milesRows(vals); };
-  const base = {v:vStarted, p:vProfi + (course ? (course.q || 0) : 0)};
-  if(course){ base.l = courseLessonsDone(); base.r = richtigGesamt(); }   // nur ohne Lektionsfilter
+  // Lektionsfilter: nur die gefilterten Vokabeln (gestartet, Profi); „Sicher“, Richtige Antworten und Serie gelten für den ganzen Bestand
+  const base = {g:vStarted + (course ? (course.c || 0) : 0), p:vProfi + (course ? (course.q || 0) : 0)};
+  if(course){ let a = 0; ALL_VOCAB.forEach(x => { const q = srsProgress[x.id]; if(q && q.next_review && (q.level || 0) >= 4) a++; }); base.a = a + (course.qa || 0); base.r = richtigGesamt(); }
   set(base);
   loadActivity().then(a => { if(cMode === 'stats') set(Object.assign({}, base, {s:a.streak || 0})); }).catch(() => {});
   loadPace().then(n => {
@@ -2163,7 +2153,7 @@ window.showStats = function(){
     + '<div class="neu-chips neu-stabs" style="justify-content:center;gap:1.6rem;padding:.2rem 0 .1rem;margin:0 0 .5rem">'+pill('Verlauf','verlauf')+pill('Fortschritt','fortschritt')+'</div>'
     + '<div class="neu-sbody">' + (tab === 'verlauf' ? verlauf : fortschritt) + '</div>'
     + '</div>';
-  if(tab === 'verlauf'){ if(all) renderActivityCard(); renderMilestones(vStarted, vTotal, vp[3], all ? {c:cActive, q:cb[6]+cb[7]} : null); }
+  if(tab === 'verlauf'){ if(all) renderActivityCard(); renderMilestones(vStarted, vTotal, vp[3], all ? {c:cActive, q:cb[6]+cb[7], qa:cb[5]+cb[6]+cb[7]} : null); }
   window.neuStatsLock(); setTimeout(window.neuStatsLock, 600); setTimeout(window.neuStatsLock, 1800);
 };
 
