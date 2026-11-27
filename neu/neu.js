@@ -268,22 +268,31 @@ async function loadActivity(){
   _cache.act = {t:Date.now(), today, streak};
   return _cache.act;
 }
+// Partner-Zeile der Startseite: der letzte Stand bleibt im Speicher und im Gerät und steht sofort da (kein Skelett, kein Springen); Neuladen höchstens alle 60 s und nur, wenn sich etwas geändert hat
+let _partnerHtml = null, _partnerT = 0;
+try{ _partnerHtml = LS.get('neu-partner-html', null) || null; }catch(e){}
+function partnerInner(){ return _partnerHtml || '<div style="flex:1"><span class="neu-skel" style="width:60%;height:1.1rem"></span><div style="height:.4rem"></div><span class="neu-skel" style="width:40%;height:.8rem"></span></div>'; }
 async function loadPartnerLine(){
   const el = $('neu-partner'); if(!el) return;
+  const ready = typeof ALL_VOCAB !== 'undefined' && ALL_VOCAB.length;
+  if(_partnerHtml && (Date.now() - _partnerT < 60000 || !ready)) return;   // frischer genug oder Prüfzahl noch nicht berechenbar: Anzeige nicht ändern
   try{
-    const ps = await sbApi('users?is_partner=eq.true&select=username,last_active_at');
+    const ps = await sbApi('users?is_partner=eq.true&select=last_active_at');
     const open = (await sbApiCount('vocabulary?partner_status=eq.rejected&select=id')) + (await sbApiCount('vocabulary?partner_status=eq.unknown&select=id')) + (await sbApiCount('vocabulary?partner_status=eq.suggested&select=id'));
-    let last = null, name = 'Partner';
-    (ps || []).forEach(p => { if(p.last_active_at){ const d = new Date(p.last_active_at); if(!last || d > last){ last = d; name = p.username || name; } } });
+    let last = null;
+    (ps || []).forEach(p => { if(p.last_active_at){ const d = new Date(p.last_active_at); if(!last || d > last) last = d; } });
     let when = 'noch keine Aktivität';
     if(last){ const h = Math.floor((Date.now() - last) / 3600000); when = h < 1 ? 'vor weniger als einer Stunde' : h < 24 ? 'vor '+h+' Std.' : 'vor '+Math.floor(h/24)+' Tag'+(Math.floor(h/24)===1?'':'en'); }
     // Treffer der Prüfungen (Duplikate, Transliteration) ersetzen „keine Rückmeldungen offen“; sind beide da, stehen sie nebeneinander
-    let q = 0; try{ if(typeof ALL_VOCAB !== 'undefined' && ALL_VOCAB.length) q = countDupeIssues() + countTranslitIssues(); }catch(e){}
+    let q = 0; try{ if(ready) q = countDupeIssues() + countTranslitIssues(); }catch(e){}
     const oTxt = open ? fmtN(open)+' Rückmeldung'+(open===1?'':'en')+' offen' : '';
     const qTxt = q ? '<span style="color:var(--gold2);text-decoration:underline" onclick="event.stopPropagation();setMode(\'dupes\')">'+fmtN(q)+' Treffer in den Prüfungen</span>' : '';
     const partnerSub2 = oTxt && qTxt ? oTxt+' · '+qTxt : (oTxt || qTxt || 'keine Rückmeldungen offen');
-    el.innerHTML = '<div style="flex:1;min-width:0"><div style="font-size:1rem;font-weight:600">'+escHtml(name)+'</div><div class="neu-sub" style="margin-top:2px">'+when.replace(/^vor /,'vor ')+' aktiv · '+partnerSub2+'</div></div><div class="neu-sub" style="font-size:1.4rem">›</div>';
-  }catch(e){ el.style.display = 'none'; }
+    // Name der Partnerin steht nie in der Anzeige (nur bei ihrem eigenen Login), deshalb „Partner“
+    const html = '<div style="flex:1;min-width:0"><div style="font-size:1rem;font-weight:600">Partner</div><div class="neu-sub" style="margin-top:2px">'+when+' aktiv · '+partnerSub2+'</div></div><div class="neu-sub" style="font-size:1.4rem">›</div>';
+    _partnerT = Date.now();
+    if(html !== _partnerHtml){ _partnerHtml = html; try{ LS.set('neu-partner-html', html); }catch(e){} const e2 = $('neu-partner'); if(e2) e2.innerHTML = html; }
+  }catch(e){ if(!_partnerHtml) el.style.display = 'none'; }
 }
 function lessonFilterChip(){
   if(typeof cLesson === 'undefined' || cLesson === 'all') return '';
@@ -500,7 +509,7 @@ function goHome(){
     +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem" '+(d.voc?'':'disabled')+' onclick="setMode(\'flash\')"><span class="neu-sub">Vokabeln</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.voc)+'</span><small>fällig'+(d.blocked?' · '+fmtN(d.blocked)+' gesperrt':'')+'</small></button>'
     +   '<button class="neu-btn ghost" style="flex-direction:column;align-items:flex-start;min-height:76px;padding:.6rem .9rem;border-color:#3b4f7a" '+(d.course?'':'disabled')+' onclick="setMode(\'coursesrs\')"><span class="neu-sub" style="color:var(--blue)">Kurs</span><span style="font-size:1.5rem;line-height:1.1">'+fmtN(d.course)+'</span><small>fällig</small></button>'
     + '</div>')
-    + '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer;padding:.7rem 1rem" onclick="setMode(\'partnerqueue\')"><div style="flex:1"><span class="neu-skel" style="width:60%;height:1.1rem"></span><div style="height:.4rem"></div><span class="neu-skel" style="width:40%;height:.8rem"></span></div></div>'
+    + '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer;padding:.7rem 1rem" onclick="setMode(\'partnerqueue\')">'+partnerInner()+'</div>'
     + '<div class="neu-chips" style="padding-bottom:0">'
     +   (function(){ const m = newStuffMsg(); return '<span class="neu-chip'+(m ? ' hint'+(m.red ? ' red' : '') : '')+'" onclick="openActivateDialog()">Neue Vokabeln'+(m ? '<i class="neu-dot"></i>' : '')+'</span>'; })()
     +   '<span class="neu-chip" onclick="statsUnlockNextChunk()">Kurs-Abschnitt</span>'
