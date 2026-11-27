@@ -534,9 +534,28 @@ function flame(n){
 const MILES = [
   {key:'v', name:'Vokabeln gestartet', marks:[100,250,500,750,1000,1250,1500,1750,2000,2250,2500,2750,3000,3250,3500,3750,4000,4500,5000]},
   {key:'p', name:'Profi gesamt (Vokabeln + Kurs)', marks:[50,100,250,500,750,1000,1250,1500,1750,2000,2250,2500,2750,3000,3500,4000,4500,5000,5500,6000]},
-  {key:'s', name:'Tage in Folge', marks:[3,7,14,30,60,100,200,365]},
-  {key:'c', name:'Kurs-Übungen gestartet', marks:[50,100,250,500,750,1000,1250,1500,1750,2000,2250]}
+  {key:'l', name:'Lektionen abgeschlossen', marks:[1,2,3,4,5,6,7,8,9,10,11,12,13,14]},
+  {key:'r', name:'Richtige Antworten', marks:[1000,2500,5000,10000,25000,50000,100000,250000]},
+  {key:'s', name:'Tage in Folge', marks:[3,7,14,30,60,100,200,365]}
 ];
+// Lektionen mit ✓ in der Kursübersicht: alle Übungen aktiviert und ≥ 90 % davon gemeistert (Stufe 4), Vokabeln ebenso
+function courseLessonsDone(){
+  const chunks = courseFlattenChunks();
+  return COURSE_LESSONS.filter(l => {
+    const items = chunks.filter(ch => ch.lessonId === l.id).reduce((a, ch) => a.concat(ch.srsItems), []);
+    if(!items.length) return false;
+    const lv = items.filter(e => COURSE_EX_PROGRESS[e.id]).map(e => COURSE_EX_PROGRESS[e.id].correct_count || 0);
+    if(lv.length < items.length || lv.filter(x => x >= 4).length < Math.ceil(items.length * 0.9)) return false;
+    const v = courseVocabInfo(l);
+    return v.total === 0 || (v.started >= v.total && v.solid >= Math.ceil(v.total * 0.9));
+  }).length;
+}
+function richtigGesamt(){
+  let n = 0;
+  Object.values(srsProgress).forEach(q => { n += Math.max(0, (q.review_count || 0) - (q.wrong_count || 0)); });
+  if(_courseLoaded) Object.values(COURSE_EX_PROGRESS).forEach(q => { n += Math.max(0, (q.review_count || 0) - (q.wrong_count || 0)); });
+  return n;
+}
 function milesHtml(vals){
   return MILES.map(m => {
     const v = vals[m.key]; if(v == null) return '';
@@ -555,7 +574,8 @@ function milesNow(streak){
   const o = {v, p, s: streak};
   if(_courseLoaded){   // Kurs: ohne geladene Kursdaten nichts melden, sonst wirkt der erste Stand wie ein neuer Meilenstein
     const ps = Object.values(COURSE_EX_PROGRESS);
-    o.c = ps.length; o.p = p + ps.filter(q => (q.correct_count || 0) >= 5).length;   // Profi gesamt = Vokabeln + Kurs
+    o.p = p + ps.filter(q => (q.correct_count || 0) >= 5).length;   // Profi gesamt = Vokabeln + Kurs
+    o.l = courseLessonsDone(); o.r = richtigGesamt();
   } else delete o.p;
   return o;
 }
@@ -578,7 +598,7 @@ function milesCheck(streak){
 }
 function showCelebration(m, mark){
   if($('neu-celeb')) return;
-  const what = m.key === 'v' ? fmtN(mark)+' Vokabeln gestartet' : m.key === 'p' ? fmtN(mark)+' Profi-Einträge (Vokabeln + Kurs)' : m.key === 'c' ? fmtN(mark)+' Kurs-Übungen gestartet' : fmtN(mark)+' Tage in Folge';
+  const what = m.key === 'v' ? fmtN(mark)+' Vokabeln gestartet' : m.key === 'p' ? fmtN(mark)+' Profi-Einträge (Vokabeln + Kurs)' : m.key === 'l' ? fmtN(mark)+(mark === 1 ? ' Lektion' : ' Lektionen')+' abgeschlossen' : m.key === 'r' ? fmtN(mark)+' richtige Antworten' : fmtN(mark)+' Tage in Folge';
   const o = document.createElement('div'); o.id = 'neu-celeb';
   o.innerHTML = '<div class="neu-celeb-box"><div class="neu-art">'+ART.sun+'</div><div class="neu-celeb-h">Neuer Meilenstein!</div><div class="neu-celeb-t">'+what+'</div><div class="neu-sub" style="margin:.3rem 0 1rem">Ya3tik es-sa77a — weiter so.</div><button class="neu-btn" onclick="document.getElementById(\'neu-celeb\').remove()">Weiter</button></div>';
   o.addEventListener('click', e => { if(e.target === o) o.remove(); });
@@ -604,7 +624,7 @@ async function loadPace(){
 }
 // Serie und Meilensteine kompakt: je eine Zeile mit Streifen bis zur nächsten Marke; die ganze Liste klappt darunter auf
 function milesRows(vals){
-  const order = ['s','v','p','c'];
+  const order = ['v','p','l','r','s'];
   return order.map(k => {
     const m = MILES.find(x => x.key === k), v = vals[k]; if(!m || v == null) return '';
     const nxt = m.marks.find(x => v < x), last = m.marks.filter(x => v >= x).pop() || 0;
@@ -615,10 +635,10 @@ function milesRows(vals){
   }).join('');
 }
 function renderMilestones(vStarted, vTotal, vProfi, course){
-  const el = $('neu-miles'); if(!el) return;
-  const set = vals => { const e = $('neu-miles'); if(e) e.innerHTML = milesHtml(vals); const r = $('neu-miles-rows'); if(r) r.innerHTML = milesRows(vals); };
-  const base = Object.assign({v:vStarted, p:vProfi + (course ? (course.q || 0) : 0)}, course || {});
-  delete base.q;
+  const el = $('neu-miles-rows'); if(!el) return;
+  const set = vals => { const r = $('neu-miles-rows'); if(r) r.innerHTML = milesRows(vals); };
+  const base = {v:vStarted, p:vProfi + (course ? (course.q || 0) : 0)};
+  if(course){ base.l = courseLessonsDone(); base.r = richtigGesamt(); }   // nur ohne Lektionsfilter
   set(base);
   loadActivity().then(a => { if(cMode === 'stats') set(Object.assign({}, base, {s:a.streak || 0})); }).catch(() => {});
   loadPace().then(n => {
@@ -2134,8 +2154,7 @@ window.showStats = function(){
   const verlauf = '<div>'+head('Fällig', winPills(N, 'neuSetFc'))
     + barChart(fcItems, {avg: fcTotal / N, H: 68, def: 'Balken antippen: fällig an dem Tag'}) + phaseLegend() + (fcBlocked ? '<div class="neu-sub" style="margin-top:.4rem">'+fmtN(fcBlocked)+' in der Partner-Queue gesperrt</div>' : '') + '</div>'
     + (all ? '<div>'+head('Aktivität', '<span id="neu-act-chips"></span>')+'<div id="neu-act-body"></div></div>' : '')
-    + '<div><details class="neu-filter" ontoggle="neuStatsLock()" style="margin:0;border:none;background:none;padding:0"><summary style="display:flex;justify-content:space-between;align-items:center;min-height:30px"><span class="neu-sub" style="text-transform:uppercase;letter-spacing:1.2px;font-size:.72rem">Serie &amp; Meilensteine</span><span class="neu-sub" style="font-size:.78rem">alle ›</span></summary>'
-    +   '<div id="neu-miles" style="margin-top:.4rem"></div><div id="neu-forecast" class="neu-sub" style="margin:.5rem 0 .3rem"></div></details><div id="neu-miles-rows"></div></div>';
+    + '<div><div id="neu-miles-rows"></div><div id="neu-forecast" class="neu-sub" style="margin:.5rem 0 .3rem"></div></div>';
   const fortschritt = '<div style="display:flex;gap:.6rem">'
     + ringBlock('Vokabeln', vStarted, vTotal, vp) + (all ? ringBlock('Übungen', cActive, cTotal, cp) : '')
     + '</div><div>' + stufen + '</div>';
