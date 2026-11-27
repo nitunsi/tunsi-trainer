@@ -531,13 +531,28 @@ function flame(n){
 }
 // Meilensteine: je Kategorie die höchste erreichte Marke und wie weit es bis zur nächsten ist
 // „Profi“ (p) zählt Vokabeln UND Kurs-Übungen zusammen (Stufe 5–6). Marken: bis 3000 alle 250, danach alle 500.
+const mkRange = (a, b, st) => { const o = []; for(let x = a; x <= b; x += st) o.push(x); return o; };
+// Marken wie bei Duolingo dicht: Gestartet / Fortgeschritten / Profi alle 100 bis zum ganzen Bestand (die letzte Marke ist „alle“, siehe milesMarks);
+// Richtige Antworten alle 500 bis 10.000, danach alle 100; Serie bis 100 Tage wie gewohnt, danach alle 50
 const MILES = [
-  {key:'g', name:'Gestartet', marks:[100,250,500,750,1000,1250,1500,1750,2000,2250,2500,2750,3000,3250,3500,3750,4000,4500,5000,5500,6000,6500,7000]},
-  {key:'a', name:'Fortgeschritten', marks:[50,100,250,500,1000,1500,2000,3000,4000,5000,6000]},
-  {key:'p', name:'Profi', marks:[50,100,250,500,750,1000,1250,1500,1750,2000,2250,2500,2750,3000,3500,4000,4500,5000,5500,6000]},
-  {key:'r', name:'Richtige Antworten', marks:[1000,2500,5000,10000,25000,50000,100000,250000]},
-  {key:'s', name:'Tage in Folge', marks:[3,7,14,30,60,100,200,365]}
+  {key:'g', name:'Gestartet', all:true, marks:mkRange(100, 9900, 100)},
+  {key:'a', name:'Fortgeschritten', all:true, marks:mkRange(100, 9900, 100)},
+  {key:'p', name:'Profi', all:true, marks:mkRange(100, 9900, 100)},
+  {key:'r', name:'Richtige Antworten', marks:mkRange(500, 9500, 500).concat(mkRange(10000, 300000, 100))},
+  {key:'s', name:'Tage in Folge', marks:[3,7,14,30,60,100].concat(mkRange(150, 1000, 50))}
 ];
+// Bestand, auf den sich „Gestartet“, „Fortgeschritten“ und „Profi“ beziehen: Vokabeln im Trainer + Kurs-Übungen
+function poolTotal(){
+  let n = ALL_VOCAB.filter(v => !v.ausb).length;
+  if(typeof _courseLoaded !== 'undefined' && _courseLoaded) n += courseFlattenChunks().reduce((a, ch) => a + ch.srsItems.length, 0);
+  return n;
+}
+// Marken einer Kategorie: bei g/a/p nur unter dem Bestand, die letzte ist der Bestand selbst („alle“)
+function milesMarks(m){
+  if(!m.all) return m.marks;
+  const T = poolTotal(); if(!T) return m.marks;
+  return m.marks.filter(x => x < T).concat([T]);
+}
 // Gestartet = Vokabeln + Kurs-Übungen mit Fälligkeit; Fortgeschritten = ab Stufe 3 (wie im Stufendiagramm); Profi = Stufe 5–6 (jeweils Vokabeln + Kurs)
 function richtigGesamt(){
   let n = 0;
@@ -577,7 +592,7 @@ function milesCheck(streak){
   const reached = {}, fresh = [];
   MILES.forEach(m => {
     const val = now[m.key]; if(val == null) return;
-    const mark = m.marks.filter(x => val >= x).pop() || 0;
+    const mark = milesMarks(m).filter(x => val >= x).pop() || 0;
     reached[m.key] = mark;
     if(seen && (m.key in seen) && mark > seen[m.key]) fresh.push({m, mark});
   });
@@ -616,7 +631,7 @@ function milesRows(vals){
   const order = ['g','a','p','r','s'];
   return order.map(k => {
     const m = MILES.find(x => x.key === k), v = vals[k]; if(!m || v == null) return '';
-    const nxt = m.marks.find(x => v < x), last = m.marks.filter(x => v >= x).pop() || 0;
+    const mk = milesMarks(m), nxt = mk.find(x => v < x), last = mk.filter(x => v >= x).pop() || 0;
     const pct = nxt ? Math.round((v - last) / (nxt - last) * 100) : 100;
     return '<div style="margin:.4rem 0"><div style="display:flex;justify-content:space-between;align-items:baseline;font-size:.88rem"><span>'+(k === 's' ? flame(v) : '')+'<b>'+m.name+'</b></span>'
       + '<span class="neu-sub" style="font-size:.78rem"><b style="color:var(--gold2);font-size:.95rem">'+fmtN(v)+'</b>'+(nxt ? ' / '+fmtN(nxt) : ' · alle Marken')+'</span></div>'
