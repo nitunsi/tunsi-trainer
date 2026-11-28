@@ -915,3 +915,8 @@ body.neu-bar main{padding-bottom:calc(var(--barh,0px) + 1.2rem)!important}
 
 /* Wurzel-Knopf in der Vokabelliste: bei wenig Platz nur im Bearbeiten-Blatt (Nils 2026-11-19) */
 @media (max-width:420px){ .neu-vrow .rt .wz-ib{display:none} }
+
+/* Nachschub sehr knapp (dritte Warnstufe): Punkt am Chip „Neue Vokabeln“ blinkt */
+@keyframes neuBlink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.75)}}
+.neu-dot.blink{animation:neuBlink 1.1s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.neu-dot.blink{animation:none}}

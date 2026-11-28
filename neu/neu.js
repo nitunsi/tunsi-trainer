@@ -412,15 +412,15 @@ window.neuForecast = forecast7;
 function newStuffMsg(){
   if(cLesson !== 'all') return null;
   const goal = parseInt(LS.get('neu-goal', '100'), 10) || 100, w = forecast7().avg;
-  if(w < goal * WARN_FACTORS[2]) return {t:'Kaum noch etwas zu wiederholen.\nNimm jetzt neue Vokabeln auf.', red:true};
-  if(w < goal * WARN_FACTORS[1]) return {t:'Der Nachschub wird knapp.\nZeit, Neues zu starten.', red:true};
-  if(w < goal * WARN_FACTORS[0]) return {t:'Der Vorrat an Anfängerwörtern schrumpft.\nZeit für Neues.', red:false};
+  if(w < goal * WARN_FACTORS[2]) return {t:'Kaum noch etwas zu wiederholen.\nNimm jetzt neue Vokabeln auf.', red:true, lv:3};
+  if(w < goal * WARN_FACTORS[1]) return {t:'Der Nachschub wird knapp.\nZeit, Neues zu starten.', red:true, lv:2};
+  if(w < goal * WARN_FACTORS[0]) return {t:'Der Vorrat an Anfängerwörtern schrumpft.\nZeit für Neues.', red:false, lv:1};
   return null;
 }
 // Hinweis „Neues aufnehmen“ ohne Text: Chip mit Punkt (gold = Vorrat schrumpft, rot = knapp)
 function newStuffChip(){
   const m = newStuffMsg(); if(!m) return '';
-  return '<div style="text-align:center;margin:.2rem 0 .4rem"><span class="neu-chip hint'+(m.red ? ' red' : '')+'" style="display:inline-flex;align-items:center;border:1px solid '+(m.red ? 'var(--red)' : 'var(--gold)')+';border-radius:20px;padding:.5rem .9rem;font-size:.9rem;cursor:pointer" onclick="closeResult();openActivateDialog()">Neue Vokabeln<i class="neu-dot"></i></span></div>';
+  return '<div style="text-align:center;margin:.2rem 0 .4rem"><span class="neu-chip hint'+(m.red ? ' red' : '')+'" style="display:inline-flex;align-items:center;border:1px solid '+(m.red ? 'var(--red)' : 'var(--gold)')+';border-radius:20px;padding:.5rem .9rem;font-size:.9rem;cursor:pointer" onclick="closeResult();openActivateDialog()">Neue Vokabeln<i class="neu-dot'+(m.lv === 3 ? ' blink' : '')+'"></i></span></div>';
 }
 function newStuffHint(){
   const m = newStuffMsg();
@@ -511,7 +511,7 @@ function goHome(){
     + '</div>')
     + '<div id="neu-partner" class="neu-card" style="display:flex;align-items:center;gap:.8rem;cursor:pointer;padding:.7rem 1rem" onclick="setMode(\'partnerqueue\')">'+partnerInner()+'</div>'
     + '<div class="neu-chips" style="padding-bottom:0">'
-    +   (function(){ const m = newStuffMsg(); return '<span class="neu-chip'+(m ? ' hint'+(m.red ? ' red' : '') : '')+'" onclick="openActivateDialog()">Neue Vokabeln'+(m ? '<i class="neu-dot"></i>' : '')+'</span>'; })()
+    +   (function(){ const m = newStuffMsg(); return '<span class="neu-chip'+(m ? ' hint'+(m.red ? ' red' : '') : '')+'" onclick="openActivateDialog()">Neue Vokabeln'+(m ? '<i class="neu-dot'+(m.lv === 3 ? ' blink' : '')+'"></i>' : '')+'</span>'; })()
     +   '<span class="neu-chip" onclick="statsUnlockNextChunk()">Kurs-Abschnitt</span>'
     +   '<span class="neu-chip" onclick="openPullForward()">Vorziehen</span>'
     + '</div>'
