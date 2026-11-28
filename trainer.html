@@ -6626,9 +6626,6 @@ function datenChecks(){
   // Beides erscheint erst nach einem Start bzw. Sync; Abhilfe: die Karte in der Vokabelliste neu speichern (Fälligkeit setzen).
   out.push({label: 'Lernstand: Gerät und Datenbank weichen ab (beim Start festgestellt)', n: LERNSTAND_ABW.length, bsp: LERNSTAND_ABW.slice()});
   out.push({label: 'Lernstand: Warteschlange hat Einträge abgelehnt', n: OQ_ABGELEHNT.length, bsp: OQ_ABGELEHNT.slice()});
-  let kl = []; try{ kl = JSON.parse(localStorage.getItem('training_korrektur_log') || '[]'); }catch(e){}
-  out.push({label: 'Korrekturen „War doch richtig/falsch“ der letzten Zeit: so gesendet', n: kl.length, leise: true,
-    bsp: kl.slice(-15).reverse().map(x => new Date(x.t).toLocaleString('de-DE', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})+' '+x.tr+' → '+(x.ok ? 'richtig' : 'falsch')+' ('+x.weg+(x.fehler ? ', '+x.fehler : '')+')')});
   // Quellen-Recherche (Nils 2026-11-24): alle 3 Monate nach neuen Quellen im Netz schauen. Das Datum steht in quellen_recherche
   // (eine Zeile); nach der Recherche setzt Claude es hoch, die Bewertungen stehen in skills/tunsi/QUELLEN.md.
   if(QUELLEN_RECH && QUELLEN_RECH.letzte_pruefung){
