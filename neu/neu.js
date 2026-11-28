@@ -371,7 +371,7 @@ function motivation(done, avgs){
 // eingerechnet. Ergebnis: Durchschnitt, Zahl je Tag, schwächster Tag.
 const FC_DAYS = 7;
 const FC_TREFFER = lv => lv <= 2 ? 0.85 : 0.95;
-const WARN_FACTORS = [1.2, 1.0, 0.6];   // Hinweis / knapp / sehr knapp, als Anteil des Tagesziels (1,2 = nötige Versuche bei ca. 86 % Trefferquote; 1,0 = Ziel selbst mit lauter richtigen Antworten nicht erreichbar)
+const WARN_FACTORS = [1.0, 0.9, 0.8];   // Hinweis / knapp / sehr knapp, als Anteil des Tagesziels: unter 100 % Hinweis (gold), unter 90 % knapp (rot), unter 80 % sehr knapp (rot); Nils 2026-11-28
 function forecast7(part){
   const idx = key => { const t = key.split('-').map(Number); return Math.round(Date.UTC(t[0], t[1] - 1, t[2]) / 86400000); };
   const today = idx(berlinDayKey(new Date()));
@@ -400,7 +400,7 @@ function forecast7(part){
   return {days: rd, avg, min, minDay: rd.indexOf(min)};
 }
 // Hinweis: wann neue Vokabeln / Kurs-Übungen aufgenommen werden sollten (immer nur die wichtigste Meldung)
-//  Erwartete Wiederholungen pro Tag < 1,2 × Tagesziel: Hinweis (gold) · < 1,0 ×: knapp (rot) · < 0,6 ×: sehr knapp (rot)
+//  Erwartete Wiederholungen pro Tag < 100 % des Tagesziels: Hinweis (gold) · < 90 %: knapp (rot) · < 80 %: sehr knapp (rot)
 // text: Zeilen durch \n getrennt (feste Umbrüche); text-wrap:balance verteilt längere Zeilen gleichmäßig
 function hintCard(text, red){
   const col = red ? 'var(--red)' : 'var(--gold2)';
@@ -739,6 +739,7 @@ function seg(opts, cur, act){ return '<div class="neu-seg">'+opts.map(([v,l]) =>
 function nachschubCard(goal){
   const f = forecast7(), g = parseInt(goal, 10) || 100, r = n => Math.round(n);
   const th = WARN_FACTORS.map(x => r(g * x));
+  const pctW = k => Math.round(WARN_FACTORS[k] * 100);
   const wd = ['So','Mo','Di','Mi','Do','Fr','Sa'];
   const now = new Date();
   const row = f.days.map((n, i) => { const d = new Date(now.getTime() + i * 86400000); return '<span style="white-space:nowrap">'+(i ? wd[d.getDay()] : 'Heute')+' <b>'+fmtN(n)+'</b></span>'; }).join(' · ');
@@ -748,7 +749,7 @@ function nachschubCard(goal){
     + '<div class="neu-sub" style="margin:.3rem 0">'+row+'</div>'
     + '<div class="neu-sub">Schwächster Tag: <b style="color:var(--text)">'+fmtN(f.min)+'</b> ('+(f.minDay ? wd[new Date(now.getTime() + f.minDay * 86400000).getDay()] : 'heute')+'). Er löst keine Warnung aus.</div>'
     + '<div class="neu-cap" style="margin-top:.8rem">Warnstufen (Anteil am Tagesziel)</div>'
-    + '<div class="neu-sub">Hinweis unter <b style="color:var(--text)">'+fmtN(th[0])+'</b> (1,2 ×) · knapp unter <b style="color:var(--text)">'+fmtN(th[1])+'</b> (1,0 ×) · sehr knapp unter <b style="color:var(--text)">'+fmtN(th[2])+'</b> (0,6 ×)</div>'
+    + '<div class="neu-sub">Hinweis unter <b style="color:var(--text)">'+fmtN(th[0])+'</b> ('+pctW(0)+' %) · knapp unter <b style="color:var(--text)">'+fmtN(th[1])+'</b> ('+pctW(1)+' %) · sehr knapp unter <b style="color:var(--text)">'+fmtN(th[2])+'</b> ('+pctW(2)+' %)</div>'
     + '<div class="neu-cap" style="margin-top:.8rem">So wird gerechnet</div>'
     + '<div class="neu-sub">Jede gestartete Karte (Vokabeln und Kurs-Übungen) kommt ab ihrem Fälligkeitstag wieder. Der Abstand hängt von der Stufe ab: Stufe 0 und 1 jeden Tag, Stufe 2 nach 3 Tagen, Stufe 3 nach 7, Stufe 4 nach 14, Stufe 5 nach 30, Stufe 6 nach 90 Tagen. Überfälliges zählt ab heute. Stufenwechsel sind eingerechnet: Bei Stufe 0 bis 2 werden 85 % richtig beantwortet (die Karte steigt eine Stufe), ab Stufe 3 sind es 95 %. Falsche Antworten setzen die Karte auf Stufe 0, sie kommt am nächsten Tag wieder. Heute zählt zusätzlich das, was du heute schon richtig beantwortet hast. Alle Wiederholungen der nächsten 7 Tage, geteilt durch 7.</div>'
     + '</div>';
